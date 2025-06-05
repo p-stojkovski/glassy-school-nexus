@@ -1,16 +1,25 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Checkbox } from '../ui/checkbox';
-import { Clock } from 'lucide-react';
+import { Clock, Search } from 'lucide-react';
 import { Class } from '../../store/slices/classesSlice';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { Student } from '../../store/slices/studentsSlice';
 import GlassCard from '../common/GlassCard';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
 
 interface ClassFormContentProps {
   onSubmit: (data: ClassFormData) => void;
@@ -36,6 +45,7 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
   const { teachers } = useSelector((state: RootState) => state.teachers);
   const { students } = useSelector((state: RootState) => state.students);
   const { classrooms } = useSelector((state: RootState) => state.classrooms);
+  const [studentSearchTerm, setStudentSearchTerm] = useState('');
 
   const form = useForm<ClassFormData>({
     defaultValues: editingClass ? {
@@ -71,11 +81,26 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
     form.setValue('schedule', currentSchedule.filter((_, i) => i !== index));
   };
 
+  // Filter students based on search term
+  const filteredStudents = students.filter((student) => 
+    student.name.toLowerCase().includes(studentSearchTerm.toLowerCase())
+  );
+
+  // Toggle student selection
+  const toggleStudent = (studentId: string) => {
+    const currentIds = form.getValues('studentIds') || [];
+    if (currentIds.includes(studentId)) {
+      form.setValue('studentIds', currentIds.filter(id => id !== studentId));
+    } else {
+      form.setValue('studentIds', [...currentIds, studentId]);
+    }
+  };
+
   return (
     <GlassCard className="p-8">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <FormField
               control={form.control}
               name="name"
@@ -119,7 +144,7 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <FormField
               control={form.control}
               name="teacherId"
@@ -264,35 +289,62 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
 
           <div>
             <FormLabel className="text-white mb-4 block">Students</FormLabel>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-40 overflow-y-auto bg-white/5 p-4 rounded-lg">
-              {students.map((student) => (
-                <FormField
-                  key={student.id}
-                  control={form.control}
-                  name="studentIds"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value?.includes(student.id)}
-                          onCheckedChange={(checked) => {
-                            const currentIds = field.value || [];
-                            if (checked) {
-                              field.onChange([...currentIds, student.id]);
-                            } else {
-                              field.onChange(currentIds.filter(id => id !== student.id));
-                            }
-                          }}
-                          className="border-white/20"
-                        />
-                      </FormControl>
-                      <FormLabel className="text-white/80 text-sm font-normal">
-                        {student.name}
-                      </FormLabel>
-                    </FormItem>
-                  )}
+            <div className="bg-white/5 p-4 rounded-lg space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+                <Input
+                  placeholder="Search students by name..."
+                  value={studentSearchTerm}
+                  onChange={(e) => setStudentSearchTerm(e.target.value)}
+                  className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
                 />
-              ))}
+              </div>
+              
+              <div className="overflow-y-auto max-h-80">
+                <Table className="text-white">
+                  <TableHeader>
+                    <TableRow className="hover:bg-white/5 border-white/20">
+                      <TableHead className="text-white/70 w-10">Select</TableHead>
+                      <TableHead className="text-white/70">Name</TableHead>
+                      <TableHead className="text-white/70">Email</TableHead>
+                      <TableHead className="text-white/70">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredStudents.length > 0 ? (
+                      filteredStudents.map((student) => (
+                        <TableRow 
+                          key={student.id} 
+                          className="hover:bg-white/5 border-white/10 cursor-pointer"
+                          onClick={() => toggleStudent(student.id)}
+                        >
+                          <TableCell>
+                            <Checkbox
+                              checked={form.watch('studentIds')?.includes(student.id)}
+                              onCheckedChange={() => toggleStudent(student.id)}
+                              className="border-white/20"
+                            />
+                          </TableCell>
+                          <TableCell>{student.name}</TableCell>
+                          <TableCell>{student.email}</TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium 
+                              ${student.status === 'active' ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-300'}`}>
+                              {student.status}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-4 text-white/50">
+                          No students found matching your search.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </div>
 

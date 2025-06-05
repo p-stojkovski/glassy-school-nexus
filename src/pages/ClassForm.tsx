@@ -28,7 +28,7 @@ const ClassForm: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -48,7 +48,7 @@ const ClassForm: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl">
+      <div className="w-full">
         <ClassFormContent
           onSubmit={handleSubmit}
           onCancel={handleBack}
