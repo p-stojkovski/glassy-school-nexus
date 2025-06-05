@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
@@ -58,10 +59,14 @@ const Sidebar: React.FC = () => {
                 animate={{ opacity: 1 }}
                 className="flex items-center space-x-3"
               >
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold">SM</span>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/lovable-uploads/0a12f78e-1752-49f8-8f2d-a8b7c70871ab.png" 
+                    alt="Think English" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <span className="text-white font-semibold text-lg">School Manager</span>
+                <span className="text-white font-semibold text-lg">Think English</span>
               </motion.div>
             )}
             <button
