@@ -32,7 +32,6 @@ const menuItems = [
   { icon: Calendar, label: 'Attendance', path: '/attendance' },
   { icon: Grades, label: 'Grades', path: '/grades' },
   { icon: DollarSign, label: 'Finance', path: '/finance' },
-  { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
 const Sidebar: React.FC = () => {

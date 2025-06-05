@@ -1,18 +1,7 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
 
-export interface Invoice {
-  id: string;
-  studentId: string;
-  amount: number;
-  status: 'paid' | 'unpaid' | 'overdue';
-  dueDate: string;
-  description: string;
-  createdDate: string;
-}
-
-// New interfaces for enhanced financial management
+// Define the types for financial data
 export interface PaymentObligation {
   id: string;
   studentId: string;
@@ -42,16 +31,13 @@ export interface Payment {
   updatedAt: string;
 }
 
-interface FinanceState {
-  invoices: Invoice[];
+interface FinancialState {
   obligations: PaymentObligation[];
   payments: Payment[];
   loading: boolean;
-  totalRevenue: number;
-  pendingAmount: number;
+  error: string | null;
   selectedPeriod: string | null;
   selectedStudentId: string | null;
-  error: string | null;
 }
 
 // Load initial data from localStorage if available
@@ -108,44 +94,23 @@ const updateObligationStatuses = (obligations: PaymentObligation[], payments: Pa
   });
 };
 
-const initialState: FinanceState = {
-  invoices: [],
+const initialState: FinancialState = {
   obligations: loadInitialObligations(),
   payments: loadInitialPayments(),
   loading: false,
-  totalRevenue: 0,
-  pendingAmount: 0,
+  error: null,
   selectedPeriod: null,
   selectedStudentId: null,
-  error: null,
 };
 
-const financeSlice = createSlice({
-  name: 'finance',
+export const financialSlice = createSlice({
+  name: 'financial',
   initialState,
   reducers: {
-    // Legacy invoice reducers
-    setInvoices: (state, action: PayloadAction<Invoice[]>) => {
-      state.invoices = action.payload;
-    },
-    addInvoice: (state, action: PayloadAction<Invoice>) => {
-      state.invoices.push(action.payload);
-    },
-    updateInvoice: (state, action: PayloadAction<Invoice>) => {
-      const index = state.invoices.findIndex(i => i.id === action.payload.id);
-      if (index !== -1) {
-        state.invoices[index] = action.payload;
-      }
-    },
-    setFinanceStats: (state, action: PayloadAction<{ totalRevenue: number; pendingAmount: number }>) => {
-      state.totalRevenue = action.payload.totalRevenue;
-      state.pendingAmount = action.payload.pendingAmount;
-    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
     
-    // New financial management reducers
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
@@ -237,14 +202,11 @@ const financeSlice = createSlice({
       state.obligations = updateObligationStatuses(state.obligations, state.payments);
       localStorage.setItem('paymentObligations', JSON.stringify(state.obligations));
     }
-  },
+  }
 });
 
-export const { 
-  setInvoices, 
-  addInvoice, 
-  updateInvoice, 
-  setFinanceStats, 
+// Export actions
+export const {
   setLoading,
   setError,
   setSelectedPeriod,
@@ -258,11 +220,12 @@ export const {
   addPaymentsBatch,
   clearAllFinancialData,
   refreshObligationStatuses
-} = financeSlice.actions;
+} = financialSlice.actions;
 
 // Selectors
 export const selectAllObligations = (state: RootState) => state.finance.obligations;
 export const selectAllPayments = (state: RootState) => state.finance.payments;
+export const selectLoading = (state: RootState) => state.finance.loading;
 export const selectError = (state: RootState) => state.finance.error;
 export const selectSelectedPeriod = (state: RootState) => state.finance.selectedPeriod;
 export const selectSelectedStudentId = (state: RootState) => state.finance.selectedStudentId;
@@ -308,4 +271,4 @@ export const selectTotalOutstandingBalance = (state: RootState): number => {
   return totalObligations - totalPayments;
 };
 
-export default financeSlice.reducer;
+export default financialSlice.reducer;

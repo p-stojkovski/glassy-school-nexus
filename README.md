@@ -57,8 +57,27 @@ This project is built with:
 - Vite
 - TypeScript
 - React
+- Redux for state management
 - shadcn-ui
 - Tailwind CSS
+- Recharts for data visualization
+
+## Features
+
+### Financial Management
+
+The application includes a comprehensive Financial Management system that allows administrators to:
+
+- Assign payment obligations to students
+- Track and record payments against obligations
+- View financial dashboards with key metrics and visualizations
+- Export financial data for external analysis
+
+All financial data is stored locally using localStorage for demonstration purposes.
+
+For more information, see:
+- [Financial Management Documentation](./docs/financial-management.md)
+- [Financial Management User Guide](./docs/financial-management-user-guide.md)
 
 ## How can I deploy this project?
 

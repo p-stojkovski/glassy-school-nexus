@@ -21,6 +21,7 @@ import Scheduling from './pages/Scheduling';
 import ScheduleForm from './pages/ScheduleForm';
 import AttendanceManagement from './pages/AttendanceManagement';
 import GradesManagement from './pages/GradesManagement';
+import FinancialManagement from './pages/FinancialManagement';
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,11 +43,10 @@ const AppContent: React.FC = () => {
         <Route path="/classes/new" element={<ClassForm />} />
         <Route path="/classes/edit/:id" element={<ClassForm />} />
         <Route path="/teachers" element={<Teachers />} />        <Route path="/scheduling" element={<Scheduling />} />
-        <Route path="/scheduling/new" element={<ScheduleForm />} />
-        <Route path="/scheduling/edit/:id" element={<ScheduleForm />} />
+        <Route path="/scheduling/new" element={<ScheduleForm />} />        <Route path="/scheduling/edit/:id" element={<ScheduleForm />} />
         <Route path="/attendance" element={<AttendanceManagement />} />
         <Route path="/grades" element={<GradesManagement />} />
-        <Route path="/finance" element={<Dashboard />} />
+        <Route path="/finance" element={<FinancialManagement />} />
         <Route path="/settings" element={<Dashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
