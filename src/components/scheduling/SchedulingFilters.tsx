@@ -36,13 +36,13 @@ const SchedulingFilters: React.FC<SchedulingFiltersProps> = ({
           />
         </div>
         
-        <Select value={filters.classId || ''} onValueChange={(value) => dispatch(setFilters({classId: value || undefined}))}>
+        <Select value={filters.classId || 'all'} onValueChange={(value) => dispatch(setFilters({classId: value === 'all' ? undefined : value}))}>
           <SelectTrigger className="bg-white/10 border-white/20 text-white">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="All Classes" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Classes</SelectItem>
+            <SelectItem value="all">All Classes</SelectItem>
             {classes.map((classItem) => (
               <SelectItem key={classItem.id} value={classItem.id}>
                 {classItem.name}
@@ -51,13 +51,13 @@ const SchedulingFilters: React.FC<SchedulingFiltersProps> = ({
           </SelectContent>
         </Select>
 
-        <Select value={filters.teacherId || ''} onValueChange={(value) => dispatch(setFilters({teacherId: value || undefined}))}>
+        <Select value={filters.teacherId || 'all'} onValueChange={(value) => dispatch(setFilters({teacherId: value === 'all' ? undefined : value}))}>
           <SelectTrigger className="bg-white/10 border-white/20 text-white">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="All Teachers" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Teachers</SelectItem>
+            <SelectItem value="all">All Teachers</SelectItem>
             {teachers.map((teacher) => (
               <SelectItem key={teacher.id} value={teacher.id}>
                 {teacher.name}
@@ -66,13 +66,13 @@ const SchedulingFilters: React.FC<SchedulingFiltersProps> = ({
           </SelectContent>
         </Select>
 
-        <Select value={filters.classroomId || ''} onValueChange={(value) => dispatch(setFilters({classroomId: value || undefined}))}>
+        <Select value={filters.classroomId || 'all'} onValueChange={(value) => dispatch(setFilters({classroomId: value === 'all' ? undefined : value}))}>
           <SelectTrigger className="bg-white/10 border-white/20 text-white">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="All Classrooms" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Classrooms</SelectItem>
+            <SelectItem value="all">All Classrooms</SelectItem>
             {classrooms.map((classroom) => (
               <SelectItem key={classroom.id} value={classroom.id}>
                 {classroom.name}
@@ -81,13 +81,13 @@ const SchedulingFilters: React.FC<SchedulingFiltersProps> = ({
           </SelectContent>
         </Select>
 
-        <Select value={filters.status || ''} onValueChange={(value) => dispatch(setFilters({status: value || undefined}))}>
+        <Select value={filters.status || 'all'} onValueChange={(value) => dispatch(setFilters({status: value === 'all' ? undefined : value}))}>
           <SelectTrigger className="bg-white/10 border-white/20 text-white">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Status</SelectItem>
+            <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="scheduled">Scheduled</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="canceled">Canceled</SelectItem>

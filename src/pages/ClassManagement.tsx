@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { Dialog, DialogContent } from '../components/ui/dialog';
 import ClassHeader from '../components/classes/ClassHeader';
@@ -13,8 +13,6 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 import { useClassManagement } from '../hooks/useClassManagement';
 
 const ClassManagement: React.FC = () => {
-  const dispatch = useDispatch();
-  const { classes, loading } = useSelector((state: RootState) => state.classes);
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | 'English' | 'Mathematics' | 'Physics'>('all');
   const [levelFilter, setLevelFilter] = useState<'all' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'>('all');
@@ -26,10 +24,11 @@ const ClassManagement: React.FC = () => {
   const [classToDelete, setClassToDelete] = useState<any>(null);
 
   const {
+    loading,
+    filteredClasses,
     handleCreateClass,
     handleUpdateClass,
-    handleDeleteClass,
-    filteredClasses
+    handleDeleteClass
   } = useClassManagement({
     searchTerm,
     subjectFilter,
@@ -46,6 +45,11 @@ const ClassManagement: React.FC = () => {
   const handleDelete = (classItem: any) => {
     setClassToDelete(classItem);
     setShowDeleteDialog(true);
+  };
+
+  const handleView = (classItem: any) => {
+    // Handle view functionality
+    console.log('Viewing class:', classItem);
   };
 
   const confirmDelete = async () => {
@@ -93,22 +97,26 @@ const ClassManagement: React.FC = () => {
     return <ClassLoading />;
   }
 
+  const hasFilters = searchTerm !== '' || subjectFilter !== 'all' || levelFilter !== 'all' || statusFilter !== 'all' || showOnlyWithAvailableSlots;
+
   return (
     <div className="space-y-6">
-      <ClassHeader onCreateClass={() => setShowForm(true)} />
+      <ClassHeader />
 
       <ClassFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         subjectFilter={subjectFilter}
-        levelFilter={levelFilter}
         statusFilter={statusFilter}
         showOnlyWithAvailableSlots={showOnlyWithAvailableSlots}
         onFilterChange={handleFilterChange}
       />
 
       {filteredClasses.length === 0 ? (
-        <ClassEmptyState onCreateClass={() => setShowForm(true)} />
+        <ClassEmptyState 
+          onCreateClass={() => setShowForm(true)}
+          hasFilters={hasFilters}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredClasses.map((classItem) => (
@@ -117,6 +125,7 @@ const ClassManagement: React.FC = () => {
               classItem={classItem}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onView={handleView}
             />
           ))}
         </div>
@@ -126,10 +135,6 @@ const ClassManagement: React.FC = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 border-white/20">
           <ClassForm
             onSubmit={handleSubmit}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingClass(null);
-            }}
             initialData={editingClass}
           />
         </DialogContent>
