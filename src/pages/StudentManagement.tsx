@@ -9,7 +9,7 @@ import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../components/ui/sheet';
 import GlassCard from '../components/common/GlassCard';
-import StudentCard from '../components/students/StudentCard';
+import StudentTable from '../components/students/StudentTable';
 import StudentForm from '../components/students/StudentForm';
 import { Student } from '../store/slices/studentsSlice';
 import { toast } from '../components/ui/use-toast';
@@ -22,45 +22,23 @@ const StudentManagement: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
-  // Mock data - in a real app, this would come from an API
+  // Mock data with 30+ students and payment due indicators
   useEffect(() => {
     dispatch(setLoading(true));
     setTimeout(() => {
-      const mockStudents: Student[] = [
-        {
-          id: '1',
-          name: 'Alice Johnson',
-          email: 'alice.johnson@email.com',
-          phone: '+1-555-0123',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
-          classId: 'class-1',
-          status: 'active',
-          joinDate: '2024-01-15',
-          parentContact: 'Mary Johnson - +1-555-0124',
-        },
-        {
-          id: '2',
-          name: 'Bob Smith',
-          email: 'bob.smith@email.com',
-          phone: '+1-555-0125',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob',
-          classId: 'class-2',
-          status: 'active',
-          joinDate: '2024-02-01',
-          parentContact: 'John Smith - +1-555-0126',
-        },
-        {
-          id: '3',
-          name: 'Carol Davis',
-          email: 'carol.davis@email.com',
-          phone: '+1-555-0127',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Carol',
-          classId: 'class-1',
-          status: 'inactive',
-          joinDate: '2023-11-20',
-          parentContact: 'Linda Davis - +1-555-0128',
-        }
-      ];
+      const mockStudents: Student[] = Array.from({ length: 35 }, (_, index) => ({
+        id: `student-${index + 1}`,
+        name: `Student ${index + 1}`,
+        email: `student${index + 1}@email.com`,
+        phone: `+1-555-${String(index + 100).padStart(4, '0')}`,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Student${index + 1}`,
+        classId: `class-${(index % 3) + 1}`,
+        status: Math.random() > 0.2 ? 'active' : 'inactive',
+        joinDate: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
+        parentContact: `Parent ${index + 1} - +1-555-${String(index + 200).padStart(4, '0')}`,
+        paymentDue: Math.random() > 0.7, // 30% chance of payment being due
+        lastPayment: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
+      }));
       dispatch(setStudents(mockStudents));
       dispatch(setLoading(false));
     }, 1000);
@@ -84,7 +62,6 @@ const StudentManagement: React.FC = () => {
   };
 
   const handleDeleteStudent = (student: Student) => {
-    // In a real app, you would check for dependencies first
     dispatch(deleteStudent(student.id));
     toast({
       title: "Student Deleted",
@@ -93,7 +70,6 @@ const StudentManagement: React.FC = () => {
   };
 
   const handleViewStudent = (student: Student) => {
-    // Handle viewing student details
     console.log('Viewing student:', student);
   };
 
@@ -120,6 +96,8 @@ const StudentManagement: React.FC = () => {
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`,
           classId: 'unassigned',
           joinDate: new Date().toISOString(),
+          paymentDue: false,
+          lastPayment: new Date().toISOString(),
           ...data,
         };
         dispatch(addStudent(newStudent));
@@ -190,7 +168,7 @@ const StudentManagement: React.FC = () => {
         </div>
       </GlassCard>
 
-      {/* Students Grid */}
+      {/* Students Table */}
       {filteredStudents.length === 0 ? (
         <GlassCard className="p-12 text-center">
           <Users className="w-16 h-16 text-white/40 mx-auto mb-4" />
@@ -211,17 +189,12 @@ const StudentManagement: React.FC = () => {
           )}
         </GlassCard>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStudents.map((student) => (
-            <StudentCard
-              key={student.id}
-              student={student}
-              onEdit={() => handleEditStudent(student)}
-              onDelete={() => handleDeleteStudent(student)}
-              onView={() => handleViewStudent(student)}
-            />
-          ))}
-        </div>
+        <StudentTable
+          students={filteredStudents}
+          onEdit={handleEditStudent}
+          onDelete={handleDeleteStudent}
+          onView={handleViewStudent}
+        />
       )}
 
       {/* Student Form Sidebar */}

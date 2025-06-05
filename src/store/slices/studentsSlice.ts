@@ -11,6 +11,8 @@ export interface Student {
   status: 'active' | 'inactive';
   joinDate: string;
   parentContact: string;
+  paymentDue?: boolean;
+  lastPayment?: string;
 }
 
 interface StudentsState {
