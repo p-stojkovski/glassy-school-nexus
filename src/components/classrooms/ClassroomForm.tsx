@@ -47,7 +47,7 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6">
+    <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 rounded-lg p-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <FormField
@@ -55,15 +55,15 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-800 font-semibold">Classroom Name *</FormLabel>
+                <FormLabel className="text-white font-semibold">Classroom Name *</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="e.g., Room A-101"
                     {...field}
-                    className="bg-white border-gray-200 text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                   />
                 </FormControl>
-                <FormMessage className="text-red-600" />
+                <FormMessage className="text-red-300" />
               </FormItem>
             )}
           />
@@ -73,15 +73,15 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
             name="location"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-800 font-semibold">Location</FormLabel>
+                <FormLabel className="text-white font-semibold">Location</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="e.g., Building A, First Floor"
                     {...field}
-                    className="bg-white border-gray-200 text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                   />
                 </FormControl>
-                <FormMessage className="text-red-600" />
+                <FormMessage className="text-red-300" />
               </FormItem>
             )}
           />
@@ -91,17 +91,17 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
             name="capacity"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-800 font-semibold">Capacity *</FormLabel>
+                <FormLabel className="text-white font-semibold">Capacity *</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     placeholder="30"
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                    className="bg-white border-gray-200 text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                   />
                 </FormControl>
-                <FormMessage className="text-red-600" />
+                <FormMessage className="text-red-300" />
               </FormItem>
             )}
           />
@@ -111,29 +111,29 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-800 font-semibold">Status</FormLabel>
+                <FormLabel className="text-white font-semibold">Status</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="bg-white border-gray-200 text-gray-800 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-yellow-400 focus:ring-yellow-400">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="bg-white border-gray-200">
-                    <SelectItem value="active" className="text-gray-800 hover:bg-blue-50">Active</SelectItem>
-                    <SelectItem value="inactive" className="text-gray-800 hover:bg-blue-50">Inactive</SelectItem>
-                    <SelectItem value="maintenance" className="text-gray-800 hover:bg-blue-50">Maintenance</SelectItem>
+                  <SelectContent className="bg-gray-800 border-white/20">
+                    <SelectItem value="active" className="text-white hover:bg-white/10">Active</SelectItem>
+                    <SelectItem value="inactive" className="text-white hover:bg-white/10">Inactive</SelectItem>
+                    <SelectItem value="maintenance" className="text-white hover:bg-white/10">Maintenance</SelectItem>
                   </SelectContent>
                 </Select>
-                <FormMessage className="text-red-600" />
+                <FormMessage className="text-red-300" />
               </FormItem>
             )}
           />
 
-          <div className="flex gap-4 pt-6 border-t border-gray-200">
+          <div className="flex gap-4 pt-6 border-t border-white/20">
             <Button 
               type="submit" 
               disabled={isLoading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
             >
               {isLoading ? 'Saving...' : (classroom ? 'Update Classroom' : 'Add Classroom')}
             </Button>
@@ -141,7 +141,7 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
               type="button" 
               variant="outline" 
               onClick={onCancel}
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300 font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              className="flex-1 bg-white/10 hover:bg-white/20 text-white border-white/20 hover:border-white/30 font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
             >
               Cancel
             </Button>

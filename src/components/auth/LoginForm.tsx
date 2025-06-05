@@ -53,12 +53,16 @@ const LoginForm: React.FC = () => {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+              className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center overflow-hidden"
             >
-              <span className="text-white text-2xl font-bold">SM</span>
+              <img 
+                src="/lovable-uploads/0a12f78e-1752-49f8-8f2d-a8b7c70871ab.png" 
+                alt="Think English" 
+                className="w-full h-full object-cover"
+              />
             </motion.div>
             <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-white/70">Sign in to your school account</p>
+            <p className="text-white/70">Sign in to Think English</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
