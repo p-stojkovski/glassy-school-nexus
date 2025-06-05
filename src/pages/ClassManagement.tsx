@@ -1,16 +1,17 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useClassManagement } from '../hooks/useClassManagement';
 import ClassHeader from '../components/classes/ClassHeader';
 import ClassFilters from '../components/classes/ClassFilters';
 import ClassCard from '../components/classes/ClassCard';
 import ClassEmptyState from '../components/classes/ClassEmptyState';
 import ClassLoading from '../components/classes/ClassLoading';
-import ClassForm from '../components/classes/ClassForm';
 import ClassDetails from '../components/classes/ClassDetails';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 
 const ClassManagement: React.FC = () => {
+  const navigate = useNavigate();
   const {
     // State
     loading,
@@ -19,8 +20,6 @@ const ClassManagement: React.FC = () => {
     statusFilter,
     subjectFilter,
     classToDelete,
-    showClassForm,
-    editingClass,
     selectedClass,
     showClassDetails,
     
@@ -29,16 +28,11 @@ const ClassManagement: React.FC = () => {
     setStatusFilter,
     setSubjectFilter,
     setClassToDelete,
-    setShowClassForm,
-    setEditingClass,
     setShowClassDetails,
     
     // Handlers
-    handleCreateClass,
-    handleEditClass,
     confirmDeleteClass,
     handleViewDetails,
-    handleEditFromDetails,
     handleDeleteFromDetails,
   } = useClassManagement();
 
@@ -48,9 +42,23 @@ const ClassManagement: React.FC = () => {
 
   const hasFilters = searchTerm || statusFilter !== 'all' || subjectFilter !== 'all';
 
+  const handleCreateClass = () => {
+    navigate('/classes/new');
+  };
+
+  const handleEditClass = (classItem: any) => {
+    navigate(`/classes/edit/${classItem.id}`);
+  };
+
+  const handleEditFromDetails = (classItem: any) => {
+    setSelectedClass(null);
+    setShowClassDetails(false);
+    navigate(`/classes/edit/${classItem.id}`);
+  };
+
   return (
     <div className="space-y-6">
-      <ClassHeader onAddClass={() => setShowClassForm(true)} />
+      <ClassHeader onAddClass={handleCreateClass} />
 
       <ClassFilters
         searchTerm={searchTerm}
@@ -64,7 +72,7 @@ const ClassManagement: React.FC = () => {
       {filteredClasses.length === 0 ? (
         <ClassEmptyState
           hasFilters={hasFilters}
-          onCreateClass={() => setShowClassForm(true)}
+          onCreateClass={handleCreateClass}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -73,10 +81,7 @@ const ClassManagement: React.FC = () => {
               key={classItem.id}
               classItem={classItem}
               onView={handleViewDetails}
-              onEdit={(classItem) => {
-                setEditingClass(classItem);
-                setShowClassForm(true);
-              }}
+              onEdit={handleEditClass}
               onDelete={(classItem) => {
                 setClassToDelete(classItem);
               }}
@@ -84,16 +89,6 @@ const ClassManagement: React.FC = () => {
           ))}
         </div>
       )}
-
-      <ClassForm
-        open={showClassForm}
-        onOpenChange={(open: boolean) => {
-          setShowClassForm(open);
-          if (!open) setEditingClass(null);
-        }}
-        onSubmit={editingClass ? handleEditClass : handleCreateClass}
-        editingClass={editingClass}
-      />
 
       <ClassDetails
         classItem={selectedClass}

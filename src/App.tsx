@@ -15,6 +15,7 @@ import Dashboard from './pages/Dashboard';
 import ClassroomManagement from './pages/ClassroomManagement';
 import StudentManagement from './pages/StudentManagement';
 import ClassManagement from './pages/ClassManagement';
+import ClassForm from './pages/ClassForm';
 import Teachers from './pages/Teachers';
 import NotFound from "./pages/NotFound";
 
@@ -34,6 +35,8 @@ const AppContent: React.FC = () => {
         <Route path="/classrooms" element={<ClassroomManagement />} />
         <Route path="/students" element={<StudentManagement />} />
         <Route path="/classes" element={<ClassManagement />} />
+        <Route path="/classes/new" element={<ClassForm />} />
+        <Route path="/classes/edit/:id" element={<ClassForm />} />
         <Route path="/teachers" element={<Teachers />} />
         <Route path="/attendance" element={<Dashboard />} />
         <Route path="/finance" element={<Dashboard />} />

@@ -7,11 +7,11 @@ import GlassCard from '../common/GlassCard';
 
 interface ClassFiltersProps {
   searchTerm: string;
-  statusFilter: 'all' | 'active' | 'inactive' | 'pending';
-  subjectFilter: 'all' | 'English' | 'Mathematics' | 'Physics';
+  statusFilter: string;
+  subjectFilter: string;
   onSearchChange: (value: string) => void;
-  onStatusFilterChange: (value: 'all' | 'active' | 'inactive' | 'pending') => void;
-  onSubjectFilterChange: (value: 'all' | 'English' | 'Mathematics' | 'Physics') => void;
+  onStatusFilterChange: (value: string) => void;
+  onSubjectFilterChange: (value: string) => void;
 }
 
 const ClassFilters: React.FC<ClassFiltersProps> = ({
@@ -52,13 +52,12 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
           <Select value={subjectFilter} onValueChange={onSubjectFilterChange}>
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Filter by subject" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Subjects</SelectItem>
               <SelectItem value="English">English</SelectItem>
-              <SelectItem value="Mathematics">Mathematics</SelectItem>
-              <SelectItem value="Physics">Physics</SelectItem>
+              <SelectItem value="German">German</SelectItem>
             </SelectContent>
           </Select>
         </div>
