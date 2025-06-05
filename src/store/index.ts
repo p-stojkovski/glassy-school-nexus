@@ -9,9 +9,9 @@ import classroomsReducer from './slices/classroomsSlice';
 import attendanceReducer from './slices/attendanceSlice';
 import financeReducer from './slices/financeSlice';
 import schedulingReducer from './slices/schedulingSlice';
+import gradesReducer from './slices/gradesSlice';
 
-export const store = configureStore({
-  reducer: {
+export const store = configureStore({  reducer: {
     auth: authReducer,
     ui: uiReducer,
     classes: classesReducer,
@@ -21,6 +21,7 @@ export const store = configureStore({
     attendance: attendanceReducer,
     finance: financeReducer,
     scheduling: schedulingReducer,
+    grades: gradesReducer,
   },
 });
 

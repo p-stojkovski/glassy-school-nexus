@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { setSelectedDate } from '../store/slices/attendanceSlice';
-import GlassCard from '../components/common/GlassCard';
 import AttendanceHeader from '../components/attendance/AttendanceHeader';
-import AttendanceFilters from '../components/attendance/AttendanceFilters';
-import AttendanceMarker from '../components/attendance/AttendanceMarker';
-import AttendanceHistory from '../components/attendance/AttendanceHistory';
-import DemoModeNotification from '../components/attendance/DemoModeNotification';
+import AttendanceFilters from '@/components/attendance/AttendanceFilters';
+import DemoModeNotification from '@/components/attendance/DemoModeNotification';
+import AttendanceMarker from '@/components/attendance/AttendanceMarker';
+import AttendanceHistory from '@/components/attendance/AttendanceHistory';
 
 const AttendanceManagement: React.FC = () => {
   const dispatch = useDispatch();

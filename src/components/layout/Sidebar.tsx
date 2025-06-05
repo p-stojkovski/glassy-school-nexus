@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   LogOut,
   CalendarDays,
+  GraduationCap as Grades,
 } from 'lucide-react';
 import { RootState } from '../../store';
 import { toggleSidebar } from '../../store/slices/uiSlice';
@@ -29,6 +30,7 @@ const menuItems = [
   { icon: GraduationCap, label: 'Teachers', path: '/teachers' },
   { icon: CalendarDays, label: 'Scheduling', path: '/scheduling' },
   { icon: Calendar, label: 'Attendance', path: '/attendance' },
+  { icon: Grades, label: 'Grades', path: '/grades' },
   { icon: DollarSign, label: 'Finance', path: '/finance' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
