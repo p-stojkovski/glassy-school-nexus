@@ -104,7 +104,7 @@ const ClassManagement: React.FC = () => {
       />
 
       <ConfirmDialog
-        open={!!classToDelete}
+        open={classToDelete !== null}
         onOpenChange={() => setClassToDelete(null)}
         title="Delete Class"
         description={`Are you sure you want to delete ${classToDelete?.name}? This action cannot be undone.`}
