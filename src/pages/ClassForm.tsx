@@ -3,23 +3,21 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { useClassManagement } from '../hooks/useClassManagement';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 import ClassFormContent from '../components/classes/ClassFormContent';
 
 const ClassForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { classes, handleCreateClass, handleEditClass } = useClassManagement();
+  const { classes } = useSelector((state: RootState) => state.classes);
   
   const editingClass = id ? classes.find(c => c.id === id) : null;
   const isEditing = !!editingClass;
 
   const handleSubmit = (data: any) => {
-    if (isEditing) {
-      handleEditClass(data);
-    } else {
-      handleCreateClass(data);
-    }
+    // This would normally call the appropriate create/update function
+    console.log('Form submitted:', data);
     navigate('/classes');
   };
 

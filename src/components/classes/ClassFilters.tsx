@@ -7,20 +7,20 @@ import GlassCard from '../common/GlassCard';
 
 interface ClassFiltersProps {
   searchTerm: string;
-  statusFilter: string;
   subjectFilter: string;
+  statusFilter: string;
+  showOnlyWithAvailableSlots: boolean;
   onSearchChange: (value: string) => void;
-  onStatusFilterChange: (value: string) => void;
-  onSubjectFilterChange: (value: string) => void;
+  onFilterChange: (type: string, value: string) => void;
 }
 
 const ClassFilters: React.FC<ClassFiltersProps> = ({
   searchTerm,
-  statusFilter,
   subjectFilter,
+  statusFilter,
+  showOnlyWithAvailableSlots,
   onSearchChange,
-  onStatusFilterChange,
-  onSubjectFilterChange,
+  onFilterChange,
 }) => {
   return (
     <GlassCard className="p-6">
@@ -35,7 +35,7 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
           />
         </div>
         <div className="sm:w-48">
-          <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+          <Select value={statusFilter} onValueChange={(value) => onFilterChange('status', value)}>
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue />
@@ -49,7 +49,7 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
           </Select>
         </div>
         <div className="sm:w-48">
-          <Select value={subjectFilter} onValueChange={onSubjectFilterChange}>
+          <Select value={subjectFilter} onValueChange={(value) => onFilterChange('subject', value)}>
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue />
@@ -57,7 +57,8 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
             <SelectContent>
               <SelectItem value="all">All Subjects</SelectItem>
               <SelectItem value="English">English</SelectItem>
-              <SelectItem value="German">German</SelectItem>
+              <SelectItem value="Mathematics">Mathematics</SelectItem>
+              <SelectItem value="Physics">Physics</SelectItem>
             </SelectContent>
           </Select>
         </div>

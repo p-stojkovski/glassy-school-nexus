@@ -1,25 +1,21 @@
 
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store';
-import { Dialog, DialogContent } from '../components/ui/dialog';
+import { useNavigate } from 'react-router-dom';
 import ClassHeader from '../components/classes/ClassHeader';
 import ClassFilters from '../components/classes/ClassFilters';
 import ClassCard from '../components/classes/ClassCard';
-import ClassForm from '../components/classes/ClassForm';
 import ClassEmptyState from '../components/classes/ClassEmptyState';
 import ClassLoading from '../components/classes/ClassLoading';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { useClassManagement } from '../hooks/useClassManagement';
 
 const ClassManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | 'English' | 'Mathematics' | 'Physics'>('all');
   const [levelFilter, setLevelFilter] = useState<'all' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [showOnlyWithAvailableSlots, setShowOnlyWithAvailableSlots] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [editingClass, setEditingClass] = useState<any>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [classToDelete, setClassToDelete] = useState<any>(null);
 
@@ -37,9 +33,12 @@ const ClassManagement: React.FC = () => {
     showOnlyWithAvailableSlots
   });
 
+  const handleAddClass = () => {
+    navigate('/classes/new');
+  };
+
   const handleEdit = (classItem: any) => {
-    setEditingClass(classItem);
-    setShowForm(true);
+    navigate(`/classes/edit/${classItem.id}`);
   };
 
   const handleDelete = (classItem: any) => {
@@ -58,16 +57,6 @@ const ClassManagement: React.FC = () => {
       setShowDeleteDialog(false);
       setClassToDelete(null);
     }
-  };
-
-  const handleSubmit = async (data: any) => {
-    if (editingClass) {
-      await handleUpdateClass(editingClass.id, data);
-    } else {
-      await handleCreateClass(data);
-    }
-    setShowForm(false);
-    setEditingClass(null);
   };
 
   const handleFilterChange = (type: string, value: string) => {
@@ -101,7 +90,7 @@ const ClassManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <ClassHeader />
+      <ClassHeader onAddClass={handleAddClass} />
 
       <ClassFilters
         searchTerm={searchTerm}
@@ -114,7 +103,7 @@ const ClassManagement: React.FC = () => {
 
       {filteredClasses.length === 0 ? (
         <ClassEmptyState 
-          onCreateClass={() => setShowForm(true)}
+          onCreateClass={handleAddClass}
           hasFilters={hasFilters}
         />
       ) : (
@@ -130,15 +119,6 @@ const ClassManagement: React.FC = () => {
           ))}
         </div>
       )}
-
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 border-white/20">
-          <ClassForm
-            onSubmit={handleSubmit}
-            initialData={editingClass}
-          />
-        </DialogContent>
-      </Dialog>
 
       <ConfirmDialog
         open={showDeleteDialog}

@@ -31,7 +31,7 @@ export const useClassManagement = ({
       {
         id: 'class-1',
         name: 'English Basics A1',
-        teacher: { id: 'teacher-1', name: 'Sarah Johnson', subject: 'English' },
+        teacher: { id: 'teacher-1', name: 'Sarah Johnson', subject: 'English', avatar: '/placeholder.svg' },
         students: 15,
         maxStudents: 20,
         room: 'Room 101',
@@ -54,7 +54,7 @@ export const useClassManagement = ({
       {
         id: 'class-2',
         name: 'English Intermediate B1',
-        teacher: { id: 'teacher-2', name: 'Michael Brown', subject: 'English' },
+        teacher: { id: 'teacher-2', name: 'Michael Brown', subject: 'English', avatar: '/placeholder.svg' },
         students: 12,
         maxStudents: 18,
         room: 'Room 102',
@@ -101,8 +101,9 @@ export const useClassManagement = ({
         teacher: selectedTeacher ? { 
           id: selectedTeacher.id, 
           name: selectedTeacher.name, 
-          subject: selectedTeacher.subject 
-        } : { id: '', name: '', subject: '' },
+          subject: selectedTeacher.subject,
+          avatar: selectedTeacher.avatar
+        } : { id: '', name: '', subject: '', avatar: '/placeholder.svg' },
         students: 0,
         maxStudents: 20,
         room: selectedClassroom?.name || '',
@@ -144,7 +145,8 @@ export const useClassManagement = ({
         teacher: selectedTeacher ? { 
           id: selectedTeacher.id, 
           name: selectedTeacher.name, 
-          subject: selectedTeacher.subject 
+          subject: selectedTeacher.subject,
+          avatar: selectedTeacher.avatar
         } : undefined,
         room: selectedClassroom?.name || '',
         schedule: data.schedule,

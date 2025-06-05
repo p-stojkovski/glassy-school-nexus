@@ -1,19 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
-import { Dialog, DialogContent } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import SchedulingHeader from '../components/scheduling/SchedulingHeader';
 import SchedulingFilters from '../components/scheduling/SchedulingFilters';
 import SchedulingCalendar from '../components/scheduling/SchedulingCalendar';
 import SchedulingOverview from '../components/scheduling/SchedulingOverview';
-import ScheduleClassForm from '../components/scheduling/ScheduleClassForm';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { 
   setScheduledClasses, 
-  addScheduledClass, 
-  updateScheduledClass, 
   cancelScheduledClass,
   ScheduledClass 
 } from '../store/slices/schedulingSlice';
@@ -21,13 +18,9 @@ import { toast } from '../components/ui/use-toast';
 
 const Scheduling: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { scheduledClasses } = useSelector((state: RootState) => state.scheduling);
-  const { classes } = useSelector((state: RootState) => state.classes);
-  const { teachers } = useSelector((state: RootState) => state.teachers);
-  const { classrooms } = useSelector((state: RootState) => state.classrooms);
   
-  const [showScheduleForm, setShowScheduleForm] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<ScheduledClass | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [scheduleToCancel, setScheduleToCancel] = useState<ScheduledClass | null>(null);
   const [cancelReason, setCancelReason] = useState('');
@@ -81,97 +74,8 @@ const Scheduling: React.FC = () => {
     return matchesSearch;
   });
 
-  const checkConflicts = (scheduleData: any) => {
-    const conflicts = scheduledClasses.filter(existing => 
-      existing.date === scheduleData.date &&
-      existing.status === 'scheduled' &&
-      existing.id !== scheduleData.id &&
-      (
-        (existing.teacherId === scheduleData.teacherId) ||
-        (existing.classroomId === scheduleData.classroomId) ||
-        (existing.studentIds.some((id: string) => scheduleData.studentIds.includes(id)))
-      ) &&
-      (
-        (scheduleData.startTime >= existing.startTime && scheduleData.startTime < existing.endTime) ||
-        (scheduleData.endTime > existing.startTime && scheduleData.endTime <= existing.endTime) ||
-        (scheduleData.startTime <= existing.startTime && scheduleData.endTime >= existing.endTime)
-      )
-    );
-
-    return conflicts;
-  };
-
-  const handleScheduleClass = (scheduleData: any) => {
-    const conflicts = checkConflicts(scheduleData);
-    
-    if (conflicts.length > 0) {
-      toast({
-        title: "Scheduling Conflict",
-        description: "There are conflicts with existing schedules. Please choose a different time.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const selectedClass = classes.find(c => c.id === scheduleData.classId);
-    const selectedTeacher = teachers.find(t => t.id === scheduleData.teacherId);
-    const selectedClassroom = classrooms.find(c => c.id === scheduleData.classroomId);
-
-    const newSchedule: ScheduledClass = {
-      id: `schedule-${Date.now()}`,
-      ...scheduleData,
-      className: selectedClass?.name || '',
-      teacherName: selectedTeacher?.name || '',
-      classroomName: selectedClassroom?.name || '',
-      status: 'scheduled' as const,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    dispatch(addScheduledClass(newSchedule));
-    setShowScheduleForm(false);
-    
-    toast({
-      title: "Class Scheduled",
-      description: `${newSchedule.className} has been scheduled successfully.`,
-    });
-  };
-
-  const handleReschedule = (scheduleData: any) => {
-    if (!editingSchedule) return;
-
-    const conflicts = checkConflicts({ ...scheduleData, id: editingSchedule.id });
-    
-    if (conflicts.length > 0) {
-      toast({
-        title: "Scheduling Conflict",
-        description: "There are conflicts with existing schedules. Please choose a different time.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const selectedClass = classes.find(c => c.id === scheduleData.classId);
-    const selectedTeacher = teachers.find(t => t.id === scheduleData.teacherId);
-    const selectedClassroom = classrooms.find(c => c.id === scheduleData.classroomId);
-
-    const updatedSchedule: ScheduledClass = {
-      ...editingSchedule,
-      ...scheduleData,
-      className: selectedClass?.name || editingSchedule.className,
-      teacherName: selectedTeacher?.name || editingSchedule.teacherName,
-      classroomName: selectedClassroom?.name || editingSchedule.classroomName,
-      updatedAt: new Date().toISOString(),
-    };
-
-    dispatch(updateScheduledClass(updatedSchedule));
-    setEditingSchedule(null);
-    setShowScheduleForm(false);
-    
-    toast({
-      title: "Class Rescheduled",
-      description: `${updatedSchedule.className} has been rescheduled successfully.`,
-    });
+  const handleScheduleClass = () => {
+    navigate('/scheduling/new');
   };
 
   const handleCancelClass = () => {
@@ -193,8 +97,7 @@ const Scheduling: React.FC = () => {
   };
 
   const handleEditSchedule = (schedule: ScheduledClass) => {
-    setEditingSchedule(schedule);
-    setShowScheduleForm(true);
+    navigate(`/scheduling/edit/${schedule.id}`);
   };
 
   const handleCancelSchedule = (schedule: ScheduledClass) => {
@@ -204,7 +107,7 @@ const Scheduling: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <SchedulingHeader onScheduleClass={() => setShowScheduleForm(true)} />
+      <SchedulingHeader onScheduleClass={handleScheduleClass} />
 
       <SchedulingFilters
         searchTerm={searchTerm}
@@ -224,20 +127,6 @@ const Scheduling: React.FC = () => {
           />
         </div>
       </div>
-
-      {/* Schedule Class Dialog */}
-      <Dialog open={showScheduleForm} onOpenChange={setShowScheduleForm}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 border-white/20">
-          <ScheduleClassForm
-            onSubmit={editingSchedule ? handleReschedule : handleScheduleClass}
-            onCancel={() => {
-              setShowScheduleForm(false);
-              setEditingSchedule(null);
-            }}
-            initialData={editingSchedule}
-          />
-        </DialogContent>
-      </Dialog>
 
       {/* Cancel Class Dialog */}
       <ConfirmDialog
