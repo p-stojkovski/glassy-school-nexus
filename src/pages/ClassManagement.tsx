@@ -15,24 +15,6 @@ const ClassManagement: React.FC = () => {
   const {
     // State
     loading,
-    filt<lov-id-0eaff47a>
-
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useClassManagement } from '../hooks/useClassManagement';
-import ClassHeader from '../components/classes/ClassHeader';
-import ClassFilters from '../components/classes/ClassFilters';
-import ClassCard from '../components/classes/ClassCard';
-import ClassEmptyState from '../components/classes/ClassEmptyState';
-import ClassLoading from '../components/classes/ClassLoading';
-import ClassDetails from '../components/classes/ClassDetails';
-import ConfirmDialog from '../components/common/ConfirmDialog';
-
-const ClassManagement: React.FC = () => {
-  const navigate = useNavigate();
-  const {
-    // State
-    loading,
     filteredClasses,
     searchTerm,
     statusFilter,
