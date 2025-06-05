@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useDispatch } from 'react-redux';
-import { X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -54,7 +53,15 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       if (teacher) {
-        dispatch(updateTeacher({ id: teacher.id, ...data }));
+        const updatedTeacher: Teacher = {
+          ...teacher,
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+          subject: data.subject,
+          status: data.status,
+        };
+        dispatch(updateTeacher(updatedTeacher));
         toast({
           title: "Teacher Updated",
           description: `${data.name} has been successfully updated.`,
@@ -62,7 +69,11 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
       } else {
         const newTeacher: Teacher = {
           id: Date.now().toString(),
-          ...data,
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+          subject: data.subject,
+          status: data.status,
           avatar: `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150`,
           joinDate: new Date().toISOString(),
           classIds: [],

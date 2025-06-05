@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Plus, Search, Filter, Building } from 'lucide-react';
 import { RootState } from '../store';
-import { setClassrooms, addClassroom, updateClassroom, setLoading } from '../store/slices/classroomsSlice';
+import { setClassrooms, addClassroom, updateClassroom, deleteClassroom, setLoading } from '../store/slices/classroomsSlice';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
@@ -33,8 +33,8 @@ const ClassroomManagement: React.FC = () => {
           location: 'Building A, First Floor',
           capacity: 30,
           status: 'active',
-          equipment: ['Projector', 'Whiteboard', 'Audio System'],
-          schedule: []
+          createdDate: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
         },
         {
           id: '2',
@@ -42,8 +42,8 @@ const ClassroomManagement: React.FC = () => {
           location: 'Building B, Second Floor',
           capacity: 25,
           status: 'active',
-          equipment: ['Smart Board', 'Computer', 'Audio System'],
-          schedule: []
+          createdDate: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
         },
         {
           id: '3',
@@ -51,8 +51,8 @@ const ClassroomManagement: React.FC = () => {
           location: 'Building C, Third Floor',
           capacity: 35,
           status: 'maintenance',
-          equipment: ['Projector', 'Whiteboard'],
-          schedule: []
+          createdDate: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
         }
       ];
       dispatch(setClassrooms(mockClassrooms));
@@ -77,6 +77,20 @@ const ClassroomManagement: React.FC = () => {
     setIsFormOpen(true);
   };
 
+  const handleDeleteClassroom = (classroom: Classroom) => {
+    // In a real app, you would check for dependencies first
+    dispatch(deleteClassroom(classroom.id));
+    toast({
+      title: "Classroom Deleted",
+      description: `${classroom.name} has been successfully deleted.`,
+    });
+  };
+
+  const handleViewClassroom = (classroom: Classroom) => {
+    // Handle viewing classroom details
+    console.log('Viewing classroom:', classroom);
+  };
+
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setSelectedClassroom(null);
@@ -85,7 +99,12 @@ const ClassroomManagement: React.FC = () => {
   const handleSubmit = async (data: any) => {
     try {
       if (selectedClassroom) {
-        dispatch(updateClassroom({ id: selectedClassroom.id, ...data }));
+        const updatedClassroom: Classroom = {
+          ...selectedClassroom,
+          ...data,
+          lastUpdated: new Date().toISOString(),
+        };
+        dispatch(updateClassroom(updatedClassroom));
         toast({
           title: "Classroom Updated",
           description: `${data.name} has been successfully updated.`,
@@ -94,8 +113,8 @@ const ClassroomManagement: React.FC = () => {
         const newClassroom: Classroom = {
           id: Date.now().toString(),
           ...data,
-          equipment: [],
-          schedule: [],
+          createdDate: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
         };
         dispatch(addClassroom(newClassroom));
         toast({
@@ -193,6 +212,8 @@ const ClassroomManagement: React.FC = () => {
               key={classroom.id}
               classroom={classroom}
               onEdit={() => handleEditClassroom(classroom)}
+              onDelete={() => handleDeleteClassroom(classroom)}
+              onView={() => handleViewClassroom(classroom)}
             />
           ))}
         </div>
