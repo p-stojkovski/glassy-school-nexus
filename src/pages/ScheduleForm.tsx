@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { addScheduledClass, updateScheduledClass, ScheduledClass } from '../store/slices/schedulingSlice';
 import { toast } from '../components/ui/use-toast';
-import ScheduleClassForm from '../components/scheduling/ScheduleClassForm';
+import ScheduleClassForm, { ScheduleFormData } from '../components/scheduling/ScheduleClassForm';
 
 const ScheduleForm: React.FC = () => {
   const navigate = useNavigate();
@@ -19,9 +19,9 @@ const ScheduleForm: React.FC = () => {
   const { classrooms } = useSelector((state: RootState) => state.classrooms);
   
   const editingSchedule = id ? scheduledClasses.find(s => s.id === id) : null;
-  const isEditing = !!editingSchedule;
+  const isEditing = !!editingSchedule;  // Using ScheduleFormData imported from ScheduleClassForm
 
-  const checkConflicts = (scheduleData: any) => {
+  const checkConflicts = (scheduleData: ScheduleFormData) => {
     const conflicts = scheduledClasses.filter(existing => 
       existing.date === scheduleData.date &&
       existing.status === 'scheduled' &&
@@ -41,7 +41,7 @@ const ScheduleForm: React.FC = () => {
     return conflicts;
   };
 
-  const handleSubmit = (scheduleData: any) => {
+  const handleSubmit = (scheduleData: ScheduleFormData) => {
     const conflicts = checkConflicts(scheduleData);
     
     if (conflicts.length > 0) {
@@ -117,9 +117,7 @@ const ScheduleForm: React.FC = () => {
             {isEditing ? 'Update class schedule information' : 'Create a new class schedule'}
           </p>
         </div>
-      </div>
-
-      <div className="w-full">
+      </div>      <div className="w-full max-w-full">
         <ScheduleClassForm
           onSubmit={handleSubmit}
           onCancel={handleBack}

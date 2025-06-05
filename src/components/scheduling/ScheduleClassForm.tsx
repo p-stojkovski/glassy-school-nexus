@@ -10,10 +10,24 @@ import DateTimeFields from './forms/DateTimeFields';
 import StudentSelection from './forms/StudentSelection';
 import RecurringOptions from './forms/RecurringOptions';
 
+export interface ScheduleFormData {
+  id?: string;
+  classId: string;
+  teacherId: string;
+  studentIds: string[];
+  classroomId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  isRecurring: boolean;
+  recurringPattern?: 'weekly' | 'biweekly' | 'monthly';
+  notes?: string;
+}
+
 interface ScheduleClassFormProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: ScheduleFormData) => void;
   onCancel: () => void;
-  initialData?: any;
+  initialData?: ScheduleFormData;
 }
 
 const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
@@ -59,9 +73,8 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
 
     onSubmit(formData);
   };
-
   return (
-    <GlassCard className="p-6 max-w-4xl mx-auto">
+    <GlassCard className="p-6 w-full mx-auto">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-white mb-2">
           {initialData ? 'Reschedule Class' : 'Schedule New Class'}
