@@ -14,6 +14,7 @@ import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
 import ClassroomManagement from './pages/ClassroomManagement';
 import StudentManagement from './pages/StudentManagement';
+import ClassManagement from './pages/ClassManagement';
 import Teachers from './pages/Teachers';
 import NotFound from "./pages/NotFound";
 
@@ -30,13 +31,12 @@ const AppContent: React.FC = () => {
     <AppLayout>
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/classes" element={<Dashboard />} />
         <Route path="/classrooms" element={<ClassroomManagement />} />
         <Route path="/students" element={<StudentManagement />} />
+        <Route path="/classes" element={<ClassManagement />} />
         <Route path="/teachers" element={<Teachers />} />
         <Route path="/attendance" element={<Dashboard />} />
         <Route path="/finance" element={<Dashboard />} />
-        <Route path="/messages" element={<Dashboard />} />
         <Route path="/settings" element={<Dashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

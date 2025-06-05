@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Plus, Search, Filter, Users } from 'lucide-react';
@@ -11,6 +10,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../components/ui/s
 import GlassCard from '../components/common/GlassCard';
 import StudentTable from '../components/students/StudentTable';
 import StudentForm from '../components/students/StudentForm';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 import { Student } from '../store/slices/studentsSlice';
 import { toast } from '../components/ui/use-toast';
 
@@ -21,6 +21,7 @@ const StudentManagement: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
   // Mock data with 30+ students and payment due indicators
   useEffect(() => {
@@ -62,11 +63,18 @@ const StudentManagement: React.FC = () => {
   };
 
   const handleDeleteStudent = (student: Student) => {
-    dispatch(deleteStudent(student.id));
-    toast({
-      title: "Student Deleted",
-      description: `${student.name} has been successfully deleted.`,
-    });
+    setStudentToDelete(student);
+  };
+
+  const confirmDeleteStudent = () => {
+    if (studentToDelete) {
+      dispatch(deleteStudent(studentToDelete.id));
+      toast({
+        title: "Student Deleted",
+        description: `${studentToDelete.name} has been successfully deleted.`,
+      });
+      setStudentToDelete(null);
+    }
   };
 
   const handleViewStudent = (student: Student) => {
@@ -218,6 +226,15 @@ const StudentManagement: React.FC = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!studentToDelete}
+        onOpenChange={() => setStudentToDelete(null)}
+        title="Delete Student"
+        description={`Are you sure you want to delete ${studentToDelete?.name}? This action cannot be undone.`}
+        onConfirm={confirmDeleteStudent}
+      />
     </div>
   );
 };

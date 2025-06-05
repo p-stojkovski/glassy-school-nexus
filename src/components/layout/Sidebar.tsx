@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
@@ -7,10 +6,10 @@ import {
   Home,
   Building,
   Users,
+  BookOpen,
   GraduationCap,
   Calendar,
   DollarSign,
-  MessageSquare,
   Settings,
   ChevronLeft,
   LogOut,
@@ -24,10 +23,10 @@ const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/' },
   { icon: Building, label: 'Classroom', path: '/classrooms' },
   { icon: Users, label: 'Students', path: '/students' },
+  { icon: BookOpen, label: 'Classes', path: '/classes' },
   { icon: GraduationCap, label: 'Teachers', path: '/teachers' },
   { icon: Calendar, label: 'Attendance', path: '/attendance' },
   { icon: DollarSign, label: 'Finance', path: '/finance' },
-  { icon: MessageSquare, label: 'Messages', path: '/messages' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 

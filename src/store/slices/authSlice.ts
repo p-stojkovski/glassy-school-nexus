@@ -1,12 +1,12 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
-  avatar: string;
   role: 'admin' | 'teacher' | 'student';
+  avatar: string;
 }
 
 interface AuthState {
@@ -16,8 +16,14 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-  user: null,
-  isAuthenticated: false,
+  user: {
+    id: '1',
+    name: 'Nikolina Pejkovska',
+    email: 'nikolina@thinkenglish.com',
+    role: 'admin',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nikolina',
+  },
+  isAuthenticated: true,
   loading: false,
 };
 
@@ -25,23 +31,21 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    loginStart: (state) => {
-      state.loading = true;
-    },
-    loginSuccess: (state, action: PayloadAction<User>) => {
+    login: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
       state.isAuthenticated = true;
-      state.loading = false;
-    },
-    loginFailure: (state) => {
       state.loading = false;
     },
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
+      state.loading = false;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
     },
   },
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout } = authSlice.actions;
+export const { login, logout, setLoading } = authSlice.actions;
 export default authSlice.reducer;
