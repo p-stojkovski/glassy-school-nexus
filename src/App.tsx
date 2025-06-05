@@ -13,6 +13,7 @@ import LoginForm from './components/auth/LoginForm';
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
 import ClassroomManagement from './pages/ClassroomManagement';
+import StudentManagement from './pages/StudentManagement';
 import Teachers from './pages/Teachers';
 import NotFound from "./pages/NotFound";
 
@@ -31,7 +32,7 @@ const AppContent: React.FC = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/classes" element={<Dashboard />} />
         <Route path="/classrooms" element={<ClassroomManagement />} />
-        <Route path="/students" element={<Dashboard />} />
+        <Route path="/students" element={<StudentManagement />} />
         <Route path="/teachers" element={<Teachers />} />
         <Route path="/attendance" element={<Dashboard />} />
         <Route path="/finance" element={<Dashboard />} />

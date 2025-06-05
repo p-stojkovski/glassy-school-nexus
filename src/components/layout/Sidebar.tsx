@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
-  BookOpen,
+  Building,
   Users,
   GraduationCap,
   Calendar,
@@ -22,7 +22,7 @@ import GlassCard from '../common/GlassCard';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/' },
-  { icon: BookOpen, label: 'Classes', path: '/classrooms' },
+  { icon: Building, label: 'Classroom', path: '/classrooms' },
   { icon: Users, label: 'Students', path: '/students' },
   { icon: GraduationCap, label: 'Teachers', path: '/teachers' },
   { icon: Calendar, label: 'Attendance', path: '/attendance' },
