@@ -12,6 +12,7 @@ import { RootState } from './store';
 import LoginForm from './components/auth/LoginForm';
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
+import ClassroomManagement from './pages/ClassroomManagement';
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const AppContent: React.FC = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/classes" element={<Dashboard />} />
+        <Route path="/classrooms" element={<ClassroomManagement />} />
         <Route path="/students" element={<Dashboard />} />
         <Route path="/teachers" element={<Dashboard />} />
         <Route path="/attendance" element={<Dashboard />} />
