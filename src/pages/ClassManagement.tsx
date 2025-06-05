@@ -87,7 +87,7 @@ const ClassManagement: React.FC = () => {
 
       <ClassForm
         open={showClassForm}
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean) => {
           setShowClassForm(open);
           if (!open) setEditingClass(null);
         }}
@@ -98,7 +98,7 @@ const ClassManagement: React.FC = () => {
       <ClassDetails
         classItem={selectedClass}
         open={showClassDetails}
-        onOpenChange={setShowClassDetails}
+        onOpenChange={(open: boolean) => setShowClassDetails(open)}
         onEdit={handleEditFromDetails}
         onDelete={handleDeleteFromDetails}
       />

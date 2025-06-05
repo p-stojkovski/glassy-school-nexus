@@ -13,6 +13,7 @@ class ClassService {
           id: '1',
           name: 'Dr. Sarah Johnson',
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+          subject: 'Mathematics',
         },
         room: 'Room 101',
         schedule: [
@@ -31,6 +32,7 @@ class ClassService {
           id: '2',
           name: 'Prof. Michael Chen',
           avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+          subject: 'Physics',
         },
         room: 'Lab 205',
         schedule: [
@@ -48,6 +50,7 @@ class ClassService {
           id: '3',
           name: 'Ms. Emily Rodriguez',
           avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+          subject: 'English',
         },
         room: 'Room 302',
         schedule: [
