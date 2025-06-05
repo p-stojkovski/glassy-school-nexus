@@ -1,16 +1,14 @@
 
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Checkbox } from '../ui/checkbox';
 import { Textarea } from '../ui/textarea';
-import { Calendar, Clock, Users, MapPin, Repeat, BookOpen } from 'lucide-react';
 import { toast } from '../ui/use-toast';
 import GlassCard from '../common/GlassCard';
+import BasicClassInfo from './forms/BasicClassInfo';
+import DateTimeFields from './forms/DateTimeFields';
+import StudentSelection from './forms/StudentSelection';
+import RecurringOptions from './forms/RecurringOptions';
 
 interface ScheduleClassFormProps {
   onSubmit: (data: any) => void;
@@ -23,11 +21,6 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
   onCancel,
   initialData,
 }) => {
-  const { classes } = useSelector((state: RootState) => state.classes);
-  const { teachers } = useSelector((state: RootState) => state.teachers);
-  const { students } = useSelector((state: RootState) => state.students);
-  const { classrooms } = useSelector((state: RootState) => state.classrooms);
-
   const [formData, setFormData] = useState({
     classId: initialData?.classId || '',
     teacherId: initialData?.teacherId || '',
@@ -79,177 +72,21 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Class Selection */}
-          <div>
-            <Label className="text-white mb-2 block">
-              <BookOpen className="w-4 h-4 inline mr-2" />
-              Class *
-            </Label>
-            <Select value={formData.classId} onValueChange={(value) => setFormData({...formData, classId: value})}>
-              <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                <SelectValue placeholder="Select a class" />
-              </SelectTrigger>
-              <SelectContent>
-                {classes.map((classItem) => (
-                  <SelectItem key={classItem.id} value={classItem.id}>
-                    {classItem.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <BasicClassInfo formData={formData} onFormDataChange={setFormData} />
+        
+        <DateTimeFields formData={formData} onFormDataChange={setFormData} />
 
-          {/* Teacher Selection */}
-          <div>
-            <Label className="text-white mb-2 block">
-              <Users className="w-4 h-4 inline mr-2" />
-              Teacher *
-            </Label>
-            <Select value={formData.teacherId} onValueChange={(value) => setFormData({...formData, teacherId: value})}>
-              <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                <SelectValue placeholder="Select a teacher" />
-              </SelectTrigger>
-              <SelectContent>
-                {teachers.map((teacher) => (
-                  <SelectItem key={teacher.id} value={teacher.id}>
-                    {teacher.name} - {teacher.subject}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <StudentSelection
+          selectedStudentIds={formData.studentIds}
+          onStudentIdsChange={(studentIds) => setFormData({...formData, studentIds})}
+        />
 
-          {/* Classroom Selection */}
-          <div>
-            <Label className="text-white mb-2 block">
-              <MapPin className="w-4 h-4 inline mr-2" />
-              Classroom *
-            </Label>
-            <Select value={formData.classroomId} onValueChange={(value) => setFormData({...formData, classroomId: value})}>
-              <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                <SelectValue placeholder="Select a classroom" />
-              </SelectTrigger>
-              <SelectContent>
-                {classrooms.map((classroom) => (
-                  <SelectItem key={classroom.id} value={classroom.id}>
-                    {classroom.name} - {classroom.location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Date */}
-          <div>
-            <Label className="text-white mb-2 block">
-              <Calendar className="w-4 h-4 inline mr-2" />
-              Date *
-            </Label>
-            <Input
-              type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({...formData, date: e.target.value})}
-              className="bg-white/10 border-white/20 text-white"
-            />
-          </div>
-
-          {/* Start Time */}
-          <div>
-            <Label className="text-white mb-2 block">
-              <Clock className="w-4 h-4 inline mr-2" />
-              Start Time *
-            </Label>
-            <Input
-              type="time"
-              value={formData.startTime}
-              onChange={(e) => setFormData({...formData, startTime: e.target.value})}
-              className="bg-white/10 border-white/20 text-white"
-            />
-          </div>
-
-          {/* End Time */}
-          <div>
-            <Label className="text-white mb-2 block">
-              <Clock className="w-4 h-4 inline mr-2" />
-              End Time *
-            </Label>
-            <Input
-              type="time"
-              value={formData.endTime}
-              onChange={(e) => setFormData({...formData, endTime: e.target.value})}
-              className="bg-white/10 border-white/20 text-white"
-            />
-          </div>
-        </div>
-
-        {/* Student Selection */}
-        <div>
-          <Label className="text-white mb-4 block">
-            <Users className="w-4 h-4 inline mr-2" />
-            Students *
-          </Label>
-          <div className="bg-white/5 p-4 rounded-lg max-h-48 overflow-y-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {students.map((student) => (
-                <div key={student.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={formData.studentIds.includes(student.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setFormData({
-                          ...formData,
-                          studentIds: [...formData.studentIds, student.id]
-                        });
-                      } else {
-                        setFormData({
-                          ...formData,
-                          studentIds: formData.studentIds.filter(id => id !== student.id)
-                        });
-                      }
-                    }}
-                    className="border-white/20"
-                  />
-                  <span className="text-white text-sm">{student.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Recurring Options */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              checked={formData.isRecurring}
-              onCheckedChange={(checked) => setFormData({...formData, isRecurring: !!checked})}
-              className="border-white/20"
-            />
-            <Label className="text-white">
-              <Repeat className="w-4 h-4 inline mr-2" />
-              Recurring Class
-            </Label>
-          </div>
-
-          {formData.isRecurring && (
-            <div>
-              <Label className="text-white mb-2 block">Recurring Pattern</Label>
-              <Select 
-                value={formData.recurringPattern} 
-                onValueChange={(value) => setFormData({...formData, recurringPattern: value as 'weekly' | 'biweekly' | 'monthly'})}
-              >
-                <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="biweekly">Bi-weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
+        <RecurringOptions
+          isRecurring={formData.isRecurring}
+          recurringPattern={formData.recurringPattern}
+          onRecurringChange={(isRecurring) => setFormData({...formData, isRecurring})}
+          onPatternChange={(pattern) => setFormData({...formData, recurringPattern: pattern})}
+        />
 
         {/* Notes */}
         <div>
