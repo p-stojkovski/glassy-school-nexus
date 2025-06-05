@@ -20,6 +20,7 @@ interface ConfirmDialogProps {
   cancelText?: string;
   onConfirm: () => void;
   variant?: 'destructive' | 'default';
+  customContent?: React.ReactNode;
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -31,6 +32,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelText = 'Cancel',
   onConfirm,
   variant = 'destructive',
+  customContent,
 }) => {
   const handleConfirm = () => {
     onConfirm();
@@ -46,6 +48,11 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {customContent && (
+          <div className="py-4">
+            {customContent}
+          </div>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">
             {cancelText}

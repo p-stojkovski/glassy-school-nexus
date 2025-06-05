@@ -2,15 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
-import { Calendar } from '../components/ui/calendar';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
+import { Dialog, DialogContent } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
-import { Plus, CalendarDays, Clock, Users, MapPin, Search, Filter, Edit, X } from 'lucide-react';
-import GlassCard from '../components/common/GlassCard';
+import SchedulingHeader from '../components/scheduling/SchedulingHeader';
+import SchedulingFilters from '../components/scheduling/SchedulingFilters';
+import SchedulingCalendar from '../components/scheduling/SchedulingCalendar';
+import SchedulingOverview from '../components/scheduling/SchedulingOverview';
 import ScheduleClassForm from '../components/scheduling/ScheduleClassForm';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { 
@@ -18,16 +15,13 @@ import {
   addScheduledClass, 
   updateScheduledClass, 
   cancelScheduledClass,
-  setSelectedDate,
-  setViewMode,
-  setFilters,
   ScheduledClass 
 } from '../store/slices/schedulingSlice';
 import { toast } from '../components/ui/use-toast';
 
 const Scheduling: React.FC = () => {
   const dispatch = useDispatch();
-  const { scheduledClasses, selectedDate, viewMode, filters } = useSelector((state: RootState) => state.scheduling);
+  const { scheduledClasses } = useSelector((state: RootState) => state.scheduling);
   const { classes } = useSelector((state: RootState) => state.classes);
   const { teachers } = useSelector((state: RootState) => state.teachers);
   const { classrooms } = useSelector((state: RootState) => state.classrooms);
@@ -84,12 +78,7 @@ const Scheduling: React.FC = () => {
   const filteredScheduledClasses = scheduledClasses.filter(schedule => {
     const matchesSearch = schedule.className.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          schedule.teacherName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesClass = !filters.classId || schedule.classId === filters.classId;
-    const matchesTeacher = !filters.teacherId || schedule.teacherId === filters.teacherId;
-    const matchesClassroom = !filters.classroomId || schedule.classroomId === filters.classroomId;
-    const matchesStatus = !filters.status || schedule.status === filters.status;
-    
-    return matchesSearch && matchesClass && matchesTeacher && matchesClassroom && matchesStatus;
+    return matchesSearch;
   });
 
   const checkConflicts = (scheduleData: any) => {
@@ -203,242 +192,36 @@ const Scheduling: React.FC = () => {
     }
   };
 
+  const handleEditSchedule = (schedule: ScheduledClass) => {
+    setEditingSchedule(schedule);
+    setShowScheduleForm(true);
+  };
+
+  const handleCancelSchedule = (schedule: ScheduledClass) => {
+    setScheduleToCancel(schedule);
+    setShowCancelDialog(true);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Scheduling & Planning</h1>
-          <p className="text-white/70 mt-2">
-            Plan, schedule, and manage classes efficiently
-          </p>
-        </div>
-        <Button 
-          onClick={() => setShowScheduleForm(true)}
-          className="bg-yellow-500 hover:bg-yellow-400 text-black font-medium"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Schedule Class
-        </Button>
-      </div>
+      <SchedulingHeader onScheduleClass={() => setShowScheduleForm(true)} />
 
-      {/* Filters */}
-      <GlassCard className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-            <Input
-              placeholder="Search by class or teacher..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
-            />
-          </div>
-          
-          <Select value={filters.classId || ''} onValueChange={(value) => dispatch(setFilters({classId: value || undefined}))}>
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="All Classes" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Classes</SelectItem>
-              {classes.map((classItem) => (
-                <SelectItem key={classItem.id} value={classItem.id}>
-                  {classItem.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={filters.teacherId || ''} onValueChange={(value) => dispatch(setFilters({teacherId: value || undefined}))}>
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="All Teachers" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Teachers</SelectItem>
-              {teachers.map((teacher) => (
-                <SelectItem key={teacher.id} value={teacher.id}>
-                  {teacher.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={filters.classroomId || ''} onValueChange={(value) => dispatch(setFilters({classroomId: value || undefined}))}>
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="All Classrooms" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Classrooms</SelectItem>
-              {classrooms.map((classroom) => (
-                <SelectItem key={classroom.id} value={classroom.id}>
-                  {classroom.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={filters.status || ''} onValueChange={(value) => dispatch(setFilters({status: value || undefined}))}>
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="All Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Status</SelectItem>
-              <SelectItem value="scheduled">Scheduled</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="canceled">Canceled</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </GlassCard>
+      <SchedulingFilters
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar Section */}
         <div className="lg:col-span-1">
-          <GlassCard className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-white">Calendar</h2>
-                <div className="flex gap-2">
-                  {(['day', 'week', 'month'] as const).map((mode) => (
-                    <Button
-                      key={mode}
-                      variant={viewMode === mode ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => dispatch(setViewMode(mode))}
-                      className={
-                        viewMode === mode
-                          ? 'bg-yellow-500 text-black hover:bg-yellow-400'
-                          : 'text-white/70 hover:text-white hover:bg-white/10'
-                      }
-                    >
-                      {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => dispatch(setSelectedDate(date || new Date()))}
-                className="rounded-md border border-white/10 bg-white/5"
-              />
-            </div>
-          </GlassCard>
+          <SchedulingCalendar />
         </div>
 
-        {/* Schedule Overview */}
         <div className="lg:col-span-2">
-          <GlassCard className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-white">
-                  Scheduled Classes
-                </h2>
-                <Badge variant="secondary" className="bg-white/10 text-white">
-                  {filteredScheduledClasses.length} Classes
-                </Badge>
-              </div>
-
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {filteredScheduledClasses.map((schedule) => (
-                  <Card key={schedule.id} className="bg-white/5 border-white/10">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-3">
-                            <h3 className="font-medium text-white">
-                              {schedule.className}
-                            </h3>
-                            <Badge
-                              variant={
-                                schedule.status === 'scheduled'
-                                  ? 'default'
-                                  : schedule.status === 'canceled'
-                                  ? 'destructive'
-                                  : 'secondary'
-                              }
-                              className={
-                                schedule.status === 'scheduled'
-                                  ? 'bg-green-500/20 text-green-300'
-                                  : schedule.status === 'canceled'
-                                  ? 'bg-red-500/20 text-red-300'
-                                  : 'bg-blue-500/20 text-blue-300'
-                              }
-                            >
-                              {schedule.status}
-                            </Badge>
-                            {schedule.isRecurring && (
-                              <Badge variant="outline" className="border-yellow-500/50 text-yellow-300">
-                                Recurring
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-white/60">
-                            <div className="flex items-center gap-1">
-                              <CalendarDays className="w-4 h-4" />
-                              {schedule.date}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-4 h-4" />
-                              {schedule.startTime} - {schedule.endTime}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
-                              {schedule.studentIds.length} students
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4" />
-                              {schedule.classroomName}
-                            </div>
-                          </div>
-                          <p className="text-sm text-white/70">
-                            Teacher: {schedule.teacherName}
-                          </p>
-                          {schedule.cancelReason && (
-                            <p className="text-sm text-red-300">
-                              Canceled: {schedule.cancelReason}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex gap-2">
-                          {schedule.status === 'scheduled' && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setEditingSchedule(schedule);
-                                  setShowScheduleForm(true);
-                                }}
-                                className="text-white/70 hover:text-white hover:bg-white/10"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setScheduleToCancel(schedule);
-                                  setShowCancelDialog(true);
-                                }}
-                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </GlassCard>
+          <SchedulingOverview
+            scheduledClasses={filteredScheduledClasses}
+            onEdit={handleEditSchedule}
+            onCancel={handleCancelSchedule}
+          />
         </div>
       </div>
 
@@ -461,20 +244,44 @@ const Scheduling: React.FC = () => {
         open={showCancelDialog}
         onOpenChange={setShowCancelDialog}
         title="Cancel Class"
-        description={`Are you sure you want to cancel ${scheduleToCancel?.className}?`}
+        description={`Are you sure you want to cancel ${scheduleToCancel?.className}? Please provide a reason for cancellation.`}
         onConfirm={handleCancelClass}
-        customContent={
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-white">Reason for cancellation *</label>
-            <Input
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="Please provide a reason..."
-              className="bg-white/10 border-white/20 text-white"
-            />
-          </div>
-        }
       />
+
+      {showCancelDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg border border-white/20 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-white mb-4">Cancel Class</h3>
+            <p className="text-white/70 mb-4">
+              Are you sure you want to cancel {scheduleToCancel?.className}?
+            </p>
+            <div className="space-y-2 mb-4">
+              <label className="text-sm font-medium text-white">Reason for cancellation *</label>
+              <Input
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="Please provide a reason..."
+                className="bg-white/10 border-white/20 text-white"
+              />
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowCancelDialog(false)}
+                className="flex-1 px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCancelClass}
+                disabled={!cancelReason.trim()}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
