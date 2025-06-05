@@ -1,24 +1,26 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-import authSlice from './slices/authSlice';
-import classesSlice from './slices/classesSlice';
-import studentsSlice from './slices/studentsSlice';
-import teachersSlice from './slices/teachersSlice';
-import attendanceSlice from './slices/attendanceSlice';
-import financeSlice from './slices/financeSlice';
-import uiSlice from './slices/uiSlice';
-import classroomsSlice from './slices/classroomsSlice';
+import authReducer from './slices/authSlice';
+import uiReducer from './slices/uiSlice';
+import classesReducer from './slices/classesSlice';
+import studentsReducer from './slices/studentsSlice';
+import teachersReducer from './slices/teachersSlice';
+import classroomsReducer from './slices/classroomsSlice';
+import attendanceReducer from './slices/attendanceSlice';
+import financeReducer from './slices/financeSlice';
+import schedulingReducer from './slices/schedulingSlice';
 
 export const store = configureStore({
   reducer: {
-    auth: authSlice,
-    classes: classesSlice,
-    students: studentsSlice,
-    teachers: teachersSlice,
-    attendance: attendanceSlice,
-    finance: financeSlice,
-    ui: uiSlice,
-    classrooms: classroomsSlice,
+    auth: authReducer,
+    ui: uiReducer,
+    classes: classesReducer,
+    students: studentsReducer,
+    teachers: teachersReducer,
+    classrooms: classroomsReducer,
+    attendance: attendanceReducer,
+    finance: financeReducer,
+    scheduling: schedulingReducer,
   },
 });
 

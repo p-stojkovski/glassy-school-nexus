@@ -67,7 +67,7 @@ const ClassManagement: React.FC = () => {
         subjectFilter={subjectFilter}
         onSearchChange={(value) => setSearchTerm(value)}
         onStatusFilterChange={(value) => setStatusFilter(value as "all" | "active" | "inactive" | "pending")}
-        onSubjectFilterChange={(value) => setSubjectFilter(value as "all" | "English" | "German")}
+        onSubjectFilterChange={(value) => setSubjectFilter(value as "all" | "English" | "Mathematics" | "Physics")}
       />
 
       {filteredClasses.length === 0 ? (
@@ -94,13 +94,13 @@ const ClassManagement: React.FC = () => {
       <ClassDetails
         classItem={selectedClass}
         open={showClassDetails}
-        onOpenChange={(open: boolean) => setShowClassDetails(open)}
+        onOpenChange={setShowClassDetails}
         onEdit={handleEditFromDetails}
         onDelete={handleDeleteFromDetails}
       />
 
       <ConfirmDialog
-        open={classToDelete !== null}
+        open={!!classToDelete}
         onOpenChange={() => setClassToDelete(null)}
         title="Delete Class"
         description={`Are you sure you want to delete ${classToDelete?.name}? This action cannot be undone.`}
