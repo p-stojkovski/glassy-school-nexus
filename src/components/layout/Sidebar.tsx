@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
@@ -22,7 +21,7 @@ import GlassCard from '../common/GlassCard';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/' },
-  { icon: BookOpen, label: 'Classes', path: '/classes' },
+  { icon: BookOpen, label: 'Classes', path: '/classrooms' },
   { icon: Users, label: 'Students', path: '/students' },
   { icon: GraduationCap, label: 'Teachers', path: '/teachers' },
   { icon: Calendar, label: 'Attendance', path: '/attendance' },
