@@ -8,6 +8,7 @@ export interface Class {
     id: string;
     name: string;
     avatar: string;
+    subject: string;
   };
   room: string;
   schedule: {
