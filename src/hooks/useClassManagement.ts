@@ -49,7 +49,8 @@ export const useClassManagement = ({
         objectives: ['Learn basic vocabulary', 'Simple conversations', 'Basic grammar'],
         materials: ['Course book', 'Workbook', 'Audio materials'],
         createdAt: '2024-01-15T10:00:00Z',
-        updatedAt: '2024-01-15T10:00:00Z'
+        updatedAt: '2024-01-15T10:00:00Z',
+        color: '#3B82F6'
       },
       {
         id: 'class-2',
@@ -72,7 +73,8 @@ export const useClassManagement = ({
         objectives: ['Improve speaking skills', 'Advanced grammar', 'Reading comprehension'],
         materials: ['Course book', 'Workbook', 'Online resources'],
         createdAt: '2024-01-16T10:00:00Z',
-        updatedAt: '2024-01-16T10:00:00Z'
+        updatedAt: '2024-01-16T10:00:00Z',
+        color: '#10B981'
       }
     ];
     dispatch(setClasses(mockClasses));
@@ -118,7 +120,8 @@ export const useClassManagement = ({
         objectives: [],
         materials: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        color: '#3B82F6'
       };
 
       dispatch(addClass(newClass));
@@ -140,7 +143,7 @@ export const useClassManagement = ({
       const selectedTeacher = teachers.find(t => t.id === data.teacherId);
       const selectedClassroom = classrooms.find(c => c.id === data.classroomId);
       
-      const updatedClass: Partial<Class> = {
+      const updatedFields: Partial<Class> = {
         name: data.name,
         teacher: selectedTeacher ? { 
           id: selectedTeacher.id, 
@@ -155,7 +158,7 @@ export const useClassManagement = ({
         updatedAt: new Date().toISOString()
       };
 
-      dispatch(updateClass({ id, updates: updatedClass }));
+      dispatch(updateClass({ id, updates: updatedFields }));
       toast({
         title: "Class Updated",
         description: "Class has been updated successfully.",

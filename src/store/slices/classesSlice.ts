@@ -17,7 +17,18 @@ export interface Class {
     endTime: string;
   }[];
   status: 'active' | 'inactive' | 'pending';
-  studentCount: number;
+  students: number;
+  maxStudents: number;
+  subject: string;
+  level: string;
+  price: number;
+  duration: number;
+  description: string;
+  requirements: string;
+  objectives: string[];
+  materials: string[];
+  createdAt: string;
+  updatedAt: string;
   color: string;
 }
 
@@ -43,10 +54,10 @@ const classesSlice = createSlice({
     addClass: (state, action: PayloadAction<Class>) => {
       state.classes.push(action.payload);
     },
-    updateClass: (state, action: PayloadAction<Class>) => {
+    updateClass: (state, action: PayloadAction<{ id: string; updates: Partial<Class> }>) => {
       const index = state.classes.findIndex(c => c.id === action.payload.id);
       if (index !== -1) {
-        state.classes[index] = action.payload;
+        state.classes[index] = { ...state.classes[index], ...action.payload.updates };
       }
     },
     deleteClass: (state, action: PayloadAction<string>) => {

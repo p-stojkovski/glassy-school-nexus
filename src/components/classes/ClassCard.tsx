@@ -21,7 +21,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
   return (
     <GlassCard className="p-6 hover:bg-white/5 transition-colors">
       <div className="flex items-start justify-between mb-4">
-        <div className={`w-3 h-3 rounded-full ${classItem.color}`}></div>
+        <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: classItem.color }}></div>
         <div className="flex space-x-2">
           <Button
             size="sm"
@@ -53,7 +53,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
       <h3 className="text-xl font-semibold text-white mb-2">{classItem.name}</h3>
       <p className="text-white/70 mb-4">Teacher: {classItem.teacher.name}</p>
       <p className="text-white/70 mb-4">Room: {classItem.room}</p>
-      <p className="text-white/70 mb-4">Students: {classItem.studentCount}</p>
+      <p className="text-white/70 mb-4">Students: {classItem.students}/{classItem.maxStudents}</p>
       
       <div className="space-y-2">
         <p className="text-sm font-medium text-white">Schedule:</p>
