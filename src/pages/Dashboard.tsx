@@ -1,188 +1,211 @@
-
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
-import { Users, BookOpen, Calendar, DollarSign, TrendingUp, Clock } from 'lucide-react';
-import { RootState } from '../store';
-import { setClasses } from '../store/slices/classesSlice';
-import { setStudents } from '../store/slices/studentsSlice';
-import classService from '../services/classService';
-import studentService from '../services/studentService';
+import React, { useState, useEffect } from 'react';
+import { Users, GraduationCap, Building, DollarSign, TrendingUp, Calendar, Clock, BookOpen } from 'lucide-react';
 import GlassCard from '../components/common/GlassCard';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { Input } from '../components/ui/input';
+import { Search } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
-  const dispatch = useDispatch();
-  const { classes } = useSelector((state: RootState) => state.classes);
-  const { students } = useSelector((state: RootState) => state.students);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [classesData, studentsData] = await Promise.all([
-          classService.getClasses(),
-          studentService.getStudents(),
-        ]);
-        dispatch(setClasses(classesData));
-        dispatch(setStudents(studentsData));
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error);
-      }
-    };
+    // Simulate loading
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, []);
 
-    loadData();
-  }, [dispatch]);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+      </div>
+    );
+  }
 
-  const stats = [
-    {
-      title: 'Total Students',
-      value: students.length.toString(),
-      icon: Users,
-      color: 'from-blue-500 to-blue-600',
-      change: '+12%',
-    },
-    {
-      title: 'Active Classes',
-      value: classes.filter(c => c.status === 'active').length.toString(),
-      icon: BookOpen,
-      color: 'from-green-500 to-green-600',
-      change: '+5%',
-    },
-    {
-      title: 'Attendance Rate',
-      value: '94.2%',
-      icon: Calendar,
-      color: 'from-purple-500 to-purple-600',
-      change: '+2.1%',
-    },
-    {
-      title: 'Revenue',
-      value: '$24,580',
-      icon: DollarSign,
-      color: 'from-yellow-500 to-yellow-600',
-      change: '+18%',
-    },
+  const statsData = [
+    { title: 'Total Students', value: '342', icon: Users, change: '+12%', color: 'bg-blue-500' },
+    { title: 'Active Teachers', value: '28', icon: GraduationCap, change: '+3%', color: 'bg-green-500' },
+    { title: 'Classrooms', value: '15', icon: Building, change: '0%', color: 'bg-purple-500' },
+    { title: 'Monthly Revenue', value: '$24,580', icon: DollarSign, change: '+8%', color: 'bg-yellow-500' },
   ];
 
-  const upcomingClasses = classes.slice(0, 3);
+  const enrollmentData = [
+    { month: 'Jan', students: 280 },
+    { month: 'Feb', students: 295 },
+    { month: 'Mar', students: 310 },
+    { month: 'Apr', students: 325 },
+    { month: 'May', students: 340 },
+    { month: 'Jun', students: 342 },
+  ];
+
+  const revenueData = [
+    { month: 'Jan', revenue: 18500 },
+    { month: 'Feb', revenue: 19200 },
+    { month: 'Mar', revenue: 20100 },
+    { month: 'Apr', revenue: 21800 },
+    { month: 'May', revenue: 23200 },
+    { month: 'Jun', revenue: 24580 },
+  ];
+
+  const classDistribution = [
+    { name: 'Beginner', value: 45, color: '#3B82F6' },
+    { name: 'Intermediate', value: 35, color: '#10B981' },
+    { name: 'Advanced', value: 20, color: '#F59E0B' },
+  ];
+
+  const recentActivities = [
+    { id: 1, activity: 'New student Sarah Johnson enrolled', time: '2 hours ago', icon: Users },
+    { id: 2, activity: 'Teacher meeting scheduled for tomorrow', time: '4 hours ago', icon: Calendar },
+    { id: 3, activity: 'Classroom A-101 maintenance completed', time: '6 hours ago', icon: Building },
+    { id: 4, activity: 'Monthly report generated', time: '1 day ago', icon: BookOpen },
+  ];
 
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
-      >
+      {/* Header with Search */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-          <p className="text-white/70">Welcome back! Here's what's happening at your school.</p>
+          <p className="text-white/70">Welcome back! Here's what's happening at Think English today.</p>
         </div>
-      </motion.div>
+        
+        {/* Search Field */}
+        <div className="w-full sm:w-96">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+            <Input
+              placeholder="Search students, classes, teachers..."
+              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <GlassCard className="p-6" hover>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/70 text-sm font-medium">{stat.title}</p>
-                  <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="w-4 h-4 text-green-400 mr-1" />
-                    <span className="text-green-400 text-sm">{stat.change}</span>
-                  </div>
-                </div>
-                <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.color}`}>
-                  <stat.icon className="w-6 h-6 text-white" />
+        {statsData.map((stat, index) => (
+          <GlassCard key={index} className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white/70 text-sm font-medium">{stat.title}</p>
+                <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
+                <div className="flex items-center mt-2">
+                  <TrendingUp className="w-4 h-4 text-green-400 mr-1" />
+                  <span className="text-green-400 text-sm font-medium">{stat.change}</span>
                 </div>
               </div>
-            </GlassCard>
-          </motion.div>
+              <div className={`p-3 rounded-lg ${stat.color} bg-opacity-20`}>
+                <stat.icon className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </GlassCard>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Upcoming Classes */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="lg:col-span-2"
-        >
-          <GlassCard className="p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Upcoming Classes</h2>
-            {upcomingClasses.length > 0 ? (
-              <div className="space-y-4">
-                {upcomingClasses.map((classItem, index) => (
-                  <motion.div
-                    key={classItem.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + index * 0.1 }}
-                    className="flex items-center justify-between p-4 rounded-xl bg-white/10 hover:bg-white/15 transition-colors"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div 
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: classItem.color }}
-                      />
-                      <div>
-                        <h3 className="font-medium text-white">{classItem.name}</h3>
-                        <p className="text-white/70 text-sm">{classItem.teacher.name}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white text-sm">{classItem.room}</p>
-                      <div className="flex items-center text-white/70 text-sm">
-                        <Clock className="w-4 h-4 mr-1" />
-                        <span>9:00 AM</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <LoadingSpinner />
-            )}
-          </GlassCard>
-        </motion.div>
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Student Enrollment Chart */}
+        <GlassCard className="p-6">
+          <h3 className="text-xl font-semibold text-white mb-6">Student Enrollment Trend</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={enrollmentData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis dataKey="month" stroke="rgba(255,255,255,0.7)" />
+              <YAxis stroke="rgba(255,255,255,0.7)" />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'rgba(0,0,0,0.8)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '8px',
+                  color: 'white'
+                }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="students" 
+                stroke="#3B82F6" 
+                strokeWidth={3}
+                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </GlassCard>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <GlassCard className="p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
-            <div className="space-y-3">
-              {[
-                { label: 'Add New Student', color: 'from-blue-500 to-blue-600' },
-                { label: 'Schedule Class', color: 'from-green-500 to-green-600' },
-                { label: 'Mark Attendance', color: 'from-purple-500 to-purple-600' },
-                { label: 'Send Message', color: 'from-yellow-500 to-yellow-600' },
-              ].map((action, index) => (
-                <motion.button
-                  key={action.label}
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  className={`w-full p-3 rounded-xl bg-gradient-to-r ${action.color} text-white font-medium hover:shadow-lg transition-all`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {action.label}
-                </motion.button>
-              ))}
-            </div>
-          </GlassCard>
-        </motion.div>
+        {/* Revenue Chart */}
+        <GlassCard className="p-6">
+          <h3 className="text-xl font-semibold text-white mb-6">Monthly Revenue</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={revenueData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis dataKey="month" stroke="rgba(255,255,255,0.7)" />
+              <YAxis stroke="rgba(255,255,255,0.7)" />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'rgba(0,0,0,0.8)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '8px',
+                  color: 'white'
+                }}
+              />
+              <Bar dataKey="revenue" fill="#10B981" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </GlassCard>
+      </div>
+
+      {/* Bottom Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Class Distribution */}
+        <GlassCard className="p-6">
+          <h3 className="text-xl font-semibold text-white mb-6">Class Distribution</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={classDistribution}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, value }) => `${name}: ${value}%`}
+              >
+                {classDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'rgba(0,0,0,0.8)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '8px',
+                  color: 'white'
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </GlassCard>
+
+        {/* Recent Activities */}
+        <GlassCard className="p-6 lg:col-span-2">
+          <h3 className="text-xl font-semibold text-white mb-6">Recent Activities</h3>
+          <div className="space-y-4">
+            {recentActivities.map((activity) => (
+              <div key={activity.id} className="flex items-center space-x-3 p-3 rounded-lg bg-white/5 border border-white/10">
+                <div className="p-2 rounded-lg bg-blue-500/20">
+                  <activity.icon className="w-5 h-5 text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-medium">{activity.activity}</p>
+                  <div className="flex items-center mt-1">
+                    <Clock className="w-4 h-4 text-white/50 mr-1" />
+                    <span className="text-white/50 text-sm">{activity.time}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
       </div>
     </div>
   );

@@ -1,25 +1,24 @@
 
-import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { X, Save, User } from 'lucide-react';
-import { z } from 'zod';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Teacher, addTeacher, updateTeacher } from '../../store/slices/teachersSlice';
+import * as z from 'zod';
+import { useDispatch } from 'react-redux';
+import { X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import GlassCard from '../common/GlassCard';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet';
+import { Teacher, addTeacher, updateTeacher } from '../../store/slices/teachersSlice';
 import { toast } from '../ui/use-toast';
 
 const teacherSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  name: z.string().min(1, 'Full name is required').max(100, 'Name must be less than 100 characters'),
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().optional(),
-  subject: z.string().min(1, 'Please select a subject'),
+  subject: z.string().min(1, 'Subject is required'),
   status: z.enum(['active', 'inactive']),
   notes: z.string().optional(),
 });
@@ -32,97 +31,51 @@ interface TeacherFormProps {
   onClose: () => void;
 }
 
-const subjects = [
-  'Grammar & Writing',
-  'Conversation & Speaking',
-  'Reading & Comprehension',
-  'Listening & Pronunciation',
-  'Business English',
-  'Academic English',
-  'IELTS Preparation',
-  'TOEFL Preparation',
-];
-
 const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) => {
   const dispatch = useDispatch();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<TeacherFormData>({
     resolver: zodResolver(teacherSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
-      subject: '',
-      status: 'active',
+      name: teacher?.name || '',
+      email: teacher?.email || '',
+      phone: teacher?.phone || '',
+      subject: teacher?.subject || '',
+      status: teacher?.status || 'active',
       notes: '',
     },
   });
 
-  useEffect(() => {
-    if (teacher) {
-      form.reset({
-        name: teacher.name,
-        email: teacher.email,
-        phone: teacher.phone || '',
-        subject: teacher.subject,
-        status: teacher.status,
-        notes: '',
-      });
-    } else {
-      form.reset({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        status: 'active',
-        notes: '',
-      });
-    }
-  }, [teacher, form]);
-
-  const onSubmit = async (data: TeacherFormData) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (data: TeacherFormData) => {
+    setIsLoading(true);
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-
+      
       if (teacher) {
-        // Update existing teacher
-        const updatedTeacher: Teacher = {
-          ...teacher,
-          name: data.name,
-          email: data.email,
-          phone: data.phone || '',
-          subject: data.subject,
-          status: data.status,
-        };
-        dispatch(updateTeacher(updatedTeacher));
+        dispatch(updateTeacher({ id: teacher.id, ...data }));
         toast({
           title: "Teacher Updated",
-          description: `${data.name}'s profile has been successfully updated.`,
+          description: `${data.name} has been successfully updated.`,
         });
       } else {
-        // Add new teacher
         const newTeacher: Teacher = {
           id: Date.now().toString(),
-          name: data.name,
-          email: data.email,
-          phone: data.phone || '',
-          avatar: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000000)}?w=150`,
-          subject: data.subject,
-          status: data.status,
-          joinDate: new Date().toISOString().split('T')[0],
+          ...data,
+          avatar: `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150`,
+          joinDate: new Date().toISOString(),
           classIds: [],
         };
         dispatch(addTeacher(newTeacher));
         toast({
           title: "Teacher Added",
-          description: `${data.name} has been successfully added to the system.`,
+          description: `${data.name} has been successfully added.`,
         });
       }
-
+      
       onClose();
+      form.reset();
     } catch (error) {
       toast({
         title: "Error",
@@ -130,51 +83,39 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md mx-auto bg-transparent border-none p-0">
-        <GlassCard className="p-6">
-          <DialogHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-                  <User className="w-5 h-5 text-yellow-400" />
-                </div>
-                <DialogTitle className="text-white text-xl">
-                  {teacher ? 'Edit Teacher' : 'Add New Teacher'}
-                </DialogTitle>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                className="text-white/70 hover:text-white hover:bg-white/10"
-              >
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-          </DialogHeader>
-
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent 
+        side="right" 
+        className="w-full sm:max-w-md bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"
+      >
+        <SheetHeader className="pb-6 border-b border-white/20">
+          <SheetTitle className="text-2xl font-bold text-white">
+            {teacher ? 'Edit Teacher' : 'Add New Teacher'}
+          </SheetTitle>
+        </SheetHeader>
+        
+        <div className="mt-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Full Name *</FormLabel>
+                    <FormLabel className="text-white font-semibold">Full Name *</FormLabel>
                     <FormControl>
                       <Input
+                        placeholder="Enter full name"
                         {...field}
-                        placeholder="Enter teacher's full name"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                       />
                     </FormControl>
-                    <FormMessage className="text-red-400" />
+                    <FormMessage className="text-red-300" />
                   </FormItem>
                 )}
               />
@@ -184,16 +125,16 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Email Address *</FormLabel>
+                    <FormLabel className="text-white font-semibold">Email Address *</FormLabel>
                     <FormControl>
                       <Input
-                        {...field}
                         type="email"
-                        placeholder="teacher@thinkenglish.com"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                        placeholder="Enter email address"
+                        {...field}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                       />
                     </FormControl>
-                    <FormMessage className="text-red-400" />
+                    <FormMessage className="text-red-300" />
                   </FormItem>
                 )}
               />
@@ -203,15 +144,15 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Phone Number</FormLabel>
+                    <FormLabel className="text-white font-semibold">Phone Number</FormLabel>
                     <FormControl>
                       <Input
+                        placeholder="Enter phone number"
                         {...field}
-                        placeholder="+1 (555) 123-4567"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                       />
                     </FormControl>
-                    <FormMessage className="text-red-400" />
+                    <FormMessage className="text-red-300" />
                   </FormItem>
                 )}
               />
@@ -221,22 +162,24 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                 name="subject"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Subject Specialization *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <FormLabel className="text-white font-semibold">Subject *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                          <SelectValue placeholder="Select a subject" />
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-yellow-400 focus:ring-yellow-400">
+                          <SelectValue placeholder="Select subject" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        {subjects.map((subject) => (
-                          <SelectItem key={subject} value={subject}>
-                            {subject}
-                          </SelectItem>
-                        ))}
+                      <SelectContent className="bg-gray-800 border-white/20">
+                        <SelectItem value="Grammar & Writing" className="text-white hover:bg-white/10">Grammar & Writing</SelectItem>
+                        <SelectItem value="Conversation & Speaking" className="text-white hover:bg-white/10">Conversation & Speaking</SelectItem>
+                        <SelectItem value="Reading & Comprehension" className="text-white hover:bg-white/10">Reading & Comprehension</SelectItem>
+                        <SelectItem value="Listening & Pronunciation" className="text-white hover:bg-white/10">Listening & Pronunciation</SelectItem>
+                        <SelectItem value="Business English" className="text-white hover:bg-white/10">Business English</SelectItem>
+                        <SelectItem value="IELTS Preparation" className="text-white hover:bg-white/10">IELTS Preparation</SelectItem>
+                        <SelectItem value="TOEFL Preparation" className="text-white hover:bg-white/10">TOEFL Preparation</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage className="text-red-400" />
+                    <FormMessage className="text-red-300" />
                   </FormItem>
                 )}
               />
@@ -246,19 +189,19 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Employment Status *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <FormLabel className="text-white font-semibold">Employment Status *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                          <SelectValue />
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-yellow-400 focus:ring-yellow-400">
+                          <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectContent className="bg-gray-800 border-white/20">
+                        <SelectItem value="active" className="text-white hover:bg-white/10">Active</SelectItem>
+                        <SelectItem value="inactive" className="text-white hover:bg-white/10">Inactive</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage className="text-red-400" />
+                    <FormMessage className="text-red-300" />
                   </FormItem>
                 )}
               />
@@ -268,44 +211,41 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Additional Notes</FormLabel>
+                    <FormLabel className="text-white font-semibold">Additional Notes</FormLabel>
                     <FormControl>
                       <Textarea
+                        placeholder="Enter any additional notes..."
                         {...field}
-                        placeholder="Any additional information about the teacher..."
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-                        rows={3}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400 min-h-[100px]"
                       />
                     </FormControl>
-                    <FormMessage className="text-red-400" />
+                    <FormMessage className="text-red-300" />
                   </FormItem>
                 )}
               />
 
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
+              <div className="flex gap-4 pt-6 border-t border-white/20">
+                <Button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+                >
+                  {isLoading ? 'Saving...' : (teacher ? 'Update Teacher' : 'Add Teacher')}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
                   onClick={onClose}
-                  className="border-white/20 text-white hover:bg-white/10"
-                  disabled={isSubmitting}
+                  className="flex-1 bg-white/10 hover:bg-white/20 text-white border-white/20 hover:border-white/30 font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                  disabled={isSubmitting}
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {isSubmitting ? 'Saving...' : (teacher ? 'Update Teacher' : 'Add Teacher')}
                 </Button>
               </div>
             </form>
           </Form>
-        </GlassCard>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
