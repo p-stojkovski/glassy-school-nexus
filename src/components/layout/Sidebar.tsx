@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
@@ -13,6 +14,7 @@ import {
   Settings,
   ChevronLeft,
   LogOut,
+  CalendarDays,
 } from 'lucide-react';
 import { RootState } from '../../store';
 import { toggleSidebar } from '../../store/slices/uiSlice';
@@ -25,6 +27,7 @@ const menuItems = [
   { icon: Users, label: 'Students', path: '/students' },
   { icon: BookOpen, label: 'Classes', path: '/classes' },
   { icon: GraduationCap, label: 'Teachers', path: '/teachers' },
+  { icon: CalendarDays, label: 'Scheduling', path: '/scheduling' },
   { icon: Calendar, label: 'Attendance', path: '/attendance' },
   { icon: DollarSign, label: 'Finance', path: '/finance' },
   { icon: Settings, label: 'Settings', path: '/settings' },
