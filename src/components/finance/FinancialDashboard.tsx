@@ -121,10 +121,9 @@ const FinancialDashboard: React.FC = () => {
         <Card className="bg-white/20 backdrop-blur-sm border-white/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-white">Outstanding Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
+          </CardHeader>          <CardContent>
             <div className="text-2xl font-bold text-white">${totalOutstanding.toFixed(2)}</div>
-            <Progress value={paymentPercentage} className="mt-2 bg-white/30" />
+            <Progress value={paymentPercentage} className="mt-2 bg-white/30 [&>div]:bg-cyan-400" />
             <p className="text-xs text-white/70 mt-2">{paymentPercentage}% collected</p>
           </CardContent>
         </Card>
@@ -150,16 +149,19 @@ const FinancialDashboard: React.FC = () => {
           <CardContent className="flex justify-center">
             <div style={{ width: '100%', height: 300 }}>
               <ResponsiveContainer>
-                <PieChart>
-                  <Pie
+                <PieChart>                  <Pie
                     data={statusData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
+                    labelLine={true}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percent }) => `${name}: ${Math.round(percent * 100)}%`}
+                    label={({ name, percent }) => {
+                      // Only display label if percent is greater than 1%
+                      if (percent < 0.01) return '';
+                      return `${name}: ${Math.round(percent * 100)}%`;
+                    }}
                   >
                     {statusData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />

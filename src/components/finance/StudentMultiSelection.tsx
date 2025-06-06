@@ -141,11 +141,11 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
     <div className="space-y-4">
       {/* Add class filter */}
       <div className="flex items-center gap-2">
-        <div className="flex-1">
-          <Select value={classFilter} onValueChange={setClassFilter}>
+        <div className="flex-1">          <Select value={classFilter} onValueChange={setClassFilter}>
             <SelectTrigger className="bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="Filter by class" />
-            </SelectTrigger>            <SelectContent className="bg-white/90 backdrop-blur-sm">
+            </SelectTrigger>
+            <SelectContent className="bg-white/90 backdrop-blur-sm">
               <SelectItem value="all_classes">All Classes</SelectItem>
               {classIds.map(classId => (
                 <SelectItem key={classId} value={classId}>
@@ -158,7 +158,7 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
           <Button
             variant="ghost"
             onClick={() => setClassFilter('all_classes')}
-            className="h-auto p-1 hover:bg-white/10 rounded-full"
+            className="h-auto p-1 bg-blue-500/20 hover:bg-blue-500/40 rounded-full border border-blue-400/30 shadow-sm"
           >
             <X className="h-4 w-4" />
             <span className="sr-only">Clear filter</span>
@@ -166,14 +166,12 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
         )}
       </div>
       
-      <div className="flex flex-col space-y-4">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
+      <div className="flex flex-col space-y-4">        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>{/* This comment ensures no whitespace between the opening and closing tags */}<Button
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="justify-between bg-white/20 border-white/30 text-white w-full h-auto min-h-10 flex-wrap"
+              className="justify-between bg-white/30 border-white/50 text-white font-medium w-full h-auto min-h-10 flex-wrap shadow-sm hover:bg-white/40"
               disabled={disabled}
             >
               {selectedStudents.length === 0 ? (
@@ -190,32 +188,30 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
                     </Badge>
                   ))}
                 </div>
-              )}
-              <div className="ml-2">
+              )}              <div className="ml-2">
                 {selectedStudents.length > 0 ? (
-                  <Button
-                    variant="ghost"
+                  <span 
+                    role="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleClearAll();
                     }}
-                    className="h-auto p-1 hover:bg-white/10 rounded-full"
+                    className="inline-flex h-auto p-1 hover:bg-white/10 rounded-full cursor-pointer"
                   >
                     <X className="h-4 w-4" />
                     <span className="sr-only">Clear selection</span>
-                  </Button>
+                  </span>
                 ) : (
                   <Search className="h-4 w-4 opacity-50" />
                 )}
               </div>
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full p-0 bg-white/90 backdrop-blur-sm" align="start">
+          </PopoverTrigger>          <PopoverContent className="w-full p-0 bg-white/90 backdrop-blur-sm" align="start">
             <Command className="rounded-lg border-none">
-              <CommandInput placeholder="Search students..." onValueChange={setSearchQuery} />              <CommandList>
+              <CommandInput placeholder="Search students..." onValueChange={setSearchQuery} />
+              <CommandList>
                 <CommandEmpty>No students found.</CommandEmpty>
-                
-                {/* Add select/deselect all buttons */}
+                  {/* Add select/deselect all buttons */}
                 {filteredStudents.length > 0 && (
                   <div className="flex justify-between p-2 border-b">
                     <Button 
@@ -225,8 +221,9 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
                         const count = handleSelectAllFiltered();
                         if (count > 0) setOpen(false);
                       }}
-                      className="text-xs"
+                      className="text-xs bg-blue-500/20 hover:bg-blue-500/40 text-white font-medium shadow-sm"
                     >
+                      <svg className="mr-1 h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                       Select all ({filteredStudents.length})
                     </Button>
                     
@@ -237,8 +234,9 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
                         onClick={() => {
                           handleDeselectAllFiltered();
                         }}
-                        className="text-xs"
+                        className="text-xs bg-white/30 hover:bg-white/40 text-white font-medium shadow-sm"
                       >
+                        <svg className="mr-1 h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         Deselect filtered
                       </Button>
                     )}
@@ -285,11 +283,10 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
               variant="secondary" 
               className="bg-white/20 text-white border-white/30"
             >
-              {student.name}
-              <Button
+              {student.name}              <Button
                 variant="ghost"
                 onClick={() => handleRemoveSelected(student.id)}
-                className="h-auto p-0 ml-1 hover:bg-transparent"
+                className="h-auto p-0 ml-1 hover:bg-white/20 rounded-full"
               >
                 <X className="h-3 w-3" />
                 <span className="sr-only">Remove {student.name}</span>

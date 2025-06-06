@@ -391,20 +391,33 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
           )}
         />
 
-        <div className="flex items-center justify-end space-x-4">
-          <Button 
+        <div className="flex items-center justify-end space-x-4">          <Button 
             type="button" 
             variant="outline" 
-            className="border-white/30 text-white hover:bg-white/20"
+            className="bg-white/50 backdrop-blur-sm border-white text-white font-medium hover:bg-white/60 shadow-sm"
             onClick={onCancel}
           >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
             Cancel
           </Button>
           <Button 
             type="submit"
-            className="bg-white/20 hover:bg-white/30 text-white"
+            className={`shadow-md ${editingId 
+              ? "bg-blue-600 text-white hover:bg-blue-700" 
+              : "bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+            }`}
           >
-            {editingId ? "Update Payment" : "Record Payment"}
+            {editingId ? (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon></svg>
+                Update Payment
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" x2="22" y1="10" y2="10"></line></svg>
+                Record Payment
+              </>
+            )}
           </Button>
         </div>
       </form>

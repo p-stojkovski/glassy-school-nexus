@@ -259,9 +259,7 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
               </FormItem>
             )}
           />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        </div>        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FormField
             control={form.control}
             name="amount"
@@ -278,16 +276,17 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
                     {...field} 
                   />
                 </FormControl>
+                <FormDescription className="text-white/70">
+                  &nbsp;
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
-          />
-
-          <FormField
+          /><FormField
             control={form.control}
             name="dueDate"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem>
                 <FormLabel className="text-white">Due Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -363,21 +362,41 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
               <FormMessage />
             </FormItem>
           )}
-        />
-
-        <div className="flex items-center justify-end space-x-4">
+        />        <div className="flex items-center justify-end space-x-4">
+          {/* Only show Cancel button in batch mode */}
+          {batchMode && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="bg-white/50 backdrop-blur-sm border-white text-white font-medium hover:bg-white/60 shadow-sm"
+              onClick={onCancel}
+            >
+              <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              Cancel
+            </Button>
+          )}
           <Button 
-            type="button" 
-            variant="outline" 
-            className="border-white/30 text-white hover:bg-white/20"
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>          <Button 
             type="submit"
-            className="bg-white/20 hover:bg-white/30 text-white"
+            className={`shadow-md ${editingId 
+              ? "bg-blue-600 text-white hover:bg-blue-700" 
+              : "bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+            }`}
           >
-            {editingId ? "Update Obligation" : batchMode ? "Apply to Selected Students" : "Create Obligation"}
+            {editingId ? (
+              <>
+                <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Update Obligation
+              </>            ) : batchMode ? (
+              <>
+                <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Apply to Selected Students
+              </>
+            ) : (
+              <>
+                <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Create Obligation
+              </>
+            )}
           </Button>
         </div>
       </form>

@@ -179,12 +179,12 @@ const BatchObligationManagement: React.FC<BatchObligationManagementProps> = ({ o
           <RecentObligations 
             obligations={recentlyCreated} 
             title="Successfully Created Obligations" 
-          />
-          <div className="flex justify-end">
+          />          <div className="flex justify-end">
             <Button 
               onClick={handleCloseRecent}
-              className="bg-white/20 hover:bg-white/30 text-white"
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold shadow-md"
             >
+              <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
               Continue
             </Button>
           </div>
@@ -272,30 +272,33 @@ const BatchObligationManagement: React.FC<BatchObligationManagementProps> = ({ o
               <div className="bg-blue-900/30 text-blue-100 p-4 rounded-md">
                 <p>You are about to create {selectedStudents.length} payment obligation(s). This action cannot be easily undone and will need to be reversed manually if incorrect.</p>
               </div>
-              
-              <div className="flex justify-end space-x-3">
-                <Button 
+                <div className="flex justify-end space-x-3">                <Button 
                   variant="outline" 
                   onClick={handleCancel}
-                  className="border-white/30 text-white hover:bg-white/20"
+                  className="bg-white/50 backdrop-blur-sm border-white text-white font-medium hover:bg-white/60 shadow-sm"
                   disabled={isSubmitting}
                 >
+                  <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                   Back
-                </Button>
-                <Button 
+                </Button>                <Button 
                   onClick={handleConfirmBatchCreate}
-                  className="bg-white/20 hover:bg-white/30 text-white"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold shadow-md"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                       Creating...
                     </>
-                  ) : "Confirm Creation"}
+                  ) : (
+                    <>
+                      <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                      Confirm Creation
+                    </>
+                  )}
                 </Button>
               </div>
             </div>

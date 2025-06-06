@@ -19,14 +19,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
+// Removed dropdown menu imports as we're using direct action buttons now
 import {
   Select,
   SelectContent,
@@ -48,7 +41,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
-import { MoreHorizontal, Pencil, Trash2, Receipt } from 'lucide-react';
+import { Pencil, Trash2, Receipt } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface PaymentHistoryProps {
@@ -68,13 +61,12 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
   
   // Generate unique list of students from payments
   const students = [...new Set(payments.map(p => ({ id: p.studentId, name: p.studentName })))];
-
   const handlePeriodChange = (period: string) => {
-    dispatch(setSelectedPeriod(period));
+    dispatch(setSelectedPeriod(period === 'all_periods' ? null : period));
   };
 
   const handleStudentChange = (studentId: string) => {
-    dispatch(setSelectedStudent(studentId));
+    dispatch(setSelectedStudent(studentId === 'all_students' ? null : studentId));
   };
 
   const handleDeletePayment = (id: string) => {
@@ -141,42 +133,38 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
           />
         </div>
         
-        <div className="flex flex-col md:flex-row gap-4">
-          <Select
-            value={selectedPeriod || ''}
+        <div className="flex flex-col md:flex-row gap-4">          <Select
+            value={selectedPeriod || 'all_periods'}
             onValueChange={handlePeriodChange}
           >
             <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="All Periods" />
             </SelectTrigger>
             <SelectContent className="bg-white/90 backdrop-blur-sm">
-              <SelectItem value="">All Periods</SelectItem>
+              <SelectItem value="all_periods">All Periods</SelectItem>
               {periods.map(period => (
                 <SelectItem key={period} value={period}>
                   {period}
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
-
-          <Select
-            value={selectedStudentId || ''}
+          </Select>          <Select
+            value={selectedStudentId || 'all_students'}
             onValueChange={handleStudentChange}
           >
             <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="All Students" />
             </SelectTrigger>
             <SelectContent className="bg-white/90 backdrop-blur-sm">
-              <SelectItem value="">All Students</SelectItem>
+              <SelectItem value="all_students">All Students</SelectItem>
               {students.map(student => (
                 <SelectItem key={student.id} value={student.id}>
                   {student.name}
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
-
-          <Button variant="outline" className="border-white/30 text-white hover:bg-white/20" onClick={handleClearFilters}>
+          </Select>          <Button variant="outline" onClick={handleClearFilters} className="bg-blue-500/30 backdrop-blur-sm border-blue-400 text-white font-medium hover:bg-blue-500/50 shadow-sm">
+            <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18"></path><path d="M10.9 4a7.03 7.03 0 0 1 2.2 2.2"></path><path d="M17.7 7.7a7.03 7.03 0 0 1 .8 3.3c0 1-.2 1.9-.6 2.8"></path><path d="M4.6 11a7 7 0 0 1 7.1-7"></path><path d="M4 17a7 7 0 0 0 11 0"></path></svg>
             Clear Filters
           </Button>
         </div>
@@ -212,46 +200,51 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
                 <TableCell>{formatPaymentMethod(payment.method)}</TableCell>
                 <TableCell className="text-right">${payment.amount.toFixed(2)}</TableCell>
                 <TableCell>{payment.reference || '-'}</TableCell>
-                <TableCell>{payment.createdBy}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="hover:bg-white/20">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-white/90 backdrop-blur-sm">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => onEdit(payment.id)}>
-                        <Pencil className="mr-2 h-4 w-4" /> Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Receipt className="mr-2 h-4 w-4" /> View Receipt
-                      </DropdownMenuItem>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-white/90 backdrop-blur-sm">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this payment record? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeletePayment(payment.id)}>
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <TableCell>{payment.createdBy}</TableCell>                <TableCell className="text-right">
+                  <div className="flex gap-1 justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/5 border-white/20 text-white hover:bg-white/10 h-8 w-8 p-0"
+                    >
+                      <Receipt className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(payment.id)}
+                      className="bg-blue-500/20 border-blue-500/30 text-blue-300 hover:bg-blue-500/30 h-8 w-8 p-0"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 h-8 w-8 p-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>                      <AlertDialogContent className="bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-white">Delete Payment</AlertDialogTitle>
+                          <AlertDialogDescription className="text-white/70">
+                            Are you sure you want to delete this payment record? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDeletePayment(payment.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

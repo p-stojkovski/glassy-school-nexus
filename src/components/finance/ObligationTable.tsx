@@ -19,14 +19,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
+// Removed dropdown menu imports as we're using direct action buttons now
 import {
   Select,
   SelectContent,
@@ -48,7 +41,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
-import { Eye, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface ObligationTableProps {
@@ -147,8 +140,8 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
                   {student.name}
                 </SelectItem>
               ))}
-            </SelectContent>
-          </Select>          <Button variant="outline" onClick={handleClearFilters} className="border-white/30 text-white hover:bg-white/20">
+            </SelectContent>          </Select>          <Button variant="outline" onClick={handleClearFilters} className="bg-blue-500/30 backdrop-blur-sm border-blue-400 text-white font-medium hover:bg-blue-500/50 shadow-sm">
+            <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18"></path><path d="M10.9 4a7.03 7.03 0 0 1 2.2 2.2"></path><path d="M17.7 7.7a7.03 7.03 0 0 1 .8 3.3c0 1-.2 1.9-.6 2.8"></path><path d="M4.6 11a7 7 0 0 1 7.1-7"></path><path d="M4 17a7 7 0 0 0 11 0"></path></svg>
             Clear Filters
           </Button>
         </div>
@@ -180,42 +173,44 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
                 <TableCell className="text-right text-white">${obligation.amount.toFixed(2)}</TableCell>
                 <TableCell className="text-white">{format(parseISO(obligation.dueDate), 'MMM d, yyyy')}</TableCell>
                 <TableCell className="text-white">{obligation.period}</TableCell>
-                <TableCell>{renderStatusBadge(obligation.status)}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>                      <Button variant="ghost" size="icon" className="hover:bg-white/20">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-white/90 backdrop-blur-sm">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => onEdit(obligation.id)}>
-                        <Pencil className="mr-2 h-4 w-4" /> Edit
-                      </DropdownMenuItem>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-white/90 backdrop-blur-sm">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this payment obligation? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeleteObligation(obligation.id)}>
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <TableCell>{renderStatusBadge(obligation.status)}</TableCell>                <TableCell className="text-right">
+                  <div className="flex gap-1 justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(obligation.id)}
+                      className="bg-blue-500/20 border-blue-500/30 text-blue-300 hover:bg-blue-500/30 h-8 w-8 p-0"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 h-8 w-8 p-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>                      <AlertDialogContent className="bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-white">Delete Obligation</AlertDialogTitle>
+                          <AlertDialogDescription className="text-white/70">
+                            Are you sure you want to delete this payment obligation? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDeleteObligation(obligation.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
