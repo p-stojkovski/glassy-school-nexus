@@ -34,11 +34,10 @@ const FinancialManagement: React.FC = () => {
     <div className="space-y-6">
       <DemoModeNotification />
       <FinancialHeader />
-        <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8 bg-white/30 shadow-lg border border-white/40">
-          <TabsTrigger value="dashboard" className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white">Dashboard</TabsTrigger>
-          <TabsTrigger value="obligations" className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white">Payment Obligations</TabsTrigger>
-          <TabsTrigger value="payments" className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white">Payments</TabsTrigger>
+        <Tabs defaultValue="dashboard" className="w-full">        <TabsList className="grid grid-cols-3 mb-8 bg-white/20 shadow-lg border border-white/20">
+          <TabsTrigger value="dashboard" className="text-white data-[state=active]:bg-white/10 data-[state=active]:text-white">Dashboard</TabsTrigger>
+          <TabsTrigger value="obligations" className="text-white data-[state=active]:bg-white/10 data-[state=active]:text-white">Payment Obligations</TabsTrigger>
+          <TabsTrigger value="payments" className="text-white data-[state=active]:bg-white/10 data-[state=active]:text-white">Payments</TabsTrigger>
         </TabsList>
         
         <TabsContent value="dashboard" className="space-y-4">

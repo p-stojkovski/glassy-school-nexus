@@ -32,11 +32,8 @@ const ObligationManagement: React.FC = () => {
     setEditingObligationId(null);
   };
 
-  return (
-    <Card className="p-6 bg-white/20 backdrop-blur-sm border-white/30">
-      <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-
-        <TabsList className="flex w-full mb-6 bg-white/30 gap-2">
+  return (    <Card className="p-6 bg-white/10 backdrop-blur-sm border-white/20">
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">        <TabsList className="flex w-full mb-6 bg-white/20 gap-2">
           <TabsTrigger value="view" className="flex-1 text-white">View Obligations</TabsTrigger>
           <TabsTrigger value="add" className="flex-1 text-white">Add Individual</TabsTrigger>
         </TabsList>

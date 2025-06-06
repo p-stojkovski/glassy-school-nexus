@@ -16,10 +16,8 @@ const PaymentManagement: React.FC = () => {
 
   const handleCancelEdit = () => {
     setEditingPaymentId(null);
-  };  return (
-    <Card className="p-6 bg-white/20 backdrop-blur-sm border-white/30">
-      <Tabs defaultValue="view" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/30">
+  };  return (    <Card className="p-6 bg-white/10 backdrop-blur-sm border-white/20">
+      <Tabs defaultValue="view" className="w-full">        <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/20">
           <TabsTrigger value="view" className="text-white font-medium">Payment History</TabsTrigger>
           <TabsTrigger value="add" className="text-white font-medium">Record Payment</TabsTrigger>
         </TabsList>

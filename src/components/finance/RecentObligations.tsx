@@ -33,11 +33,10 @@ const RecentObligations: React.FC<RecentObligationsProps> = ({
   // Total amount calculation
   const totalAmount = obligations.reduce((sum, obligation) => sum + obligation.amount, 0);
 
-  return (
-    <Card className="bg-white/20 backdrop-blur-sm border-white/30 mt-6">
+  return (    <Card className="bg-white/10 backdrop-blur-sm border-white/20 mt-6">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-white">{title}</CardTitle>
-        <Badge variant="outline" className="bg-white/20 border-white/30 text-white">
+        <Badge variant="outline" className="bg-white/10 border-white/20 text-white">
           {obligations.length} obligation{obligations.length !== 1 ? 's' : ''}
         </Badge>
       </CardHeader>

@@ -99,8 +99,7 @@ const FinancialDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-white/20 backdrop-blur-sm border-white/30">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">        <Card className="bg-white/10 backdrop-blur-sm border-white/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-white">Total Obligations</CardTitle>
           </CardHeader>
@@ -109,7 +108,7 @@ const FinancialDashboard: React.FC = () => {
             <p className="text-xs text-white/70">Across {obligations.length} obligations</p>
           </CardContent>
         </Card>
-        <Card className="bg-white/20 backdrop-blur-sm border-white/30">
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-white">Total Payments</CardTitle>
           </CardHeader>
@@ -118,16 +117,15 @@ const FinancialDashboard: React.FC = () => {
             <p className="text-xs text-white/70">Across {payments.length} payments</p>
           </CardContent>
         </Card>
-        <Card className="bg-white/20 backdrop-blur-sm border-white/30">
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-white">Outstanding Balance</CardTitle>
-          </CardHeader>          <CardContent>
+          </CardHeader><CardContent>
             <div className="text-2xl font-bold text-white">${totalOutstanding.toFixed(2)}</div>
             <Progress value={paymentPercentage} className="mt-2 bg-white/30 [&>div]:bg-cyan-400" />
             <p className="text-xs text-white/70 mt-2">{paymentPercentage}% collected</p>
           </CardContent>
-        </Card>
-        <Card className="bg-white/20 backdrop-blur-sm border-white/30">
+        </Card>        <Card className="bg-white/10 backdrop-blur-sm border-white/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-white">Overdue Amount</CardTitle>
           </CardHeader>
@@ -141,8 +139,7 @@ const FinancialDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>      {/* Charts Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="col-span-1 bg-white/20 backdrop-blur-sm border-white/30">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">        <Card className="col-span-1 bg-white/10 backdrop-blur-sm border-white/20">
           <CardHeader>
             <CardTitle className="text-white">Payment Status</CardTitle>
           </CardHeader>
@@ -176,9 +173,7 @@ const FinancialDashboard: React.FC = () => {
               </ResponsiveContainer>
             </div>
           </CardContent>
-        </Card>
-
-        <Card className="col-span-1 bg-white/20 backdrop-blur-sm border-white/30">
+        </Card>        <Card className="col-span-1 bg-white/10 backdrop-blur-sm border-white/20">
           <CardHeader>
             <CardTitle className="text-white">Monthly Payments (Last 6 Months)</CardTitle>
           </CardHeader>
@@ -204,8 +199,7 @@ const FinancialDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>      {/* Recent Transactions and Upcoming Due */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="col-span-1 bg-white/20 backdrop-blur-sm border-white/30">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">        <Card className="col-span-1 bg-white/10 backdrop-blur-sm border-white/20">
           <CardHeader>
             <CardTitle className="text-white">Recent Payments</CardTitle>
           </CardHeader>
@@ -231,9 +225,7 @@ const FinancialDashboard: React.FC = () => {
               )}
             </div>
           </CardContent>
-        </Card>
-
-        <Card className="col-span-1 bg-white/20 backdrop-blur-sm border-white/30">
+        </Card>        <Card className="col-span-1 bg-white/10 backdrop-blur-sm border-white/20">
           <CardHeader>
             <CardTitle className="text-white">Upcoming Due Dates</CardTitle>
           </CardHeader>
