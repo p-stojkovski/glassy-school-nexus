@@ -10,6 +10,7 @@ import {
   deleteObligation,
   PaymentObligation
 } from '@/store/slices/financeSlice';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Table, 
   TableBody, 
@@ -53,6 +54,7 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
   const obligations = useSelector(selectAllObligations);
   const selectedPeriod = useSelector(selectSelectedPeriod);
   const selectedStudentId = useSelector(selectSelectedStudentId);
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
 
   // Generate unique list of periods from obligations
@@ -66,9 +68,18 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
   const handleStudentChange = (studentId: string) => {
     dispatch(setSelectedStudent(studentId === 'all_students' ? null : studentId));
   };
-
   const handleDeleteObligation = (id: string) => {
+    // Find obligation details before deleting for use in notification
+    const obligation = obligations.find(obl => obl.id === id);
     dispatch(deleteObligation(id));
+    
+    if (obligation) {
+      toast({
+        title: "Obligation deleted",
+        description: `${obligation.type} obligation for ${obligation.studentName} has been deleted.`,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClearFilters = () => {

@@ -11,6 +11,7 @@ import {
   PaymentObligation,
   selectAllObligations
 } from '@/store/slices/financeSlice';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -99,9 +100,9 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
   onCancel, 
   batchMode = false,
   onSubmitBatch 
-}) => {
-  const dispatch = useDispatch<AppDispatch>();
+}) => {  const dispatch = useDispatch<AppDispatch>();
   const allObligations = useSelector(selectAllObligations);
+  const { toast } = useToast();
   const editedObligation = editingId
     ? allObligations.find(obl => obl.id === editingId)
     : null;
@@ -167,8 +168,7 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
       form.reset();
       return;
     }
-    
-    if (editingId && editedObligation) {
+      if (editingId && editedObligation) {
       // Editing an existing obligation
       dispatch(
         updateObligation({
@@ -178,6 +178,12 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
           updatedAt: now,
         })
       );
+      
+      // Display toast notification for successful update
+      toast({
+        title: "Obligation updated",
+        description: `${data.type} obligation for ${data.studentName} has been updated successfully.`,
+      });
     } else {
       // Creating a new single obligation
       const newObligation: PaymentObligation = {
@@ -194,6 +200,12 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
         updatedAt: now,
       };
       dispatch(createObligation(newObligation));
+      
+      // Display toast notification for successful creation
+      toast({
+        title: "Obligation created",
+        description: `${data.type} obligation for ${data.studentName} has been created successfully.`,
+      });
     }
 
     // Reset form and exit edit mode

@@ -10,6 +10,7 @@ import {
   deletePayment,
   selectAllObligations,
 } from '@/store/slices/financeSlice';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Table, 
   TableBody, 
@@ -54,6 +55,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
   const obligations = useSelector(selectAllObligations);
   const selectedPeriod = useSelector(selectSelectedPeriod);
   const selectedStudentId = useSelector(selectSelectedStudentId);
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
 
   // Generate unique list of periods from obligations
@@ -68,9 +70,19 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
   const handleStudentChange = (studentId: string) => {
     dispatch(setSelectedStudent(studentId === 'all_students' ? null : studentId));
   };
-
   const handleDeletePayment = (id: string) => {
+    // Find payment details before deleting for use in notification
+    const payment = payments.find(pay => pay.id === id);
     dispatch(deletePayment(id));
+    
+    if (payment) {
+      const obligationDetails = getObligationDetails(payment.obligationId);
+      toast({
+        title: "Payment deleted",
+        description: `Payment of $${payment.amount.toFixed(2)} for ${payment.studentName}'s ${obligationDetails} has been deleted.`,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClearFilters = () => {

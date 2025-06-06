@@ -14,6 +14,7 @@ import {
   selectAllPayments,
   selectObligationsByStudentId,
 } from '@/store/slices/financeSlice';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -81,6 +82,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
   const dispatch = useDispatch<AppDispatch>();
   const allPayments = useSelector(selectAllPayments);
   const allObligations = useSelector(selectAllObligations);
+  const { toast } = useToast();
   const editedPayment = editingId
     ? allPayments.find(payment => payment.id === editingId)
     : null;
@@ -163,8 +165,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
     const selectedObligation = allObligations.find(obl => obl.id === data.obligationId);
     
     if (!selectedObligation) return;
-    
-    if (editingId && editedPayment) {
+      if (editingId && editedPayment) {
       dispatch(
         updatePayment({
           ...editedPayment,
@@ -174,6 +175,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
           updatedAt: now,
         })
       );
+      
+      // Display toast notification for successful payment update
+      toast({
+        title: "Payment updated",
+        description: `Payment of $${data.amount.toFixed(2)} for ${selectedObligation.type} has been updated successfully.`,
+      });
     } else {
       const newPayment: Payment = {
         id: uuidv4(),
@@ -190,6 +197,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
         updatedAt: now,
       };
       dispatch(createPayment(newPayment));
+      
+      // Display toast notification for successful payment creation
+      toast({
+        title: "Payment recorded",
+        description: `Payment of $${data.amount.toFixed(2)} for ${selectedObligation.studentName}'s ${selectedObligation.type} has been recorded.`,
+      });
     }
 
     // Reset form and exit edit mode
@@ -283,13 +296,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                 <FormMessage />
               </FormItem>
             )}
-          />
-
-          <FormField
+          />          <FormField
             control={form.control}
             name="date"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem>
                 <FormLabel className="text-white">Payment Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -322,6 +333,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                     />
                   </PopoverContent>
                 </Popover>
+                <FormDescription className="text-white/70">
+                  &nbsp;
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
