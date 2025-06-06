@@ -41,11 +41,27 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
 }) => {  const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredStudents, setFilteredStudents] = useState<Student[]>(students);
-  const [classFilter, setClassFilter] = useState<string>('all_classes');
-    // Close popover when component unmounts to prevent async issues
+  const [classFilter, setClassFilter] = useState<string>('all_classes');  // Close popover when component unmounts to prevent async issues
   useEffect(() => {
     return () => {
       if (open) setOpen(false);
+    };
+  }, [open]);
+  
+  // Handle cleanup when the component unmounts
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && open) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [open]);
     // Get unique class IDs for filtering with better memoization
@@ -172,17 +188,10 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
           </Button>
         )}
       </div>
-        <div className="flex flex-col space-y-4">
-        <Popover 
+        <div className="flex flex-col space-y-4">        <Popover 
           open={open} 
-          onOpenChange={(isOpen) => {
-            // Ensure we only set open state when needed to avoid unnecessary re-renders
-            if (open !== isOpen) {
-              setOpen(isOpen);
-            }
-          }}
-        >
-          <PopoverTrigger asChild>
+          onOpenChange={setOpen}
+        ><PopoverTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
@@ -190,64 +199,65 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
               className="justify-between bg-white/30 border-white/50 text-white font-medium w-full h-auto min-h-10 flex-wrap shadow-sm hover:bg-white/40"
               disabled={disabled}
             >
-              {selectedStudents.length === 0 ? (
-                <span className="text-white/70">Select students...</span>
-              ) : (
-                <div className="flex flex-wrap gap-1">
-                  {selectedStudents.map(student => (
-                    <Badge 
-                      key={student.id} 
-                      variant="secondary"
-                      className="bg-white/20 text-white hover:bg-white/30"
-                    >
-                      {student.name}
-                    </Badge>
-                  ))}
+              <div className="flex items-center justify-between w-full">
+                <div className="flex-1 text-left overflow-hidden">
+                  {selectedStudents.length === 0 ? (
+                    <span className="text-white/70">Select students...</span>
+                  ) : (
+                    <div className="flex flex-wrap gap-1">
+                      {selectedStudents.map(student => (
+                        <Badge 
+                          key={student.id} 
+                          variant="secondary"
+                          className="bg-white/20 text-white hover:bg-white/30"
+                        >
+                          {student.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}              <div className="ml-2">
-                {selectedStudents.length > 0 ? (
-                  <span 
-                    role="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClearAll();
-                    }}
-                    className="inline-flex h-auto p-1 hover:bg-white/10 rounded-full cursor-pointer"
-                  >
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Clear selection</span>
-                  </span>
-                ) : (
-                  <Search className="h-4 w-4 opacity-50" />
-                )}
+                <div className="ml-2 flex-shrink-0">
+                  {selectedStudents.length > 0 ? (
+                    <span 
+                      role="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClearAll();
+                      }}
+                      className="inline-flex h-auto p-1 hover:bg-white/10 rounded-full cursor-pointer"
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Clear selection</span>
+                    </span>
+                  ) : (
+                    <Search className="h-4 w-4 opacity-50" />
+                  )}
+                </div>
               </div>
-            </Button>          </PopoverTrigger>          <PopoverContent 
+            </Button>
+          </PopoverTrigger>          <PopoverContent 
             className="w-full p-0 bg-gray-800 text-white border border-white/30 backdrop-blur-sm" 
             align="start"
             sideOffset={4}
-            onEscapeKeyDown={() => setOpen(false)}
-            onInteractOutside={() => setOpen(false)}
-            forceMount
-          >            <Command className="rounded-lg border-none bg-gray-800 text-white" shouldFilter={false}>
-              <CommandInput 
+          >            <Command className="rounded-lg border-none bg-gray-800 text-white w-full" shouldFilter={false}>              <CommandInput 
                 placeholder="Search students..." 
                 onValueChange={setSearchQuery} 
                 autoFocus={false}
+                className="text-white placeholder:text-white/70"
               />
               <CommandList>
-                <CommandEmpty>No students found.</CommandEmpty>
-                  {/* Add select/deselect all buttons */}
-                {filteredStudents.length > 0 && (                  <div className="flex justify-between p-2 border-b">
+                <CommandEmpty className="py-6 text-center text-white/70">No students found.</CommandEmpty>
+                  {/* Add select/deselect all buttons */}                {filteredStudents.length > 0 && (
+                  <div className="flex justify-between p-2 border-b border-white/20">
                     <Button 
+                      type="button"
                       variant="ghost" 
                       size="sm"
                       onClick={(e) => {
                         e.preventDefault();
-                        const count = handleSelectAllFiltered();
-                        // Only close if we actually selected items
-                        if (count > 0) {
-                          setTimeout(() => setOpen(false), 100);
-                        }
+                        e.stopPropagation();
+                        handleSelectAllFiltered();
                       }}
                       className="text-xs bg-blue-500/20 hover:bg-blue-500/40 text-white font-medium shadow-sm"
                     >
@@ -255,11 +265,14 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
                       Select all ({filteredStudents.length})
                     </Button>
                     
-                    {selectedStudents.length > 0 && (                      <Button 
+                    {selectedStudents.length > 0 && (
+                      <Button 
+                        type="button"
                         variant="ghost" 
                         size="sm"
                         onClick={(e) => {
                           e.preventDefault();
+                          e.stopPropagation();
                           handleDeselectAllFiltered();
                         }}
                         className="text-xs bg-white/30 hover:bg-white/40 text-white font-medium shadow-sm"
@@ -273,15 +286,11 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
                 
                 <CommandGroup>
                   {filteredStudents.map(student => {
-                    const isSelected = selectedStudents.some(s => s.id === student.id);
-                    return (                      <CommandItem
+                    const isSelected = selectedStudents.some(s => s.id === student.id);                    return (
+                      <CommandItem
                         key={student.id}
-                        onSelect={(value) => {
-                          // Prevent default handling and manage state manually
-                          handleSelect(student);
-                          // Don't auto-close the popover on selection
-                        }}
-                        className="flex items-center justify-between"
+                        onSelect={() => handleSelect(student)}
+                        className="flex items-center justify-between cursor-pointer"
                       >
                         <div className="flex items-center">
                           {student.avatar && (
@@ -293,19 +302,23 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
                               />
                             </div>
                           )}
-                          <span>{student.name}</span>
+                          <span className="text-white">{student.name}</span>
                         </div>
-                        {isSelected && <Check className="h-4 w-4 ml-2" />}
+                        {isSelected && <Check className="h-4 w-4 ml-2 text-white" />}
                       </CommandItem>
                     );
                   })}                </CommandGroup>
               </CommandList>
-              
-              {/* Add a Done button to provide a clear way to close the popover */}
+                {/* Add a Done button to provide a clear way to close the popover */}
               <div className="p-2 border-t border-white/20">
                 <Button 
+                  type="button"
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium"
-                  onClick={() => setOpen(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setOpen(false);
+                  }}
                 >
                   Done
                 </Button>
