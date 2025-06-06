@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Plus, Search, Filter, Building } from 'lucide-react';
 import { RootState } from '../store';
-import { setClassrooms, addClassroom, updateClassroom, deleteClassroom, setLoading } from '../store/slices/classroomsSlice';
+import { setClassrooms, addClassroom, updateClassroom, deleteClassroom, setLoading, resetDemoClassrooms, loadFromStorage } from '../store/slices/classroomsSlice';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
@@ -11,54 +10,123 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../components/ui/s
 import GlassCard from '../components/common/GlassCard';
 import ClassroomCard from '../components/classrooms/ClassroomCard';
 import ClassroomForm from '../components/classrooms/ClassroomForm';
+import DemoModeNotification from '../components/classrooms/DemoModeNotification';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 import { Classroom } from '../store/slices/classroomsSlice';
-import { toast } from '../components/ui/use-toast';
+import { useToast } from '../hooks/use-toast';
+import * as z from 'zod';
+
+// Import the classroom schema definition
+const classroomSchema = z.object({
+  name: z.string().min(1, 'Classroom name is required').max(50, 'Name must be less than 50 characters'),
+  location: z.string().max(100, 'Location must be less than 100 characters').optional(),
+  capacity: z.number().min(1, 'Capacity must be at least 1').max(500, 'Capacity cannot exceed 500'),
+  status: z.enum(['active', 'inactive', 'maintenance']),
+});
+
+type ClassroomFormData = z.infer<typeof classroomSchema>;
 
 const ClassroomManagement: React.FC = () => {
   const dispatch = useDispatch();
   const { classrooms, loading } = useSelector((state: RootState) => state.classrooms);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'maintenance'>('all');
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'maintenance'>('all');  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedClassroom, setSelectedClassroom] = useState<Classroom | null>(null);
-
-  // Mock data - in a real app, this would come from an API
+  const [classroomToDelete, setClassroomToDelete] = useState<Classroom | null>(null);
+  const { toast } = useToast();
+  // Demo Mode: Load from localStorage or fallback to mock data
   useEffect(() => {
     dispatch(setLoading(true));
     setTimeout(() => {
-      const mockClassrooms: Classroom[] = [
-        {
-          id: '1',
-          name: 'Room A-101',
-          location: 'Building A, First Floor',
-          capacity: 30,
-          status: 'active',
-          createdDate: new Date().toISOString(),
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          name: 'Room B-205',
-          location: 'Building B, Second Floor',
-          capacity: 25,
-          status: 'active',
-          createdDate: new Date().toISOString(),
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          name: 'Room C-301',
-          location: 'Building C, Third Floor',
-          capacity: 35,
-          status: 'maintenance',
-          createdDate: new Date().toISOString(),
-          lastUpdated: new Date().toISOString(),
+      let loaded: Classroom[] | null = null;
+      let error = false;
+      try {
+        loaded = loadFromStorage();
+      } catch (e) {
+        error = true;
+      }
+      if (loaded && Array.isArray(loaded) && loaded.length > 0) {
+        dispatch(setClassrooms(loaded));
+      } else {
+        const mockClassrooms: Classroom[] = [
+          {
+            id: '1',
+            name: 'Room A-101',
+            location: 'Building A, First Floor',
+            capacity: 30,
+            status: 'active',
+            createdDate: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+          },
+          {
+            id: '2',
+            name: 'Room B-205',
+            location: 'Building B, Second Floor',
+            capacity: 25,
+            status: 'active',
+            createdDate: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+          },
+          {
+            id: '3',
+            name: 'Room C-301',
+            location: 'Building C, Third Floor',
+            capacity: 35,
+            status: 'maintenance',
+            createdDate: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+          }
+        ];
+        dispatch(setClassrooms(mockClassrooms));
+        if (error) {
+          toast({
+            title: 'Storage Error',
+            description: 'Local storage is not available. Data will only persist for this session.',
+            variant: 'warning',
+          });
         }
-      ];
-      dispatch(setClassrooms(mockClassrooms));
+      }
       dispatch(setLoading(false));
-    }, 1000);
-  }, [dispatch]);
+    }, 500);
+  }, [dispatch, toast]);  // Demo Mode Reset
+  const handleResetDemo = () => {
+    const mockClassrooms: Classroom[] = [
+      {
+        id: '1',
+        name: 'Room A-101',
+        location: 'Building A, First Floor',
+        capacity: 30,
+        status: 'active',
+        createdDate: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+      },
+      {
+        id: '2',
+        name: 'Room B-205',
+        location: 'Building B, Second Floor',
+        capacity: 25,
+        status: 'active',
+        createdDate: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+      },
+      {
+        id: '3',
+        name: 'Room C-301',
+        location: 'Building C, Third Floor',
+        capacity: 35,
+        status: 'maintenance',
+        createdDate: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+      }
+    ];
+    dispatch(resetDemoClassrooms(mockClassrooms));
+    toast({
+      title: 'Demo Data Reset',
+      description: 'Classroom data has been reset to default values.',
+      variant: 'info',
+    });
+  };
 
   const filteredClassrooms = classrooms.filter(classroom => {
     const matchesSearch = classroom.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -76,14 +144,21 @@ const ClassroomManagement: React.FC = () => {
     setSelectedClassroom(classroom);
     setIsFormOpen(true);
   };
-
   const handleDeleteClassroom = (classroom: Classroom) => {
-    // In a real app, you would check for dependencies first
-    dispatch(deleteClassroom(classroom.id));
-    toast({
-      title: "Classroom Deleted",
-      description: `${classroom.name} has been successfully deleted.`,
-    });
+    setClassroomToDelete(classroom);
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDeleteClassroom = () => {
+    if (classroomToDelete) {
+      dispatch(deleteClassroom(classroomToDelete.id));
+      toast({
+        title: "Classroom Deleted",
+        description: `${classroomToDelete.name} has been successfully deleted.`,
+        variant: "default",
+      });
+      setClassroomToDelete(null);
+    }
   };
 
   const handleViewClassroom = (classroom: Classroom) => {
@@ -96,7 +171,7 @@ const ClassroomManagement: React.FC = () => {
     setSelectedClassroom(null);
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: ClassroomFormData) => {
     try {
       if (selectedClassroom) {
         const updatedClassroom: Classroom = {
@@ -108,11 +183,15 @@ const ClassroomManagement: React.FC = () => {
         toast({
           title: "Classroom Updated",
           description: `${data.name} has been successfully updated.`,
+          variant: "success",
         });
-      } else {
+      } else {        // Ensure all required fields are present
         const newClassroom: Classroom = {
           id: Date.now().toString(),
-          ...data,
+          name: data.name,
+          location: data.location || '',
+          capacity: data.capacity,
+          status: data.status,
           createdDate: new Date().toISOString(),
           lastUpdated: new Date().toISOString(),
         };
@@ -120,6 +199,7 @@ const ClassroomManagement: React.FC = () => {
         toast({
           title: "Classroom Added",
           description: `${data.name} has been successfully added.`,
+          variant: "success",
         });
       }
       handleCloseForm();
@@ -139,9 +219,9 @@ const ClassroomManagement: React.FC = () => {
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
+      <DemoModeNotification onResetDemo={handleResetDemo} />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Classroom Management</h1>
@@ -240,6 +320,14 @@ const ClassroomManagement: React.FC = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Confirm Dialog */}      <ConfirmDialog
+        open={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        onConfirm={confirmDeleteClassroom}
+        title="Delete Classroom"
+        description={classroomToDelete ? `Are you sure you want to delete ${classroomToDelete.name}? This action cannot be undone.` : 'Are you sure you want to delete this classroom?'}
+      />
     </div>
   );
 };
