@@ -53,8 +53,10 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface ObligationFormProps {
-  editingId: string | null;
+  editingId?: string | null;
   onCancel: () => void;
+  batchMode?: boolean;
+  onSubmitBatch?: (data: Omit<PaymentObligation, 'id' | 'studentId' | 'studentName' | 'status' | 'createdAt' | 'updatedAt'>) => void;
 }
 
 // Function to format the current school year
@@ -92,7 +94,12 @@ const obligationTypes = [
   "Other"
 ];
 
-const ObligationForm: React.FC<ObligationFormProps> = ({ editingId, onCancel }) => {
+const ObligationForm: React.FC<ObligationFormProps> = ({ 
+  editingId = null, 
+  onCancel, 
+  batchMode = false,
+  onSubmitBatch 
+}) => {
   const dispatch = useDispatch<AppDispatch>();
   const allObligations = useSelector(selectAllObligations);
   const editedObligation = editingId
@@ -143,20 +150,37 @@ const ObligationForm: React.FC<ObligationFormProps> = ({ editingId, onCancel }) 
       form.setValue('studentName', student.name);
     }
   };
-
   const onSubmit = (data: FormValues) => {
     const now = new Date().toISOString();
+    const formattedDueDate = format(data.dueDate, 'yyyy-MM-dd');
+    
+    if (batchMode && onSubmitBatch) {
+      // In batch mode, we just pass the obligation data to the parent component
+      onSubmitBatch({
+        type: data.type,
+        amount: data.amount,
+        period: data.period,
+        dueDate: formattedDueDate,
+        notes: data.notes
+      });
+      
+      form.reset();
+      return;
+    }
     
     if (editingId && editedObligation) {
+      // Editing an existing obligation
       dispatch(
         updateObligation({
           ...editedObligation,
           ...data,
-          dueDate: format(data.dueDate, 'yyyy-MM-dd'),
+          dueDate: formattedDueDate,
           updatedAt: now,
         })
       );
-    } else {      const newObligation: PaymentObligation = {
+    } else {
+      // Creating a new single obligation
+      const newObligation: PaymentObligation = {
         id: uuidv4(),
         studentId: data.studentId,
         studentName: data.studentName,
@@ -164,7 +188,7 @@ const ObligationForm: React.FC<ObligationFormProps> = ({ editingId, onCancel }) 
         amount: data.amount,
         period: data.period,
         status: 'pending',
-        dueDate: format(data.dueDate, 'yyyy-MM-dd'),
+        dueDate: formattedDueDate,
         notes: data.notes,
         createdAt: now,
         updatedAt: now,
@@ -176,39 +200,40 @@ const ObligationForm: React.FC<ObligationFormProps> = ({ editingId, onCancel }) 
     form.reset();
     onCancel();
   };
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 text-white">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="studentId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-white">Student</FormLabel>
-                <Select
-                  onValueChange={(value) => handleStudentChange(value)}
-                  defaultValue={field.value}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="bg-white/20 border-white/30 text-white">
-                      <SelectValue placeholder="Select a student" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="bg-white/90 backdrop-blur-sm">
-                    {mockStudents.map(student => (
-                      <SelectItem key={student.id} value={student.id}>
-                        {student.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!batchMode && (
+            <FormField
+              control={form.control}
+              name="studentId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Student</FormLabel>
+                  <Select
+                    onValueChange={(value) => handleStudentChange(value)}
+                    defaultValue={field.value}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                        <SelectValue placeholder="Select a student" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white/90 backdrop-blur-sm">
+                      {mockStudents.map(student => (
+                        <SelectItem key={student.id} value={student.id}>
+                          {student.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <FormField
             control={form.control}
@@ -348,12 +373,11 @@ const ObligationForm: React.FC<ObligationFormProps> = ({ editingId, onCancel }) 
             onClick={onCancel}
           >
             Cancel
-          </Button>
-          <Button 
+          </Button>          <Button 
             type="submit"
             className="bg-white/20 hover:bg-white/30 text-white"
           >
-            {editingId ? "Update Obligation" : "Create Obligation"}
+            {editingId ? "Update Obligation" : batchMode ? "Apply to Selected Students" : "Create Obligation"}
           </Button>
         </div>
       </form>

@@ -67,13 +67,11 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
   
   // Generate unique list of students from obligations
   const students = [...new Set(obligations.map(o => ({ id: o.studentId, name: o.studentName })))];
-
   const handlePeriodChange = (period: string) => {
-    dispatch(setSelectedPeriod(period));
+    dispatch(setSelectedPeriod(period === 'all_periods' ? null : period));
   };
-
   const handleStudentChange = (studentId: string) => {
-    dispatch(setSelectedStudent(studentId));
+    dispatch(setSelectedStudent(studentId === 'all_students' ? null : studentId));
   };
 
   const handleDeleteObligation = (id: string) => {
@@ -122,33 +120,28 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
           />
         </div>
         
-        <div className="flex flex-col md:flex-row gap-4">
-          <Select
-            value={selectedPeriod || ''}
+        <div className="flex flex-col md:flex-row gap-4">          <Select
+            value={selectedPeriod || 'all_periods'}
             onValueChange={handlePeriodChange}
           >
             <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="All Periods" />
             </SelectTrigger>
-            <SelectContent className="bg-white/90 backdrop-blur-sm">
-              <SelectItem value="">All Periods</SelectItem>
+            <SelectContent className="bg-white/90 backdrop-blur-sm">              <SelectItem value="all_periods">All Periods</SelectItem>
               {periods.map(period => (
                 <SelectItem key={period} value={period}>
                   {period}
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
-
-          <Select
-            value={selectedStudentId || ''}
+          </Select>          <Select
+            value={selectedStudentId || 'all_students'}
             onValueChange={handleStudentChange}
           >
             <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="All Students" />
             </SelectTrigger>
-            <SelectContent className="bg-white/90 backdrop-blur-sm">
-              <SelectItem value="">All Students</SelectItem>
+            <SelectContent className="bg-white/90 backdrop-blur-sm">              <SelectItem value="all_students">All Students</SelectItem>
               {students.map(student => (
                 <SelectItem key={student.id} value={student.id}>
                   {student.name}

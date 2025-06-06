@@ -47,6 +47,31 @@ The Dashboard is the central hub for monitoring the financial status of your sch
    - Notes (optional): Add any relevant details
 4. Click "Create Obligation" to save
 
+### Batch Assigning Payment Obligations
+
+You can efficiently assign the same payment obligation to multiple students at once:
+
+1. Click on the "Payment Obligations" tab
+2. Select the "Batch Assign" tab
+3. Select students using the multi-selection dropdown:
+   - Search for specific students by name or email
+   - Filter by class to find groups of students
+   - Use "Select all" to quickly select all filtered students
+   - Selected students appear as badges in the selection area
+4. Define the obligation details:
+   - Choose an obligation type
+   - Enter the amount (applied to each selected student)
+   - Set a due date
+   - Specify the period
+   - Add optional notes
+5. Click "Apply to Selected Students" to proceed
+6. Review the summary of obligations to be created:
+   - Number of students selected
+   - Obligation details
+   - Total batch amount
+7. Click "Confirm Creation" to create obligations for all selected students
+8. Review the confirmation screen showing the successfully created obligations
+
 ### Viewing and Filtering Obligations
 
 1. Click on the "Payment Obligations" tab
