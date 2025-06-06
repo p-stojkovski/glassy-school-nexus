@@ -175,11 +175,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
           updatedAt: now,
         })
       );
-      
-      // Display toast notification for successful payment update
+        // Display toast notification for successful payment update
       toast({
         title: "Payment updated",
         description: `Payment of $${data.amount.toFixed(2)} for ${selectedObligation.type} has been updated successfully.`,
+        variant: "success",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>,
       });
     } else {
       const newPayment: Payment = {
@@ -196,12 +199,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
         createdAt: now,
         updatedAt: now,
       };
-      dispatch(createPayment(newPayment));
-      
-      // Display toast notification for successful payment creation
+      dispatch(createPayment(newPayment));      // Display toast notification for successful payment creation
       toast({
         title: "Payment recorded",
         description: `Payment of $${data.amount.toFixed(2)} for ${selectedObligation.studentName}'s ${selectedObligation.type} has been recorded.`,
+        variant: "success",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>,
       });
     }
 
@@ -229,10 +234,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                     <SelectTrigger className="bg-white/20 border-white/30 text-white">
                       <SelectValue placeholder="Select a student" />
                     </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="bg-white/90 backdrop-blur-sm">
+                  </FormControl>                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
                     {mockStudents.map(student => (
-                      <SelectItem key={student.id} value={student.id}>
+                      <SelectItem key={student.id} value={student.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                         {student.name}
                       </SelectItem>
                     ))}
@@ -261,10 +265,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                     <SelectTrigger className="bg-white/20 border-white/30 text-white">
                       <SelectValue placeholder="Select obligation" />
                     </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="bg-white/90 backdrop-blur-sm">
+                  </FormControl>                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
                     {studentObligations.map(obligation => (
-                      <SelectItem key={obligation.id} value={obligation.id}>
+                      <SelectItem key={obligation.id} value={obligation.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                         {obligation.type} - ${obligation.amount} ({obligation.period})
                       </SelectItem>
                     ))}
@@ -320,8 +323,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-white/90 backdrop-blur-sm" align="start">
+                  </PopoverTrigger>                  <PopoverContent className="w-auto p-0 bg-gray-800 border border-white/30 backdrop-blur-sm" align="start">
                     <Calendar
                       mode="single"
                       selected={field.value}
@@ -330,6 +332,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                         date > new Date() || date < new Date("1900-01-01")
                       }
                       initialFocus
+                      className="text-white"
                     />
                   </PopoverContent>
                 </Popover>
@@ -352,12 +355,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                     <SelectTrigger className="bg-white/20 border-white/30 text-white">
                       <SelectValue placeholder="Select method" />
                     </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="bg-white/90 backdrop-blur-sm">
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="card">Card</SelectItem>
-                    <SelectItem value="transfer">Bank Transfer</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                  </FormControl>                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+                    <SelectItem value="cash" className="text-white hover:bg-gray-700 focus:bg-gray-700">Cash</SelectItem>
+                    <SelectItem value="card" className="text-white hover:bg-gray-700 focus:bg-gray-700">Card</SelectItem>
+                    <SelectItem value="transfer" className="text-white hover:bg-gray-700 focus:bg-gray-700">Bank Transfer</SelectItem>
+                    <SelectItem value="other" className="text-white hover:bg-gray-700 focus:bg-gray-700">Other</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

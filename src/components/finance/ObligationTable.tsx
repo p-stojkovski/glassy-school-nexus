@@ -55,12 +55,17 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
   const selectedStudentId = useSelector(selectSelectedStudentId);
   const { toast } = useToast();
   const [search, setSearch] = useState('');
-
   // Generate unique list of periods from obligations
   const periods = [...new Set(obligations.map(o => o.period))];
   
-  // Generate unique list of students from obligations
-  const students = [...new Set(obligations.map(o => ({ id: o.studentId, name: o.studentName })))];
+  // Generate unique list of students from obligations with proper deduplication
+  const studentsMap = new Map();
+  obligations.forEach(o => {
+    if (!studentsMap.has(o.studentId)) {
+      studentsMap.set(o.studentId, { id: o.studentId, name: o.studentName });
+    }
+  });
+  const students = Array.from(studentsMap.values());
 
   const handlePeriodChange = (period: string) => {
     dispatch(setSelectedPeriod(period === 'all_periods' ? null : period));
@@ -74,12 +79,14 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
     // Find obligation details before deleting for use in notification
     const obligation = obligations.find(obl => obl.id === id);
     dispatch(deleteObligation(id));
-    
-    if (obligation) {
+      if (obligation) {
       toast({
         title: "Obligation deleted",
         description: `${obligation.type} obligation for ${obligation.studentName} has been deleted.`,
         variant: "destructive",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>,
       });
     }
   };
@@ -135,11 +142,10 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
           >
             <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="All Periods" />
-            </SelectTrigger>
-            <SelectContent className="bg-white/90 backdrop-blur-sm">
-              <SelectItem value="all_periods">All Students</SelectItem>
+            </SelectTrigger>            <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+              <SelectItem value="all_periods" className="text-white hover:bg-gray-700 focus:bg-gray-700">All Students</SelectItem>
               {periods.map(period => (
-                <SelectItem key={period} value={period}>
+                <SelectItem key={period} value={period} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                   {period}
                 </SelectItem>
               ))}
@@ -152,11 +158,10 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
           >
             <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="All Students" />
-            </SelectTrigger>
-            <SelectContent className="bg-white/90 backdrop-blur-sm">
-              <SelectItem value="all_students">All Students</SelectItem>
+            </SelectTrigger>            <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+              <SelectItem value="all_students" className="text-white hover:bg-gray-700 focus:bg-gray-700">All Students</SelectItem>
               {students.map(student => (
-                <SelectItem key={student.id} value={student.id}>
+                <SelectItem key={student.id} value={student.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                   {student.name}
                 </SelectItem>
               ))}

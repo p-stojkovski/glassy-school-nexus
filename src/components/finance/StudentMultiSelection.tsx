@@ -38,21 +38,29 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
   selectedStudents,
   onChange,
   disabled = false
-}) => {
-  const [open, setOpen] = useState(false);
+}) => {  const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredStudents, setFilteredStudents] = useState<Student[]>(students);
   const [classFilter, setClassFilter] = useState<string>('all_classes');
-  
-  // Get unique class IDs for filtering
+    // Close popover when component unmounts to prevent async issues
+  useEffect(() => {
+    return () => {
+      if (open) setOpen(false);
+    };
+  }, [open]);
+    // Get unique class IDs for filtering with better memoization
   const classIds = React.useMemo(() => {
-    const uniqueClassIds = new Set<string>();
-    students.forEach(student => {
-      if (student.classId) {
-        uniqueClassIds.add(student.classId);
+    // Using a Map for better performance with large datasets
+    const uniqueClassIds = new Map<string, boolean>();
+    
+    // Process all students, but only once per unique classId
+    for (const student of students) {
+      if (student.classId && !uniqueClassIds.has(student.classId)) {
+        uniqueClassIds.set(student.classId, true);
       }
-    });
-    return Array.from(uniqueClassIds);
+    }
+    
+    return Array.from(uniqueClassIds.keys());
   }, [students]);
   // Filter students based on search query and class filter
   useEffect(() => {
@@ -144,11 +152,10 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
         <div className="flex-1">          <Select value={classFilter} onValueChange={setClassFilter}>
             <SelectTrigger className="bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="Filter by class" />
-            </SelectTrigger>
-            <SelectContent className="bg-white/90 backdrop-blur-sm">
-              <SelectItem value="all_classes">All Classes</SelectItem>
+            </SelectTrigger>            <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+              <SelectItem value="all_classes" className="text-white hover:bg-gray-700 focus:bg-gray-700">All Classes</SelectItem>
               {classIds.map(classId => (
-                <SelectItem key={classId} value={classId}>
+                <SelectItem key={classId} value={classId} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                   Class {classId}
                 </SelectItem>
               ))}
@@ -165,9 +172,18 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
           </Button>
         )}
       </div>
-      
-      <div className="flex flex-col space-y-4">        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>{/* This comment ensures no whitespace between the opening and closing tags */}<Button
+        <div className="flex flex-col space-y-4">
+        <Popover 
+          open={open} 
+          onOpenChange={(isOpen) => {
+            // Ensure we only set open state when needed to avoid unnecessary re-renders
+            if (open !== isOpen) {
+              setOpen(isOpen);
+            }
+          }}
+        >
+          <PopoverTrigger asChild>
+            <Button
               variant="outline"
               role="combobox"
               aria-expanded={open}
@@ -205,21 +221,33 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
                   <Search className="h-4 w-4 opacity-50" />
                 )}
               </div>
-            </Button>
-          </PopoverTrigger>          <PopoverContent className="w-full p-0 bg-white/90 backdrop-blur-sm" align="start">
-            <Command className="rounded-lg border-none">
-              <CommandInput placeholder="Search students..." onValueChange={setSearchQuery} />
+            </Button>          </PopoverTrigger>          <PopoverContent 
+            className="w-full p-0 bg-gray-800 text-white border border-white/30 backdrop-blur-sm" 
+            align="start"
+            sideOffset={4}
+            onEscapeKeyDown={() => setOpen(false)}
+            onInteractOutside={() => setOpen(false)}
+            forceMount
+          >            <Command className="rounded-lg border-none bg-gray-800 text-white" shouldFilter={false}>
+              <CommandInput 
+                placeholder="Search students..." 
+                onValueChange={setSearchQuery} 
+                autoFocus={false}
+              />
               <CommandList>
                 <CommandEmpty>No students found.</CommandEmpty>
                   {/* Add select/deselect all buttons */}
-                {filteredStudents.length > 0 && (
-                  <div className="flex justify-between p-2 border-b">
+                {filteredStudents.length > 0 && (                  <div className="flex justify-between p-2 border-b">
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
                         const count = handleSelectAllFiltered();
-                        if (count > 0) setOpen(false);
+                        // Only close if we actually selected items
+                        if (count > 0) {
+                          setTimeout(() => setOpen(false), 100);
+                        }
                       }}
                       className="text-xs bg-blue-500/20 hover:bg-blue-500/40 text-white font-medium shadow-sm"
                     >
@@ -227,11 +255,11 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
                       Select all ({filteredStudents.length})
                     </Button>
                     
-                    {selectedStudents.length > 0 && (
-                      <Button 
+                    {selectedStudents.length > 0 && (                      <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
                           handleDeselectAllFiltered();
                         }}
                         className="text-xs bg-white/30 hover:bg-white/40 text-white font-medium shadow-sm"
@@ -246,10 +274,13 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
                 <CommandGroup>
                   {filteredStudents.map(student => {
                     const isSelected = selectedStudents.some(s => s.id === student.id);
-                    return (
-                      <CommandItem
+                    return (                      <CommandItem
                         key={student.id}
-                        onSelect={() => handleSelect(student)}
+                        onSelect={(value) => {
+                          // Prevent default handling and manage state manually
+                          handleSelect(student);
+                          // Don't auto-close the popover on selection
+                        }}
                         className="flex items-center justify-between"
                       >
                         <div className="flex items-center">
@@ -267,9 +298,18 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
                         {isSelected && <Check className="h-4 w-4 ml-2" />}
                       </CommandItem>
                     );
-                  })}
-                </CommandGroup>
+                  })}                </CommandGroup>
               </CommandList>
+              
+              {/* Add a Done button to provide a clear way to close the popover */}
+              <div className="p-2 border-t border-white/20">
+                <Button 
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium"
+                  onClick={() => setOpen(false)}
+                >
+                  Done
+                </Button>
+              </div>
             </Command>
           </PopoverContent>
         </Popover>
@@ -302,4 +342,5 @@ const StudentMultiSelection: React.FC<StudentMultiSelectionProps> = ({
   );
 };
 
-export default StudentMultiSelection;
+// Memoize the component to prevent unnecessary re-renders
+export default React.memo(StudentMultiSelection);

@@ -56,12 +56,17 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
   const selectedStudentId = useSelector(selectSelectedStudentId);
   const { toast } = useToast();
   const [search, setSearch] = useState('');
-
   // Generate unique list of periods from obligations
   const periods = [...new Set(obligations.map(o => o.period))];
   
-  // Generate unique list of students from payments
-  const students = [...new Set(payments.map(p => ({ id: p.studentId, name: p.studentName })))];
+  // Generate unique list of students from payments with proper deduplication
+  const studentsMap = new Map();
+  payments.forEach(p => {
+    if (!studentsMap.has(p.studentId)) {
+      studentsMap.set(p.studentId, { id: p.studentId, name: p.studentName });
+    }
+  });
+  const students = Array.from(studentsMap.values());
 
   const handlePeriodChange = (period: string) => {
     dispatch(setSelectedPeriod(period === 'all_periods' ? null : period));
@@ -82,6 +87,9 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
         title: "Payment deleted",
         description: `Payment of $${payment.amount.toFixed(2)} for ${payment.studentName}'s ${obligationDetails} has been deleted.`,
         variant: "destructive",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>,
       });
     }
   };
@@ -153,11 +161,10 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
           >
             <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="All Periods" />
-            </SelectTrigger>
-            <SelectContent className="bg-white/90 backdrop-blur-sm">
-              <SelectItem value="all_periods">All Periods</SelectItem>
+            </SelectTrigger>            <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+              <SelectItem value="all_periods" className="text-white hover:bg-gray-700 focus:bg-gray-700">All Periods</SelectItem>
               {periods.map(period => (
-                <SelectItem key={period} value={period}>
+                <SelectItem key={period} value={period} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                   {period}
                 </SelectItem>
               ))}
@@ -170,11 +177,10 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
           >
             <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="All Students" />
-            </SelectTrigger>
-            <SelectContent className="bg-white/90 backdrop-blur-sm">
-              <SelectItem value="all_students">All Students</SelectItem>
+            </SelectTrigger>            <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+              <SelectItem value="all_students" className="text-white hover:bg-gray-700 focus:bg-gray-700">All Students</SelectItem>
               {students.map(student => (
-                <SelectItem key={student.id} value={student.id}>
+                <SelectItem key={student.id} value={student.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                   {student.name}
                 </SelectItem>
               ))}

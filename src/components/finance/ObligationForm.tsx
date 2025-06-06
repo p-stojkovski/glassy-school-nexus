@@ -177,12 +177,14 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
           dueDate: formattedDueDate,
           updatedAt: now,
         })
-      );
-      
-      // Display toast notification for successful update
+      );      // Display toast notification for successful update
       toast({
         title: "Obligation updated",
         description: `${data.type} obligation for ${data.studentName} has been updated successfully.`,
+        variant: "success",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>,
       });
     } else {
       // Creating a new single obligation
@@ -199,12 +201,14 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
         createdAt: now,
         updatedAt: now,
       };
-      dispatch(createObligation(newObligation));
-      
-      // Display toast notification for successful creation
+      dispatch(createObligation(newObligation));      // Display toast notification for successful creation
       toast({
         title: "Obligation created",
         description: `${data.type} obligation for ${data.studentName} has been created successfully.`,
+        variant: "success",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>,
       });
     }
 
@@ -232,10 +236,9 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
                       <SelectTrigger className="bg-white/20 border-white/30 text-white">
                         <SelectValue placeholder="Select a student" />
                       </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-white/90 backdrop-blur-sm">
+                    </FormControl>                    <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
                       {mockStudents.map(student => (
-                        <SelectItem key={student.id} value={student.id}>
+                        <SelectItem key={student.id} value={student.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                           {student.name}
                         </SelectItem>
                       ))}
@@ -258,10 +261,9 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
                     <SelectTrigger className="bg-white/20 border-white/30 text-white">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="bg-white/90 backdrop-blur-sm">
+                  </FormControl>                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
                     {obligationTypes.map(type => (
-                      <SelectItem key={type} value={type}>
+                      <SelectItem key={type} value={type} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                         {type}
                       </SelectItem>
                     ))}
@@ -318,8 +320,7 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-white/90 backdrop-blur-sm" align="start">
+                  </PopoverTrigger>                  <PopoverContent className="w-auto p-0 bg-gray-800 border border-white/30 backdrop-blur-sm" align="start">
                     <Calendar
                       mode="single"
                       selected={field.value}
@@ -328,6 +329,7 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
                         date < new Date("1900-01-01")
                       }
                       initialFocus
+                      className="text-white"
                     />
                   </PopoverContent>
                 </Popover>

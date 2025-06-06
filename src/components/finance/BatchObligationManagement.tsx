@@ -16,10 +16,10 @@ interface BatchObligationManagementProps {
   onComplete?: () => void;
 }
 
-const BatchObligationManagement: React.FC<BatchObligationManagementProps> = ({ onComplete }) => {
-  const dispatch = useDispatch<AppDispatch>();
+const BatchObligationManagement: React.FC<BatchObligationManagementProps> = ({ onComplete }) => {  const dispatch = useDispatch<AppDispatch>();
   const { toast } = useToast();
-  const students = useSelector((state: RootState) => state.students.students);  const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
+  const students = useSelector((state: RootState) => state.students.students);
+  const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [obligationData, setObligationData] = useState<Partial<PaymentObligation>>({});
@@ -43,39 +43,48 @@ const BatchObligationManagement: React.FC<BatchObligationManagementProps> = ({ o
     }
   };
   const handleConfirmBatchCreate = () => {
-    // Enhanced validation
+        // Enhanced validation
     if (selectedStudents.length === 0) {
       toast({
         title: "No students selected",
         description: "Please select at least one student for batch assignment.",
         variant: "destructive",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>,
       });
       return;
     }
-    
-    if (!obligationData.type) {
+      if (!obligationData.type) {
       toast({
         title: "Missing information",
         description: "Please select an obligation type.",
         variant: "destructive",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>,
       });
       return;
     }
-    
-    if (!obligationData.amount || obligationData.amount <= 0) {
+      if (!obligationData.amount || obligationData.amount <= 0) {
       toast({
         title: "Invalid amount",
         description: "Please enter a valid amount greater than zero.",
         variant: "destructive",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>,
       });
       return;
     }
-    
-    if (!obligationData.dueDate) {
+      if (!obligationData.dueDate) {
       toast({
         title: "Missing due date",
         description: "Please select a due date for the obligations.",
         variant: "destructive",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>,
       });
       return;
     }
@@ -130,18 +139,23 @@ const BatchObligationManagement: React.FC<BatchObligationManagementProps> = ({ o
         amount: obligationData.amount!.toFixed(2),
         totalAmount: (obligationData.amount! * results.successful).toFixed(2),
         dueDate: format(new Date(obligationData.dueDate!), 'MMM d, yyyy')
-      };      if (results.failed > 0) {
-        // Partial success
+      };      if (results.failed > 0) {        // Partial success
         toast({
           title: "Partial Success",
           description: `Created ${results.successful} obligations, but failed for ${results.failed} student(s).`,
-          variant: "warning", // Using our newly added warning variant
+          variant: "warning",
+          icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>,
         });
-      } else {
-        // Complete success
+      } else {        // Complete success
         toast({
           title: "Success",
           description: `Created ${successDetails.count} ${successDetails.type} obligations totaling $${successDetails.totalAmount}`,
+          variant: "success",
+          icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>,
         });
       }
         // Reset form state but keep recently created for display
@@ -151,8 +165,7 @@ const BatchObligationManagement: React.FC<BatchObligationManagementProps> = ({ o
       
       // Don't complete yet, show the recent obligations first
       if (results.createdObligations.length > 0) {
-        setShowRecent(true);
-      } else {
+        setShowRecent(true);      } else {
         onComplete?.();
       }
     } catch (error) {
@@ -160,13 +173,17 @@ const BatchObligationManagement: React.FC<BatchObligationManagementProps> = ({ o
         title: "Error",
         description: "Failed to create obligations. Please try again.",
         variant: "destructive",
+        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>,
       });
       console.error("Error creating batch obligations:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
-    const handleCloseRecent = () => {
+
+  const handleCloseRecent = () => {
     setShowRecent(false);
     setRecentlyCreated([]);
     onComplete?.();
@@ -175,11 +192,11 @@ const BatchObligationManagement: React.FC<BatchObligationManagementProps> = ({ o
   return (
     <div className="space-y-6">
       {showRecent ? (
-        <>
-          <RecentObligations 
+        <>          <RecentObligations 
             obligations={recentlyCreated} 
             title="Successfully Created Obligations" 
-          />          <div className="flex justify-end">
+          />
+          <div className="flex justify-end">
             <Button 
               onClick={handleCloseRecent}
               className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold shadow-md"
@@ -195,8 +212,7 @@ const BatchObligationManagement: React.FC<BatchObligationManagementProps> = ({ o
             <CardHeader>
               <CardTitle className="text-white">Student Selection</CardTitle>
             </CardHeader>
-            <CardContent>
-              <StudentMultiSelection
+            <CardContent>              <StudentMultiSelection
                 students={students}
                 selectedStudents={selectedStudents}
                 onChange={handleStudentSelection}
