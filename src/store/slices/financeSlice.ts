@@ -157,10 +157,11 @@ const financeSlice = createSlice({
     setSelectedStudent: (state, action: PayloadAction<string | null>) => {
       state.selectedStudentId = action.payload;
     },
-    
-    // Payment Obligation CRUD operations
+      // Payment Obligation CRUD operations
     createObligation: (state, action: PayloadAction<PaymentObligation>) => {
       state.obligations.push(action.payload);
+      // Calculate status when creating a new obligation
+      state.obligations = updateObligationStatuses(state.obligations, state.payments);
       localStorage.setItem('paymentObligations', JSON.stringify(state.obligations));
     },
     
