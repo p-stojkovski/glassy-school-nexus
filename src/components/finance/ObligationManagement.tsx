@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ObligationTable from './ObligationTable';
 import ObligationForm from './ObligationForm';
-import BatchObligationManagement from './BatchObligationManagement';
+
 
 
 const ObligationManagement: React.FC = () => {
@@ -35,10 +35,10 @@ const ObligationManagement: React.FC = () => {
   return (
     <Card className="p-6 bg-white/20 backdrop-blur-sm border-white/30">
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/30">
-          <TabsTrigger value="view" className="text-white">View Obligations</TabsTrigger>
-          <TabsTrigger value="add" className="text-white">Add Individual</TabsTrigger>
-          <TabsTrigger value="batch" className="text-white">Batch Assign</TabsTrigger>
+
+        <TabsList className="flex w-full mb-6 bg-white/30 gap-2">
+          <TabsTrigger value="view" className="flex-1 text-white">View Obligations</TabsTrigger>
+          <TabsTrigger value="add" className="flex-1 text-white">Add Individual</TabsTrigger>
         </TabsList>
 
         <TabsContent value="view" className="space-y-4">
@@ -54,11 +54,7 @@ const ObligationManagement: React.FC = () => {
           />
         </TabsContent>
 
-        <TabsContent value="batch" className="space-y-4">
-          <BatchObligationManagement 
-            onComplete={() => setCurrentTab('view')}
-          />
-        </TabsContent>
+
       </Tabs>
     </Card>
   );

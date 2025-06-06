@@ -34,18 +34,25 @@ function toast(props: ToastProps) {
     icon 
   } = props;
   
-  // Create the action component if both action function and label are provided
-  const actionComponent = action && actionLabel ? {
-    label: actionLabel,
-    onClick: typeof action === 'function' ? action : undefined,
-  } : action;
-  
-  // Create the cancel component if both cancel function and label are provided
-  const cancelComponent = cancel && cancelLabel ? {
-    label: cancelLabel,
-    onClick: typeof cancel === 'function' ? cancel : undefined,
-  } : cancel;
-  
+  // Only pass action/cancel if they are valid types for Sonner
+  let actionComponent: React.ReactNode | { label: string; onClick: () => void } | undefined = undefined;
+  if (action && actionLabel && typeof action === 'function') {
+    actionComponent = { label: actionLabel, onClick: action };
+  } else if (React.isValidElement(action)) {
+    actionComponent = action;
+  } else {
+    actionComponent = undefined;
+  }
+
+  let cancelComponent: React.ReactNode | { label: string; onClick: () => void } | undefined = undefined;
+  if (cancel && cancelLabel && typeof cancel === 'function') {
+    cancelComponent = { label: cancelLabel, onClick: cancel };
+  } else if (React.isValidElement(cancel)) {
+    cancelComponent = cancel;
+  } else {
+    cancelComponent = undefined;
+  }
+
   const options = {
     description: description as string,
     action: actionComponent,
