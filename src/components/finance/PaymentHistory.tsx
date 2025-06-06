@@ -20,7 +20,6 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-// Removed dropdown menu imports as we're using direct action buttons now
 import {
   Select,
   SelectContent,
@@ -63,6 +62,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
   
   // Generate unique list of students from payments
   const students = [...new Set(payments.map(p => ({ id: p.studentId, name: p.studentName })))];
+
   const handlePeriodChange = (period: string) => {
     dispatch(setSelectedPeriod(period === 'all_periods' ? null : period));
   };
@@ -70,6 +70,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
   const handleStudentChange = (studentId: string) => {
     dispatch(setSelectedStudent(studentId === 'all_students' ? null : studentId));
   };
+
   const handleDeletePayment = (id: string) => {
     // Find payment details before deleting for use in notification
     const payment = payments.find(pay => pay.id === id);
@@ -145,7 +146,8 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
           />
         </div>
         
-        <div className="flex flex-col md:flex-row gap-4">          <Select
+        <div className="flex flex-col md:flex-row gap-4">
+          <Select
             value={selectedPeriod || 'all_periods'}
             onValueChange={handlePeriodChange}
           >
@@ -160,7 +162,9 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>          <Select
+          </Select>
+          
+          <Select
             value={selectedStudentId || 'all_students'}
             onValueChange={handleStudentChange}
           >
@@ -175,8 +179,20 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>          <Button variant="outline" onClick={handleClearFilters} className="bg-blue-500/30 backdrop-blur-sm border-blue-400 text-white font-medium hover:bg-blue-500/50 shadow-sm">
-            <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18"></path><path d="M10.9 4a7.03 7.03 0 0 1 2.2 2.2"></path><path d="M17.7 7.7a7.03 7.03 0 0 1 .8 3.3c0 1-.2 1.9-.6 2.8"></path><path d="M4.6 11a7 7 0 0 1 7.1-7"></path><path d="M4 17a7 7 0 0 0 11 0"></path></svg>
+          </Select>
+          
+          <Button 
+            variant="outline" 
+            onClick={handleClearFilters} 
+            className="bg-blue-500/30 backdrop-blur-sm border-blue-400 text-white font-medium hover:bg-blue-500/50 shadow-sm"
+          >
+            <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 3l18 18"></path>
+              <path d="M10.9 4a7.03 7.03 0 0 1 2.2 2.2"></path>
+              <path d="M17.7 7.7a7.03 7.03 0 0 1 .8 3.3c0 1-.2 1.9-.6 2.8"></path>
+              <path d="M4.6 11a7 7 0 0 1 7.1-7"></path>
+              <path d="M4 17a7 7 0 0 0 11 0"></path>
+            </svg>
             Clear Filters
           </Button>
         </div>
@@ -199,28 +215,22 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
         <TableBody>
           {sortedPayments.length === 0 ? (
             <TableRow className="border-white/20 hover:bg-white/10">
-              <TableCell colSpan={8} className="text-center py-8 text-white/70">
+              <TableCell colSpan={8} className="text-center py-8 text-white">
                 No payment records found.
               </TableCell>
             </TableRow>
           ) : (
             sortedPayments.map((payment) => (
               <TableRow key={payment.id} className="border-white/20 hover:bg-white/10">
-                <TableCell>{format(parseISO(payment.date), 'MMM d, yyyy')}</TableCell>
-                <TableCell className="font-medium">{payment.studentName}</TableCell>
-                <TableCell>{getObligationDetails(payment.obligationId)}</TableCell>
-                <TableCell>{formatPaymentMethod(payment.method)}</TableCell>
-                <TableCell className="text-right">${payment.amount.toFixed(2)}</TableCell>
-                <TableCell>{payment.reference || '-'}</TableCell>
-                <TableCell>{payment.createdBy}</TableCell>                <TableCell className="text-right">
+                <TableCell className="text-white">{format(parseISO(payment.date), 'MMM d, yyyy')}</TableCell>
+                <TableCell className="text-white">{payment.studentName}</TableCell>
+                <TableCell className="text-white">{getObligationDetails(payment.obligationId)}</TableCell>
+                <TableCell className="text-white">{formatPaymentMethod(payment.method)}</TableCell>
+                <TableCell className="text-right text-white">${payment.amount.toFixed(2)}</TableCell>
+                <TableCell className="text-white">{payment.reference || '-'}</TableCell>
+                <TableCell className="text-white">{payment.createdBy}</TableCell>
+                <TableCell className="text-right">
                   <div className="flex gap-1 justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-white/5 border-white/20 text-white hover:bg-white/10 h-8 w-8 p-0"
-                    >
-                      <Receipt className="w-4 h-4" />
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -238,7 +248,8 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
-                      </AlertDialogTrigger>                      <AlertDialogContent className="bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-white">Delete Payment</AlertDialogTitle>
                           <AlertDialogDescription className="text-white/70">

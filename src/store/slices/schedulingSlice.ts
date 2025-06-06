@@ -35,7 +35,7 @@ export interface ConflictCheck {
 interface SchedulingState {
   scheduledClasses: ScheduledClass[];
   loading: boolean;
-  selectedDate: Date;
+  selectedDate: string; // Changed from Date to string for serialization
   viewMode: 'day' | 'week' | 'month';
   filters: {
     classId?: string;
@@ -48,7 +48,7 @@ interface SchedulingState {
 const initialState: SchedulingState = {
   scheduledClasses: [],
   loading: false,
-  selectedDate: new Date(),
+  selectedDate: new Date().toISOString(), // Store as ISO string instead of Date object
   viewMode: 'week',
   filters: {},
 };
@@ -71,17 +71,18 @@ const schedulingSlice = createSlice({
     },
     deleteScheduledClass: (state, action: PayloadAction<string>) => {
       state.scheduledClasses = state.scheduledClasses.filter(c => c.id !== action.payload);
-    },
-    cancelScheduledClass: (state, action: PayloadAction<{ id: string; reason: string }>) => {
+    },    cancelScheduledClass: (state, action: PayloadAction<{ id: string; reason: string }>) => {
       const index = state.scheduledClasses.findIndex(c => c.id === action.payload.id);
       if (index !== -1) {
         state.scheduledClasses[index].status = 'canceled';
         state.scheduledClasses[index].cancelReason = action.payload.reason;
         state.scheduledClasses[index].updatedAt = new Date().toISOString();
       }
-    },
-    setSelectedDate: (state, action: PayloadAction<Date>) => {
-      state.selectedDate = action.payload;
+    },setSelectedDate: (state, action: PayloadAction<Date | string>) => {
+      // Convert Date object to ISO string if needed
+      state.selectedDate = typeof action.payload === 'string' 
+        ? action.payload 
+        : action.payload.toISOString();
     },
     setViewMode: (state, action: PayloadAction<'day' | 'week' | 'month'>) => {
       state.viewMode = action.payload;

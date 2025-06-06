@@ -95,7 +95,7 @@ const updateObligationStatuses = (obligations: PaymentObligation[], payments: Pa
       status = 'paid';
     } else if (totalPaid > 0) {
       status = 'partial';
-    } else if (obligation.dueDate < currentDate) {
+    } else if (String(obligation.dueDate).localeCompare(currentDate) < 0) {
       status = 'overdue';
     } else {
       status = 'pending';

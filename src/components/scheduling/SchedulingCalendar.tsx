@@ -10,6 +10,8 @@ import { setSelectedDate, setViewMode } from '../../store/slices/schedulingSlice
 const SchedulingCalendar: React.FC = () => {
   const dispatch = useDispatch();
   const { selectedDate, viewMode } = useSelector((state: RootState) => state.scheduling);
+  // Parse the string date to a Date object for the Calendar component
+  const parsedSelectedDate = selectedDate ? new Date(selectedDate) : new Date();
 
   return (
     <GlassCard className="p-6">
@@ -33,10 +35,9 @@ const SchedulingCalendar: React.FC = () => {
               </Button>
             ))}
           </div>
-        </div>
-        <Calendar
+        </div>        <Calendar
           mode="single"
-          selected={selectedDate}
+          selected={parsedSelectedDate}
           onSelect={(date) => dispatch(setSelectedDate(date || new Date()))}
           className="rounded-md border border-white/10 bg-white/5"
         />
