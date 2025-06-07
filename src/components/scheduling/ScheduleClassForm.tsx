@@ -7,7 +7,6 @@ import { toast } from '../ui/use-toast';
 import GlassCard from '../common/GlassCard';
 import BasicClassInfo from './forms/BasicClassInfo';
 import DateTimeFields from './forms/DateTimeFields';
-import StudentSelection from './forms/StudentSelection';
 import RecurringOptions from './forms/RecurringOptions';
 
 export interface ScheduleFormData {
@@ -88,11 +87,6 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
         <BasicClassInfo formData={formData} onFormDataChange={setFormData} />
         
         <DateTimeFields formData={formData} onFormDataChange={setFormData} />
-
-        <StudentSelection
-          selectedStudentIds={formData.studentIds}
-          onStudentIdsChange={(studentIds) => setFormData({...formData, studentIds})}
-        />
 
         <RecurringOptions
           isRecurring={formData.isRecurring}
