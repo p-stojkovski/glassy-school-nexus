@@ -8,10 +8,10 @@ import StudentForm from '../components/students/StudentForm';
 import StudentEmptyState from '../components/students/StudentEmptyState';
 import StudentLoading from '../components/students/StudentLoading';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import DemoModeNotification from '../components/students/DemoModeNotification';
 import { useStudentManagement } from '../hooks/useStudentManagement';
 
-const StudentManagement: React.FC = () => {
-  const {
+const StudentManagement: React.FC = () => {  const {
     students,
     loading,
     searchTerm,
@@ -33,11 +33,12 @@ const StudentManagement: React.FC = () => {
 
   if (loading) {
     return <StudentLoading />;
-  }
-
-  return (
+  }  return (
     <div className="space-y-6">
-      <StudentHeader onAddStudent={handleAddStudent} />
+      <DemoModeNotification />
+      <StudentHeader 
+        onAddStudent={handleAddStudent}
+      />
 
       <StudentFilters
         searchTerm={searchTerm}
@@ -80,9 +81,7 @@ const StudentManagement: React.FC = () => {
             />
           </div>
         </SheetContent>
-      </Sheet>
-
-      <ConfirmDialog
+      </Sheet>      <ConfirmDialog
         open={!!studentToDelete}
         onOpenChange={() => setStudentToDelete(null)}
         title="Delete Student"

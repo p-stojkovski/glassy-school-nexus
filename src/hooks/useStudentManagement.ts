@@ -2,39 +2,53 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
-import { setStudents, addStudent, updateStudent, deleteStudent, setLoading, Student } from '../store/slices/studentsSlice';
+import { 
+  setStudents, 
+  addStudent, 
+  updateStudent, 
+  deleteStudent, 
+  setLoading, 
+  setError,
+  selectStudents,
+  selectLoading,
+  selectError,
+  Student 
+} from '../store/slices/studentsSlice';
 import { toast } from '../components/ui/use-toast';
 
 export const useStudentManagement = () => {
   const dispatch = useDispatch();
-  const { students, loading } = useSelector((state: RootState) => state.students);
+  const students = useSelector(selectStudents);
+  const loading = useSelector(selectLoading);
+  const error = useSelector(selectError);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');  const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
-  // Mock data initialization
+  // Initialize with mock data only if no students exist in localStorage
   useEffect(() => {
-    dispatch(setLoading(true));
-    setTimeout(() => {
-      const mockStudents: Student[] = Array.from({ length: 35 }, (_, index) => ({
-        id: `student-${index + 1}`,
-        name: `Student ${index + 1}`,
-        email: `student${index + 1}@email.com`,
-        phone: `+1-555-${String(index + 100).padStart(4, '0')}`,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Student${index + 1}`,
-        classId: `class-${(index % 3) + 1}`,
-        status: Math.random() > 0.2 ? 'active' : 'inactive',
-        joinDate: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
-        parentContact: `Parent ${index + 1} - +1-555-${String(index + 200).padStart(4, '0')}`,
-        paymentDue: Math.random() > 0.7,
-        lastPayment: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
-      }));
-      dispatch(setStudents(mockStudents));
-      dispatch(setLoading(false));
-    }, 1000);
-  }, [dispatch]);
+    if (students.length === 0) {
+      dispatch(setLoading(true));
+      setTimeout(() => {
+        const mockStudents: Student[] = Array.from({ length: 35 }, (_, index) => ({
+          id: `student-${index + 1}`,
+          name: `Student ${index + 1}`,
+          email: `student${index + 1}@email.com`,
+          phone: `+1-555-${String(index + 100).padStart(4, '0')}`,
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Student${index + 1}`,
+          classId: `class-${(index % 3) + 1}`,
+          status: Math.random() > 0.2 ? 'active' : 'inactive',
+          joinDate: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
+          parentContact: `Parent ${index + 1} - +1-555-${String(index + 200).padStart(4, '0')}`,
+          paymentDue: Math.random() > 0.7,
+          lastPayment: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
+        }));
+        dispatch(setStudents(mockStudents));
+        dispatch(setLoading(false));
+      }, 1000);
+    }
+  }, [dispatch, students.length]);
 
   const filteredStudents = students.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -75,9 +89,16 @@ export const useStudentManagement = () => {
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setSelectedStudent(null);
+  };  // Type for student form data
+  type StudentFormData = {
+    name: string;
+    email: string;
+    phone: string;
+    status: 'active' | 'inactive';
+    parentContact: string;
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: StudentFormData) => {
     try {
       if (selectedStudent) {
         const updatedStudent: Student = {
@@ -113,8 +134,17 @@ export const useStudentManagement = () => {
         variant: "destructive",
       });
     }
-  };
-
+  };  // Show error toast if there's an error in the students state
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+      dispatch(setError(null)); // Clear error after showing toast
+    }
+  }, [error, dispatch]);
   return {
     students: filteredStudents,
     loading,
