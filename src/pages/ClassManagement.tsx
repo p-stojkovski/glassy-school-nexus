@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ClassHeader from '../components/classes/ClassHeader';
@@ -7,7 +6,9 @@ import ClassCard from '../components/classes/ClassCard';
 import ClassEmptyState from '../components/classes/ClassEmptyState';
 import ClassLoading from '../components/classes/ClassLoading';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import DemoModeNotification from '../components/classes/DemoModeNotification';
 import { useClassManagement } from '../hooks/useClassManagement';
+import { Class } from '../store/slices/classesSlice';
 
 const ClassManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const ClassManagement: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [showOnlyWithAvailableSlots, setShowOnlyWithAvailableSlots] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [classToDelete, setClassToDelete] = useState<any>(null);
+  const [classToDelete, setClassToDelete] = useState<Class | null>(null);
 
   const {
     loading,
@@ -37,16 +38,16 @@ const ClassManagement: React.FC = () => {
     navigate('/classes/new');
   };
 
-  const handleEdit = (classItem: any) => {
+  const handleEdit = (classItem: Class) => {
     navigate(`/classes/edit/${classItem.id}`);
   };
 
-  const handleDelete = (classItem: any) => {
+  const handleDelete = (classItem: Class) => {
     setClassToDelete(classItem);
     setShowDeleteDialog(true);
   };
 
-  const handleView = (classItem: any) => {
+  const handleView = (classItem: Class) => {
     // Handle view functionality
     console.log('Viewing class:', classItem);
   };
@@ -90,6 +91,7 @@ const ClassManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <DemoModeNotification />
       <ClassHeader onAddClass={handleAddClass} />
 
       <ClassFilters
@@ -127,6 +129,8 @@ const ClassManagement: React.FC = () => {
         description={`Are you sure you want to delete ${classToDelete?.name}? This action cannot be undone.`}
         onConfirm={confirmDelete}
       />
+
+      {/* <DemoModeNotification /> */}
     </div>
   );
 };

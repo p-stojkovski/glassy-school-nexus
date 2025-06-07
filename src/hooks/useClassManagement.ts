@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { Class, setClasses, addClass, updateClass, deleteClass } from '../store/slices/classesSlice';
+import type { ClassFormData } from '../components/classes/ClassFormContent';
 import { toast } from '../components/ui/use-toast';
 
 interface UseClassManagementProps {
@@ -92,7 +93,7 @@ export const useClassManagement = ({
     return matchesSearch && matchesSubject && matchesLevel && matchesStatus && matchesAvailableSlots;
   });
 
-  const handleCreateClass = async (data: any) => {
+  const handleCreateClass = async (data: ClassFormData) => {
     try {
       const selectedTeacher = teachers.find(t => t.id === data.teacherId);
       const selectedClassroom = classrooms.find(c => c.id === data.classroomId);
@@ -138,7 +139,7 @@ export const useClassManagement = ({
     }
   };
 
-  const handleUpdateClass = async (id: string, data: any) => {
+  const handleUpdateClass = async (id: string, data: ClassFormData) => {
     try {
       const selectedTeacher = teachers.find(t => t.id === data.teacherId);
       const selectedClassroom = classrooms.find(c => c.id === data.classroomId);

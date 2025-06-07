@@ -5,19 +5,32 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import ClassFormContent from '../components/classes/ClassFormContent';
+import ClassFormContent, { ClassFormData } from '../components/classes/ClassFormContent';
+import { useClassManagement } from '../hooks/useClassManagement';
 
 const ClassForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { classes } = useSelector((state: RootState) => state.classes);
-  
+
   const editingClass = id ? classes.find(c => c.id === id) : null;
   const isEditing = !!editingClass;
 
-  const handleSubmit = (data: any) => {
-    // This would normally call the appropriate create/update function
-    console.log('Form submitted:', data);
+  // Use the management hook for CRUD
+  const { handleCreateClass, handleUpdateClass } = useClassManagement({
+    searchTerm: '',
+    subjectFilter: 'all',
+    levelFilter: 'all',
+    statusFilter: 'all',
+    showOnlyWithAvailableSlots: false,
+  });
+
+  const handleSubmit = async (data: ClassFormData) => {
+    if (isEditing && editingClass) {
+      await handleUpdateClass(editingClass.id, data);
+    } else {
+      await handleCreateClass(data);
+    }
     navigate('/classes');
   };
 
