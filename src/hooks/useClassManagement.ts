@@ -92,7 +92,6 @@ export const useClassManagement = ({
 
     return matchesSearch && matchesSubject && matchesLevel && matchesStatus && matchesAvailableSlots;
   });
-
   const handleCreateClass = async (data: ClassFormData) => {
     try {
       const selectedTeacher = teachers.find(t => t.id === data.teacherId);
@@ -107,9 +106,11 @@ export const useClassManagement = ({
           subject: selectedTeacher.subject,
           avatar: selectedTeacher.avatar
         } : { id: '', name: '', subject: '', avatar: '/placeholder.svg' },
-        students: 0,
+        students: data.studentIds.length,
         maxStudents: 20,
+        studentIds: data.studentIds, // Store selected student IDs
         room: selectedClassroom?.name || '',
+        roomId: data.classroomId, // Store classroom ID reference
         schedule: data.schedule,
         status: data.status,
         subject: data.subject,
@@ -138,7 +139,6 @@ export const useClassManagement = ({
       });
     }
   };
-
   const handleUpdateClass = async (id: string, data: ClassFormData) => {
     try {
       const selectedTeacher = teachers.find(t => t.id === data.teacherId);
@@ -153,9 +153,12 @@ export const useClassManagement = ({
           avatar: selectedTeacher.avatar
         } : undefined,
         room: selectedClassroom?.name || '',
+        roomId: data.classroomId,
         schedule: data.schedule,
         status: data.status,
         subject: data.subject,
+        students: data.studentIds.length,
+        studentIds: data.studentIds,
         updatedAt: new Date().toISOString()
       };
 

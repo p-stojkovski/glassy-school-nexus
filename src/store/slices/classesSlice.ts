@@ -11,6 +11,7 @@ export interface Class {
     subject: string;
   };
   room: string;
+  roomId?: string; // Store reference to classroom ID
   schedule: {
     day: string;
     startTime: string;
@@ -19,6 +20,7 @@ export interface Class {
   status: 'active' | 'inactive' | 'pending';
   students: number;
   maxStudents: number;
+  studentIds: string[]; // Array of student IDs assigned to this class
   subject: string;
   level: string;
   price: number;

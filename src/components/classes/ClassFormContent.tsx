@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -36,14 +36,19 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
   const { teachers } = useSelector((state: RootState) => state.teachers);
   const { classrooms } = useSelector((state: RootState) => state.classrooms);
 
+  // Use local state to track selected students to avoid infinite loops
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(
+    editingClass?.studentIds || []
+  );
+
   const form = useForm<ClassFormData>({
     defaultValues: editingClass ? {
       name: editingClass.name,
       subject: editingClass.teacher.subject,
       teacherId: editingClass.teacher.id,
-      classroomId: editingClass.room.replace('Room ', ''),
+      classroomId: editingClass.roomId || '',
       schedule: editingClass.schedule,
-      studentIds: [],
+      studentIds: editingClass.studentIds || [],
       status: editingClass.status,
     } : {
       name: '',
@@ -53,22 +58,29 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
       schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:30' }],
       studentIds: [],
       status: 'active',
-    }
-  });
+    }  });
+
+  // Sync form values with local state
+  useEffect(() => {
+    form.setValue('studentIds', selectedStudentIds, { shouldDirty: true });
+  }, [selectedStudentIds, form]);
 
   const handleSubmit = (data: ClassFormData) => {
-    onSubmit(data);
+    // Ensure the latest student selections are included
+    const finalData = { ...data, studentIds: selectedStudentIds };
+    onSubmit(finalData);
   };
 
-  // Toggle student selection
-  const toggleStudent = (studentId: string) => {
-    const currentIds = form.getValues('studentIds') || [];
-    if (currentIds.includes(studentId)) {
-      form.setValue('studentIds', currentIds.filter(id => id !== studentId));
-    } else {
-      form.setValue('studentIds', [...currentIds, studentId]);
-    }
-  };
+  // Memoized toggle function to prevent unnecessary re-renders
+  const toggleStudent = useCallback((studentId: string) => {
+    setSelectedStudentIds(prev => {
+      if (prev.includes(studentId)) {
+        return prev.filter(id => id !== studentId);
+      } else {
+        return [...prev, studentId];
+      }
+    });
+  }, []);
 
   return (
     <GlassCard className="p-8">
@@ -118,8 +130,7 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <FormField
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">            <FormField
               control={form.control}
               name="teacherId"
               rules={{ required: "Teacher is required" }}
@@ -132,20 +143,27 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
                         <SelectValue placeholder="Select teacher" />
                       </SelectTrigger>
                       <SelectContent>
-                        {teachers.map((teacher) => (
-                          <SelectItem key={teacher.id} value={teacher.id}>
-                            {teacher.name}
+                        {teachers.length > 0 ? (
+                          teachers.map((teacher) => (
+                            <SelectItem key={teacher.id} value={teacher.id}>
+                              {teacher.name}{' '}
+                              <span className="text-sm text-white/60">
+                                ({teacher.subject})
+                              </span>
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-teachers" disabled>
+                            No teachers available
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
-            />
-
-            <FormField
+            /><FormField
               control={form.control}
               name="classroomId"
               rules={{ required: "Classroom is required" }}
@@ -158,11 +176,20 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
                         <SelectValue placeholder="Select classroom" />
                       </SelectTrigger>
                       <SelectContent>
-                        {classrooms.map((classroom) => (
-                          <SelectItem key={classroom.id} value={classroom.id}>
-                            {classroom.name}
+                        {classrooms.length > 0 ? (
+                          classrooms.map((classroom) => (
+                            <SelectItem key={classroom.id} value={classroom.id}>
+                              {classroom.name}{' '}
+                              <span className="text-sm text-white/60">
+                                (Capacity: {classroom.capacity})
+                              </span>
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-classrooms" disabled>
+                            No classrooms available
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -170,16 +197,12 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
                 </FormItem>
               )}
             />
-          </div>
-
-          <ScheduleForm />
-
-          <StudentSelection
-            selectedStudentIds={form.watch('studentIds') || []}
+          </div>          <ScheduleForm />          <StudentSelection
+            selectedStudentIds={selectedStudentIds}
             onStudentToggle={toggleStudent}
-          />
-
-          <div className="flex justify-end space-x-4 pt-4">
+          /><div className="flex justify-end items-center space-x-4 pt-4">            <span className="text-white/70 text-sm mr-auto">
+              {selectedStudentIds.length} students selected
+            </span>
             <Button
               type="button"
               variant="ghost"

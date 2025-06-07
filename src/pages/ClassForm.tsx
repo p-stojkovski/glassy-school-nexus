@@ -1,20 +1,106 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import ClassFormContent, { ClassFormData } from '../components/classes/ClassFormContent';
 import { useClassManagement } from '../hooks/useClassManagement';
+import DemoModeNotification from '../components/classes/DemoModeNotification';
+import { setClassrooms } from '../store/slices/classroomsSlice';
+import { setStudents } from '../store/slices/studentsSlice';
+import { Classroom } from '../store/slices/classroomsSlice';
+import { Student } from '../store/slices/studentsSlice';
 
 const ClassForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const dispatch = useDispatch();
   const { classes } = useSelector((state: RootState) => state.classes);
+  const { classrooms } = useSelector((state: RootState) => state.classrooms);
+  const { students } = useSelector((state: RootState) => state.students);
 
   const editingClass = id ? classes.find(c => c.id === id) : null;
   const isEditing = !!editingClass;
+
+  // Initialize demo data on component mount
+  useEffect(() => {
+    // Only initialize if there's no data
+    if (classrooms.length === 0) {
+      const demoClassrooms: Classroom[] = [
+        {
+          id: 'classroom-1',
+          name: 'Room 101',
+          location: 'Building A, 1st Floor',
+          capacity: 25,
+          status: 'active',
+          createdDate: '2023-01-15T10:00:00Z',
+          lastUpdated: '2023-06-01T14:30:00Z',
+        },
+        {
+          id: 'classroom-2',
+          name: 'Room 202',
+          location: 'Building A, 2nd Floor',
+          capacity: 20,
+          status: 'active',
+          createdDate: '2023-01-15T10:30:00Z',
+          lastUpdated: '2023-06-01T14:45:00Z',
+        },
+        {
+          id: 'classroom-3',
+          name: 'Room 305',
+          location: 'Building B, 3rd Floor',
+          capacity: 30,
+          status: 'active',
+          createdDate: '2023-01-16T09:00:00Z',
+          lastUpdated: '2023-06-01T15:00:00Z',
+        }
+      ];
+      dispatch(setClassrooms(demoClassrooms));
+    }
+
+    if (students.length === 0) {
+      const demoStudents: Student[] = [
+        {
+          id: 'student-1',
+          name: 'Emma Wilson',
+          email: 'emma.wilson@example.com',
+          phone: '+1234567890',
+          avatar: '/placeholder.svg',
+          classId: '',
+          status: 'active',
+          joinDate: '2023-02-15T10:00:00Z',
+          parentContact: 'john.wilson@example.com',
+          paymentDue: false,
+          lastPayment: '2023-05-01T14:30:00Z',
+        },
+        {
+          id: 'student-2',
+          name: 'Lucas Smith',
+          email: 'lucas.smith@example.com',
+          phone: '+1234567891',
+          avatar: '/placeholder.svg',
+          classId: '',
+          status: 'active',
+          joinDate: '2023-02-20T10:30:00Z',
+          parentContact: 'mary.smith@example.com',
+        },
+        {
+          id: 'student-3',
+          name: 'Olivia Brown',
+          email: 'olivia.brown@example.com',
+          phone: '+1234567892',
+          avatar: '/placeholder.svg',
+          classId: '',
+          status: 'active',
+          joinDate: '2023-03-01T09:00:00Z',
+          parentContact: 'robert.brown@example.com',
+          paymentDue: true,
+        }
+      ];
+      dispatch(setStudents(demoStudents));
+    }
+  }, [dispatch, classrooms.length, students.length]);
 
   // Use the management hook for CRUD
   const { handleCreateClass, handleUpdateClass } = useClassManagement({
@@ -56,8 +142,9 @@ const ClassForm: React.FC = () => {
           <p className="text-white/70">
             {isEditing ? 'Update class information and settings' : 'Add a new class to the system'}
           </p>
-        </div>
-      </div>
+        </div>      </div>
+
+      <DemoModeNotification />
 
       <div className="w-full">
         <ClassFormContent
