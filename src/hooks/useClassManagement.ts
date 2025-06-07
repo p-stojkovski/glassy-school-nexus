@@ -96,8 +96,7 @@ export const useClassManagement = ({
     try {
       const selectedTeacher = teachers.find(t => t.id === data.teacherId);
       const selectedClassroom = classrooms.find(c => c.id === data.classroomId);
-      
-      const newClass: Class = {
+        const newClass: Class = {
         id: `class-${Date.now()}`,
         name: data.name,
         teacher: selectedTeacher ? { 
@@ -106,9 +105,8 @@ export const useClassManagement = ({
           subject: selectedTeacher.subject,
           avatar: selectedTeacher.avatar
         } : { id: '', name: '', subject: '', avatar: '/placeholder.svg' },
-        students: data.studentIds.length,
+        students: 0, // Default to 0 students as we don't assign them anymore
         maxStudents: 20,
-        studentIds: data.studentIds, // Store selected student IDs
         room: selectedClassroom?.name || '',
         roomId: data.classroomId, // Store classroom ID reference
         schedule: data.schedule,
@@ -143,8 +141,7 @@ export const useClassManagement = ({
     try {
       const selectedTeacher = teachers.find(t => t.id === data.teacherId);
       const selectedClassroom = classrooms.find(c => c.id === data.classroomId);
-      
-      const updatedFields: Partial<Class> = {
+        const updatedFields: Partial<Class> = {
         name: data.name,
         teacher: selectedTeacher ? { 
           id: selectedTeacher.id, 
@@ -157,8 +154,6 @@ export const useClassManagement = ({
         schedule: data.schedule,
         status: data.status,
         subject: data.subject,
-        students: data.studentIds.length,
-        studentIds: data.studentIds,
         updatedAt: new Date().toISOString()
       };
 

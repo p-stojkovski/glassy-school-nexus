@@ -1,5 +1,5 @@
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -9,7 +9,6 @@ import { Class } from '../../store/slices/classesSlice';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import GlassCard from '../common/GlassCard';
-import StudentSelection from './StudentSelection';
 import ScheduleForm from './ScheduleForm';
 
 interface ClassFormContentProps {
@@ -28,18 +27,12 @@ export interface ClassFormData {
     startTime: string;
     endTime: string;
   }[];
-  studentIds: string[];
   status: 'active' | 'inactive' | 'pending';
 }
 
 const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel, editingClass }) => {
   const { teachers } = useSelector((state: RootState) => state.teachers);
   const { classrooms } = useSelector((state: RootState) => state.classrooms);
-
-  // Use local state to track selected students to avoid infinite loops
-  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(
-    editingClass?.studentIds || []
-  );
 
   const form = useForm<ClassFormData>({
     defaultValues: editingClass ? {
@@ -48,7 +41,6 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
       teacherId: editingClass.teacher.id,
       classroomId: editingClass.roomId || '',
       schedule: editingClass.schedule,
-      studentIds: editingClass.studentIds || [],
       status: editingClass.status,
     } : {
       name: '',
@@ -56,31 +48,13 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
       teacherId: '',
       classroomId: '',
       schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:30' }],
-      studentIds: [],
       status: 'active',
-    }  });
-
-  // Sync form values with local state
-  useEffect(() => {
-    form.setValue('studentIds', selectedStudentIds, { shouldDirty: true });
-  }, [selectedStudentIds, form]);
+    }
+  });
 
   const handleSubmit = (data: ClassFormData) => {
-    // Ensure the latest student selections are included
-    const finalData = { ...data, studentIds: selectedStudentIds };
-    onSubmit(finalData);
+    onSubmit(data);
   };
-
-  // Memoized toggle function to prevent unnecessary re-renders
-  const toggleStudent = useCallback((studentId: string) => {
-    setSelectedStudentIds(prev => {
-      if (prev.includes(studentId)) {
-        return prev.filter(id => id !== studentId);
-      } else {
-        return [...prev, studentId];
-      }
-    });
-  }, []);
 
   return (
     <GlassCard className="p-8">
@@ -196,13 +170,10 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
                   <FormMessage />
                 </FormItem>
               )}
-            />
-          </div>          <ScheduleForm />          <StudentSelection
-            selectedStudentIds={selectedStudentIds}
-            onStudentToggle={toggleStudent}
-          /><div className="flex justify-end items-center space-x-4 pt-4">            <span className="text-white/70 text-sm mr-auto">
-              {selectedStudentIds.length} students selected
-            </span>
+            />          </div>          
+          <ScheduleForm />          
+          
+          <div className="flex justify-end items-center space-x-4 pt-4">
             <Button
               type="button"
               variant="ghost"

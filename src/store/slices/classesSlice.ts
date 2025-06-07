@@ -20,7 +20,6 @@ export interface Class {
   status: 'active' | 'inactive' | 'pending';
   students: number;
   maxStudents: number;
-  studentIds: string[]; // Array of student IDs assigned to this class
   subject: string;
   level: string;
   price: number;

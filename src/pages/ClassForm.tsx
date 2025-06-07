@@ -8,21 +8,16 @@ import ClassFormContent, { ClassFormData } from '../components/classes/ClassForm
 import { useClassManagement } from '../hooks/useClassManagement';
 import DemoModeNotification from '../components/classes/DemoModeNotification';
 import { setClassrooms } from '../store/slices/classroomsSlice';
-import { setStudents } from '../store/slices/studentsSlice';
 import { Classroom } from '../store/slices/classroomsSlice';
-import { Student } from '../store/slices/studentsSlice';
 
 const ClassForm: React.FC = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
+  const navigate = useNavigate();  const { id } = useParams();
   const dispatch = useDispatch();
   const { classes } = useSelector((state: RootState) => state.classes);
   const { classrooms } = useSelector((state: RootState) => state.classrooms);
-  const { students } = useSelector((state: RootState) => state.students);
 
   const editingClass = id ? classes.find(c => c.id === id) : null;
   const isEditing = !!editingClass;
-
   // Initialize demo data on component mount
   useEffect(() => {
     // Only initialize if there's no data
@@ -58,49 +53,7 @@ const ClassForm: React.FC = () => {
       ];
       dispatch(setClassrooms(demoClassrooms));
     }
-
-    if (students.length === 0) {
-      const demoStudents: Student[] = [
-        {
-          id: 'student-1',
-          name: 'Emma Wilson',
-          email: 'emma.wilson@example.com',
-          phone: '+1234567890',
-          avatar: '/placeholder.svg',
-          classId: '',
-          status: 'active',
-          joinDate: '2023-02-15T10:00:00Z',
-          parentContact: 'john.wilson@example.com',
-          paymentDue: false,
-          lastPayment: '2023-05-01T14:30:00Z',
-        },
-        {
-          id: 'student-2',
-          name: 'Lucas Smith',
-          email: 'lucas.smith@example.com',
-          phone: '+1234567891',
-          avatar: '/placeholder.svg',
-          classId: '',
-          status: 'active',
-          joinDate: '2023-02-20T10:30:00Z',
-          parentContact: 'mary.smith@example.com',
-        },
-        {
-          id: 'student-3',
-          name: 'Olivia Brown',
-          email: 'olivia.brown@example.com',
-          phone: '+1234567892',
-          avatar: '/placeholder.svg',
-          classId: '',
-          status: 'active',
-          joinDate: '2023-03-01T09:00:00Z',
-          parentContact: 'robert.brown@example.com',
-          paymentDue: true,
-        }
-      ];
-      dispatch(setStudents(demoStudents));
-    }
-  }, [dispatch, classrooms.length, students.length]);
+  }, [dispatch, classrooms.length]);
 
   // Use the management hook for CRUD
   const { handleCreateClass, handleUpdateClass } = useClassManagement({
