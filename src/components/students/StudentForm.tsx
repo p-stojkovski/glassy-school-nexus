@@ -46,55 +46,50 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <FormField
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">        <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white">Full Name *</FormLabel>
+              <FormLabel className="text-white font-semibold">Full Name *</FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   placeholder="Enter student's full name"
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
-        />
-
-        <FormField
+        />        <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white">Email Address</FormLabel>
+              <FormLabel className="text-white font-semibold">Email Address</FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   type="email"
                   placeholder="Enter email address"
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
-        />
-
-        <FormField
+        />        <FormField
           control={form.control}
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white">Phone Number</FormLabel>
+              <FormLabel className="text-white font-semibold">Phone Number</FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   placeholder="Enter phone number"
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                 />
               </FormControl>
               <FormMessage />
@@ -107,10 +102,10 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
           name="status"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white">Enrollment Status *</FormLabel>
+              <FormLabel className="text-white font-semibold">Enrollment Status *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-yellow-400 focus:ring-yellow-400">
                     <SelectValue placeholder="Select enrollment status" />
                   </SelectTrigger>
                 </FormControl>
@@ -122,37 +117,33 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
               <FormMessage />
             </FormItem>
           )}
-        />
-
-        <FormField
+        />        <FormField
           control={form.control}
           name="parentContact"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white">Parent/Guardian Contact</FormLabel>
+              <FormLabel className="text-white font-semibold">Parent/Guardian Contact</FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   placeholder="Parent name and phone number"
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
-        />
-
-        <FormField
+        />        <FormField
           control={form.control}
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white">Additional Notes</FormLabel>
+              <FormLabel className="text-white font-semibold">Additional Notes</FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
                   placeholder="Any additional information about the student"
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 min-h-[100px] resize-none"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400 min-h-[100px] resize-none"
                 />
               </FormControl>
               <FormMessage />
@@ -160,12 +151,12 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
           )}
         />
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-4 pt-6 border-t border-white/20">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             onClick={onCancel}
-            className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10"
+            className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
           >
             Cancel
           </Button>
