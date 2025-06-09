@@ -44,6 +44,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
+  const UNASSIGNED_FILTER = 'unassigned';
   const [tempSelectedIds, setTempSelectedIds] = useState<string[]>(selectedStudentIds);
 
   // Reset temp selection when panel opens
@@ -70,37 +71,40 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
     };
   }, [isOpen, onClose]);  // Get classes from store
   const { classes } = useSelector((state: RootState) => state.classes);
-  
-  // Get available classes for filter, using actual class data
+    // Get available classes for filter, using actual class data
   const availableClasses = useMemo(() => {
-    // Create a map of class IDs to class names for easier reference
-    const classMap = classes.reduce((acc: Record<string, string>, cls: Class) => {
-      acc[cls.id] = cls.name;
-      return acc;
-    }, {});
-    
     // Get unique classIds from students that have assigned classes
-    const classIds = students
+    const uniqueClassIds = students
       .map(student => student.classId)
       .filter(Boolean)
       .filter((classId, index, array) => array.indexOf(classId) === index);
     
-    // Return array of class IDs with proper names
-    return classIds;
+    // Filter to only include classes that exist in the store
+    const validClasses = uniqueClassIds
+      .filter(classId => classes.some(cls => cls.id === classId))
+      .map(classId => {
+        const classData = classes.find(cls => cls.id === classId);
+        return {
+          id: classId,
+          name: classData ? classData.name : classId
+        };
+      });
+    
+    return validClasses;
   }, [students, classes]);
   // Filter students based on search query, status, and grade
   const filteredStudents = useMemo(() => {
     let filtered = students;
-    
     // Apply status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(student => student.status === statusFilter);
     }
     // Apply class filter (using classId as proxy for grade)
-    if (gradeFilter !== 'all') {
+    if (gradeFilter === UNASSIGNED_FILTER) {
+      filtered = filtered.filter(student => !student.classId || !classes.find(cls => cls.id === student.classId));
+    } else if (gradeFilter !== 'all') {
       filtered = filtered.filter(student => student.classId === gradeFilter);
     }
-    
     // Apply search query filter
     if (searchQuery) {
       const lowercasedQuery = searchQuery.toLowerCase();
@@ -110,10 +114,9 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
         student.phone?.toLowerCase().includes(lowercasedQuery)
       );
     }
-    
     // Create a copy before sorting to avoid mutating the original array
     return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
-  }, [students, searchQuery, statusFilter, gradeFilter]);
+  }, [students, searchQuery, statusFilter, gradeFilter, classes]);
 
   // Get selected students info
   const selectedStudents = useMemo(() => {
@@ -214,12 +217,10 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 text-white border border-white/30">
                   <SelectItem value="all">All Classes</SelectItem>
-                  {availableClasses.map(classId => {
-                    const className = classes.find(cls => cls.id === classId)?.name || classId;
-                    return (
-                      <SelectItem key={classId} value={classId}>{className}</SelectItem>
-                    );
-                  })}
+                  <SelectItem value={UNASSIGNED_FILTER}>Unassigned</SelectItem>
+                  {availableClasses.map(classItem => (
+                    <SelectItem key={classItem.id} value={classItem.id}>{classItem.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -358,11 +359,15 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                           >
                             {student.status}
                           </Badge>
-                        </div>                        
-                            <div className="flex items-center gap-4 mt-1">
-                          <p className="text-sm text-white/70 truncate">{student.email}</p>                          <div className="flex items-center gap-1 text-xs text-white/60">
+                        </div>                            <div className="flex items-center gap-4 mt-1">
+                          <p className="text-sm text-white/70 truncate">{student.email}</p>
+                          <div className="flex items-center gap-1 text-xs text-white/60">
                             <BookOpen className="w-3 h-3" />
-                            <span>{classes.find(cls => cls.id === student.classId)?.name || student.classId}</span>
+                            {student.classId && classes.find(cls => cls.id === student.classId) ? (
+                              <span>{classes.find(cls => cls.id === student.classId)?.name}</span>
+                            ) : (
+                              <span>Unassigned</span>
+                            )}
                           </div>
                         </div>
                       </div>
