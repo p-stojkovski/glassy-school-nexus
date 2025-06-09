@@ -295,11 +295,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                     className="bg-white/20 border-white/30 text-white placeholder:text-white/70"
                     {...field} 
                   />
-                </FormControl>
-                <FormMessage />
+                </FormControl>                <FormMessage />
               </FormItem>
             )}
-          />          <FormField
+          />
+
+          <FormField
             control={form.control}
             name="date"
             render={({ field }) => (
@@ -321,7 +322,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                           <span>Pick a date</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>                    </FormControl>
+                      </Button>
+                    </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 bg-gray-800 border border-white/30 backdrop-blur-sm" align="start">
                     <Calendar
@@ -387,9 +389,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
               <FormMessage />
             </FormItem>
           )}
-        />
-
-        <FormField
+        />        <FormField
           control={form.control}
           name="notes"
           render={({ field }) => (

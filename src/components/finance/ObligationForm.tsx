@@ -318,11 +318,11 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
                           format(field.value, "PPP")
                         ) : (
                           <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        )}                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
-                  </PopoverTrigger>                  <PopoverContent className="w-auto p-0 bg-gray-800 border border-white/30 backdrop-blur-sm" align="start">
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-800 border border-white/30 backdrop-blur-sm" align="start">
                     <Calendar
                       mode="single"
                       selected={field.value}
@@ -378,7 +378,9 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
               <FormMessage />
             </FormItem>
           )}
-        />        <div className="flex items-center justify-end space-x-4">
+        />
+
+        <div className="flex items-center justify-end space-x-4">
           {/* Only show Cancel button in batch mode */}
           {batchMode && (
             <Button 
