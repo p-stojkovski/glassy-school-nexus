@@ -318,11 +318,10 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({ classId, date }) =>
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
-            <div className="flex justify-end">
+          </Table>            <div className="flex justify-end">
             <Button
               onClick={handleSubmit}
-              className="bg-amber-600 hover:bg-amber-700 text-white"
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
             >
               {isEditing ? 'Update Attendance' : 'Submit Attendance'}
             </Button>
@@ -340,10 +339,10 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({ classId, date }) =>
                 : 'Are you sure you want to submit this attendance record?'
               }
             </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white">Cancel</AlertDialogCancel>            <AlertDialogAction 
-              className="bg-amber-600 hover:bg-amber-700 text-white"
+          </AlertDialogHeader>          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
               onClick={confirmSubmit}
             >
               {isEditing ? 'Update' : 'Submit'}

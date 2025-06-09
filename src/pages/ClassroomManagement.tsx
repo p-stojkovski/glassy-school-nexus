@@ -228,7 +228,7 @@ const ClassroomManagement: React.FC = () => {
           <p className="text-white/70">Manage classroom information and availability</p>
         </div>        <Button 
           onClick={handleAddClassroom}
-          className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+          className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
         >
           <Plus className="w-5 h-5 mr-2" />
           Add Classroom
@@ -272,10 +272,10 @@ const ClassroomManagement: React.FC = () => {
             {searchTerm || statusFilter !== 'all' 
               ? 'No classrooms match your current search criteria.' 
               : 'Start by adding your first classroom to the system.'}
-          </p>
-          {(!searchTerm && statusFilter === 'all') && (            <Button 
+          </p>          {(!searchTerm && statusFilter === 'all') && (
+            <Button 
               onClick={handleAddClassroom}
-              className="bg-amber-600 hover:bg-amber-700 text-white"
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
             >
               <Plus className="w-5 h-5 mr-2" />
               Add First Classroom
