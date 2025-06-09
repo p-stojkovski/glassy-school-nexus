@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Edit, Trash2, Mail, Phone, Calendar, BookOpen, AlertTriangle } from 'lucide-react';
+import { Mail, Phone, Calendar, BookOpen, AlertTriangle } from 'lucide-react';
 import { Teacher, deleteTeacher } from '../../store/slices/teachersSlice';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -79,25 +79,23 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher, onEdit }) => {
                 {teacher.status}
               </Badge>
             </div>
-          </div>
-          <div className="flex space-x-2">
+          </div>          <div className="flex space-x-2">
             <Button
-              variant="ghost"
               size="sm"
+              variant="ghost"
               onClick={onEdit}
               className="text-white/70 hover:text-white hover:bg-white/10"
             >
-              <Edit className="w-4 h-4" />
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+              Edit
+            </Button>            <AlertDialog>
+              <AlertDialogTrigger>
                 <Button
-                  variant="ghost"
                   size="sm"
+                  variant="ghost"
                   className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                   disabled={isDeleting}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  Delete
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent className="bg-gray-900 border-gray-700">

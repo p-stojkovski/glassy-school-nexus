@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit, Trash2, MapPin, Users } from 'lucide-react';
+import { MapPin, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 import GlassCard from '../common/GlassCard';
 import { Classroom } from '../../store/slices/classroomsSlice';
@@ -59,29 +59,28 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
               {classroom.status.charAt(0).toUpperCase() + classroom.status.slice(1)}
             </div>
           </div>
-          
-          <div className="flex gap-2 ml-4">
+            <div className="flex space-x-2">
             <Button
-              variant="ghost"
               size="sm"
+              variant="ghost"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(classroom);
               }}
-              className="text-white/70"
+              className="text-white/70 hover:text-white hover:bg-white/10"
             >
-              <Edit className="w-4 h-4" />
+              Edit
             </Button>
             <Button
-              variant="ghost"
               size="sm"
+              variant="ghost"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(classroom);
               }}
-              className="text-red-400"
+              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
             >
-              <Trash2 className="w-4 h-4" />
+              Delete
             </Button>
           </div>
         </div>
