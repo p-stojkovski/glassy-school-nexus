@@ -229,12 +229,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                   onValueChange={(value) => handleStudentChange(value)}
                   value={field.value}
                   disabled={!!editingId}
-                >
-                  <FormControl>
+                >                  <FormControl>
                     <SelectTrigger className="bg-white/20 border-white/30 text-white">
                       <SelectValue placeholder="Select a student" />
                     </SelectTrigger>
-                  </FormControl>                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+                  </FormControl>
+                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
                     {mockStudents.map(student => (
                       <SelectItem key={student.id} value={student.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                         {student.name}
@@ -260,12 +260,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                   }}
                   value={field.value}
                   disabled={!!editingId || !selectedStudentId}
-                >
-                  <FormControl>
+                >                  <FormControl>
                     <SelectTrigger className="bg-white/20 border-white/30 text-white">
                       <SelectValue placeholder="Select obligation" />
                     </SelectTrigger>
-                  </FormControl>                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+                  </FormControl>
+                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
                     {studentObligations.map(obligation => (
                       <SelectItem key={obligation.id} value={obligation.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                         {obligation.type} - ${obligation.amount} ({obligation.period})
@@ -321,9 +321,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                           <span>Pick a date</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>                  <PopoverContent className="w-auto p-0 bg-gray-800 border border-white/30 backdrop-blur-sm" align="start">
+                      </Button>                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-800 border border-white/30 backdrop-blur-sm" align="start">
                     <Calendar
                       mode="single"
                       selected={field.value}
@@ -350,12 +350,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-white">Payment Method</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>                  <FormControl>
                     <SelectTrigger className="bg-white/20 border-white/30 text-white">
                       <SelectValue placeholder="Select method" />
                     </SelectTrigger>
-                  </FormControl>                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+                  </FormControl>
+                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
                     <SelectItem value="cash" className="text-white hover:bg-gray-700 focus:bg-gray-700">Cash</SelectItem>
                     <SelectItem value="card" className="text-white hover:bg-gray-700 focus:bg-gray-700">Card</SelectItem>
                     <SelectItem value="transfer" className="text-white hover:bg-gray-700 focus:bg-gray-700">Bank Transfer</SelectItem>
@@ -407,7 +407,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
           )}
         />
 
-        <div className="flex items-center justify-end space-x-4">          <Button 
+        <div className="flex items-center justify-end space-x-4">
+          <Button 
             type="button" 
             variant="outline" 
             className="bg-white/50 backdrop-blur-sm border-white text-white font-medium hover:bg-white/60 shadow-sm"

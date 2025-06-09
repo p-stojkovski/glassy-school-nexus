@@ -45,16 +45,17 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
   const handleSubmit = (data: ClassroomFormData) => {
     onSubmit(data);
   };
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="name"
-          render={({ field }) => (            <FormItem>
+          render={({ field }) => (
+            <FormItem>
               <FormLabel className="text-white font-semibold">Classroom Name *</FormLabel>
-              <FormControl>                <Input
+              <FormControl>
+                <Input
                   placeholder="e.g., Room A-101"
                   {...field}
                   className="bg-white/5 border-white/15 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
@@ -71,7 +72,8 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-white font-semibold">Location</FormLabel>
-              <FormControl>                <Input
+              <FormControl>
+                <Input
                   placeholder="e.g., Building A, First Floor"
                   {...field}
                   className="bg-white/5 border-white/15 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
@@ -79,8 +81,7 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
               </FormControl>
               <FormMessage className="text-red-300" />
             </FormItem>
-          )}
-        />
+          )}        />
 
         <FormField
           control={form.control}
@@ -91,7 +92,8 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
               <FormControl>
                 <Input
                   type="number"
-                  placeholder="30"                  {...field}
+                  placeholder="30"
+                  {...field}
                   onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
                 />
@@ -107,22 +109,23 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-white font-semibold">Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>                <FormControl>                  <SelectTrigger className="bg-white/5 border-white/15 text-white focus:border-amber-600 focus:ring-amber-600">
+              <FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger className="bg-white/5 border-white/15 text-white focus:border-amber-600 focus:ring-amber-600">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                </FormControl>
-                <SelectContent className="bg-gray-800 border-white/20">
-                  <SelectItem value="active" className="text-white hover:bg-white/10">Active</SelectItem>
-                  <SelectItem value="inactive" className="text-white hover:bg-white/10">Inactive</SelectItem>
-                  <SelectItem value="maintenance" className="text-white hover:bg-white/10">Maintenance</SelectItem>
-                </SelectContent>
-              </Select>
+                  <SelectContent className="bg-gray-800 border-white/20">
+                    <SelectItem value="active" className="text-white hover:bg-white/10">Active</SelectItem>
+                    <SelectItem value="inactive" className="text-white hover:bg-white/10">Inactive</SelectItem>
+                    <SelectItem value="maintenance" className="text-white hover:bg-white/10">Maintenance</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
               <FormMessage className="text-red-300" />
             </FormItem>
-          )}
-        />
+          )}        />
 
-        <div className="flex gap-4 pt-6 border-t border-white/20">          <Button 
+        <div className="flex gap-4 pt-6 border-t border-white/20"><Button 
             type="submit" 
             disabled={isLoading}
             className="flex-1 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"

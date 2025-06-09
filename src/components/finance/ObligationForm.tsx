@@ -230,13 +230,13 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
                   <Select
                     onValueChange={(value) => handleStudentChange(value)}
                     defaultValue={field.value}
-                    value={field.value}
-                  >
+                    value={field.value}                  >
                     <FormControl>
                       <SelectTrigger className="bg-white/20 border-white/30 text-white">
                         <SelectValue placeholder="Select a student" />
                       </SelectTrigger>
-                    </FormControl>                    <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+                    </FormControl>
+                    <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
                       {mockStudents.map(student => (
                         <SelectItem key={student.id} value={student.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                           {student.name}
@@ -255,13 +255,13 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
             name="type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white">Obligation Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormLabel className="text-white">Obligation Type</FormLabel>                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="bg-white/20 border-white/30 text-white">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
-                  </FormControl>                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+                  </FormControl>
+                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
                     {obligationTypes.map(type => (
                       <SelectItem key={type} value={type} className="text-white hover:bg-gray-700 focus:bg-gray-700">
                         {type}
@@ -296,7 +296,9 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
                 <FormMessage />
               </FormItem>
             )}
-          /><FormField
+          />
+
+          <FormField
             control={form.control}
             name="dueDate"
             render={({ field }) => (
