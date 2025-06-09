@@ -74,33 +74,31 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onEdit, onDelete, on
           {/* Join Date */}
           <div className="text-xs text-white/50 mb-4">
             Joined: {new Date(student.joinDate).toLocaleDateString()}
-          </div>
-
-          {/* Action Buttons */}
+          </div>          {/* Action Buttons */}
           <div className="flex gap-2">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={onView}
-              className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10"
+              className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
             >
               <Eye className="w-4 h-4 mr-1" />
               View
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={onEdit}
-              className="flex-1 bg-blue-500/20 border-blue-500/30 text-blue-300 hover:bg-blue-500/30"
+              className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
             >
               <Edit className="w-4 h-4 mr-1" />
               Edit
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={onDelete}
-              className="flex-1 bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30"
+              className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
             >
               <Trash2 className="w-4 h-4 mr-1" />
               Delete

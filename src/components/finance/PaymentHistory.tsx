@@ -41,7 +41,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
-import { Pencil, Trash2, Receipt } from 'lucide-react';
+import { Receipt } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface PaymentHistoryProps {
@@ -234,25 +234,23 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
                 <TableCell className="text-white">{formatPaymentMethod(payment.method)}</TableCell>
                 <TableCell className="text-right text-white">${payment.amount.toFixed(2)}</TableCell>
                 <TableCell className="text-white">{payment.reference || '-'}</TableCell>
-                <TableCell className="text-white">{payment.createdBy}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex gap-1 justify-end">
-                    <Button
-                      variant="outline"
+                <TableCell className="text-white">{payment.createdBy}</TableCell>                <TableCell className="text-right">
+                  <div className="flex gap-2 justify-end">                    <Button
+                      variant="ghost"
                       size="sm"
                       onClick={() => onEdit(payment.id)}
-                      className="bg-blue-500/20 border-blue-500/30 text-blue-300 hover:bg-blue-500/30 h-8 w-8 p-0"
+                      className="text-white/70 hover:text-white hover:bg-white/10"
                     >
-                      <Pencil className="w-4 h-4" />
+                      Edit
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 h-8 w-8 p-0"
+                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          Delete
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">

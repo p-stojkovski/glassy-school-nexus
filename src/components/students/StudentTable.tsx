@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Edit, Trash2, Eye, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
@@ -198,32 +198,31 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
                   <div className="text-sm text-white/80">
                     {new Date(student.joinDate).toLocaleDateString()}
                   </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1 justify-end">
+                </TableCell>                <TableCell>
+                  <div className="flex gap-2 justify-end">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => onView(student)}
-                      className="bg-white/5 border-white/20 text-white hover:bg-white/10 h-8 w-8 p-0"
+                      className="text-white/70 hover:text-white hover:bg-white/10"
                     >
-                      <Eye className="w-4 h-4" />
+                      View
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => onEdit(student)}
-                      className="bg-blue-500/20 border-blue-500/30 text-blue-300 hover:bg-blue-500/30 h-8 w-8 p-0"
+                      className="text-white/70 hover:text-white hover:bg-white/10"
                     >
-                      <Edit className="w-4 h-4" />
+                      Edit
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => onDelete(student)}
-                      className="bg-red-500/20 border-red-500/30 text-red-300 hover:bg-red-500/30 h-8 w-8 p-0"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      Delete
                     </Button>
                   </div>
                 </TableCell>
