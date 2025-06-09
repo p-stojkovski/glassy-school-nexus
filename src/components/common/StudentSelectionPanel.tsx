@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { X, Search, Users, Check, Filter, BookOpen, UserCheck, UserX } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,8 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Student } from '@/store/slices/studentsSlice';
+import { Class } from '@/store/slices/classesSlice';
+import { RootState } from '@/store';
 import { cn } from '@/lib/utils';
 
 interface StudentSelectionPanelProps {
@@ -65,15 +68,26 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
     return () => {
       document.removeEventListener('keydown', handleEscapeKey);
     };
-  }, [isOpen, onClose]);
-  // Get unique classes for filter (using classId as a proxy for grade)
+  }, [isOpen, onClose]);  // Get classes from store
+  const { classes } = useSelector((state: RootState) => state.classes);
+  
+  // Get available classes for filter, using actual class data
   const availableClasses = useMemo(() => {
+    // Create a map of class IDs to class names for easier reference
+    const classMap = classes.reduce((acc: Record<string, string>, cls: Class) => {
+      acc[cls.id] = cls.name;
+      return acc;
+    }, {});
+    
+    // Get unique classIds from students that have assigned classes
     const classIds = students
       .map(student => student.classId)
-      .filter((classId, index, array) => array.indexOf(classId) === index)
-      .sort();
+      .filter(Boolean)
+      .filter((classId, index, array) => array.indexOf(classId) === index);
+    
+    // Return array of class IDs with proper names
     return classIds;
-  }, [students]);
+  }, [students, classes]);
   // Filter students based on search query, status, and grade
   const filteredStudents = useMemo(() => {
     let filtered = students;
@@ -194,16 +208,18 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
                 </SelectContent>
-              </Select>
-                <Select value={gradeFilter} onValueChange={setGradeFilter}>
+              </Select>                <Select value={gradeFilter} onValueChange={setGradeFilter}>
                 <SelectTrigger className="bg-white/5 border-white/10 text-white text-sm">
                   <SelectValue placeholder="Class" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 text-white border border-white/30">
                   <SelectItem value="all">All Classes</SelectItem>
-                  {availableClasses.map(classId => (
-                    <SelectItem key={classId} value={classId}>{classId}</SelectItem>
-                  ))}
+                  {availableClasses.map(classId => {
+                    const className = classes.find(cls => cls.id === classId)?.name || classId;
+                    return (
+                      <SelectItem key={classId} value={classId}>{className}</SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -342,11 +358,11 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                           >
                             {student.status}
                           </Badge>
-                        </div>                        <div className="flex items-center gap-4 mt-1">
-                          <p className="text-sm text-white/70 truncate">{student.email}</p>
-                          <div className="flex items-center gap-1 text-xs text-white/60">
+                        </div>                        
+                            <div className="flex items-center gap-4 mt-1">
+                          <p className="text-sm text-white/70 truncate">{student.email}</p>                          <div className="flex items-center gap-1 text-xs text-white/60">
                             <BookOpen className="w-3 h-3" />
-                            <span>{student.classId}</span>
+                            <span>{classes.find(cls => cls.id === student.classId)?.name || student.classId}</span>
                           </div>
                         </div>
                       </div>
