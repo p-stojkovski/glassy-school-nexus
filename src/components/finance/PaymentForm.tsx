@@ -14,6 +14,7 @@ import {
   selectAllPayments,
   selectObligationsByStudentId,
 } from '@/store/slices/financeSlice';
+import { Student } from '@/store/slices/studentsSlice';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,6 +44,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import SingleStudentSelectionPanel from '@/components/common/SingleStudentSelectionPanel';
+import SingleStudentSelectionTrigger from '@/components/common/SingleStudentSelectionTrigger';
 
 const formSchema = z.object({
   studentId: z.string().min(1, { message: "Student is required" }),
@@ -69,15 +72,6 @@ const mockUser = {
   name: 'Admin User'
 };
 
-// Define some mock students for the demo
-const mockStudents = [
-  { id: 'student1', name: 'Alice Johnson' },
-  { id: 'student2', name: 'Bob Smith' },
-  { id: 'student3', name: 'Charlie Brown' },
-  { id: 'student4', name: 'Diana Prince' },
-  { id: 'student5', name: 'Ethan Hunt' }
-];
-
 const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
   const dispatch = useDispatch<AppDispatch>();
   const allPayments = useSelector(selectAllPayments);
@@ -86,8 +80,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
   const editedPayment = editingId
     ? allPayments.find(payment => payment.id === editingId)
     : null;
-
-  const [selectedStudentId, setSelectedStudentId] = useState<string>('');  const studentObligations = useSelector((state: RootState) => 
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [isStudentSelectionOpen, setIsStudentSelectionOpen] = useState(false);
+  const selectedStudentId = selectedStudent?.id || '';
+  const { students } = useSelector((state: RootState) => state.students);const studentObligations = useSelector((state: RootState) => 
     selectObligationsByStudentId(state, selectedStudentId)
   );
 
@@ -113,9 +109,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
         date: new Date(editedPayment.date),
         method: editedPayment.method,
         reference: editedPayment.reference || '',
-        notes: editedPayment.notes || '',
-      });
-      setSelectedStudentId(editedPayment.studentId);
+        notes: editedPayment.notes || '',      });
+      // Find and set the selected student object for editing
+      const student = students.find(s => s.id === editedPayment.studentId);
+      setSelectedStudent(student || null);
     } else {
       form.reset({
         studentId: '',
@@ -127,22 +124,25 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
         notes: '',
       });
     }
-  }, [editedPayment, form]);
-
-  const handleStudentChange = (studentId: string) => {
-    setSelectedStudentId(studentId);
-    form.setValue('studentId', studentId);
+  }, [editedPayment, form, students]);
+  const handleStudentSelect = (student: Student) => {
+    setSelectedStudent(student);
+    form.setValue('studentId', student.id);
     form.setValue('obligationId', ''); // Reset obligation when student changes
     
-    const student = mockStudents.find(s => s.id === studentId);
-    if (student) {
-      // Populate obligation amount when student changes
-      const obligations = allObligations.filter(obl => obl.studentId === studentId);
-      if (obligations.length > 0) {
-        form.setValue('obligationId', obligations[0].id);
-        handleObligationChange(obligations[0].id);
-      }
+    // Populate obligation amount when student changes
+    const obligations = allObligations.filter(obl => obl.studentId === student.id);
+    if (obligations.length > 0) {
+      form.setValue('obligationId', obligations[0].id);
+      handleObligationChange(obligations[0].id);
     }
+  };
+
+  const handleStudentClear = () => {
+    setSelectedStudent(null);
+    form.setValue('studentId', '');
+    form.setValue('obligationId', '');
+    form.setValue('amount', 0);
   };
 
   const handleObligationChange = (obligationId: string) => {
@@ -218,30 +218,22 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 text-white">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">          <FormField
             control={form.control}
             name="studentId"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-white">Student</FormLabel>
-                <Select
-                  onValueChange={(value) => handleStudentChange(value)}
-                  value={field.value}
-                  disabled={!!editingId}
-                >                  <FormControl>
-                    <SelectTrigger className="bg-white/20 border-white/30 text-white">
-                      <SelectValue placeholder="Select a student" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
-                    {mockStudents.map(student => (
-                      <SelectItem key={student.id} value={student.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
-                        {student.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <SingleStudentSelectionTrigger
+                    selectedStudent={selectedStudent}
+                    onOpen={() => setIsStudentSelectionOpen(true)}
+                    onClear={handleStudentClear}
+                    placeholder="Select a student with outstanding obligations"
+                    disabled={!!editingId}
+                    showObligationHint={true}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -435,9 +427,16 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                 Record Payment
               </>
             )}
-          </Button>
-        </div>
+          </Button>        </div>
       </form>
+
+      {/* Single Student Selection Panel */}
+      <SingleStudentSelectionPanel
+        open={isStudentSelectionOpen}
+        onOpenChange={setIsStudentSelectionOpen}
+        onStudentSelect={handleStudentSelect}
+        filterOngoingObligationsOnly={true}
+      />
     </Form>
   );
 };
