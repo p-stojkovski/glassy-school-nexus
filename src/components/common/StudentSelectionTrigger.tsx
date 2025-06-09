@@ -51,21 +51,6 @@ const StudentSelectionTrigger: React.FC<StudentSelectionTriggerProps> = ({
       {/* Selected Students Preview */}
       {selectedStudents.length > 0 && (
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-white/80">
-              Selected Students {showCount && `(${selectedStudents.length})`}
-            </span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onOpenPanel}
-              className="text-xs text-white/60 hover:text-white hover:bg-white/10 h-6 px-2"
-            >
-              Edit
-            </Button>
-          </div>
-          
           <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
             {selectedStudents.slice(0, 6).map(student => (
               <Badge
