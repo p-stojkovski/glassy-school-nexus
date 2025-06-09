@@ -15,6 +15,10 @@ import {
   selectError,
   Student 
 } from '../store/slices/studentsSlice';
+import { 
+  createObligation, 
+  PaymentObligation 
+} from '../store/slices/financeSlice';
 import { toast } from '../components/ui/use-toast';
 
 export const useStudentManagement = () => {
@@ -23,8 +27,12 @@ export const useStudentManagement = () => {
   const students = useSelector(selectStudents);
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
+  const classes = useSelector((state: RootState) => state.classes.classes);
+  const paymentObligations = useSelector((state: RootState) => state.finance.obligations);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<'all' | 'pending' | 'partial' | 'paid' | 'overdue'>('all');
+  const [classFilter, setClassFilter] = useState<'all' | 'unassigned' | string>('all');const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
@@ -44,19 +52,85 @@ export const useStudentManagement = () => {
           joinDate: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
           parentContact: `Parent ${index + 1} - +1-555-${String(index + 200).padStart(4, '0')}`,
           paymentDue: Math.random() > 0.7,
-          lastPayment: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
-        }));
+          lastPayment: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),        }));
         dispatch(setStudents(mockStudents));
+
+        // Create mock payment obligations if none exist
+        if (paymentObligations.length === 0) {
+          const obligationTypes = ['Tuition Fee', 'Registration Fee', 'Book Fee', 'Activity Fee', 'Laboratory Fee'];
+          const periods = ['Fall 2024', 'Spring 2025'];
+          const statuses: ('pending' | 'partial' | 'paid' | 'overdue')[] = ['pending', 'partial', 'paid', 'overdue'];
+          
+          // Create obligations for about 70% of students to have a mix
+          const studentsWithObligations = mockStudents.slice(0, Math.floor(mockStudents.length * 0.7));
+          
+          studentsWithObligations.forEach((student, index) => {
+            const numObligations = Math.floor(Math.random() * 3) + 1; // 1-3 obligations per student
+            
+            for (let i = 0; i < numObligations; i++) {
+              const now = new Date().toISOString();
+              const dueDate = new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+              
+              const mockObligation: PaymentObligation = {
+                id: `obligation-${student.id}-${i}`,
+                studentId: student.id,
+                studentName: student.name,
+                type: obligationTypes[Math.floor(Math.random() * obligationTypes.length)],
+                amount: Math.floor(Math.random() * 1000) + 100, // $100-$1099
+                dueDate: dueDate.toISOString().split('T')[0],
+                period: periods[Math.floor(Math.random() * periods.length)],
+                status: statuses[Math.floor(Math.random() * statuses.length)],
+                notes: Math.random() > 0.7 ? 'Auto-generated test obligation' : undefined,
+                createdAt: now,
+                updatedAt: now,
+              };
+              
+              dispatch(createObligation(mockObligation));
+            }
+          });
+        }
+
         dispatch(setLoading(false));
       }, 1000);
     }
-  }, [dispatch, students.length]);
-
-  const filteredStudents = students.filter(student => {
+  }, [dispatch, students.length, paymentObligations.length]);  // Helper function to get student payment status
+  const getStudentPaymentStatus = (studentId: string): 'pending' | 'partial' | 'paid' | 'overdue' => {
+    const studentObligations = paymentObligations.filter(obligation => obligation.studentId === studentId);
+    
+    if (studentObligations.length === 0) {
+      return 'paid'; // No obligations means all paid
+    }
+    
+    const hasOverdue = studentObligations.some(obligation => obligation.status === 'overdue');
+    const hasPending = studentObligations.some(obligation => obligation.status === 'pending');
+    const hasPartial = studentObligations.some(obligation => obligation.status === 'partial');
+    const allPaid = studentObligations.every(obligation => obligation.status === 'paid');
+    
+    if (hasOverdue) return 'overdue';
+    if (allPaid) return 'paid';
+    if (hasPartial) return 'partial';
+    if (hasPending) return 'pending';
+    return 'pending';
+  };  const filteredStudents = students.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || student.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    
+    // Payment status filter
+    const studentPaymentStatus = getStudentPaymentStatus(student.id);
+    const matchesPaymentStatus = paymentStatusFilter === 'all' || studentPaymentStatus === paymentStatusFilter;
+    
+    // Class filter
+    let matchesClass = true;
+    if (classFilter !== 'all') {
+      if (classFilter === 'unassigned') {
+        matchesClass = !student.classId || student.classId === 'unassigned';
+      } else {
+        matchesClass = student.classId === classFilter;
+      }
+    }
+    
+    return matchesSearch && matchesStatus && matchesPaymentStatus && matchesClass;
   });
 
   const handleAddStudent = () => {
@@ -146,6 +220,14 @@ export const useStudentManagement = () => {
       dispatch(setError(null)); // Clear error after showing toast
     }
   }, [error, dispatch]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setPaymentStatusFilter('all');
+    setClassFilter('all');
+  };
+
   return {
     students: filteredStudents,
     loading,
@@ -153,6 +235,12 @@ export const useStudentManagement = () => {
     setSearchTerm,
     statusFilter,
     setStatusFilter,
+    paymentStatusFilter,
+    setPaymentStatusFilter,
+    classFilter,    setClassFilter,
+    clearFilters,
+    classes,
+    getStudentPaymentStatus,
     isFormOpen,
     selectedStudent,
     studentToDelete,

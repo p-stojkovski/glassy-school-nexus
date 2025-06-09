@@ -13,25 +13,39 @@ interface StudentTableProps {
   onEdit: (student: Student) => void;
   onDelete: (student: Student) => void;
   onView: (student: Student) => void;
+  getPaymentStatus?: (studentId: string) => 'pending' | 'partial' | 'paid' | 'overdue';
 }
 
 const ITEMS_PER_PAGE = 10;
 
-const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete, onView }) => {
+const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete, onView, getPaymentStatus }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(students.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedStudents = students.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const getStatusColor = (status: string) => {
+  const paginatedStudents = students.slice(startIndex, startIndex + ITEMS_PER_PAGE);  const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
+        return 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/20';
       case 'inactive':
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
+        return 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/20';
       default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30 hover:bg-gray-500/20';
+    }
+  };
+
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/20';
+      case 'pending':
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30 hover:bg-yellow-500/20';
+      case 'partial':
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/20';
+      case 'overdue':
+        return 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/20';
+      default:
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30 hover:bg-gray-500/20';
     }
   };
 
@@ -162,18 +176,23 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
                   <Badge className={`${getStatusColor(student.status)} border`}>
                     {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {student.paymentDue ? (
-                      <div className="flex items-center gap-1 text-red-400">
-                        <AlertCircle className="w-4 h-4" />
-                        <span className="text-sm font-medium">Due</span>
-                      </div>
-                    ) : (
-                      <div className="text-green-400 text-sm font-medium">Paid</div>
-                    )}
-                  </div>
+                </TableCell>                <TableCell>
+                  {getPaymentStatus ? (
+                    <Badge className={`${getPaymentStatusColor(getPaymentStatus(student.id))} border`}>
+                      {getPaymentStatus(student.id).charAt(0).toUpperCase() + getPaymentStatus(student.id).slice(1)}
+                    </Badge>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      {student.paymentDue ? (
+                        <div className="flex items-center gap-1 text-red-400">
+                          <AlertCircle className="w-4 h-4" />
+                          <span className="text-sm font-medium">Due</span>
+                        </div>
+                      ) : (
+                        <div className="text-green-400 text-sm font-medium">Paid</div>
+                      )}
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="text-sm text-white/80">

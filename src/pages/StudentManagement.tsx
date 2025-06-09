@@ -18,6 +18,13 @@ const StudentManagement: React.FC = () => {  const {
     setSearchTerm,
     statusFilter,
     setStatusFilter,
+    paymentStatusFilter,
+    setPaymentStatusFilter,
+    classFilter,
+    setClassFilter,
+    clearFilters,
+    classes,
+    getStudentPaymentStatus,
     isFormOpen,
     selectedStudent,
     studentToDelete,
@@ -38,13 +45,17 @@ const StudentManagement: React.FC = () => {  const {
       <DemoModeNotification />
       <StudentHeader 
         onAddStudent={handleAddStudent}
-      />
-
-      <StudentFilters
+      />      <StudentFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
+        paymentStatusFilter={paymentStatusFilter}
+        setPaymentStatusFilter={setPaymentStatusFilter}
+        classFilter={classFilter}
+        setClassFilter={setClassFilter}
+        clearFilters={clearFilters}
+        classes={classes}
       />
 
       {students.length === 0 ? (
@@ -52,13 +63,13 @@ const StudentManagement: React.FC = () => {  const {
           searchTerm={searchTerm}
           statusFilter={statusFilter}
           onAddStudent={handleAddStudent}
-        />
-      ) : (
+        />      ) : (
         <StudentTable
           students={students}
           onEdit={handleEditStudent}
           onDelete={handleDeleteStudent}
           onView={handleViewStudent}
+          getPaymentStatus={getStudentPaymentStatus}
         />
       )}
 
