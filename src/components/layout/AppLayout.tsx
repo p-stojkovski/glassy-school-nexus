@@ -15,9 +15,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { sidebarCollapsed } = useSelector((state: RootState) => state.ui);
   const location = useLocation();
   const isDashboard = location.pathname === '/';
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-green-500">
+    <div className="min-h-screen bg-gradient-to-br from-blue-800 via-purple-800 to-green-700">
       <div className="flex h-screen">
         <Sidebar />
         <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>

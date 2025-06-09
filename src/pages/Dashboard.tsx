@@ -27,7 +27,7 @@ const Dashboard: React.FC = () => {
     { title: 'Total Students', value: '342', icon: Users, change: '+12%', color: 'bg-blue-500' },
     { title: 'Active Teachers', value: '28', icon: GraduationCap, change: '+3%', color: 'bg-green-500' },
     { title: 'Classrooms', value: '15', icon: Building, change: '0%', color: 'bg-purple-500' },
-    { title: 'Monthly Revenue', value: '$24,580', icon: DollarSign, change: '+8%', color: 'bg-yellow-500' },
+    { title: 'Monthly Revenue', value: '$24,580', icon: DollarSign, change: '+8%', color: 'bg-amber-600' },
   ];
 
   const enrollmentData = [
@@ -47,11 +47,10 @@ const Dashboard: React.FC = () => {
     { month: 'May', revenue: 23200 },
     { month: 'Jun', revenue: 24580 },
   ];
-
   const classDistribution = [
     { name: 'Beginner', value: 45, color: '#3B82F6' },
     { name: 'Intermediate', value: 35, color: '#10B981' },
-    { name: 'Advanced', value: 20, color: '#F59E0B' },
+    { name: 'Advanced', value: 20, color: '#D97706' },
   ];
 
   const recentActivities = [
@@ -73,10 +72,9 @@ const Dashboard: React.FC = () => {
         {/* Search Field */}
         <div className="w-full sm:w-96">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-            <Input
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />            <Input
               placeholder="Search students, classes, teachers..."
-              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
+              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
             />
           </div>
         </div>

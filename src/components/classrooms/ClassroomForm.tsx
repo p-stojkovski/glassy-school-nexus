@@ -52,14 +52,13 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
         <FormField
           control={form.control}
           name="name"
-          render={({ field }) => (
-            <FormItem>
+          render={({ field }) => (            <FormItem>
               <FormLabel className="text-white font-semibold">Classroom Name *</FormLabel>
               <FormControl>
                 <Input
                   placeholder="e.g., Room A-101"
                   {...field}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
                 />
               </FormControl>
               <FormMessage className="text-red-300" />
@@ -73,11 +72,10 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-white font-semibold">Location</FormLabel>
-              <FormControl>
-                <Input
+              <FormControl>                <Input
                   placeholder="e.g., Building A, First Floor"
                   {...field}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
                 />
               </FormControl>
               <FormMessage className="text-red-300" />
@@ -94,10 +92,9 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
               <FormControl>
                 <Input
                   type="number"
-                  placeholder="30"
-                  {...field}
+                  placeholder="30"                  {...field}
                   onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
                 />
               </FormControl>
               <FormMessage className="text-red-300" />
@@ -111,9 +108,8 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-white font-semibold">Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-yellow-400 focus:ring-yellow-400">
+              <Select onValueChange={field.onChange} defaultValue={field.value}>                <FormControl>
+                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-amber-600 focus:ring-amber-600">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                 </FormControl>
@@ -128,11 +124,10 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
           )}
         />
 
-        <div className="flex gap-4 pt-6 border-t border-white/20">
-          <Button 
+        <div className="flex gap-4 pt-6 border-t border-white/20">          <Button 
             type="submit" 
             disabled={isLoading}
-            className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+            className="flex-1 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
           >
             {isLoading ? 'Saving...' : (classroom ? 'Update Classroom' : 'Add Classroom')}
           </Button>
