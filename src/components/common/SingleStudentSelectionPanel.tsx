@@ -172,9 +172,8 @@ const SingleStudentSelectionPanel: React.FC<SingleStudentSelectionPanelProps> = 
   };
 
   const selectedStudent = selectedStudentId ? students.find(s => s.id === selectedStudentId) : null;
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-2xl bg-gray-900/95 backdrop-blur-sm border-white/20">
+  return (    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-2xl bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20">
         <SheetHeader className="border-b border-white/20 pb-4">
           <div className="flex items-center justify-between">
             <SheetTitle className="text-white flex items-center gap-2">
@@ -186,9 +185,6 @@ const SingleStudentSelectionPanel: React.FC<SingleStudentSelectionPanelProps> = 
                 </span>
               )}
             </SheetTitle>
-            <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="text-white hover:bg-white/20">
-              <X className="w-4 h-4" />
-            </Button>
           </div>
         </SheetHeader>
 

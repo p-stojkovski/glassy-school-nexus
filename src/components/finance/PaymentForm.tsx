@@ -229,7 +229,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
                     selectedStudent={selectedStudent}
                     onOpen={() => setIsStudentSelectionOpen(true)}
                     onClear={handleStudentClear}
-                    placeholder="Select a student with outstanding obligations"
+                    placeholder="Select a student"
                     disabled={!!editingId}
                     showObligationHint={true}
                   />
