@@ -1,0 +1,94 @@
+import React from 'react';
+import { Users, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Student } from '@/store/slices/studentsSlice';
+import { cn } from '@/lib/utils';
+
+interface StudentSelectionTriggerProps {
+  students: Student[];
+  selectedStudentIds: string[];
+  onOpenPanel: () => void;
+  disabled?: boolean;
+  placeholder?: string;
+  className?: string;
+  showCount?: boolean;
+}
+
+const StudentSelectionTrigger: React.FC<StudentSelectionTriggerProps> = ({
+  students,
+  selectedStudentIds,
+  onOpenPanel,
+  disabled = false,
+  placeholder = 'Assign students...',
+  className,
+  showCount = true
+}) => {
+  const selectedStudents = students.filter(student => 
+    selectedStudentIds.includes(student.id)
+  );
+
+  return (
+    <div className={cn("space-y-3", className)}>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onOpenPanel}
+        disabled={disabled}
+        className="w-full h-auto min-h-12 bg-white/5 border-white/10 text-white hover:bg-white/10 justify-start p-4"
+      >
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-white/70" />
+            <span className="text-white/70">
+              {selectedStudents.length === 0 ? placeholder : `${selectedStudents.length} student${selectedStudents.length !== 1 ? 's' : ''} selected`}
+            </span>
+          </div>
+          <Plus className="w-4 h-4 text-white/70" />
+        </div>
+      </Button>
+
+      {/* Selected Students Preview */}
+      {selectedStudents.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-white/80">
+              Selected Students {showCount && `(${selectedStudents.length})`}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onOpenPanel}
+              className="text-xs text-white/60 hover:text-white hover:bg-white/10 h-6 px-2"
+            >
+              Edit
+            </Button>
+          </div>
+          
+          <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
+            {selectedStudents.slice(0, 6).map(student => (
+              <Badge
+                key={student.id}
+                variant="secondary"
+                className="bg-blue-500/20 text-white border border-blue-400/30 text-xs px-2 py-1"
+              >
+                {student.name}
+              </Badge>
+            ))}
+            {selectedStudents.length > 6 && (
+              <Badge 
+                variant="outline" 
+                className="text-white/70 border-white/30 text-xs px-2 py-1"
+              >
+                +{selectedStudents.length - 6} more
+              </Badge>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default StudentSelectionTrigger;

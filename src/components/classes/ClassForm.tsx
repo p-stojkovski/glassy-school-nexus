@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -10,7 +10,8 @@ import { Clock } from 'lucide-react';
 import { Class } from '../../store/slices/classesSlice';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import StudentSelection from './StudentSelection';
+import StudentSelectionPanel from '../common/StudentSelectionPanel';
+import StudentSelectionTrigger from '../common/StudentSelectionTrigger';
 
 interface ClassFormProps {
   open: boolean;
@@ -37,6 +38,7 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
   const { teachers } = useSelector((state: RootState) => state.teachers);
   const { students } = useSelector((state: RootState) => state.students);
   const { classrooms } = useSelector((state: RootState) => state.classrooms);
+  const [isStudentPanelOpen, setIsStudentPanelOpen] = useState(false);
   const form = useForm<ClassFormData>({
     defaultValues: editingClass ? {
       name: editingClass.name,
@@ -274,17 +276,16 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                 Add Schedule Slot
               </Button>
             </div>            <div>
-              <FormLabel className="text-white mb-4 block">Assign Students</FormLabel>
-              <FormField
+              <FormLabel className="text-white mb-4 block">Assign Students</FormLabel>              <FormField
                 control={form.control}
                 name="studentIds"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <StudentSelection
+                      <StudentSelectionTrigger
                         students={students}
                         selectedStudentIds={field.value || []}
-                        onChange={field.onChange}
+                        onOpenPanel={() => setIsStudentPanelOpen(true)}
                         placeholder="Select students for this class..."
                       />
                     </FormControl>
@@ -310,9 +311,23 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                 {editingClass ? 'Update Class' : 'Create Class'}
               </Button>
             </div>
-          </form>
-        </Form>
+          </form>        </Form>
       </DialogContent>
+      
+      {/* Student Selection Panel - render outside dialog to avoid z-index issues */}
+      {open && (
+        <StudentSelectionPanel
+          students={students}
+          selectedStudentIds={form.watch('studentIds') || []}
+          onSelectionChange={(studentIds) => {
+            form.setValue('studentIds', studentIds);
+          }}
+          isOpen={isStudentPanelOpen}
+          onClose={() => setIsStudentPanelOpen(false)}
+          title="Assign Students to Class"
+          allowMultiple={true}
+        />
+      )}
     </Dialog>
   );
 };
