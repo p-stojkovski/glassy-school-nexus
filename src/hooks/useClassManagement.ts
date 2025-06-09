@@ -25,7 +25,6 @@ export const useClassManagement = ({
   const { classes, loading } = useSelector((state: RootState) => state.classes);
   const { teachers } = useSelector((state: RootState) => state.teachers);
   const { classrooms } = useSelector((state: RootState) => state.classrooms);
-
   // Load mock data on component mount
   useEffect(() => {
     const mockClasses: Class[] = [
@@ -35,6 +34,7 @@ export const useClassManagement = ({
         teacher: { id: 'teacher-1', name: 'Sarah Johnson', subject: 'English', avatar: '/placeholder.svg' },
         students: 15,
         maxStudents: 20,
+        studentIds: ['student-1', 'student-2', 'student-3', 'student-4', 'student-5', 'student-6', 'student-7', 'student-8', 'student-9', 'student-10', 'student-11', 'student-12', 'student-13', 'student-14', 'student-15'],
         room: 'Room 101',
         schedule: [
           { day: 'Monday', startTime: '09:00', endTime: '10:30' },
@@ -59,6 +59,7 @@ export const useClassManagement = ({
         teacher: { id: 'teacher-2', name: 'Michael Brown', subject: 'English', avatar: '/placeholder.svg' },
         students: 12,
         maxStudents: 18,
+        studentIds: ['student-16', 'student-17', 'student-18', 'student-19', 'student-20', 'student-21', 'student-22', 'student-23', 'student-24', 'student-25', 'student-26', 'student-27'],
         room: 'Room 102',
         schedule: [
           { day: 'Tuesday', startTime: '11:00', endTime: '12:30' },
@@ -91,12 +92,12 @@ export const useClassManagement = ({
     const matchesAvailableSlots = !showOnlyWithAvailableSlots || classItem.students < classItem.maxStudents;
 
     return matchesSearch && matchesSubject && matchesLevel && matchesStatus && matchesAvailableSlots;
-  });
-  const handleCreateClass = async (data: ClassFormData) => {
+  });  const handleCreateClass = async (data: ClassFormData) => {
     try {
       const selectedTeacher = teachers.find(t => t.id === data.teacherId);
       const selectedClassroom = classrooms.find(c => c.id === data.classroomId);
-        const newClass: Class = {
+      
+      const newClass: Class = {
         id: `class-${Date.now()}`,
         name: data.name,
         teacher: selectedTeacher ? { 
@@ -105,8 +106,9 @@ export const useClassManagement = ({
           subject: selectedTeacher.subject,
           avatar: selectedTeacher.avatar
         } : { id: '', name: '', subject: '', avatar: '/placeholder.svg' },
-        students: 0, // Default to 0 students as we don't assign them anymore
+        students: data.studentIds ? data.studentIds.length : 0, // Set student count based on selected students
         maxStudents: 20,
+        studentIds: data.studentIds || [], // Include selected student IDs
         room: selectedClassroom?.name || '',
         roomId: data.classroomId, // Store classroom ID reference
         schedule: data.schedule,
@@ -136,12 +138,12 @@ export const useClassManagement = ({
         variant: "destructive",
       });
     }
-  };
-  const handleUpdateClass = async (id: string, data: ClassFormData) => {
+  };  const handleUpdateClass = async (id: string, data: ClassFormData) => {
     try {
       const selectedTeacher = teachers.find(t => t.id === data.teacherId);
       const selectedClassroom = classrooms.find(c => c.id === data.classroomId);
-        const updatedFields: Partial<Class> = {
+      
+      const updatedFields: Partial<Class> = {
         name: data.name,
         teacher: selectedTeacher ? { 
           id: selectedTeacher.id, 
@@ -154,6 +156,8 @@ export const useClassManagement = ({
         schedule: data.schedule,
         status: data.status,
         subject: data.subject,
+        students: data.studentIds ? data.studentIds.length : 0, // Update student count based on selected students
+        studentIds: data.studentIds || [], // Include updated student IDs
         updatedAt: new Date().toISOString()
       };
 

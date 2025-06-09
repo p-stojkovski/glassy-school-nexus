@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import GlassCard from '../common/GlassCard';
 import ScheduleForm from './ScheduleForm';
+import StudentSelection from './StudentSelection';
 
 interface ClassFormContentProps {
   onSubmit: (data: ClassFormData) => void;
@@ -27,12 +28,14 @@ export interface ClassFormData {
     startTime: string;
     endTime: string;
   }[];
+  studentIds: string[];
   status: 'active' | 'inactive' | 'pending';
 }
 
 const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel, editingClass }) => {
   const { teachers } = useSelector((state: RootState) => state.teachers);
   const { classrooms } = useSelector((state: RootState) => state.classrooms);
+  const { students } = useSelector((state: RootState) => state.students);
 
   const form = useForm<ClassFormData>({
     defaultValues: editingClass ? {
@@ -41,6 +44,7 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
       teacherId: editingClass.teacher.id,
       classroomId: editingClass.roomId || '',
       schedule: editingClass.schedule,
+      studentIds: editingClass.studentIds || [],
       status: editingClass.status,
     } : {
       name: '',
@@ -48,6 +52,7 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
       teacherId: '',
       classroomId: '',
       schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:30' }],
+      studentIds: [],
       status: 'active',
     }
   });
@@ -168,10 +173,32 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
                     </Select>
                   </FormControl>
                   <FormMessage />
+                </FormItem>              )}
+            />          </div>
+
+          {/* Student Assignment Section */}
+          <div>
+            <FormField
+              control={form.control}
+              name="studentIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white mb-4 block">Assign Students</FormLabel>
+                  <FormControl>
+                    <StudentSelection
+                      students={students}
+                      selectedStudentIds={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select students for this class..."
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
-            />          </div>          
-          <ScheduleForm />          
+            />
+          </div>          
+          
+          <ScheduleForm />
           
           <div className="flex justify-end items-center space-x-4 pt-4">
             <Button

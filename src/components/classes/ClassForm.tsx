@@ -6,13 +6,11 @@ import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Checkbox } from '../ui/checkbox';
-import { Calendar } from '../ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { CalendarIcon, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { Class } from '../../store/slices/classesSlice';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import StudentSelection from './StudentSelection';
 
 interface ClassFormProps {
   open: boolean;
@@ -39,7 +37,6 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
   const { teachers } = useSelector((state: RootState) => state.teachers);
   const { students } = useSelector((state: RootState) => state.students);
   const { classrooms } = useSelector((state: RootState) => state.classrooms);
-
   const form = useForm<ClassFormData>({
     defaultValues: editingClass ? {
       name: editingClass.name,
@@ -47,7 +44,7 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
       teacherId: editingClass.teacher.id,
       classroomId: editingClass.room.replace('Room ', ''),
       schedule: editingClass.schedule,
-      studentIds: [],
+      studentIds: editingClass.studentIds || [],
       status: editingClass.status,
     } : {
       name: '',
@@ -276,40 +273,25 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                 <Clock className="w-4 h-4 mr-2" />
                 Add Schedule Slot
               </Button>
-            </div>
-
-            <div>
-              <FormLabel className="text-white mb-4 block">Students</FormLabel>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-40 overflow-y-auto bg-white/5 p-4 rounded-lg">
-                {students.map((student) => (
-                  <FormField
-                    key={student.id}
-                    control={form.control}
-                    name="studentIds"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(student.id)}
-                            onCheckedChange={(checked) => {
-                              const currentIds = field.value || [];
-                              if (checked) {
-                                field.onChange([...currentIds, student.id]);
-                              } else {
-                                field.onChange(currentIds.filter(id => id !== student.id));
-                              }
-                            }}
-                            className="border-white/20"
-                          />
-                        </FormControl>
-                        <FormLabel className="text-white/80 text-sm font-normal">
-                          {student.name}
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                ))}
-              </div>
+            </div>            <div>
+              <FormLabel className="text-white mb-4 block">Assign Students</FormLabel>
+              <FormField
+                control={form.control}
+                name="studentIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <StudentSelection
+                        students={students}
+                        selectedStudentIds={field.value || []}
+                        onChange={field.onChange}
+                        placeholder="Select students for this class..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <div className="flex justify-end space-x-4 pt-4">
