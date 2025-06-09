@@ -113,11 +113,6 @@ const Sidebar: React.FC = () => {
                 animate={{ opacity: 1 }}
                 className="flex items-center space-x-3 p-3 rounded-xl mb-2"
               >
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="w-10 h-10 rounded-full"
-                />
                 <div className="flex-1 min-w-0">
                   <p className="text-white font-medium truncate">{user.name}</p>
                   <p className="text-white/60 text-sm capitalize">{user.role}</p>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { ArrowLeft, User, GraduationCap, Calendar, DollarSign, Phone, Mail, Users, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, User, GraduationCap, Calendar, DollarSign, Phone, Mail, Users, AlertCircle, CheckCircle, Clock, CreditCard } from 'lucide-react';
 import { RootState } from '../store';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import GlassCard from '../components/common/GlassCard';
 import DemoModeNotification from '../components/students/DemoModeNotification';
-import { selectObligationsByStudentId, selectPaymentsByStudentId, selectStudentOutstandingBalance } from '../store/slices/financeSlice';
+import PaymentSidebar from '../components/finance/PaymentSidebar';
+import { selectObligationsByStudentId, selectPaymentsByStudentId, selectStudentOutstandingBalance, PaymentObligation } from '../store/slices/financeSlice';
 import { selectAttendanceByClassId } from '../store/slices/attendanceSlice';
 import { selectGradesByStudentId } from '../store/slices/gradesSlice';
 
@@ -17,6 +18,8 @@ const StudentProfile: React.FC = () => {
   const { studentId } = useParams<{ studentId: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [isPaymentSidebarOpen, setIsPaymentSidebarOpen] = useState(false);
+  const [selectedObligation, setSelectedObligation] = useState<PaymentObligation | null>(null);
 
   // Get student data
   const { students } = useSelector((state: RootState) => state.students);
@@ -86,7 +89,6 @@ const StudentProfile: React.FC = () => {
         return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
   };
-
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
@@ -100,6 +102,22 @@ const StudentProfile: React.FC = () => {
       default:
         return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
+  };
+
+  // Payment sidebar handlers
+  const handleOpenPaymentSidebar = (obligation: PaymentObligation) => {
+    setSelectedObligation(obligation);
+    setIsPaymentSidebarOpen(true);
+  };
+
+  const handleClosePaymentSidebar = () => {
+    setIsPaymentSidebarOpen(false);
+    setSelectedObligation(null);
+  };
+
+  // Check if obligation can have payment action
+  const canMakePayment = (status: string) => {
+    return ['pending', 'partial', 'overdue'].includes(status);
   };
 
   // Calculate attendance statistics
@@ -407,8 +425,7 @@ const StudentProfile: React.FC = () => {
                 <p>No payment obligations</p>
                 <p className="text-sm">Payment obligations will appear here when assigned</p>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
+            ) : (              <div className="overflow-x-auto">
                 <Table className="text-white">
                   <TableHeader>
                     <TableRow className="border-white/20 hover:bg-white/5">
@@ -417,6 +434,7 @@ const StudentProfile: React.FC = () => {
                       <TableHead className="text-white/90">Amount</TableHead>
                       <TableHead className="text-white/90">Due Date</TableHead>
                       <TableHead className="text-white/90">Status</TableHead>
+                      <TableHead className="text-white/90">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -430,6 +448,19 @@ const StudentProfile: React.FC = () => {
                           <Badge className={`${getPaymentStatusColor(obligation.status)} border`}>
                             {obligation.status.charAt(0).toUpperCase() + obligation.status.slice(1)}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {canMakePayment(obligation.status) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleOpenPaymentSidebar(obligation)}
+                              className="bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/30 hover:text-blue-200"
+                            >
+                              <CreditCard className="w-4 h-4 mr-2" />
+                              Pay
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -475,8 +506,14 @@ const StudentProfile: React.FC = () => {
               </div>
             )}
           </GlassCard>
-        </TabsContent>
-      </Tabs>
+        </TabsContent>      </Tabs>
+
+      {/* Payment Sidebar */}      <PaymentSidebar
+        isOpen={isPaymentSidebarOpen}
+        onClose={handleClosePaymentSidebar}
+        obligation={selectedObligation}
+        studentName={student.name}
+      />
     </div>
   );
 };
