@@ -38,8 +38,7 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-    >
-      <GlassCard className="p-6 hover:bg-white/15 transition-all duration-300 cursor-pointer" hover>
+    >      <GlassCard className="p-6 transition-all duration-300">
         <div className="flex items-start justify-between mb-4">
           <div onClick={() => onView(classroom)} className="flex-1">
             <h3 className="text-xl font-semibold text-white mb-2">
@@ -69,7 +68,7 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
                 e.stopPropagation();
                 onEdit(classroom);
               }}
-              className="text-white/70 hover:text-white hover:bg-white/10"
+              className="text-white/70"
             >
               <Edit className="w-4 h-4" />
             </Button>
@@ -80,7 +79,7 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
                 e.stopPropagation();
                 onDelete(classroom);
               }}
-              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              className="text-red-400"
             >
               <Trash2 className="w-4 h-4" />
             </Button>

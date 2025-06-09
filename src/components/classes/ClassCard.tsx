@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import GlassCard from '../common/GlassCard';
 import { Class } from '../../store/slices/classesSlice';
@@ -18,19 +17,10 @@ const ClassCard: React.FC<ClassCardProps> = ({
   onEdit,
   onDelete,
 }) => {
-  return (
-    <GlassCard className="p-6 hover:bg-white/5 transition-colors">
+  return (    <GlassCard className="p-6">
       <div className="flex items-start justify-between mb-4">
-        <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: classItem.color }}></div>
+        <h3 className="text-xl font-semibold text-white">{classItem.name}</h3>
         <div className="flex space-x-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onView(classItem)}
-            className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-          >
-            <Eye className="w-4 h-4" />
-          </Button>
           <Button
             size="sm"
             variant="ghost"
@@ -49,11 +39,9 @@ const ClassCard: React.FC<ClassCardProps> = ({
           </Button>
         </div>
       </div>
-      
-      <h3 className="text-xl font-semibold text-white mb-2">{classItem.name}</h3>
-      <p className="text-white/70 mb-4">Teacher: {classItem.teacher.name}</p>
-      <p className="text-white/70 mb-4">Room: {classItem.room}</p>
-      <p className="text-white/70 mb-4">Students: {classItem.students}/{classItem.maxStudents}</p>
+      <p className="text-white/70 mb-1"><span className="text-sm font-medium text-white">Teacher:</span> {classItem.teacher.name}</p>
+      <p className="text-white/70 mb-1"><span className="text-sm font-medium text-white">Room: </span> {classItem.room}</p>
+      <p className="text-white/70 mb-2"><span className="text-sm font-medium text-white">Students: </span> {classItem.students}/{classItem.maxStudents}</p>
       
       <div className="space-y-2">
         <p className="text-sm font-medium text-white">Schedule:</p>
@@ -63,8 +51,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
           </p>
         ))}
       </div>
-      
-      <div className="mt-4">
+        <div className="mt-4">
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
           classItem.status === 'active' 
             ? 'bg-green-500/20 text-green-300' 
@@ -74,6 +61,10 @@ const ClassCard: React.FC<ClassCardProps> = ({
         }`}>
           {classItem.status}
         </span>
+      </div>
+      
+      <div className="text-xs text-white/50 border-t border-white/10 pt-3 mt-4">
+        Last updated: {new Date(classItem.updatedAt).toLocaleDateString()}
       </div>
     </GlassCard>
   );
