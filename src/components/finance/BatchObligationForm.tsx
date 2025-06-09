@@ -163,13 +163,6 @@ const BatchObligationForm: React.FC<BatchObligationFormProps> = ({ onCancel }) =
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 text-white">
           <div className="space-y-4">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-white mb-2">Create Batch Payment Obligations</h3>
-              <p className="text-white/70 text-sm">
-                Create the same payment obligation for multiple students at once
-              </p>
-            </div>
-
             {/* Student Selection */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Select Students</label>              <StudentSelectionTrigger

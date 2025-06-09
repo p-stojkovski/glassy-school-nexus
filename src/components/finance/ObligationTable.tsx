@@ -45,7 +45,7 @@ import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface ObligationTableProps {
-  onEdit: (id: string) => void;
+  onEdit?: (id: string) => void;
 }
 
 const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
@@ -213,17 +213,18 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
                 <TableCell className="text-right text-white">${obligation.amount.toFixed(2)}</TableCell>
                 <TableCell className="text-white">{format(parseISO(obligation.dueDate), 'MMM d, yyyy')}</TableCell>
                 <TableCell className="text-white">{obligation.period}</TableCell>
-                <TableCell>{renderStatusBadge(obligation.status)}</TableCell>
-                <TableCell className="text-right">
+                <TableCell>{renderStatusBadge(obligation.status)}</TableCell>                <TableCell className="text-right">
                   <div className="flex gap-1 justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEdit(obligation.id)}
-                      className="bg-blue-500/20 border-blue-500/30 text-blue-300 hover:bg-blue-500/30 h-8 w-8 p-0"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
+                    {onEdit && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEdit(obligation.id)}
+                        className="bg-blue-500/20 border-blue-500/30 text-blue-300 hover:bg-blue-500/30 h-8 w-8 p-0"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    )}
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
