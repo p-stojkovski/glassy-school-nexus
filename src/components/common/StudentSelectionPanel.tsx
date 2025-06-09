@@ -157,14 +157,16 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
     setSearchQuery('');
     setStatusFilter('all');
     setGradeFilter('all');
-  };
-  return (
+  };  return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-white/10 backdrop-blur-md border-l border-white/20">
+      <SheetContent 
+        side="right" 
+        className="w-full sm:max-w-md p-0 bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"
+      >
         <div className="flex flex-col h-full">
           {/* Header */}
           <SheetHeader className="flex items-center justify-between p-6 border-b border-white/20">
-            <SheetTitle className="flex items-center gap-3 text-white">
+            <SheetTitle className="flex items-center gap-3 text-white text-2xl font-bold">
               <Users className="w-5 h-5" />
               {title}
             </SheetTitle>
