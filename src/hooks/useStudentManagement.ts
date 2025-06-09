@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
 import { 
   setStudents, 
@@ -18,6 +19,7 @@ import { toast } from '../components/ui/use-toast';
 
 export const useStudentManagement = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const students = useSelector(selectStudents);
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
@@ -81,9 +83,8 @@ export const useStudentManagement = () => {
       setStudentToDelete(null);
     }
   };
-
   const handleViewStudent = (student: Student) => {
-    console.log('Viewing student:', student);
+    navigate(`/students/${student.id}`);
   };
 
   const handleCloseForm = () => {
