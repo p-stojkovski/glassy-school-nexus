@@ -342,7 +342,7 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({ classId, date }) =>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/10 hover:bg-white/20 text-white">Cancel</AlertDialogCancel>            <AlertDialogAction 
+            <AlertDialogCancel className="bg-white/5 hover:bg-white/10 text-white">Cancel</AlertDialogCancel>            <AlertDialogAction 
               className="bg-amber-600 hover:bg-amber-700 text-white"
               onClick={confirmSubmit}
             >

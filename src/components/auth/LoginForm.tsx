@@ -67,13 +67,12 @@ const LoginForm: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-              <Input
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />              <Input
                 type="email"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
                 required
               />
             </div>
@@ -85,7 +84,7 @@ const LoginForm: React.FC = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
                 required
               />
               <button

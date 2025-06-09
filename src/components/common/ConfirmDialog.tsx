@@ -54,7 +54,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           </div>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+          <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">
             {cancelText}
           </AlertDialogCancel>
           <AlertDialogAction

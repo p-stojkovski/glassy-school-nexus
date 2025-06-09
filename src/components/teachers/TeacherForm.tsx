@@ -119,11 +119,10 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-white font-semibold">Full Name *</FormLabel>
-                    <FormControl>
-                      <Input
+                    <FormControl>                      <Input
                         placeholder="Enter full name"
                         {...field}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
                       />
                     </FormControl>
                     <FormMessage className="text-red-300" />
@@ -138,11 +137,10 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                   <FormItem>
                     <FormLabel className="text-white font-semibold">Email Address *</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
+                      <Input                        type="email"
                         placeholder="Enter email address"
                         {...field}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
                       />
                     </FormControl>
                     <FormMessage className="text-red-300" />
@@ -159,8 +157,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                     <FormControl>
                       <Input
                         placeholder="Enter phone number"
-                        {...field}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
+                        {...field}                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
                       />
                     </FormControl>
                     <FormMessage className="text-red-300" />
@@ -242,12 +239,11 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                   className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
                 >
                   {isLoading ? 'Saving...' : (teacher ? 'Update Teacher' : 'Add Teacher')}
-                </Button>
-                <Button 
+                </Button>                <Button 
                   type="button" 
                   variant="outline" 
                   onClick={onClose}
-                  className="flex-1 bg-white/10 hover:bg-white/20 text-white border-white/20 hover:border-white/30 font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="flex-1 bg-white/5 hover:bg-white/10 text-white border-white/10 hover:border-white/20 font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   Cancel
                 </Button>

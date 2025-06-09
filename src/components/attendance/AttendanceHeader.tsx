@@ -15,16 +15,15 @@ const AttendanceHeader: React.FC<AttendanceHeaderProps> = ({ activeTab, onTabCha
       </div>
 
       <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as 'mark' | 'history')}>
-        <TabsList className="bg-white/5 border-white/10">
-          <TabsTrigger 
+        <TabsList className="bg-white/5 border-white/10">          <TabsTrigger 
             value="mark" 
-            className={`data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60 ${activeTab === 'mark' ? 'bg-white/20 text-white' : ''}`}
+            className={`data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 ${activeTab === 'mark' ? 'bg-white/10 text-white' : ''}`}
           >
             Mark Attendance
           </TabsTrigger>
           <TabsTrigger 
             value="history" 
-            className={`data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60 ${activeTab === 'history' ? 'bg-white/20 text-white' : ''}`}
+            className={`data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 ${activeTab === 'history' ? 'bg-white/10 text-white' : ''}`}
           >
             Attendance History
           </TabsTrigger>

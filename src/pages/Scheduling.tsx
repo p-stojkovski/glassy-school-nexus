@@ -147,16 +147,15 @@ const Scheduling: React.FC = () => {
             <div className="space-y-2 mb-4">
               <label className="text-sm font-medium text-white">Reason for cancellation *</label>
               <Input
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
+                value={cancelReason}                onChange={(e) => setCancelReason(e.target.value)}
                 placeholder="Please provide a reason..."
-                className="bg-white/10 border-white/20 text-white"
+                className="bg-white/5 border-white/10 text-white"
               />
             </div>
             <div className="flex gap-4">
               <button
                 onClick={() => setShowCancelDialog(false)}
-                className="flex-1 px-4 py-2 bg-white/10 text-white rounded-md hover:bg-white/20"
+                className="flex-1 px-4 py-2 bg-white/5 text-white rounded-md hover:bg-white/10"
               >
                 Cancel
               </button>

@@ -71,10 +71,9 @@ const Dashboard: React.FC = () => {
         
         {/* Search Field */}
         <div className="w-full sm:w-96">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />            <Input
+          <div className="relative">            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />            <Input
               placeholder="Search students, classes, teachers..."
-              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
+              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
             />
           </div>
         </div>

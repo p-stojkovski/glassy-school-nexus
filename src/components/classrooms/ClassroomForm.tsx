@@ -54,11 +54,10 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
           name="name"
           render={({ field }) => (            <FormItem>
               <FormLabel className="text-white font-semibold">Classroom Name *</FormLabel>
-              <FormControl>
-                <Input
+              <FormControl>                <Input
                   placeholder="e.g., Room A-101"
                   {...field}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
+                  className="bg-white/5 border-white/15 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
                 />
               </FormControl>
               <FormMessage className="text-red-300" />
@@ -75,7 +74,7 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
               <FormControl>                <Input
                   placeholder="e.g., Building A, First Floor"
                   {...field}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
+                  className="bg-white/5 border-white/15 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
                 />
               </FormControl>
               <FormMessage className="text-red-300" />
@@ -108,8 +107,7 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-white font-semibold">Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>                <FormControl>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-amber-600 focus:ring-amber-600">
+              <Select onValueChange={field.onChange} defaultValue={field.value}>                <FormControl>                  <SelectTrigger className="bg-white/5 border-white/15 text-white focus:border-amber-600 focus:ring-amber-600">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                 </FormControl>

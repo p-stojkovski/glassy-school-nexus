@@ -79,11 +79,10 @@ const ClassForm: React.FC = () => {
 
   return (
     <div className="space-y-6 w-full">
-      <div className="flex items-center gap-4">
-        <Button
+      <div className="flex items-center gap-4">        <Button
           variant="ghost"
           onClick={handleBack}
-          className="text-white hover:bg-white/10"
+          className="text-white hover:bg-white/5"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Classes

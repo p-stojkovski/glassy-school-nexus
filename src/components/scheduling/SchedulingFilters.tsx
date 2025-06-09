@@ -27,17 +27,16 @@ const SchedulingFilters: React.FC<SchedulingFiltersProps> = ({
     <GlassCard className="p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-          <Input
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />          <Input
             placeholder="Search by class or teacher..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
           />
         </div>
         
         <Select value={filters.classId || 'all'} onValueChange={(value) => dispatch(setFilters({classId: value === 'all' ? undefined : value}))}>
-          <SelectTrigger className="bg-white/10 border-white/20 text-white">
+          <SelectTrigger className="bg-white/5 border-white/10 text-white">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="All Classes" />
           </SelectTrigger>
@@ -52,7 +51,7 @@ const SchedulingFilters: React.FC<SchedulingFiltersProps> = ({
         </Select>
 
         <Select value={filters.teacherId || 'all'} onValueChange={(value) => dispatch(setFilters({teacherId: value === 'all' ? undefined : value}))}>
-          <SelectTrigger className="bg-white/10 border-white/20 text-white">
+          <SelectTrigger className="bg-white/5 border-white/10 text-white">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="All Teachers" />
           </SelectTrigger>

@@ -42,29 +42,27 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
   const renderPaginationItems = () => {
     const items = [];
     const maxVisiblePages = 5;
-    
-    if (totalPages <= maxVisiblePages) {
+      if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         items.push(
           <PaginationItem key={i}>
             <PaginationLink
               onClick={() => handlePageChange(i)}
               isActive={currentPage === i}
-              className="cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"
+              className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
               {i}
             </PaginationLink>
           </PaginationItem>
         );
       }
-    } else {
-      // Show first page
+    } else {      // Show first page
       items.push(
         <PaginationItem key={1}>
           <PaginationLink
             onClick={() => handlePageChange(1)}
             isActive={currentPage === 1}
-            className="cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"
+            className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
           >
             1
           </PaginationLink>
@@ -84,13 +82,12 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
       
-      for (let i = start; i <= end; i++) {
-        items.push(
+      for (let i = start; i <= end; i++) {        items.push(
           <PaginationItem key={i}>
             <PaginationLink
               onClick={() => handlePageChange(i)}
               isActive={currentPage === i}
-              className="cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"
+              className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
               {i}
             </PaginationLink>
@@ -109,12 +106,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
 
       // Show last page
       if (totalPages > 1) {
-        items.push(
-          <PaginationItem key={totalPages}>
-            <PaginationLink
+        items.push(        <PaginationItem key={totalPages}>
+          <PaginationLink
               onClick={() => handlePageChange(totalPages)}
               isActive={currentPage === totalPages}
-              className="cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20"
+              className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
               {totalPages}
             </PaginationLink>
@@ -221,11 +217,10 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
       {totalPages > 1 && (
         <div className="flex justify-center">
           <Pagination>
-            <PaginationContent>
-              <PaginationItem>
+            <PaginationContent>              <PaginationItem>
                 <PaginationPrevious
                   onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                  className={`cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20 ${
+                  className={`cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10 ${
                     currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 />
@@ -236,7 +231,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
               <PaginationItem>
                 <PaginationNext
                   onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                  className={`cursor-pointer bg-white/10 border-white/20 text-white hover:bg-white/20 ${
+                  className={`cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10 ${
                     currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 />

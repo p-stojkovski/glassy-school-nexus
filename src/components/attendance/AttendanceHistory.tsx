@@ -113,11 +113,10 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
               <p className="text-white/70">
                 {format(parseISO(selectedRecord.sessionDate), 'EEEE, MMMM d, yyyy')}
               </p>
-            </div>
-            <Button
+            </div>            <Button
               variant="ghost"
               onClick={handleBackToList}
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-white/5"
             >
               Back to List
             </Button>
@@ -162,12 +161,11 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
           <h3 className="text-xl font-medium text-white">Attendance History</h3>
           
           <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-            <Input
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />            <Input
               placeholder="Search records..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
             />
           </div>
         </div>
@@ -213,11 +211,10 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button 
+                  <TableCell className="text-right">                    <Button 
                       variant="ghost" 
                       size="sm"
-                      className="text-white/70 hover:text-white hover:bg-white/10"
+                      className="text-white/70 hover:text-white hover:bg-white/5"
                     >
                       View Details
                     </Button>

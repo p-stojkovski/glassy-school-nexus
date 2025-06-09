@@ -242,14 +242,13 @@ const ClassroomManagement: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
             <Input
               placeholder="Search classrooms by name or location..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+              value={searchTerm}              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
             />
           </div>
           <div className="sm:w-48">
             <Select value={statusFilter} onValueChange={(value: 'all' | 'active' | 'inactive' | 'maintenance') => setStatusFilter(value)}>
-              <SelectTrigger className="bg-white/10 border-white/20 text-white">
+              <SelectTrigger className="bg-white/5 border-white/10 text-white">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue />
               </SelectTrigger>
