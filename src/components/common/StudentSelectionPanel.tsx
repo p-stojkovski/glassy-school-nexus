@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, Search, Users, Check, Filter, BookOpen, UserCheck, UserX } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button  } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Student } from '@/store/slices/studentsSlice';
 import { cn } from '@/lib/utils';
 
@@ -158,39 +158,17 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
     setStatusFilter('all');
     setGradeFilter('all');
   };
-
-  if (!isOpen) return null;
-
   return (
-    <>
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}
-      />
-      
-      {/* Side Panel */}
-      <div className={cn(
-        "fixed right-0 top-0 h-full w-full max-w-md bg-white/10 backdrop-blur-md border-l border-white/20 z-50 transform transition-transform duration-300 ease-in-out",
-        isOpen ? "translate-x-0" : "translate-x-full",
-        className
-      )}>
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-white/10 backdrop-blur-md border-l border-white/20">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/20">
-            <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-white" />
-              <h2 className="text-lg font-semibold text-white">{title}</h2>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-white hover:bg-white/10 h-8 w-8 p-0"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+          <SheetHeader className="flex items-center justify-between p-6 border-b border-white/20">
+            <SheetTitle className="flex items-center gap-3 text-white">
+              <Users className="w-5 h-5" />
+              {title}
+            </SheetTitle>
+          </SheetHeader>
 
           {/* Search and Filters */}
           <div className="p-6 space-y-4 border-b border-white/20">
@@ -375,9 +353,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                 })
               )}
             </div>
-          </ScrollArea>
-
-          {/* Footer Actions */}
+          </ScrollArea>          {/* Footer Actions */}
           <div className="p-6 border-t border-white/20">
             <div className="flex gap-3">
               <Button
@@ -397,8 +373,8 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </SheetContent>
+    </Sheet>
   );
 };
 
