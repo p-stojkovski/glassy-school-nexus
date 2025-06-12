@@ -171,12 +171,12 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
                     <div className="text-white/80">{student.phone}</div>
                     <div className="text-white/60 truncate max-w-[200px]">{student.parentContact}</div>
                   </div>
-                </TableCell>
-                <TableCell>
+                </TableCell>                <TableCell>
                   <Badge className={`${getStatusColor(student.status)} border`}>
                     {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
                   </Badge>
-                </TableCell>                <TableCell>
+                </TableCell>
+                <TableCell>
                   {getPaymentStatus ? (
                     <Badge className={`${getPaymentStatusColor(getPaymentStatus(student.id))} border`}>
                       {getPaymentStatus(student.id).charAt(0).toUpperCase() + getPaymentStatus(student.id).slice(1)}
@@ -198,7 +198,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
                   <div className="text-sm text-white/80">
                     {new Date(student.joinDate).toLocaleDateString()}
                   </div>
-                </TableCell>                <TableCell>
+                </TableCell>
+                <TableCell>
                   <div className="flex gap-2 justify-end">
                     <Button
                       variant="ghost"

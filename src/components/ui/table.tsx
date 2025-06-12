@@ -26,21 +26,45 @@ Table.displayName = "Table"
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
-))
+>(({ className, children, ...props }, ref) => {
+  // Filter out whitespace text nodes to prevent DOM nesting warnings
+  const filteredChildren = React.Children.toArray(children).filter(child => {
+    if (typeof child === 'string') {
+      return child.trim().length > 0;
+    }
+    return true;
+  });
+
+  return (
+    <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props}>
+      {filteredChildren}
+    </thead>
+  );
+})
 TableHeader.displayName = "TableHeader"
 
 const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <tbody
-    ref={ref}
-    className={cn("[&_tr:last-child]:border-0", className)}
-    {...props}
-  />
-))
+>(({ className, children, ...props }, ref) => {
+  // Filter out whitespace text nodes to prevent DOM nesting warnings
+  const filteredChildren = React.Children.toArray(children).filter(child => {
+    if (typeof child === 'string') {
+      return child.trim().length > 0;
+    }
+    return true;
+  });
+
+  return (
+    <tbody
+      ref={ref}
+      className={cn("[&_tr:last-child]:border-0", className)}
+      {...props}
+    >
+      {filteredChildren}
+    </tbody>
+  );
+})
 TableBody.displayName = "TableBody"
 
 const TableFooter = React.forwardRef<
@@ -61,16 +85,28 @@ TableFooter.displayName = "TableFooter"
 const TableRow = React.forwardRef<
   HTMLTableRowElement,
   React.HTMLAttributes<HTMLTableRowElement>
->(({ className, ...props }, ref) => (
-  <tr
-    ref={ref}
-    className={cn(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, children, ...props }, ref) => {
+  // Filter out whitespace text nodes to prevent DOM nesting warnings
+  const filteredChildren = React.Children.toArray(children).filter(child => {
+    if (typeof child === 'string') {
+      return child.trim().length > 0;
+    }
+    return true;
+  });
+
+  return (
+    <tr
+      ref={ref}
+      className={cn(
+        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+        className
+      )}
+      {...props}
+    >
+      {filteredChildren}
+    </tr>
+  );
+})
 TableRow.displayName = "TableRow"
 
 const TableHead = React.forwardRef<
