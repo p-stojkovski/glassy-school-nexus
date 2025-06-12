@@ -21,6 +21,8 @@ import { RootState } from '../../store';
 import { toggleSidebar } from '../../store/slices/uiSlice';
 import { logout } from '../../store/slices/authSlice';
 import GlassCard from '../common/GlassCard';
+import { cn } from '../../lib/utils';
+import styles from './Sidebar.module.scss';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/' },
@@ -47,25 +49,26 @@ const Sidebar: React.FC = () => {
 
   return (
     <motion.div
-      className={`fixed left-0 top-0 h-full z-30 transition-all duration-300 ${
-        sidebarCollapsed ? 'w-16' : 'w-64'
-      }`}
+      className={cn(
+        styles.sidebar,
+        sidebarCollapsed ? styles.collapsedWidth : styles.expandedWidth
+      )}
       initial={false}
     >
-      <GlassCard className="h-full rounded-none rounded-r-2xl p-4">
+      <GlassCard className={styles.glassContainer}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className={styles.header}>
             {!sidebarCollapsed && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center space-x-3"
+                className={styles.logo}
               >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
-                  <img 
-                    src="/lovable-uploads/0a12f78e-1752-49f8-8f2d-a8b7c70871ab.png" 
-                    alt="Think English" 
+                <div className={styles.logoImage}>
+                  <img
+                    src="/lovable-uploads/0a12f78e-1752-49f8-8f2d-a8b7c70871ab.png"
+                    alt="Think English"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -74,25 +77,24 @@ const Sidebar: React.FC = () => {
             )}
             <button
               onClick={() => dispatch(toggleSidebar())}
-              className="p-2 rounded-lg hover:bg-white/10 text-white transition-colors"
+              className={styles.collapseButton}
             >
               <ChevronLeft className={`w-5 h-5 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-2">
+          <nav className={styles.nav}>
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <motion.button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  className={`w-full flex items-center space-x-3 p-3 rounded-xl transition-all ${
-                    isActive
-                      ? 'bg-yellow-400/20 text-yellow-300 shadow-lg'
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
-                  }`}
+                  className={cn(
+                    styles.menuItem,
+                    isActive ? styles.menuActive : styles.menuInactive
+                  )}
                   whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -106,12 +108,12 @@ const Sidebar: React.FC = () => {
           </nav>
 
           {/* User Profile */}
-          <div className="border-t border-white/10 pt-4">
+          <div className={styles.userSection}>
             {!sidebarCollapsed && user && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center space-x-3 p-3 rounded-xl mb-2"
+                className={styles.profile}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-white font-medium truncate">{user.name}</p>
@@ -121,7 +123,7 @@ const Sidebar: React.FC = () => {
             )}
             <button
               onClick={handleLogout}
-              className="w-full flex items-center space-x-3 p-3 rounded-xl text-white/70 hover:text-white hover:bg-red-500/20 transition-all"
+              className={styles.logoutButton}
             >
               <LogOut className="w-5 h-5" />
               {!sidebarCollapsed && <span>Logout</span>}

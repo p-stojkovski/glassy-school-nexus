@@ -159,6 +159,7 @@ Example:
   @apply hover:bg-white/8 hover:shadow-2xl transition-all duration-300 cursor-pointer;
 }
 ```
+Sidebar navigation styles are defined in `Sidebar.module.scss` following the same pattern.
 
 ### Typography
 - **Font**: System font stack (default)
