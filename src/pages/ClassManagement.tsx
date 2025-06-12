@@ -49,7 +49,6 @@ const ClassManagement: React.FC = () => {
 
   const handleView = (classItem: Class) => {
     // Handle view functionality
-    console.log('Viewing class:', classItem);
   };
 
   const confirmDelete = async () => {
