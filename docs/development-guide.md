@@ -136,13 +136,30 @@ The application uses a **glassmorphism** design approach with:
 ```css
 /* Main app background */
 .app-background {
-  background: linear-gradient(to bottom right, 
+  background: linear-gradient(to bottom right,
     rgb(30, 64, 175), /* blue-800 */
     rgb(107, 33, 168), /* purple-800 */
     rgb(4, 120, 87)    /* green-700 */
   );
 }
 ```
+
+### SCSS Modules
+
+Tailwind utilities can be grouped into SCSS modules to keep JSX readable.
+Component-level `.module.scss` files use `@apply` to compose utilities, and
+global styles live in `src/styles/globals.scss` (imported in `main.tsx`).
+Example:
+
+```scss
+.glassCard {
+  @apply backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl;
+}
+.hoverable {
+  @apply hover:bg-white/8 hover:shadow-2xl transition-all duration-300 cursor-pointer;
+}
+```
+Sidebar navigation styles are defined in `Sidebar.module.scss` following the same pattern.
 
 ### Typography
 - **Font**: System font stack (default)

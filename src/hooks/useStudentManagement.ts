@@ -50,7 +50,6 @@ export const useStudentManagement = () => {
     return getStudentPaymentStatus(studentId, paymentObligations || []);
   };
 
-
   const handleAddStudent = () => {
     setSelectedStudent(null);
     setIsFormOpen(true);

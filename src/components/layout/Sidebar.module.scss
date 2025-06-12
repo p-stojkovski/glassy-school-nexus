@@ -1,0 +1,45 @@
+.sidebar {
+  @apply fixed left-0 top-0 h-full z-30 transition-all duration-300;
+}
+.collapsedWidth {
+  @apply w-16;
+}
+.expandedWidth {
+  @apply w-64;
+}
+.glassContainer {
+  @apply h-full rounded-none rounded-r-2xl p-4;
+}
+.header {
+  @apply flex items-center justify-between mb-8;
+}
+.logo {
+  @apply flex items-center space-x-3;
+}
+.logoImage {
+  @apply w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden;
+}
+.collapseButton {
+  @apply p-2 rounded-lg hover:bg-white/10 text-white transition-colors;
+}
+.nav {
+  @apply flex-1 space-y-2;
+}
+.menuItem {
+  @apply w-full flex items-center space-x-3 p-3 rounded-xl transition-all;
+}
+.menuActive {
+  @apply bg-yellow-400/20 text-yellow-300 shadow-lg;
+}
+.menuInactive {
+  @apply text-white/70 hover:text-white hover:bg-white/10;
+}
+.userSection {
+  @apply border-t border-white/10 pt-4;
+}
+.profile {
+  @apply flex items-center space-x-3 p-3 rounded-xl mb-2;
+}
+.logoutButton {
+  @apply w-full flex items-center space-x-3 p-3 rounded-xl text-white/70 hover:text-white hover:bg-red-500/20 transition-all;
+}

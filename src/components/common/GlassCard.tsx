@@ -16,10 +16,14 @@ const GlassCard: React.FC<GlassCardProps> = ({
   hover = false,
   onClick 
 }) => {
-  return (    <motion.div
+  return (
+    <motion.div
       className={cn(
+        // Base glass card styles
         "backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl",
-        hover && "hover:bg-white/8 hover:shadow-2xl transition-all duration-300 cursor-pointer",
+        // Hover styles
+        hover && "hover:bg-white/10 hover:shadow-2xl transition-all duration-300 cursor-pointer",
+        // Clickable styles
         onClick && "cursor-pointer",
         className
       )}
