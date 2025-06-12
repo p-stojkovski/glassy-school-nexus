@@ -37,7 +37,11 @@ src/
 │   ├── classes/        # Class management components
 │   ├── classrooms/     # Classroom management components
 │   ├── common/         # Shared components
-│   ├── finance/        # Financial management components
+│   ├── finance/
+│   │   ├── dashboard/     # Financial dashboard components
+│   │   ├── obligations/   # Payment obligation components
+│   │   ├── payments/      # Payment management components
+│   │   └── common/        # Shared finance components
 │   ├── grades/         # Grades and assessments components
 │   ├── layout/         # Layout components (Sidebar, TopBar, etc.)
 │   ├── scheduling/     # Scheduling components
