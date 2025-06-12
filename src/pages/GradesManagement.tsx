@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
 import { setSelectedClass } from '@/store/slices/gradesSlice';
 // Import the components using @/ path
@@ -13,9 +13,9 @@ import DemoModeNotification from '@/components/grades/DemoModeNotification';
 type ActiveTab = 'create' | 'grades' | 'gradebook';
 
 const GradesManagement: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState<ActiveTab>('create');
-  const { selectedClassId } = useSelector((state: RootState) => state.grades);
+  const { selectedClassId } = useAppSelector((state: RootState) => state.grades);
     return (
     <div className="space-y-6">
       <DemoModeNotification />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Plus, Search, Filter, Building } from 'lucide-react';
 import { RootState } from '../store';
 import { setClassrooms, addClassroom, updateClassroom, deleteClassroom, setLoading, resetDemoClassrooms, loadFromStorage } from '../store/slices/classroomsSlice';
@@ -27,8 +27,8 @@ const classroomSchema = z.object({
 type ClassroomFormData = z.infer<typeof classroomSchema>;
 
 const ClassroomManagement: React.FC = () => {
-  const dispatch = useDispatch();
-  const { classrooms, loading } = useSelector((state: RootState) => state.classrooms);
+  const dispatch = useAppDispatch();
+  const { classrooms, loading } = useAppSelector((state: RootState) => state.classrooms);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'maintenance'>('all');  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);

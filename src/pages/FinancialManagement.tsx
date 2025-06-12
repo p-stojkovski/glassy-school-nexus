@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { refreshObligationStatuses, selectError } from '@/store/slices/financeSlice';
-import { AppDispatch } from '@/store';
 import FinancialDashboard from '@/components/finance/FinancialDashboard';
 import ObligationManagement from '@/components/finance/ObligationManagement';
 import PaymentManagement from '@/components/finance/PaymentManagement';
@@ -12,8 +11,8 @@ import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useToast } from '@/hooks/use-toast';
 
 const FinancialManagement: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const error = useSelector(selectError);
+  const dispatch = useAppDispatch();
+  const error = useAppSelector(selectError);
   const { toast } = useToast();
 
   // Refresh obligation statuses on page load to update any overdue items

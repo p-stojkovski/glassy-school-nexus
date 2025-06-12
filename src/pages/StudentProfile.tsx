@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { ArrowLeft, User, GraduationCap, Calendar, DollarSign, Phone, Mail, Users, AlertCircle, CheckCircle, Clock, CreditCard } from 'lucide-react';
 import { RootState } from '../store';
 import { Button } from '../components/ui/button';
@@ -22,31 +22,31 @@ const StudentProfile: React.FC = () => {
   const [selectedObligation, setSelectedObligation] = useState<PaymentObligation | null>(null);
 
   // Get student data
-  const { students } = useSelector((state: RootState) => state.students);
-  const { classes } = useSelector((state: RootState) => state.classes);
+  const { students } = useAppSelector((state: RootState) => state.students);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
   const student = students.find(s => s.id === studentId);
 
   // Get related data
-  const obligations = useSelector((state: RootState) => 
+  const obligations = useAppSelector((state: RootState) =>
     studentId ? selectObligationsByStudentId(state, studentId) : []
   );
-  const payments = useSelector((state: RootState) => 
+  const payments = useAppSelector((state: RootState) =>
     studentId ? selectPaymentsByStudentId(state, studentId) : []
   );
-  const outstandingBalance = useSelector((state: RootState) => 
+  const outstandingBalance = useAppSelector((state: RootState) =>
     studentId ? selectStudentOutstandingBalance(state, studentId) : 0
   );
   
   // Get attendance data for the student's class
-  const attendanceRecords = useSelector((state: RootState) => 
+  const attendanceRecords = useAppSelector((state: RootState) =>
     student?.classId ? selectAttendanceByClassId(state, student.classId) : []
   );
   
   // Get grade data
-  const grades = useSelector((state: RootState) => 
+  const grades = useAppSelector((state: RootState) =>
     studentId ? selectGradesByStudentId(state, studentId) : []
   );
-  const { assessments } = useSelector((state: RootState) => state.grades);
+  const { assessments } = useAppSelector((state: RootState) => state.grades);
 
   // Get student's class information
   const studentClass = student?.classId ? classes.find(c => c.id === student.classId) : null;

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { useLocation } from 'react-router-dom';
 import { RootState } from '../../store';
 import Sidebar from './Sidebar';
@@ -12,7 +12,7 @@ interface AppLayoutProps {
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const { sidebarCollapsed } = useSelector((state: RootState) => state.ui);
+  const { sidebarCollapsed } = useAppSelector((state: RootState) => state.ui);
   const location = useLocation();
   const isDashboard = location.pathname === '/';
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { X, Search, User, Filter, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,12 +38,12 @@ const SingleStudentSelectionPanel: React.FC<SingleStudentSelectionPanelProps> = 
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   // Get students and classes from store
-  const { students } = useSelector((state: RootState) => state.students);
-  const { classes } = useSelector((state: RootState) => state.classes);
+  const { students } = useAppSelector((state: RootState) => state.students);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
 
   // Get financial data from store
-  const obligations = useSelector(selectAllObligations);
-  const payments = useSelector(selectAllPayments);
+  const obligations = useAppSelector(selectAllObligations);
+  const payments = useAppSelector(selectAllPayments);
   // Reset selection when panel opens
   useEffect(() => {
     if (open) {

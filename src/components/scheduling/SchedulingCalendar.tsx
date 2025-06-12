@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '../../store';
 import { Calendar } from '../ui/calendar';
 import { Button } from '../ui/button';
@@ -8,8 +8,8 @@ import GlassCard from '../common/GlassCard';
 import { setSelectedDate, setViewMode } from '../../store/slices/schedulingSlice';
 
 const SchedulingCalendar: React.FC = () => {
-  const dispatch = useDispatch();
-  const { selectedDate, viewMode } = useSelector((state: RootState) => state.scheduling);
+  const dispatch = useAppDispatch();
+  const { selectedDate, viewMode } = useAppSelector((state: RootState) => state.scheduling);
   // Parse the string date to a Date object for the Calendar component
   const parsedSelectedDate = selectedDate ? new Date(selectedDate) : new Date();
 

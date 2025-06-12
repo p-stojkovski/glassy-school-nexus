@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
-import { AppDispatch, RootState } from '@/store';
+import { RootState } from '@/store';
 import { createObligation, PaymentObligation } from '@/store/slices/financeSlice';
 import { selectStudents } from '@/store/slices/studentsSlice';
 import { useToast } from '@/hooks/use-toast';
@@ -80,8 +80,8 @@ const obligationTypes = [
 ];
 
 const BatchObligationForm: React.FC<BatchObligationFormProps> = ({ onCancel }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const students = useSelector((state: RootState) => selectStudents(state));
+  const dispatch = useAppDispatch();
+  const students = useAppSelector((state: RootState) => selectStudents(state));
   const { toast } = useToast();
   
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);

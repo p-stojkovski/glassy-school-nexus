@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '../../store';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -17,11 +17,11 @@ const SchedulingFilters: React.FC<SchedulingFiltersProps> = ({
   searchTerm,
   onSearchChange,
 }) => {
-  const dispatch = useDispatch();
-  const { filters } = useSelector((state: RootState) => state.scheduling);
-  const { classes } = useSelector((state: RootState) => state.classes);
-  const { teachers } = useSelector((state: RootState) => state.teachers);
-  const { classrooms } = useSelector((state: RootState) => state.classrooms);
+  const dispatch = useAppDispatch();
+  const { filters } = useAppSelector((state: RootState) => state.scheduling);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
+  const { teachers } = useAppSelector((state: RootState) => state.teachers);
+  const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
 
   return (
     <GlassCard className="p-6">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { X, Search, Users, Check, Filter, BookOpen, UserCheck, UserX } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -70,7 +70,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
       document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [isOpen, onClose]);  // Get classes from store
-  const { classes } = useSelector((state: RootState) => state.classes);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
     // Get available classes for filter, using actual class data
   const availableClasses = useMemo(() => {
     // Get unique classIds from students that have assigned classes

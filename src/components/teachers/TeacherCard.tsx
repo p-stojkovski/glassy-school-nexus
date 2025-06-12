@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '@/store/hooks';
 import { Mail, Phone, Calendar, BookOpen, AlertTriangle } from 'lucide-react';
 import { Teacher, deleteTeacher } from '../../store/slices/teachersSlice';
 import { Button } from '../ui/button';
@@ -15,7 +15,7 @@ interface TeacherCardProps {
 }
 
 const TeacherCard: React.FC<TeacherCardProps> = ({ teacher, onEdit }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {

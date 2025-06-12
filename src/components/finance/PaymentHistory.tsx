@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { 
   selectAllPayments,
   selectSelectedPeriod,
@@ -49,11 +48,11 @@ interface PaymentHistoryProps {
 }
 
 const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onEdit }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const payments = useSelector(selectAllPayments);
-  const obligations = useSelector(selectAllObligations);
-  const selectedPeriod = useSelector(selectSelectedPeriod);
-  const selectedStudentId = useSelector(selectSelectedStudentId);
+  const dispatch = useAppDispatch();
+  const payments = useAppSelector(selectAllPayments);
+  const obligations = useAppSelector(selectAllObligations);
+  const selectedPeriod = useAppSelector(selectSelectedPeriod);
+  const selectedStudentId = useAppSelector(selectSelectedStudentId);
   const { toast } = useToast();
   const [search, setSearch] = useState('');
   // Generate unique list of periods from obligations

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '@/store/hooks';
 import { loginStart, loginSuccess, loginFailure } from '../../store/slices/authSlice';
 import { addNotification } from '../../store/slices/uiSlice';
 import authService from '../../services/authService';
@@ -15,7 +15,7 @@ const LoginForm: React.FC = () => {
   const [password, setPassword] = useState('password');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

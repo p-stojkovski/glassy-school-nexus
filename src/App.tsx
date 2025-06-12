@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Provider } from 'react-redux';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
@@ -36,7 +36,7 @@ const queryClient = new QueryClient({
 });
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useAppSelector((state: RootState) => state.auth);
 
   if (!isAuthenticated) {
     return <LoginForm />;

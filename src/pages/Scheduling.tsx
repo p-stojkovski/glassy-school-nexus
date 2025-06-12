@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
 import { Input } from '../components/ui/input';
@@ -17,9 +17,9 @@ import {
 import { toast } from '../components/ui/use-toast';
 
 const Scheduling: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { scheduledClasses } = useSelector((state: RootState) => state.scheduling);
+  const { scheduledClasses } = useAppSelector((state: RootState) => state.scheduling);
   
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [scheduleToCancel, setScheduleToCancel] = useState<ScheduledClass | null>(null);

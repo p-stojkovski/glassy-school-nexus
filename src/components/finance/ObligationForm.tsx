@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
-import { AppDispatch, RootState } from '@/store';
+import { RootState } from '@/store';
 import { 
   createObligation, 
   updateObligation, 
@@ -100,8 +100,9 @@ const ObligationForm: React.FC<ObligationFormProps> = ({
   onCancel, 
   batchMode = false,
   onSubmitBatch 
-}) => {  const dispatch = useDispatch<AppDispatch>();
-  const allObligations = useSelector(selectAllObligations);
+}) => {
+  const dispatch = useAppDispatch();
+  const allObligations = useAppSelector(selectAllObligations);
   const { toast } = useToast();
   const editedObligation = editingId
     ? allObligations.find(obl => obl.id === editingId)

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '../store';
 import ClassFormContent, { ClassFormData } from '../components/classes/ClassFormContent';
 import { useClassManagement } from '../hooks/useClassManagement';
@@ -12,9 +12,9 @@ import { Classroom } from '../store/slices/classroomsSlice';
 
 const ClassForm: React.FC = () => {
   const navigate = useNavigate();  const { id } = useParams();
-  const dispatch = useDispatch();
-  const { classes } = useSelector((state: RootState) => state.classes);
-  const { classrooms } = useSelector((state: RootState) => state.classrooms);
+  const dispatch = useAppDispatch();
+  const { classes } = useAppSelector((state: RootState) => state.classes);
+  const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
 
   const editingClass = id ? classes.find(c => c.id === id) : null;
   const isEditing = !!editingClass;
