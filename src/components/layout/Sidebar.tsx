@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
@@ -35,9 +35,9 @@ const menuItems = [
 ];
 
 const Sidebar: React.FC = () => {
-  const { sidebarCollapsed } = useSelector((state: RootState) => state.ui);
-  const { user } = useSelector((state: RootState) => state.auth);
-  const dispatch = useDispatch();
+  const { sidebarCollapsed } = useAppSelector((state: RootState) => state.ui);
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 

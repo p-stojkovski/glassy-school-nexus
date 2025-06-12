@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { RootState } from '../../store';
 import { Calendar } from 'lucide-react';
 import { Input } from '../ui/input';
@@ -29,7 +29,7 @@ const AttendanceFilters: React.FC<AttendanceFiltersProps> = ({
   selectedClassId,
   onClassChange,
 }) => {
-  const { classes } = useSelector((state: RootState) => state.classes);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {

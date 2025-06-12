@@ -1,12 +1,12 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { selectTotalOutstandingBalance } from '@/store/slices/financeSlice';
 import { Calculator, Download, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 const FinancialHeader: React.FC = () => {
-  const totalOutstanding = useSelector(selectTotalOutstandingBalance);  const handleExportData = () => {
+  const totalOutstanding = useAppSelector(selectTotalOutstandingBalance);  const handleExportData = () => {
     try {
       const store = window.localStorage;
       const obligations = JSON.parse(store.getItem('paymentObligations') || '[]');

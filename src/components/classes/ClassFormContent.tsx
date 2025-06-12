@@ -6,7 +6,7 @@ import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Class } from '../../store/slices/classesSlice';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { RootState } from '../../store';
 import GlassCard from '../common/GlassCard';
 import ScheduleForm from './ScheduleForm';
@@ -34,9 +34,9 @@ export interface ClassFormData {
 }
 
 const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel, editingClass }) => {
-  const { teachers } = useSelector((state: RootState) => state.teachers);
-  const { classrooms } = useSelector((state: RootState) => state.classrooms);
-  const { students } = useSelector((state: RootState) => state.students);
+  const { teachers } = useAppSelector((state: RootState) => state.teachers);
+  const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
+  const { students } = useAppSelector((state: RootState) => state.students);
   const [isStudentPanelOpen, setIsStudentPanelOpen] = useState(false);
 
   const form = useForm<ClassFormData>({

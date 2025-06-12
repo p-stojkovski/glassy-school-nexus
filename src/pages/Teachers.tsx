@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Plus, Search, Filter, Users } from 'lucide-react';
 import { RootState } from '../store';
 import { setTeachers, setLoading } from '../store/slices/teachersSlice';
@@ -13,8 +13,8 @@ import TeacherForm from '../components/teachers/TeacherForm';
 import { Teacher } from '../store/slices/teachersSlice';
 
 const Teachers: React.FC = () => {
-  const dispatch = useDispatch();
-  const { teachers, loading } = useSelector((state: RootState) => state.teachers);
+  const dispatch = useAppDispatch();
+  const { teachers, loading } = useAppSelector((state: RootState) => state.teachers);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { 
   AttendanceRecord,
   selectAttendanceByClassId,
@@ -32,13 +32,13 @@ interface AttendanceHistoryProps {
 }
 
 const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) => {
-  const dispatch = useDispatch();
-  const allRecords = useSelector(selectAllAttendanceRecords);
+  const dispatch = useAppDispatch();
+  const allRecords = useAppSelector(selectAllAttendanceRecords);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'details'>('list');
-  const { classes } = useSelector((state: RootState) => state.classes);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
     // Filter records based on classId and/or date
   useEffect(() => {
     let filtered = [...allRecords];

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '../store';
 import { setSelectedDate } from '../store/slices/attendanceSlice';
 import AttendanceHeader from '../components/attendance/AttendanceHeader';
@@ -9,8 +9,8 @@ import AttendanceMarker from '@/components/attendance/AttendanceMarker';
 import AttendanceHistory from '@/components/attendance/AttendanceHistory';
 
 const AttendanceManagement: React.FC = () => {
-  const dispatch = useDispatch();
-  const { selectedDate } = useSelector((state: RootState) => state.attendance);
+  const dispatch = useAppDispatch();
+  const { selectedDate } = useAppSelector((state: RootState) => state.attendance);
   const [activeTab, setActiveTab] = useState<'mark' | 'history'>('mark');  const [selectedClassId, setSelectedClassId] = useState<string>('all-classes');
   
   // Set today's date on component mount if not already set

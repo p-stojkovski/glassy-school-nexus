@@ -1,14 +1,14 @@
 
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react';
 import { RootState } from '../../store';
 import { removeNotification } from '../../store/slices/uiSlice';
 
 const NotificationToast: React.FC = () => {
-  const { notifications } = useSelector((state: RootState) => state.ui);
-  const dispatch = useDispatch();
+  const { notifications } = useAppSelector((state: RootState) => state.ui);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const timer = setTimeout(() => {

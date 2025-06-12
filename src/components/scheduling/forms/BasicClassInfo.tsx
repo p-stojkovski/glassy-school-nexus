@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { RootState } from '../../../store';
 import { Label } from '../../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
@@ -16,9 +16,9 @@ interface BasicClassInfoProps {
 }
 
 const BasicClassInfo: React.FC<BasicClassInfoProps> = ({ formData, onFormDataChange }) => {
-  const { classes } = useSelector((state: RootState) => state.classes);
-  const { teachers } = useSelector((state: RootState) => state.teachers);
-  const { classrooms } = useSelector((state: RootState) => state.classrooms);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
+  const { teachers } = useAppSelector((state: RootState) => state.teachers);
+  const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

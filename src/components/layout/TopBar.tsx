@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Bell, Plus } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { useLocation } from 'react-router-dom';
 import { RootState } from '../../store';
 import GlassCard from '../common/GlassCard';
@@ -11,7 +11,7 @@ import { Button } from '../ui/button';
 
 const TopBar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { notifications } = useSelector((state: RootState) => state.ui);
+  const { notifications } = useAppSelector((state: RootState) => state.ui);
   const location = useLocation();
   const unreadCount = notifications.length;
   

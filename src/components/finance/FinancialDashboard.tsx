@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { 
   selectAllObligations, 
   selectAllPayments,
@@ -23,9 +23,9 @@ import {
 } from 'recharts';
 
 const FinancialDashboard: React.FC = () => {
-  const obligations = useSelector(selectAllObligations);
-  const payments = useSelector(selectAllPayments);
-  const totalOutstanding = useSelector(selectTotalOutstandingBalance);
+  const obligations = useAppSelector(selectAllObligations);
+  const payments = useAppSelector(selectAllPayments);
+  const totalOutstanding = useAppSelector(selectTotalOutstandingBalance);
 
   // Calculate total amount of obligations and payments
   const totalObligations = obligations.reduce((sum, obligation) => sum + obligation.amount, 0);

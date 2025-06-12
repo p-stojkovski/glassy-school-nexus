@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '../store';
 import { Class, setClasses, addClass, updateClass, deleteClass } from '../store/slices/classesSlice';
 import type { ClassFormData } from '../components/classes/ClassFormContent';
@@ -21,10 +21,10 @@ export const useClassManagement = ({
   statusFilter,
   showOnlyWithAvailableSlots
 }: UseClassManagementProps) => {
-  const dispatch = useDispatch();
-  const { classes, loading } = useSelector((state: RootState) => state.classes);
-  const { teachers } = useSelector((state: RootState) => state.teachers);
-  const { classrooms } = useSelector((state: RootState) => state.classrooms);
+  const dispatch = useAppDispatch();
+  const { classes, loading } = useAppSelector((state: RootState) => state.classes);
+  const { teachers } = useAppSelector((state: RootState) => state.teachers);
+  const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
   // Load mock data on component mount
   useEffect(() => {
     const mockClasses: Class[] = [

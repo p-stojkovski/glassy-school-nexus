@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Clock } from 'lucide-react';
 import { Class } from '../../store/slices/classesSlice';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import { RootState } from '../../store';
 import StudentSelectionPanel from '../common/StudentSelectionPanel';
 import StudentSelectionTrigger from '../common/StudentSelectionTrigger';
@@ -35,9 +35,9 @@ export interface ClassFormData {
 }
 
 const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, editingClass }) => {
-  const { teachers } = useSelector((state: RootState) => state.teachers);
-  const { students } = useSelector((state: RootState) => state.students);
-  const { classrooms } = useSelector((state: RootState) => state.classrooms);
+  const { teachers } = useAppSelector((state: RootState) => state.teachers);
+  const { students } = useAppSelector((state: RootState) => state.students);
+  const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
   const [isStudentPanelOpen, setIsStudentPanelOpen] = useState(false);
   const form = useForm<ClassFormData>({
     defaultValues: editingClass ? {

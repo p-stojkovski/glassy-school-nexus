@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '../store';
 import { addScheduledClass, updateScheduledClass, ScheduledClass } from '../store/slices/schedulingSlice';
 import { toast } from '../components/ui/use-toast';
@@ -12,11 +12,11 @@ import ScheduleClassForm, { ScheduleFormData } from '../components/scheduling/Sc
 const ScheduleForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const dispatch = useDispatch();
-  const { scheduledClasses } = useSelector((state: RootState) => state.scheduling);
-  const { classes } = useSelector((state: RootState) => state.classes);
-  const { teachers } = useSelector((state: RootState) => state.teachers);
-  const { classrooms } = useSelector((state: RootState) => state.classrooms);
+  const dispatch = useAppDispatch();
+  const { scheduledClasses } = useAppSelector((state: RootState) => state.scheduling);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
+  const { teachers } = useAppSelector((state: RootState) => state.teachers);
+  const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
   
   const editingSchedule = id ? scheduledClasses.find(s => s.id === id) : null;
   const isEditing = !!editingSchedule;  // Using ScheduleFormData imported from ScheduleClassForm

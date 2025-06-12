@@ -1,6 +1,6 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { useAppSelector } from '@/store/hooks';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import GlassCard from '../common/GlassCard';
@@ -14,7 +14,7 @@ const GradesFilters: React.FC<GradesFiltersProps> = ({
   selectedClassId,
   onClassChange,
 }) => {
-  const { classes } = useSelector((state: RootState) => state.classes);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
 
   return (
     <GlassCard className="p-6">

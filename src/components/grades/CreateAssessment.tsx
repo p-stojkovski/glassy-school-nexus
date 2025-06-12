@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { createAssessment, Assessment, AssessmentType } from '../../store/slices/gradesSlice';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -30,8 +30,8 @@ interface CreateAssessmentProps {
 }
 
 const CreateAssessment: React.FC<CreateAssessmentProps> = ({ classId }) => {
-  const dispatch = useDispatch();
-  const { classes } = useSelector((state: RootState) => state.classes);
+  const dispatch = useAppDispatch();
+  const { classes } = useAppSelector((state: RootState) => state.classes);
   const selectedClass = classes.find(c => c.id === classId);
   
   const [showDialog, setShowDialog] = useState(false);

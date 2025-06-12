@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
 import { 
@@ -22,13 +22,13 @@ import {
 import { toast } from '../components/ui/use-toast';
 
 export const useStudentManagement = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const students = useSelector(selectStudents);
-  const loading = useSelector(selectLoading);
-  const error = useSelector(selectError);
-  const classes = useSelector((state: RootState) => state.classes.classes);
-  const paymentObligations = useSelector((state: RootState) => state.finance.obligations);
+  const students = useAppSelector(selectStudents);
+  const loading = useAppSelector(selectLoading);
+  const error = useAppSelector(selectError);
+  const classes = useAppSelector((state: RootState) => state.classes.classes);
+  const paymentObligations = useAppSelector((state: RootState) => state.finance.obligations);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<'all' | 'pending' | 'partial' | 'paid' | 'overdue'>('all');

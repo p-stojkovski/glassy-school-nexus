@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   Assessment,
   Grade,
@@ -51,12 +51,12 @@ interface StudentGrade {
 }
 
 const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
-  const dispatch = useDispatch();
-  const { classes } = useSelector((state: RootState) => state.classes);
-  const { students } = useSelector((state: RootState) => state.students);
-  const assessments = useSelector((state: RootState) => selectAssessmentsByClassId(state, classId));
+  const dispatch = useAppDispatch();
+  const { classes } = useAppSelector((state: RootState) => state.classes);
+  const { students } = useAppSelector((state: RootState) => state.students);
+  const assessments = useAppSelector((state: RootState) => selectAssessmentsByClassId(state, classId));
   // Move the selector outside the useEffect to follow the Rules of Hooks
-  const allGrades = useSelector((state: RootState) => state.grades.grades);
+  const allGrades = useAppSelector((state: RootState) => state.grades.grades);
   
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
   const [studentGrades, setStudentGrades] = useState<StudentGrade[]>([]);

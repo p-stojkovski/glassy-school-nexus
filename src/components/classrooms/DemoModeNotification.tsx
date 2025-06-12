@@ -2,9 +2,6 @@ import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { useDispatch } from 'react-redux';
-import { resetDemoClassrooms } from '@/store/slices/classroomsSlice';
-import { useToast } from '@/hooks/use-toast';
 
 interface DemoModeNotificationProps {
   onResetDemo: () => void;

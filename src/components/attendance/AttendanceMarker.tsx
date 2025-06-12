@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   AttendanceRecord,
   StudentAttendance,
@@ -45,11 +45,11 @@ interface AttendanceMarkerProps {
 type StatusType = 'present' | 'absent' | 'late';
 
 const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({ classId, date }) => {
-  const dispatch = useDispatch();
-  const { classes } = useSelector((state: RootState) => state.classes);
-  const { teachers } = useSelector((state: RootState) => state.teachers);
-  const { students } = useSelector((state: RootState) => state.students);
-  const attendanceRecords = useSelector((state: RootState) => state.attendance.attendanceRecords);
+  const dispatch = useAppDispatch();
+  const { classes } = useAppSelector((state: RootState) => state.classes);
+  const { teachers } = useAppSelector((state: RootState) => state.teachers);
+  const { students } = useAppSelector((state: RootState) => state.students);
+  const attendanceRecords = useAppSelector((state: RootState) => state.attendance.attendanceRecords);
   const [attendanceData, setAttendanceData] = useState<Record<string, { status: StatusType; notes: string }>>({});
   const [selectedClass, setSelectedClass] = useState(classes.find(c => c.id === classId));
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);

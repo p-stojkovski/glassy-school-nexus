@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { 
   selectAllObligations, 
   selectSelectedPeriod,
@@ -49,10 +48,10 @@ interface ObligationTableProps {
 }
 
 const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const obligations = useSelector(selectAllObligations);
-  const selectedPeriod = useSelector(selectSelectedPeriod);
-  const selectedStudentId = useSelector(selectSelectedStudentId);
+  const dispatch = useAppDispatch();
+  const obligations = useAppSelector(selectAllObligations);
+  const selectedPeriod = useAppSelector(selectSelectedPeriod);
+  const selectedStudentId = useAppSelector(selectSelectedStudentId);
   const { toast } = useToast();
   const [search, setSearch] = useState('');
   // Generate unique list of periods from obligations

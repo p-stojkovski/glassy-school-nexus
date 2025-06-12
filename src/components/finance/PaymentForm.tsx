@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
-import { AppDispatch, RootState } from '@/store';
+import { RootState } from '@/store';
 import { 
   createPayment, 
   updatePayment, 
@@ -73,9 +73,9 @@ const mockUser = {
 };
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const allPayments = useSelector(selectAllPayments);
-  const allObligations = useSelector(selectAllObligations);
+  const dispatch = useAppDispatch();
+  const allPayments = useAppSelector(selectAllPayments);
+  const allObligations = useAppSelector(selectAllObligations);
   const { toast } = useToast();
   const editedPayment = editingId
     ? allPayments.find(payment => payment.id === editingId)
@@ -83,7 +83,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isStudentSelectionOpen, setIsStudentSelectionOpen] = useState(false);
   const selectedStudentId = selectedStudent?.id || '';
-  const { students } = useSelector((state: RootState) => state.students);const studentObligations = useSelector((state: RootState) => 
+  const { students } = useAppSelector((state: RootState) => state.students);
+  const studentObligations = useAppSelector((state: RootState) =>
     selectObligationsByStudentId(state, selectedStudentId)
   );
 

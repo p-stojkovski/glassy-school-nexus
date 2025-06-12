@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
-import { AppDispatch, RootState } from '@/store';
+import { RootState } from '@/store';
 import { 
   createPayment, 
   Payment,
@@ -79,8 +79,8 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
   obligation, 
   studentName 
 }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const allPayments = useSelector(selectAllPayments);
+  const dispatch = useAppDispatch();
+  const allPayments = useAppSelector(selectAllPayments);
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
