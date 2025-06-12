@@ -3,16 +3,19 @@ import React from 'react';
 import { useAppSelector } from '@/store/hooks';
 import { RootState } from '../../../store';
 import { Label } from '../../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../ui/select';
 import { BookOpen, Users, MapPin } from 'lucide-react';
+import { ScheduleFormData } from '../types';
 
 interface BasicClassInfoProps {
-  formData: {
-    classId: string;
-    teacherId: string;
-    classroomId: string;
-  };
-  onFormDataChange: (data: any) => void;
+  formData: ScheduleFormData;
+  onFormDataChange: (data: ScheduleFormData) => void;
 }
 
 const BasicClassInfo: React.FC<BasicClassInfoProps> = ({ formData, onFormDataChange }) => {
