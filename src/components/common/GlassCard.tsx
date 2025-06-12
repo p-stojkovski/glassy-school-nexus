@@ -2,7 +2,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
-import styles from './GlassCard.module.scss';
 
 interface GlassCardProps {
   children: React.ReactNode;
@@ -20,9 +19,12 @@ const GlassCard: React.FC<GlassCardProps> = ({
   return (
     <motion.div
       className={cn(
-        styles.glassCard,
-        hover && styles.hoverable,
-        onClick && styles.clickable,
+        // Base glass card styles
+        "backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl",
+        // Hover styles
+        hover && "hover:bg-white/10 hover:shadow-2xl transition-all duration-300 cursor-pointer",
+        // Clickable styles
+        onClick && "cursor-pointer",
         className
       )}
       whileHover={hover ? { scale: 1.02, y: -2 } : undefined}

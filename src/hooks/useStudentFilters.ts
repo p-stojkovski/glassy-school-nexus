@@ -6,6 +6,11 @@ export const getStudentPaymentStatus = (
   studentId: string,
   obligations: PaymentObligation[]
 ): 'pending' | 'partial' | 'paid' | 'overdue' => {
+
+  if (!obligations || !Array.isArray(obligations)) {
+    return 'paid';
+  }
+
   const studentObligations = obligations.filter(
     (obligation) => obligation.studentId === studentId
   );

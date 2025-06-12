@@ -37,7 +37,6 @@ export const useStudentManagement = () => {
 
   // Populate store with mock data when needed
   useInitializeStudents();
-
   const filteredStudents = useStudentFilters({
     students,
     obligations: paymentObligations,
@@ -47,6 +46,10 @@ export const useStudentManagement = () => {
     classFilter,
   });
 
+  // Create a wrapper function that has access to paymentObligations
+  const getStudentPaymentStatusWrapper = (studentId: string) => {
+    return getStudentPaymentStatus(studentId, paymentObligations || []);
+  };
 
   const handleAddStudent = () => {
     setSelectedStudent(null);
@@ -152,10 +155,9 @@ export const useStudentManagement = () => {
     setStatusFilter,
     paymentStatusFilter,
     setPaymentStatusFilter,
-    classFilter,    setClassFilter,
-    clearFilters,
+    classFilter,    setClassFilter,    clearFilters,
     classes,
-    getStudentPaymentStatus,
+    getStudentPaymentStatus: getStudentPaymentStatusWrapper,
     isFormOpen,
     selectedStudent,
     studentToDelete,
