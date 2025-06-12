@@ -45,7 +45,6 @@ export const useStudentManagement = () => {
     paymentStatusFilter,
     classFilter,
   });
-
   // Create a wrapper function that has access to paymentObligations
   const getStudentPaymentStatusWrapper = (studentId: string) => {
     return getStudentPaymentStatus(studentId, paymentObligations || []);
@@ -155,8 +154,8 @@ export const useStudentManagement = () => {
     setStatusFilter,
     paymentStatusFilter,
     setPaymentStatusFilter,
-    classFilter,    setClassFilter,    clearFilters,
-    classes,
+    classFilter,    setClassFilter,
+    clearFilters,    classes,
     getStudentPaymentStatus: getStudentPaymentStatusWrapper,
     isFormOpen,
     selectedStudent,
