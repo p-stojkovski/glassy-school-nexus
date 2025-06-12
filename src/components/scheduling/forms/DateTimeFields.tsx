@@ -3,14 +3,11 @@ import React from 'react';
 import { Label } from '../../ui/label';
 import { Input } from '../../ui/input';
 import { Calendar, Clock } from 'lucide-react';
+import { ScheduleFormData } from '../types';
 
 interface DateTimeFieldsProps {
-  formData: {
-    date: string;
-    startTime: string;
-    endTime: string;
-  };
-  onFormDataChange: (data: any) => void;
+  formData: ScheduleFormData;
+  onFormDataChange: (data: ScheduleFormData) => void;
 }
 
 const DateTimeFields: React.FC<DateTimeFieldsProps> = ({ formData, onFormDataChange }) => {

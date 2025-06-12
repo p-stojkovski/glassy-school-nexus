@@ -6,6 +6,12 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface RegistrationData {
+  name: string;
+  email: string;
+  password: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -36,7 +42,7 @@ class AuthService {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
-  async register(userData: any): Promise<User> {
+  async register(userData: RegistrationData): Promise<User> {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return {
       id: Date.now().toString(),

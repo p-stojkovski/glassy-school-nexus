@@ -8,20 +8,8 @@ import GlassCard from '../common/GlassCard';
 import BasicClassInfo from './forms/BasicClassInfo';
 import DateTimeFields from './forms/DateTimeFields';
 import RecurringOptions from './forms/RecurringOptions';
+import { ScheduleFormData } from './types';
 
-export interface ScheduleFormData {
-  id?: string;
-  classId: string;
-  teacherId: string;
-  studentIds: string[];
-  classroomId: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  isRecurring: boolean;
-  recurringPattern?: 'weekly' | 'biweekly' | 'monthly';
-  notes?: string;
-}
 
 interface ScheduleClassFormProps {
   onSubmit: (data: ScheduleFormData) => void;
@@ -34,7 +22,7 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
   onCancel,
   initialData,
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ScheduleFormData>({
     classId: initialData?.classId || '',
     teacherId: initialData?.teacherId || '',
     studentIds: initialData?.studentIds || [],
