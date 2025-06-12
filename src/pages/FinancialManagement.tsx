@@ -2,11 +2,11 @@ import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { refreshObligationStatuses, selectError } from '@/store/slices/financeSlice';
-import FinancialDashboard from '@/components/finance/FinancialDashboard';
-import ObligationManagement from '@/components/finance/ObligationManagement';
-import PaymentManagement from '@/components/finance/PaymentManagement';
-import FinancialHeader from '@/components/finance/FinancialHeader';
-import DemoModeNotification from '@/components/finance/DemoModeNotification';
+import FinancialDashboard from '@/components/finance/dashboard/FinancialDashboard';
+import ObligationManagement from '@/components/finance/obligations/ObligationManagement';
+import PaymentManagement from '@/components/finance/payments/PaymentManagement';
+import FinancialHeader from '@/components/finance/common/FinancialHeader';
+import DemoModeNotification from '@/components/finance/common/DemoModeNotification';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useToast } from '@/hooks/use-toast';
 
