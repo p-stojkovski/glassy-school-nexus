@@ -1,6 +1,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
+import { loadFromStorage, saveToStorage } from '@/lib/storage';
 
 export interface Invoice {
   id: string;
@@ -55,27 +56,11 @@ interface FinanceState {
 }
 
 // Load initial data from localStorage if available
-const loadInitialObligations = (): PaymentObligation[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const saved = localStorage.getItem('paymentObligations');
-    return saved ? JSON.parse(saved) : [];
-  } catch (e) {
-    console.error('Failed to load payment obligations from localStorage', e);
-    return [];
-  }
-};
+const loadInitialObligations = (): PaymentObligation[] =>
+  loadFromStorage<PaymentObligation[]>('paymentObligations') || [];
 
-const loadInitialPayments = (): Payment[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const saved = localStorage.getItem('payments');
-    return saved ? JSON.parse(saved) : [];
-  } catch (e) {
-    console.error('Failed to load payments from localStorage', e);
-    return [];
-  }
-};
+const loadInitialPayments = (): Payment[] =>
+  loadFromStorage<Payment[]>('payments') || [];
 
 // Get current date for obligation status updates
 const getCurrentDate = (): string => new Date().toISOString().split('T')[0];
@@ -162,7 +147,7 @@ const financeSlice = createSlice({
       state.obligations.push(action.payload);
       // Calculate status when creating a new obligation
       state.obligations = updateObligationStatuses(state.obligations, state.payments);
-      localStorage.setItem('paymentObligations', JSON.stringify(state.obligations));
+      saveToStorage('paymentObligations', state.obligations);
     },
     
     updateObligation: (state, action: PayloadAction<PaymentObligation>) => {
@@ -173,7 +158,7 @@ const financeSlice = createSlice({
           updatedAt: new Date().toISOString()
         };
         state.obligations = updateObligationStatuses(state.obligations, state.payments);
-        localStorage.setItem('paymentObligations', JSON.stringify(state.obligations));
+        saveToStorage('paymentObligations', state.obligations);
       }
     },
     
@@ -181,8 +166,8 @@ const financeSlice = createSlice({
       state.obligations = state.obligations.filter(o => o.id !== action.payload);
       // Also delete related payments
       state.payments = state.payments.filter(p => p.obligationId !== action.payload);
-      localStorage.setItem('paymentObligations', JSON.stringify(state.obligations));
-      localStorage.setItem('payments', JSON.stringify(state.payments));
+      saveToStorage('paymentObligations', state.obligations);
+      saveToStorage('payments', state.payments);
     },
     
     // Payment CRUD operations
@@ -190,8 +175,8 @@ const financeSlice = createSlice({
       state.payments.push(action.payload);
       // Update obligation status after payment
       state.obligations = updateObligationStatuses(state.obligations, state.payments);
-      localStorage.setItem('payments', JSON.stringify(state.payments));
-      localStorage.setItem('paymentObligations', JSON.stringify(state.obligations));
+      saveToStorage('payments', state.payments);
+      saveToStorage('paymentObligations', state.obligations);
     },
     
     updatePayment: (state, action: PayloadAction<Payment>) => {
@@ -203,8 +188,8 @@ const financeSlice = createSlice({
         };
         // Update obligation status after payment change
         state.obligations = updateObligationStatuses(state.obligations, state.payments);
-        localStorage.setItem('payments', JSON.stringify(state.payments));
-        localStorage.setItem('paymentObligations', JSON.stringify(state.obligations));
+        saveToStorage('payments', state.payments);
+        saveToStorage('paymentObligations', state.obligations);
       }
     },
     
@@ -212,8 +197,8 @@ const financeSlice = createSlice({
       state.payments = state.payments.filter(p => p.id !== action.payload);
       // Update obligation status after payment deletion
       state.obligations = updateObligationStatuses(state.obligations, state.payments);
-      localStorage.setItem('payments', JSON.stringify(state.payments));
-      localStorage.setItem('paymentObligations', JSON.stringify(state.obligations));
+      saveToStorage('payments', state.payments);
+      saveToStorage('paymentObligations', state.obligations);
     },
     
     // Add payments in batch
@@ -221,8 +206,8 @@ const financeSlice = createSlice({
       state.payments = [...state.payments, ...action.payload];
       // Update obligation statuses after batch payment
       state.obligations = updateObligationStatuses(state.obligations, state.payments);
-      localStorage.setItem('payments', JSON.stringify(state.payments));
-      localStorage.setItem('paymentObligations', JSON.stringify(state.obligations));
+      saveToStorage('payments', state.payments);
+      saveToStorage('paymentObligations', state.obligations);
     },
     
     // Clear all data (for testing/demo purposes)
@@ -236,7 +221,7 @@ const financeSlice = createSlice({
     // Update all obligation statuses (run periodically)
     refreshObligationStatuses: (state) => {
       state.obligations = updateObligationStatuses(state.obligations, state.payments);
-      localStorage.setItem('paymentObligations', JSON.stringify(state.obligations));
+      saveToStorage('paymentObligations', state.obligations);
     }
   },
 });

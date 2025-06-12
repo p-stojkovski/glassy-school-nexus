@@ -1,6 +1,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
+import { loadFromStorage, saveToStorage } from '@/lib/storage';
 
 export interface StudentAttendance {
   studentId: string;
@@ -39,17 +40,8 @@ interface AttendanceState {
 }
 
 // Initialize state from localStorage if available
-const loadInitialState = (): AttendanceRecord[] => {
-  if (typeof window === 'undefined') return [];
-  
-  try {
-    const saved = localStorage.getItem('attendance-records');
-    return saved ? JSON.parse(saved) : [];
-  } catch (e) {
-    console.error('Failed to load attendance data from localStorage', e);
-    return [];
-  }
-};
+const loadInitialState = (): AttendanceRecord[] =>
+  loadFromStorage<AttendanceRecord[]>('attendance-records') || [];
 
 const initialState: AttendanceState = {
   records: [], // Keep for backward compatibility
@@ -92,7 +84,7 @@ const attendanceSlice = createSlice({
     // Create a new detailed attendance record
     createAttendanceRecord: (state, action: PayloadAction<AttendanceRecord>) => {
       state.attendanceRecords.push(action.payload);
-      localStorage.setItem('attendance-records', JSON.stringify(state.attendanceRecords));
+      saveToStorage('attendance-records', state.attendanceRecords);
     },
     
     // Update an existing detailed attendance record
@@ -100,14 +92,14 @@ const attendanceSlice = createSlice({
       const index = state.attendanceRecords.findIndex(record => record.id === action.payload.id);
       if (index !== -1) {
         state.attendanceRecords[index] = action.payload;
-        localStorage.setItem('attendance-records', JSON.stringify(state.attendanceRecords));
+        saveToStorage('attendance-records', state.attendanceRecords);
       }
     },
     
     // Delete an attendance record
     deleteAttendanceRecord: (state, action: PayloadAction<string>) => {
       state.attendanceRecords = state.attendanceRecords.filter(record => record.id !== action.payload);
-      localStorage.setItem('attendance-records', JSON.stringify(state.attendanceRecords));
+      saveToStorage('attendance-records', state.attendanceRecords);
     },
     
     // Set the current attendance record being viewed/edited
@@ -153,7 +145,7 @@ const attendanceSlice = createSlice({
           }
           
           // Update localStorage
-          localStorage.setItem('attendance-records', JSON.stringify(state.attendanceRecords));
+          saveToStorage('attendance-records', state.attendanceRecords);
         }
       }
     },
