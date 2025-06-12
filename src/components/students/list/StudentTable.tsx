@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '../ui/pagination';
-import GlassCard from '../common/GlassCard';
-import { Student } from '../../store/slices/studentsSlice';
+import { Button } from '../../ui/button';
+import { Badge } from '../../ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../ui/table';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '../../ui/pagination';
+import GlassCard from '../../common/GlassCard';
+import { Student } from '../../../store/slices/studentsSlice';
 
 interface StudentTableProps {
   students: Student[];
