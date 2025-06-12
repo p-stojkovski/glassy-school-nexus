@@ -69,7 +69,6 @@ class ClassroomService {
   async deleteClassroom(id: string): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 600));
     // Simulate checking for linked classes
-    console.log(`Deleting classroom ${id}`);
   }
 
   async checkClassroomUsage(id: string): Promise<{ hasUpcomingClasses: boolean; classCount: number }> {

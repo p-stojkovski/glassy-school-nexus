@@ -163,7 +163,6 @@ const ClassroomManagement: React.FC = () => {
 
   const handleViewClassroom = (classroom: Classroom) => {
     // Handle viewing classroom details
-    console.log('Viewing classroom:', classroom);
   };
 
   const handleCloseForm = () => {
