@@ -8,7 +8,7 @@ import StudentForm from '../components/students/forms/StudentForm';
 import StudentEmptyState from '../components/students/state/StudentEmptyState';
 import StudentLoading from '../components/students/state/StudentLoading';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import DemoModeNotification from '../components/students/common/DemoModeNotification';
+import DemoModeNotification from '../components/students/notifications/DemoModeNotification';
 import { useStudentManagement } from '../hooks/useStudentManagement';
 
 const StudentManagement: React.FC = () => {  const {

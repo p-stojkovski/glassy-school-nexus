@@ -8,7 +8,7 @@ import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import GlassCard from '../components/common/GlassCard';
-import DemoModeNotification from '../components/students/common/DemoModeNotification';
+import DemoModeNotification from '../components/students/notifications/DemoModeNotification';
 import PaymentSidebar from '../components/finance/payments/PaymentSidebar';
 import { selectObligationsByStudentId, selectPaymentsByStudentId, selectStudentOutstandingBalance, PaymentObligation } from '../store/slices/financeSlice';
 import { selectAttendanceByClassId } from '../store/slices/attendanceSlice';

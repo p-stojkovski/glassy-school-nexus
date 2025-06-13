@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Button } from '../../ui/button';
+import { Input } from '../../ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../ui/form';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../ui/dialog';
 import { Clock } from 'lucide-react';
-import { Class } from '../../store/slices/classesSlice';
+import { Class } from '../../../store/slices/classesSlice';
 import { useAppSelector } from '@/store/hooks';
-import { RootState } from '../../store';
-import StudentSelectionPanel from '../common/StudentSelectionPanel';
-import StudentSelectionTrigger from '../common/StudentSelectionTrigger';
+import { RootState } from '../../../store';
+import StudentSelectionPanel from '../../common/StudentSelectionPanel';
+import StudentSelectionTrigger from '../../common/StudentSelectionTrigger';
 
 interface ClassFormProps {
   open: boolean;
