@@ -1,5 +1,5 @@
 
-import { Class } from './classesSlice';
+import { Class } from '../classesSlice';
 
 class ClassService {
   async getClasses(): Promise<Class[]> {
