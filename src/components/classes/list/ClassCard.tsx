@@ -1,8 +1,8 @@
 
+import GlassCard from '@/components/common/GlassCard';
+import { Button } from '@/components/ui/button';
+import { Class } from '@/store/slices/classesSlice';
 import React from 'react';
-import { Button } from '../ui/button';
-import GlassCard from '../common/GlassCard';
-import { Class } from '../../store/slices/classesSlice';
 
 interface ClassCardProps {
   classItem: Class;
@@ -17,7 +17,8 @@ const ClassCard: React.FC<ClassCardProps> = ({
   onEdit,
   onDelete,
 }) => {
-  return (    <GlassCard className="p-6">
+  return (    
+    <GlassCard className="p-6">
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-xl font-semibold text-white">{classItem.name}</h3>
         <div className="flex space-x-2">
