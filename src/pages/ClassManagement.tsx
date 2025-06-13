@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ClassHeader from '../components/classes/ClassHeader';
-import ClassFilters from '../components/classes/ClassFilters';
-import ClassCard from '../components/classes/ClassCard';
-import ClassEmptyState from '../components/classes/ClassEmptyState';
-import ClassLoading from '../components/classes/ClassLoading';
+import ClassHeader from '../components/classes/layout/ClassHeader';
+import ClassFilters from '../components/classes/filters/ClassFilters';
+import ClassCard from '../components/classes/list/ClassCard';
+import ClassEmptyState from '../components/classes/state/ClassEmptyState';
+import ClassLoading from '../components/classes/state/ClassLoading';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import DemoModeNotification from '../components/classes/DemoModeNotification';
+import DemoModeNotification from '../components/classes/notifications/DemoModeNotification';
 import { useClassManagement } from '../hooks/useClassManagement';
 import { Class } from '../store/slices/classesSlice';
 

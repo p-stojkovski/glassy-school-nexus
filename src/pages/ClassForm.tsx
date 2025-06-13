@@ -4,9 +4,9 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '../store';
-import ClassFormContent, { ClassFormData } from '../components/classes/ClassFormContent';
+import ClassFormContent, { ClassFormData } from '../components/classes/forms/ClassFormContent';
 import { useClassManagement } from '../hooks/useClassManagement';
-import DemoModeNotification from '../components/classes/DemoModeNotification';
+import DemoModeNotification from '../components/classes/notifications/DemoModeNotification';
 import { setClassrooms } from '../store/slices/classroomsSlice';
 import { Classroom } from '../store/slices/classroomsSlice';
 

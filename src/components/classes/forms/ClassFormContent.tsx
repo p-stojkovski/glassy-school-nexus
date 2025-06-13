@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
-import { Class } from '../../store/slices/classesSlice';
+import { Button } from '../../ui/button';
+import { Input } from '../../ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../ui/form';
+import { Class } from '../../../store/slices/classesSlice';
 import { useAppSelector } from '@/store/hooks';
-import { RootState } from '../../store';
-import GlassCard from '../common/GlassCard';
+import { RootState } from '../../../store';
+import GlassCard from '../../common/GlassCard';
 import ScheduleForm from './ScheduleForm';
-import StudentSelectionPanel from '../common/StudentSelectionPanel';
-import StudentSelectionTrigger from '../common/StudentSelectionTrigger';
+import StudentSelectionPanel from '../../common/StudentSelectionPanel';
+import StudentSelectionTrigger from '../../common/StudentSelectionTrigger';
 
 interface ClassFormContentProps {
   onSubmit: (data: ClassFormData) => void;
