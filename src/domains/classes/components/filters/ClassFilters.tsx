@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Search, Filter } from 'lucide-react';
-import { Input } from '../../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlassCard from '@/components/common/GlassCard';
 
 interface ClassFiltersProps {

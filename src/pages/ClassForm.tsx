@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { RootState } from '../store';
-import ClassFormContent, { ClassFormData } from '../components/classes/forms/ClassFormContent';
-import { useClassManagement } from '../hooks/useClassManagement';
-import DemoModeNotification from '../components/classes/notifications/DemoModeNotification';
+import { RootState } from '@/store';
+import ClassFormContent, { ClassFormData } from '@/domains/classes/components/forms/ClassFormContent';
+import { useClassManagement } from '@/domains/classes/hooks/useClassManagement';
+import DemoModeNotification from '@/domains/classes/components/notifications/DemoModeNotification';
 import { setClassrooms } from '../store/slices/classroomsSlice';
 import { Classroom } from '../store/slices/classroomsSlice';
 

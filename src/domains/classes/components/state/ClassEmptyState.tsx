@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { BookOpen, Plus } from 'lucide-react';
-import { Button } from '../../ui/button';
-import GlassCard from '../../common/GlassCard';
+import { Button } from '@/components/ui/button';
+import GlassCard from '@/components/common/GlassCard';
 
 interface ClassEmptyStateProps {
   hasFilters: boolean;
