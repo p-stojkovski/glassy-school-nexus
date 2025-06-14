@@ -7,13 +7,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { RootState } from '@/store';
 import { 
   createPayment, 
-  updatePayment, 
+  updatePayment,
   Payment,
   PaymentObligation,
   selectAllObligations,
   selectAllPayments,
   selectObligationsByStudentId,
-} from '@/store/slices/financeSlice';
+} from '@/domains/finance/financeSlice';
 import { Student } from '@/store/slices/studentsSlice';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';

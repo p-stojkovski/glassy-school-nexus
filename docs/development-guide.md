@@ -31,18 +31,26 @@
 ### Project Structure
 ```
 src/
-├── components/           # Reusable UI primitives
-├── domains/              # Feature domains kept self-contained
+├── domains/            # Feature modules with slices, hooks, and components
 │   ├── classes/        # Class management domain
-│   ├── classrooms/     # Classroom management domain
-│   └── ...             # Other feature areas
-├── hooks/              # Custom React hooks
-├── lib/               # Utility functions
-├── pages/             # Page components (route handlers)
-├── services/          # API services and external integrations
-├── store/             # Redux store configuration
-│   └── slices/        # Redux slices for state management
-└── types/             # TypeScript type definitions
+│   └── finance/        # Finance management domain
+├── components/         # Reusable UI components
+│   ├── attendance/     # Attendance-specific components
+│   ├── auth/           # Authentication components
+│   ├── classrooms/     # Classroom management components
+│   ├── common/         # Shared components
+│   ├── grades/         # Grades and assessments components
+│   ├── layout/         # Layout components (Sidebar, TopBar, etc.)
+│   ├── scheduling/     # Scheduling components
+│   ├── students/       # Student management components
+│   │   ├── forms/      # Student forms
+│   │   ├── list/       # Table and card views
+│   │   ├── filters/    # Filtering UI
+│   │   ├── state/      # Loading & empty states
+│   │   ├── layout/     # Headers and layout pieces
+│   │   └── common/     # Shared student utilities
+│   ├── teachers/       # Teacher management components
+│   └── ui/            # Base UI components (shadcn/ui)
 ├── hooks/              # Custom React hooks
 ├── lib/               # Utility functions
 ├── pages/             # Page components (route handlers)

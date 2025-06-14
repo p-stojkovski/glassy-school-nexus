@@ -9,7 +9,7 @@ import {
 import {
   createObligation,
   PaymentObligation,
-} from '../store/slices/financeSlice';
+} from '@/domains/finance/financeSlice';
 
 // Hook responsible for populating the store with mock students and obligations
 export const useInitializeStudents = () => {

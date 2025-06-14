@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAppSelector } from '@/store/hooks';
-import { 
-  selectAllObligations, 
+import {
+  selectAllObligations,
   selectAllPayments,
-  selectTotalOutstandingBalance 
-} from '@/store/slices/financeSlice';
+  selectTotalOutstandingBalance
+} from '@/domains/finance/financeSlice';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { format, parseISO } from 'date-fns';

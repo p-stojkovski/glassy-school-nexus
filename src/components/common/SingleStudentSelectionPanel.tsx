@@ -15,7 +15,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Student } from '@/store/slices/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
 import { RootState } from '@/store';
-import { selectAllObligations, selectAllPayments } from '@/store/slices/financeSlice';
+import { selectAllObligations, selectAllPayments } from '@/domains/finance/financeSlice';
 import { cn } from '@/lib/utils';
 
 interface SingleStudentSelectionPanelProps {

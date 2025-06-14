@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { refreshObligationStatuses, selectError } from '@/store/slices/financeSlice';
-import FinancialDashboard from '@/components/finance/dashboard/FinancialDashboard';
-import ObligationManagement from '@/components/finance/obligations/ObligationManagement';
-import PaymentManagement from '@/components/finance/payments/PaymentManagement';
-import FinancialHeader from '@/components/finance/common/FinancialHeader';
-import DemoModeNotification from '@/components/finance/common/DemoModeNotification';
+import { refreshObligationStatuses, selectError } from '@/domains/finance/financeSlice';
+import FinancialDashboard from '@/domains/finance/components/dashboard/FinancialDashboard';
+import ObligationManagement from '@/domains/finance/components/obligations/ObligationManagement';
+import PaymentManagement from '@/domains/finance/components/payments/PaymentManagement';
+import FinancialHeader from '@/domains/finance/components/common/FinancialHeader';
+import DemoModeNotification from '@/domains/finance/components/common/DemoModeNotification';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useToast } from '@/hooks/use-toast';
 
