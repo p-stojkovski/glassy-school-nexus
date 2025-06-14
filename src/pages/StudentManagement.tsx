@@ -1,15 +1,15 @@
 
 import React from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../components/ui/sheet';
-import StudentHeader from '../components/students/layout/StudentHeader';
-import StudentFilters from '../components/students/filters/StudentFilters';
-import StudentTable from '../components/students/list/StudentTable';
-import StudentForm from '../components/students/forms/StudentForm';
-import StudentEmptyState from '../components/students/state/StudentEmptyState';
-import StudentLoading from '../components/students/state/StudentLoading';
-import ConfirmDialog from '../components/common/ConfirmDialog';
-import DemoModeNotification from '../components/students/notifications/DemoModeNotification';
-import { useStudentManagement } from '../hooks/useStudentManagement';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import StudentHeader from '@/domains/students/components/layout/StudentHeader';
+import StudentFilters from '@/domains/students/components/filters/StudentFilters';
+import StudentTable from '@/domains/students/components/list/StudentTable';
+import StudentForm from '@/domains/students/components/forms/StudentForm';
+import StudentEmptyState from '@/domains/students/components/state/StudentEmptyState';
+import StudentLoading from '@/domains/students/components/state/StudentLoading';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
+import DemoModeNotification from '@/domains/students/components/notifications/DemoModeNotification';
+import { useStudentManagement } from '@/domains/students/hooks/useStudentManagement';
 
 const StudentManagement: React.FC = () => {  const {
     students,

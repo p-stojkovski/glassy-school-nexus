@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronDown, User, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Student } from '@/store/slices/studentsSlice';
+import { Student } from '@/domains/students/studentsSlice';
 
 interface SingleStudentSelectionTriggerProps {
   selectedStudent: Student | null;

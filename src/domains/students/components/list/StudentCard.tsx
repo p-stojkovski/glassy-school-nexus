@@ -2,9 +2,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Edit, Trash2, Eye, Phone, Mail, User } from 'lucide-react';
-import { Button } from '../../ui/button';
-import GlassCard from '../../common/GlassCard';
-import { Student } from '../../../store/slices/studentsSlice';
+import { Button } from '@/components/ui/button';
+import GlassCard from '@/components/common/GlassCard';
+import { Student } from '@/domains/students/studentsSlice';
 
 interface StudentCardProps {
   student: Student;

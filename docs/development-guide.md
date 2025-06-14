@@ -33,7 +33,8 @@
 src/
 ├── domains/            # Feature modules with slices, hooks, and components
 │   ├── classes/        # Class management domain
-│   └── finance/        # Finance management domain
+│   ├── finance/        # Finance management domain
+│   └── students/       # Student management domain
 ├── components/         # Reusable UI components
 │   ├── attendance/     # Attendance-specific components
 │   ├── auth/           # Authentication components
@@ -42,13 +43,6 @@ src/
 │   ├── grades/         # Grades and assessments components
 │   ├── layout/         # Layout components (Sidebar, TopBar, etc.)
 │   ├── scheduling/     # Scheduling components
-│   ├── students/       # Student management components
-│   │   ├── forms/      # Student forms
-│   │   ├── list/       # Table and card views
-│   │   ├── filters/    # Filtering UI
-│   │   ├── state/      # Loading & empty states
-│   │   ├── layout/     # Headers and layout pieces
-│   │   └── common/     # Shared student utilities
 │   ├── teachers/       # Teacher management components
 │   └── ui/            # Base UI components (shadcn/ui)
 ├── hooks/              # Custom React hooks
@@ -1269,7 +1263,7 @@ describe('StudentForm', () => {
 // ✅ Testing custom hooks
 import { renderHook, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { useStudentManagement } from '../hooks/useStudentManagement';
+import { useStudentManagement } from '@/domains/students/hooks/useStudentManagement';
 
 describe('useStudentManagement', () => {
   const wrapper = ({ children }) => (

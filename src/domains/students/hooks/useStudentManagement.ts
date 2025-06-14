@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useNavigate } from 'react-router-dom';
-import { RootState } from '../store';
+import { RootState } from '@/store';
 import {
   addStudent,
   updateStudent,
@@ -12,7 +12,7 @@ import {
   selectLoading,
   selectError,
   Student,
-} from '../store/slices/studentsSlice';
+} from '../studentsSlice';
 import { useInitializeStudents } from './useInitializeStudents';
 import {
   useStudentFilters,
