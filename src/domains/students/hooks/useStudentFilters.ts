@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { Student } from '../store/slices/studentsSlice';
-import { PaymentObligation } from '../store/slices/financeSlice';
+import { Student } from '../studentsSlice';
+import { PaymentObligation } from '@/store/slices/financeSlice';
 
 export const getStudentPaymentStatus = (
   studentId: string,

@@ -3,7 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import uiReducer from './slices/uiSlice';
 import classesReducer from '@/domains/classes/classesSlice';
-import studentsReducer from './slices/studentsSlice';
+import studentsReducer from '@/domains/students/studentsSlice';
 import teachersReducer from './slices/teachersSlice';
 import classroomsReducer from './slices/classroomsSlice';
 import attendanceReducer from './slices/attendanceSlice';

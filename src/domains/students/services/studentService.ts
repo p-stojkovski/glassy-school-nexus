@@ -1,5 +1,5 @@
 
-import { Student } from '../store/slices/studentsSlice';
+import { Student } from '../studentsSlice';
 
 class StudentService {
   async getStudents(): Promise<Student[]> {

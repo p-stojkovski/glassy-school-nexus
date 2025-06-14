@@ -1270,7 +1270,7 @@ describe('StudentForm', () => {
 // ✅ Testing custom hooks
 import { renderHook, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { useStudentManagement } from '../hooks/useStudentManagement';
+import { useStudentManagement } from '../domains/students/hooks/useStudentManagement';
 
 describe('useStudentManagement', () => {
   const wrapper = ({ children }) => (

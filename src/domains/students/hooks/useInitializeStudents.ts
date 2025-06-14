@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { RootState } from '../store';
+import { RootState } from '@/store';
 import {
   setStudents,
   setLoading,
   Student,
-} from '../store/slices/studentsSlice';
+} from '../studentsSlice';
 import {
   createObligation,
   PaymentObligation,
-} from '../store/slices/financeSlice';
+} from '@/store/slices/financeSlice';
 
 // Hook responsible for populating the store with mock students and obligations
 export const useInitializeStudents = () => {

@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
 import { RootState } from '@/store';
 import { createObligation, PaymentObligation } from '@/store/slices/financeSlice';
-import { selectStudents } from '@/store/slices/studentsSlice';
+import { selectStudents } from '@/domains/students/studentsSlice';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
