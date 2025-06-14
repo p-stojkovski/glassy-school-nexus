@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 import GlassCard from '../common/GlassCard';
-import { Classroom } from '../../store/slices/classroomsSlice';
+import { Classroom } from '@/domains/classrooms/classroomsSlice';
 
 interface ClassroomCardProps {
   classroom: Classroom;

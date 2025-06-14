@@ -8,7 +8,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Classroom } from '../../store/slices/classroomsSlice';
+import { Classroom } from '@/domains/classrooms/classroomsSlice';
 
 const classroomSchema = z.object({
   name: z.string().min(1, 'Classroom name is required').max(50, 'Name must be less than 50 characters'),

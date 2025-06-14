@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useClassrooms } from '@/domains/classrooms/hooks/useClassrooms';
 import { Plus, Search, Filter, Building } from 'lucide-react';
 import { RootState } from '../store';
-import { setClassrooms, addClassroom, updateClassroom, deleteClassroom, setLoading, resetDemoClassrooms, loadFromStorage } from '../store/slices/classroomsSlice';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../components/ui/sheet';
 import GlassCard from '../components/common/GlassCard';
-import ClassroomCard from '../components/classrooms/ClassroomCard';
-import ClassroomForm from '../components/classrooms/ClassroomForm';
-import DemoModeNotification from '../components/classrooms/DemoModeNotification';
+import ClassroomCard from '@/domains/classrooms/components/ClassroomCard';
+import ClassroomForm from '@/domains/classrooms/components/ClassroomForm';
+import DemoModeNotification from '@/domains/classrooms/components/DemoModeNotification';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import { Classroom } from '../store/slices/classroomsSlice';
+import { Classroom } from '@/domains/classrooms/classroomsSlice';
 import { useToast } from '../hooks/use-toast';
 import * as z from 'zod';
 
@@ -27,8 +26,17 @@ const classroomSchema = z.object({
 type ClassroomFormData = z.infer<typeof classroomSchema>;
 
 const ClassroomManagement: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { classrooms, loading } = useAppSelector((state: RootState) => state.classrooms);
+  const {
+    classrooms,
+    loading,
+    setClassrooms,
+    addClassroom,
+    updateClassroom,
+    deleteClassroom,
+    setLoading,
+    resetDemoClassrooms,
+    loadFromStorage,
+  } = useClassrooms();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'maintenance'>('all');  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -37,7 +45,7 @@ const ClassroomManagement: React.FC = () => {
   const { toast } = useToast();
   // Demo Mode: Load from localStorage or fallback to mock data
   useEffect(() => {
-    dispatch(setLoading(true));
+    setLoading(true);
     setTimeout(() => {
       let loaded: Classroom[] | null = null;
       let error = false;
@@ -47,7 +55,7 @@ const ClassroomManagement: React.FC = () => {
         error = true;
       }
       if (loaded && Array.isArray(loaded) && loaded.length > 0) {
-        dispatch(setClassrooms(loaded));
+        setClassrooms(loaded);
       } else {
         const mockClassrooms: Classroom[] = [
           {
@@ -78,7 +86,7 @@ const ClassroomManagement: React.FC = () => {
             lastUpdated: new Date().toISOString(),
           }
         ];
-        dispatch(setClassrooms(mockClassrooms));
+        setClassrooms(mockClassrooms);
         if (error) {
           toast({
             title: 'Storage Error',
@@ -87,9 +95,9 @@ const ClassroomManagement: React.FC = () => {
           });
         }
       }
-      dispatch(setLoading(false));
+      setLoading(false);
     }, 500);
-  }, [dispatch, toast]);  // Demo Mode Reset
+  }, [setLoading, setClassrooms, loadFromStorage, toast]);  // Demo Mode Reset
   const handleResetDemo = () => {
     const mockClassrooms: Classroom[] = [
       {
@@ -120,7 +128,7 @@ const ClassroomManagement: React.FC = () => {
         lastUpdated: new Date().toISOString(),
       }
     ];
-    dispatch(resetDemoClassrooms(mockClassrooms));
+    resetDemoClassrooms(mockClassrooms);
     toast({
       title: 'Demo Data Reset',
       description: 'Classroom data has been reset to default values.',
@@ -151,7 +159,7 @@ const ClassroomManagement: React.FC = () => {
 
   const confirmDeleteClassroom = () => {
     if (classroomToDelete) {
-      dispatch(deleteClassroom(classroomToDelete.id));
+      deleteClassroom(classroomToDelete.id);
       toast({
         title: "Classroom Deleted",
         description: `${classroomToDelete.name} has been successfully deleted.`,
@@ -178,7 +186,7 @@ const ClassroomManagement: React.FC = () => {
           ...data,
           lastUpdated: new Date().toISOString(),
         };
-        dispatch(updateClassroom(updatedClassroom));
+        updateClassroom(updatedClassroom);
         toast({
           title: "Classroom Updated",
           description: `${data.name} has been successfully updated.`,
@@ -194,7 +202,7 @@ const ClassroomManagement: React.FC = () => {
           createdDate: new Date().toISOString(),
           lastUpdated: new Date().toISOString(),
         };
-        dispatch(addClassroom(newClassroom));
+        addClassroom(newClassroom);
         toast({
           title: "Classroom Added",
           description: `${data.name} has been successfully added.`,
