@@ -2,7 +2,7 @@ import React from 'react';
 import { Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Student } from '@/store/slices/studentsSlice';
+import { Student } from '@/domains/students/studentsSlice';
 import { cn } from '@/lib/utils';
 
 interface StudentSelectionTriggerProps {

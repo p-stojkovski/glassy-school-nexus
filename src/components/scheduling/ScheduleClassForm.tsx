@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { toast } from '../ui/use-toast';
+import { toast } from '../../hooks/use-toast';
 import GlassCard from '../common/GlassCard';
 import BasicClassInfo from './forms/BasicClassInfo';
 import DateTimeFields from './forms/DateTimeFields';

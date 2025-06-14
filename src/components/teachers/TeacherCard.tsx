@@ -7,7 +7,7 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import GlassCard from '../common/GlassCard';
-import { toast } from '../ui/use-toast';
+import { toast } from '../../hooks/use-toast';
 
 interface TeacherCardProps {
   teacher: Teacher;

@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
 import { Class, setClasses, addClass, updateClass, deleteClass } from '../classesSlice';
 import type { ClassFormData } from '../components/forms/ClassFormContent';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface UseClassManagementProps {
   searchTerm: string;

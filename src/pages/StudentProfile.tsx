@@ -2,17 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/store/hooks';
 import { ArrowLeft, User, GraduationCap, Calendar, DollarSign, Phone, Mail, Users, AlertCircle, CheckCircle, Clock, CreditCard } from 'lucide-react';
-import { RootState } from '../store';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import GlassCard from '../components/common/GlassCard';
-import DemoModeNotification from '../components/students/notifications/DemoModeNotification';
+import { RootState } from '@/store';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import GlassCard from '@/components/common/GlassCard';
+import DemoModeNotification from '@/domains/students/components/notifications/DemoModeNotification';
 import PaymentSidebar from '@/domains/finance/components/payments/PaymentSidebar';
 import { selectObligationsByStudentId, selectPaymentsByStudentId, selectStudentOutstandingBalance, PaymentObligation } from '@/domains/finance/financeSlice';
-import { selectAttendanceByClassId } from '../store/slices/attendanceSlice';
-import { selectGradesByStudentId } from '../store/slices/gradesSlice';
+import { selectAttendanceByClassId } from '@/store/slices/attendanceSlice';
+import { selectGradesByStudentId } from '@/store/slices/gradesSlice';
 
 const StudentProfile: React.FC = () => {
   const { studentId } = useParams<{ studentId: string }>();

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Student } from '../store/slices/studentsSlice';
+import { Student } from '../studentsSlice';
 import { PaymentObligation } from '@/domains/finance/financeSlice';
 
 export const getStudentPaymentStatus = (

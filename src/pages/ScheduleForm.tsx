@@ -6,8 +6,9 @@ import { Button } from '../components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '../store';
 import { addScheduledClass, updateScheduledClass, ScheduledClass } from '../store/slices/schedulingSlice';
-import { toast } from '../components/ui/use-toast';
-import ScheduleClassForm, { ScheduleFormData } from '../components/scheduling/ScheduleClassForm';
+import { toast } from '../hooks/use-toast';
+import ScheduleClassForm from '../components/scheduling/ScheduleClassForm';
+import { ScheduleFormData } from '../components/scheduling/types';
 
 const ScheduleForm: React.FC = () => {
   const navigate = useNavigate();

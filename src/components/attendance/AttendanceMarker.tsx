@@ -35,7 +35,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../ui/alert-dialog';
-import { toast } from '../ui/use-toast';
+import { toast } from '../../hooks/use-toast';
 
 interface AttendanceMarkerProps {
   classId: string;

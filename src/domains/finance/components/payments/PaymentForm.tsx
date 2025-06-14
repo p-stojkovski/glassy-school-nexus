@@ -14,7 +14,7 @@ import {
   selectAllPayments,
   selectObligationsByStudentId,
 } from '@/domains/finance/financeSlice';
-import { Student } from '@/store/slices/studentsSlice';
+import { Student } from '@/domains/students/studentsSlice';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {

@@ -12,7 +12,7 @@ import {
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { toast } from '../ui/use-toast';
+import { toast } from '../../hooks/use-toast';
 import GlassCard from '../common/GlassCard';
 import { Textarea } from '../ui/textarea';
 import {

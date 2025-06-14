@@ -9,7 +9,7 @@ import {
 } from '../../store/slices/gradesSlice';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { toast } from '../ui/use-toast';
+import { toast } from '../../hooks/use-toast';
 import GlassCard from '../common/GlassCard';
 import {
   Table,

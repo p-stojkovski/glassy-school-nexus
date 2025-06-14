@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Student } from '@/store/slices/studentsSlice';
+import { Student } from '@/domains/students/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
 import { RootState } from '@/store';
 import { selectAllObligations, selectAllPayments } from '@/domains/finance/financeSlice';

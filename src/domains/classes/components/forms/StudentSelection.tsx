@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Student } from '@/store/slices/studentsSlice';
+import { Student } from '@/domains/students/studentsSlice';
 
 interface StudentSelectionProps {
   students: Student[];
