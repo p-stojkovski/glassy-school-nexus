@@ -296,11 +296,13 @@ export default Component;
 
 ### File Organization
 ```
+domains/
+├── feature/            # Example domain
+│   ├── components/
+│   ├── hooks/
+│   ├── services/
+│   └── featureSlice.ts
 components/
-├── domain/              # Domain-specific components
-│   ├── ComponentName.tsx
-│   └── index.ts        # Re-export components
-├── common/             # Shared components
 └── ui/                 # Base UI components
 ```
 

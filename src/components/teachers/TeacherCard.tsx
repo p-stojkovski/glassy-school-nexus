@@ -88,7 +88,7 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher, onEdit }) => {
             >
               Edit
             </Button>            <AlertDialog>
-              <AlertDialogTrigger>
+              <AlertDialogTrigger asChild>
                 <Button
                   size="sm"
                   variant="ghost"

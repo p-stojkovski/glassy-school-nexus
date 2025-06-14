@@ -5,7 +5,7 @@ import uiReducer from './slices/uiSlice';
 import classesReducer from '@/domains/classes/classesSlice';
 import studentsReducer from './slices/studentsSlice';
 import teachersReducer from './slices/teachersSlice';
-import classroomsReducer from './slices/classroomsSlice';
+import classroomsReducer from '@/domains/classrooms/classroomsSlice';
 import attendanceReducer from './slices/attendanceSlice';
 import financeReducer from '@/domains/finance/financeSlice';
 import schedulingReducer from './slices/schedulingSlice';
