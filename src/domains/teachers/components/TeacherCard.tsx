@@ -2,12 +2,22 @@
 import React, { useState } from 'react';
 import { useAppDispatch } from '@/store/hooks';
 import { Mail, Phone, Calendar, BookOpen, AlertTriangle } from 'lucide-react';
-import { Teacher, deleteTeacher } from '../../store/slices/teachersSlice';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
-import GlassCard from '../common/GlassCard';
-import { toast } from '../../hooks/use-toast';
+import { Teacher, deleteTeacher } from '../teachersSlice';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import GlassCard from '@/components/common/GlassCard';
+import { toast } from '@/hooks/use-toast';
 
 interface TeacherCardProps {
   teacher: Teacher;

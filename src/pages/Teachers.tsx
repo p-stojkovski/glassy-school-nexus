@@ -3,14 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Plus, Search, Filter, Users } from 'lucide-react';
 import { RootState } from '../store';
-import { setTeachers, setLoading } from '../store/slices/teachersSlice';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import GlassCard from '../components/common/GlassCard';
-import TeacherCard from '../components/teachers/TeacherCard';
-import TeacherForm from '../components/teachers/TeacherForm';
-import { Teacher } from '../store/slices/teachersSlice';
+import { setTeachers, setLoading } from '@/domains/teachers/teachersSlice';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import GlassCard from '@/components/common/GlassCard';
+import TeacherCard from '@/domains/teachers/components/TeacherCard';
+import TeacherForm from '@/domains/teachers/components/TeacherForm';
+import { Teacher } from '@/domains/teachers/teachersSlice';
 
 const Teachers: React.FC = () => {
   const dispatch = useAppDispatch();

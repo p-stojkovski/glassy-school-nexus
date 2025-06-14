@@ -34,7 +34,8 @@ src/
 ├── domains/            # Feature modules with slices, hooks, and components
 │   ├── classes/        # Class management domain
 │   ├── finance/        # Finance management domain
-│   └── students/       # Student management domain
+│   ├── students/       # Student management domain
+│   └── teachers/       # Teacher management domain
 ├── components/         # Reusable UI components
 │   ├── attendance/     # Attendance-specific components
 │   ├── auth/           # Authentication components
@@ -43,7 +44,6 @@ src/
 │   ├── grades/         # Grades and assessments components
 │   ├── layout/         # Layout components (Sidebar, TopBar, etc.)
 │   ├── scheduling/     # Scheduling components
-│   ├── teachers/       # Teacher management components
 │   └── ui/            # Base UI components (shadcn/ui)
 ├── hooks/              # Custom React hooks
 ├── lib/               # Utility functions
