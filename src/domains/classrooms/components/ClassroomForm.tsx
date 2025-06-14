@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Classroom } from '@/domains/classrooms/classroomsSlice';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const classroomSchema = z.object({
   name: z.string().min(1, 'Classroom name is required').max(50, 'Name must be less than 50 characters'),

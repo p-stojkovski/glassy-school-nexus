@@ -11,7 +11,7 @@ import ClassroomCard from '@/domains/classrooms/components/ClassroomCard';
 import ClassroomForm from '@/domains/classrooms/components/ClassroomForm';
 import DemoModeNotification from '@/domains/classrooms/components/DemoModeNotification';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import { Classroom } from '@/domains/classrooms/classroomsSlice';
+import { Classroom, loadFromStorage } from '@/domains/classrooms/classroomsSlice';
 import { useToast } from '../hooks/use-toast';
 import * as z from 'zod';
 
@@ -25,8 +25,7 @@ const classroomSchema = z.object({
 
 type ClassroomFormData = z.infer<typeof classroomSchema>;
 
-const ClassroomManagement: React.FC = () => {
-  const {
+const ClassroomManagement: React.FC = () => {  const {
     classrooms,
     loading,
     setClassrooms,
@@ -35,7 +34,6 @@ const ClassroomManagement: React.FC = () => {
     deleteClassroom,
     setLoading,
     resetDemoClassrooms,
-    loadFromStorage,
   } = useClassrooms();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'maintenance'>('all');  const [isFormOpen, setIsFormOpen] = useState(false);
@@ -94,10 +92,10 @@ const ClassroomManagement: React.FC = () => {
             variant: 'warning',
           });
         }
-      }
-      setLoading(false);
+      }      setLoading(false);
     }, 500);
-  }, [setLoading, setClassrooms, loadFromStorage, toast]);  // Demo Mode Reset
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // This effect should only run once on mount to avoid infinite loops// Demo Mode Reset
   const handleResetDemo = () => {
     const mockClassrooms: Classroom[] = [
       {

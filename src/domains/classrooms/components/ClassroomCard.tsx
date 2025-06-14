@@ -2,9 +2,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Users } from 'lucide-react';
-import { Button } from '../ui/button';
-import GlassCard from '../common/GlassCard';
 import { Classroom } from '@/domains/classrooms/classroomsSlice';
+import GlassCard from '@/components/common/GlassCard';
+import { Button } from '@/components/ui/button';
 
 interface ClassroomCardProps {
   classroom: Classroom;
