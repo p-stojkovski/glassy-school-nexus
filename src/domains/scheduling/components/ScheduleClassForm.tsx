@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
-import { toast } from '../../hooks/use-toast';
-import GlassCard from '../common/GlassCard';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
+import GlassCard from '@/components/common/GlassCard';
 import BasicClassInfo from './forms/BasicClassInfo';
 import DateTimeFields from './forms/DateTimeFields';
 import RecurringOptions from './forms/RecurringOptions';

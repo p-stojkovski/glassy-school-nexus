@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Card, CardContent } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { CalendarDays, Clock, Users, MapPin, Edit, X } from 'lucide-react';
-import GlassCard from '../common/GlassCard';
-import { ScheduledClass } from '../../store/slices/schedulingSlice';
+import GlassCard from '@/components/common/GlassCard';
+import { ScheduledClass } from '@/domains/scheduling/schedulingSlice';
 
 interface SchedulingOverviewProps {
   scheduledClasses: ScheduledClass[];

@@ -1,15 +1,15 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
+import authReducer from '@/domains/auth/authSlice';
 import uiReducer from './slices/uiSlice';
 import classesReducer from '@/domains/classes/classesSlice';
 import studentsReducer from '@/domains/students/studentsSlice';
 import teachersReducer from '@/domains/teachers/teachersSlice';
 import classroomsReducer from '@/domains/classrooms/classroomsSlice';
-import attendanceReducer from './slices/attendanceSlice';
+import attendanceReducer from '@/domains/attendance/attendanceSlice';
 import financeReducer from '@/domains/finance/financeSlice';
-import schedulingReducer from './slices/schedulingSlice';
-import gradesReducer from './slices/gradesSlice';
+import schedulingReducer from '@/domains/scheduling/schedulingSlice';
+import gradesReducer from '@/domains/grades/gradesSlice';
 
 export const store = configureStore({  reducer: {
     auth: authReducer,

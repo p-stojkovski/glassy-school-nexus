@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { RootState } from '../../store';
+import { RootState } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { createAssessment, Assessment, AssessmentType } from '../../store/slices/gradesSlice';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
-import { toast } from '../../hooks/use-toast';
-import GlassCard from '../common/GlassCard';
+import { createAssessment, Assessment, AssessmentType } from '@/domains/grades/gradesSlice';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
+import GlassCard from '@/components/common/GlassCard';
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from '../ui/select';
+} from '@/components/ui/select';
 
 import {
   Dialog,
@@ -23,7 +23,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
+} from '@/components/ui/dialog';
 
 interface CreateAssessmentProps {
   classId: string;

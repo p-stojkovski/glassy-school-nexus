@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { store } from './store';
 import { RootState } from './store';
-import LoginForm from './components/auth/LoginForm';
+import LoginForm from '@/domains/auth/components/LoginForm';
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
 import ClassroomManagement from './pages/ClassroomManagement';

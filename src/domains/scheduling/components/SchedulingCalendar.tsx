@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { RootState } from '../../store';
-import { Calendar } from '../ui/calendar';
-import { Button } from '../ui/button';
-import GlassCard from '../common/GlassCard';
-import { setSelectedDate, setViewMode } from '../../store/slices/schedulingSlice';
+import { RootState } from '@/store';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import GlassCard from '@/components/common/GlassCard';
+import { setSelectedDate, setViewMode } from '@/domains/scheduling/schedulingSlice';
 
 const SchedulingCalendar: React.FC = () => {
   const dispatch = useAppDispatch();

@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
-import { setSelectedClass } from '@/store/slices/gradesSlice';
-// Import the components using @/ path
-import GradesHeader from '@/components/grades/GradesHeader';
-import GradesFilters from '@/components/grades/GradesFilters';
-import CreateAssessment from '@/components/grades/CreateAssessment';
-import GradeEntry from '@/components/grades/GradeEntry';
-import Gradebook from '@/components/grades/Gradebook';
-import DemoModeNotification from '@/components/grades/DemoModeNotification';
+import { setSelectedClass } from '@/domains/grades/gradesSlice';
+import GradesHeader from '@/domains/grades/components/GradesHeader';
+import GradesFilters from '@/domains/grades/components/GradesFilters';
+import CreateAssessment from '@/domains/grades/components/CreateAssessment';
+import GradeEntry from '@/domains/grades/components/GradeEntry';
+import Gradebook from '@/domains/grades/components/Gradebook';
+import DemoModeNotification from '@/domains/grades/components/DemoModeNotification';
 
 type ActiveTab = 'create' | 'grades' | 'gradebook';
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RootState } from '../../store';
+import { RootState } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   AttendanceRecord,
@@ -9,13 +9,13 @@ import {
   selectAttendanceByClassId,
   selectAttendanceByDate,
   setCurrentRecord,
-} from '../../store/slices/attendanceSlice';
-import GlassCard from '../common/GlassCard';
-import { Button } from '../ui/button';
-import { Checkbox } from '../ui/checkbox';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
+} from '@/domains/attendance/attendanceSlice';
+import GlassCard from '@/components/common/GlassCard';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -23,7 +23,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../ui/table';
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,8 +34,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '../ui/alert-dialog';
-import { toast } from '../../hooks/use-toast';
+} from '@/components/ui/alert-dialog';
+import { toast } from '@/hooks/use-toast';
 
 interface AttendanceMarkerProps {
   classId: string;
