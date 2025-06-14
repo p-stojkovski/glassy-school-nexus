@@ -14,7 +14,7 @@ import {
   cancelScheduledClass,
   ScheduledClass 
 } from '../store/slices/schedulingSlice';
-import { toast } from '../components/ui/use-toast';
+import { toast } from '../hooks/use-toast';
 
 const Scheduling: React.FC = () => {
   const dispatch = useAppDispatch();

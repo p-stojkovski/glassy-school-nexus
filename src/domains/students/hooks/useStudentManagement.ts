@@ -18,7 +18,7 @@ import {
   useStudentFilters,
   getStudentPaymentStatus,
 } from './useStudentFilters';
-import { toast } from '../components/ui/use-toast';
+import { toast } from '../../../hooks/use-toast';
 
 export const useStudentManagement = () => {
   const dispatch = useAppDispatch();

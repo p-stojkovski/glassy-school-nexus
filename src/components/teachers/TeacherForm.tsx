@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet';
 import { Teacher, addTeacher, updateTeacher } from '../../store/slices/teachersSlice';
-import { toast } from '../ui/use-toast';
+import { toast } from '../../hooks/use-toast';
 
 const teacherSchema = z.object({
   name: z.string().min(1, 'Full name is required').max(100, 'Name must be less than 100 characters'),
