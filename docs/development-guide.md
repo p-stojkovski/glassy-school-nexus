@@ -31,17 +31,14 @@
 ### Project Structure
 ```
 src/
-├── components/           # Reusable UI components
-│   ├── attendance/      # Attendance-specific components
+├── domains/            # Feature modules with slices, hooks, and components
+│   ├── classes/        # Class management domain
+│   └── finance/        # Finance management domain
+├── components/         # Reusable UI components
+│   ├── attendance/     # Attendance-specific components
 │   ├── auth/           # Authentication components
-│   ├── classes/        # Class management components
 │   ├── classrooms/     # Classroom management components
 │   ├── common/         # Shared components
-│   ├── finance/
-│   │   ├── dashboard/     # Financial dashboard components
-│   │   ├── obligations/   # Payment obligation components
-│   │   ├── payments/      # Payment management components
-│   │   └── common/        # Shared finance components
 │   ├── grades/         # Grades and assessments components
 │   ├── layout/         # Layout components (Sidebar, TopBar, etc.)
 │   ├── scheduling/     # Scheduling components

@@ -1,6 +1,6 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '..';
+import { RootState } from '@/store';
 import { loadFromStorage, saveToStorage } from '@/lib/storage';
 
 export interface Invoice {

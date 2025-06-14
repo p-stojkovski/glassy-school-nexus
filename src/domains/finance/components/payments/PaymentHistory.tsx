@@ -8,7 +8,7 @@ import {
   setSelectedStudent,
   deletePayment,
   selectAllObligations,
-} from '@/store/slices/financeSlice';
+} from '@/domains/finance/financeSlice';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Table, 

@@ -7,7 +7,7 @@ import studentsReducer from './slices/studentsSlice';
 import teachersReducer from './slices/teachersSlice';
 import classroomsReducer from './slices/classroomsSlice';
 import attendanceReducer from './slices/attendanceSlice';
-import financeReducer from './slices/financeSlice';
+import financeReducer from '@/domains/finance/financeSlice';
 import schedulingReducer from './slices/schedulingSlice';
 import gradesReducer from './slices/gradesSlice';
 

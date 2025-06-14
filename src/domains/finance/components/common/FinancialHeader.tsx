@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppSelector } from '@/store/hooks';
-import { selectTotalOutstandingBalance } from '@/store/slices/financeSlice';
+import { selectTotalOutstandingBalance } from '@/domains/finance/financeSlice';
 import { Calculator, Download, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

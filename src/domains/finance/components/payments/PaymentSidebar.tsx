@@ -7,11 +7,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
 import { RootState } from '@/store';
 import { 
-  createPayment, 
+  createPayment,
   Payment,
   PaymentObligation,
   selectAllPayments,
-} from '@/store/slices/financeSlice';
+} from '@/domains/finance/financeSlice';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
