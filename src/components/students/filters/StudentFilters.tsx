@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { Search, Filter, CreditCard, GraduationCap, X } from 'lucide-react';
-import { Input } from '../../ui/input';
-import { Button } from '../../ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
-import GlassCard from '../../common/GlassCard';
-import { Class } from '../../../store/slices/classesSlice';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import GlassCard from '@/components/common/GlassCard';
+import { Class } from '@/domains/classes/classesSlice';
 
 interface StudentFiltersProps {
   searchTerm: string;

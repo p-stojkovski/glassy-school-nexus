@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { RootState } from '../store';
-import { Class, setClasses, addClass, updateClass, deleteClass } from '../store/slices/classesSlice';
-import type { ClassFormData } from '../components/classes/forms/ClassFormContent';
-import { toast } from '../components/ui/use-toast';
+import { RootState } from '@/store';
+import { Class, setClasses, addClass, updateClass, deleteClass } from '../classesSlice';
+import type { ClassFormData } from '../components/forms/ClassFormContent';
+import { toast } from '@/components/ui/use-toast';
 
 interface UseClassManagementProps {
   searchTerm: string;

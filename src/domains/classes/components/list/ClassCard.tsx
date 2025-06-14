@@ -1,7 +1,7 @@
 
 import GlassCard from '@/components/common/GlassCard';
 import { Button } from '@/components/ui/button';
-import { Class } from '@/store/slices/classesSlice';
+import { Class } from '@/domains/classes/classesSlice';
 import React from 'react';
 
 interface ClassCardProps {

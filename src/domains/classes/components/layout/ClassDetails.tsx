@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../ui/dialog';
-import { Button } from '../../ui/button';
-import { Badge } from '../../ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Clock, MapPin, User, Users, Calendar } from 'lucide-react';
-import { Class } from '../../../store/slices/classesSlice';
+import { Class } from '@/domains/classes/classesSlice';
 
 interface ClassDetailsProps {
   classItem: Class | null;

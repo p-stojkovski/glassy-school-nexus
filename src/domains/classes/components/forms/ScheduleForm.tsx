@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Button } from '../../ui/button';
-import { Input } from '../../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
-import { FormControl, FormField, FormItem, FormLabel } from '../../ui/form';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Clock } from 'lucide-react';
 import { ClassFormData } from './ClassFormContent';
 
