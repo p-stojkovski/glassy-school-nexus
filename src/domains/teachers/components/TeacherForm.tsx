@@ -4,14 +4,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAppDispatch } from '@/store/hooks';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet';
-import { Teacher, addTeacher, updateTeacher } from '../../store/slices/teachersSlice';
-import { toast } from '../../hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Teacher, addTeacher, updateTeacher } from '../teachersSlice';
+import { toast } from '@/hooks/use-toast';
 
 const teacherSchema = z.object({
   name: z.string().min(1, 'Full name is required').max(100, 'Name must be less than 100 characters'),
