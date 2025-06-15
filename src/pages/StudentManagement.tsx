@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import StudentHeader from '@/domains/students/components/layout/StudentHeader';
@@ -10,8 +9,10 @@ import StudentLoading from '@/domains/students/components/state/StudentLoading';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import DemoModeNotification from '@/domains/students/components/notifications/DemoModeNotification';
 import { useStudentManagement } from '@/domains/students/hooks/useStudentManagement';
+import { useStudentForm } from '@/domains/students/hooks/useStudentForm';
 
-const StudentManagement: React.FC = () => {  const {
+const StudentManagement: React.FC = () => {
+  const {
     students,
     loading,
     searchTerm,
@@ -25,6 +26,10 @@ const StudentManagement: React.FC = () => {  const {
     clearFilters,
     classes,
     getStudentPaymentStatus,
+    handleViewStudent,
+  } = useStudentManagement();
+
+  const {
     isFormOpen,
     selectedStudent,
     studentToDelete,
@@ -33,19 +38,19 @@ const StudentManagement: React.FC = () => {  const {
     handleEditStudent,
     handleDeleteStudent,
     confirmDeleteStudent,
-    handleViewStudent,
     handleCloseForm,
     handleSubmit,
-  } = useStudentManagement();
+  } = useStudentForm();
 
   if (loading) {
     return <StudentLoading />;
-  }  return (
+  }
+
+  return (
     <div className="space-y-6">
       <DemoModeNotification />
-      <StudentHeader 
-        onAddStudent={handleAddStudent}
-      />      <StudentFilters
+      <StudentHeader onAddStudent={handleAddStudent} />
+      <StudentFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         statusFilter={statusFilter}
@@ -63,7 +68,8 @@ const StudentManagement: React.FC = () => {  const {
           searchTerm={searchTerm}
           statusFilter={statusFilter}
           onAddStudent={handleAddStudent}
-        />      ) : (
+        />
+      ) : (
         <StudentTable
           students={students}
           onEdit={handleEditStudent}
@@ -92,7 +98,8 @@ const StudentManagement: React.FC = () => {  const {
             />
           </div>
         </SheetContent>
-      </Sheet>      <ConfirmDialog
+      </Sheet>
+      <ConfirmDialog
         open={!!studentToDelete}
         onOpenChange={() => setStudentToDelete(null)}
         title="Delete Student"
