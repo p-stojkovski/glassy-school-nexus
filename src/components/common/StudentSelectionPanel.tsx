@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAppSelector } from '@/store/hooks';
 import { X, Search, Users, Check, Filter, BookOpen, UserCheck, UserX } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,11 +14,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Student } from '@/domains/students/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
-import { RootState } from '@/store';
 import { cn } from '@/lib/utils';
 
 interface StudentSelectionPanelProps {
   students: Student[];
+  classes: Class[];
   selectedStudentIds: string[];
   onSelectionChange: (studentIds: string[]) => void;
   onClose: () => void;
@@ -32,6 +31,7 @@ interface StudentSelectionPanelProps {
 
 const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   students,
+  classes,
   selectedStudentIds,
   onSelectionChange,
   onClose,
@@ -69,9 +69,8 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
     return () => {
       document.removeEventListener('keydown', handleEscapeKey);
     };
-  }, [isOpen, onClose]);  // Get classes from store
-  const { classes } = useAppSelector((state: RootState) => state.classes);
-    // Get available classes for filter, using actual class data
+  }, [isOpen, onClose]);
+  // Get available classes for filter, using actual class data
   const availableClasses = useMemo(() => {
     // Get unique classIds from students that have assigned classes
     const uniqueClassIds = students

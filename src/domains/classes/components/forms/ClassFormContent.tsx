@@ -37,6 +37,7 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
   const { teachers } = useAppSelector((state: RootState) => state.teachers);
   const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
   const { students } = useAppSelector((state: RootState) => state.students);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
   const [isStudentPanelOpen, setIsStudentPanelOpen] = useState(false);
 
   const form = useForm<ClassFormData>({
@@ -222,6 +223,7 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
       {/* Student Selection Panel */}
       <StudentSelectionPanel
         students={students}
+        classes={classes}
         selectedStudentIds={form.watch('studentIds') || []}
         onSelectionChange={(studentIds) => {
           form.setValue('studentIds', studentIds);
