@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { PaymentMethod } from '@/types/enums';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
 import { RootState } from '@/store';
@@ -53,7 +54,7 @@ const formSchema = z.object({
   obligationId: z.string().min(1, { message: "Payment obligation is required" }),
   amount: z.coerce.number().positive({ message: "Amount must be greater than 0" }),
   date: z.date({ required_error: "Payment date is required" }),
-  method: z.enum(['cash', 'card', 'transfer', 'other'], {
+  method: z.enum([PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Transfer, PaymentMethod.Other], {
     required_error: "Payment method is required",
   }),
   reference: z.string().optional(),
@@ -97,7 +98,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
       obligationId: '',
       amount: 0,
       date: new Date(),
-      method: 'cash',
+      method: PaymentMethod.Cash,
       reference: '',
       notes: '',
     },
@@ -122,7 +123,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
         obligationId: '',
         amount: 0,
         date: new Date(),
-        method: 'cash',
+        method: PaymentMethod.Cash,
         reference: '',
         notes: '',
       });

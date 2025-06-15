@@ -1,5 +1,6 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { ScheduledClassStatus, RecurringPattern, ViewMode, ConflictType } from '@/types/enums';
 
 export interface ScheduledClass {
   id: string;
@@ -13,9 +14,9 @@ export interface ScheduledClass {
   date: string;
   startTime: string;
   endTime: string;
-  status: 'scheduled' | 'completed' | 'canceled' | 'rescheduled';
+  status: ScheduledClassStatus;
   isRecurring: boolean;
-  recurringPattern?: 'weekly' | 'biweekly' | 'monthly';
+  recurringPattern?: RecurringPattern;
   cancelReason?: string;
   notes?: string;
   createdAt: string;
@@ -25,7 +26,7 @@ export interface ScheduledClass {
 export interface ConflictCheck {
   hasConflict: boolean;
   conflicts: {
-    type: 'teacher' | 'student' | 'classroom';
+    type: ConflictType;
     id: string;
     name: string;
     conflictingSchedule: ScheduledClass;
@@ -36,12 +37,12 @@ interface SchedulingState {
   scheduledClasses: ScheduledClass[];
   loading: boolean;
   selectedDate: string; // Changed from Date to string for serialization
-  viewMode: 'day' | 'week' | 'month';
+  viewMode: ViewMode;
   filters: {
     classId?: string;
     teacherId?: string;
     classroomId?: string;
-    status?: string;
+    status?: ScheduledClassStatus;
   };
 }
 
@@ -49,7 +50,7 @@ const initialState: SchedulingState = {
   scheduledClasses: [],
   loading: false,
   selectedDate: new Date().toISOString(), // Store as ISO string instead of Date object
-  viewMode: 'week',
+  viewMode: ViewMode.Week,
   filters: {},
 };
 
@@ -74,7 +75,7 @@ const schedulingSlice = createSlice({
     },    cancelScheduledClass: (state, action: PayloadAction<{ id: string; reason: string }>) => {
       const index = state.scheduledClasses.findIndex(c => c.id === action.payload.id);
       if (index !== -1) {
-        state.scheduledClasses[index].status = 'canceled';
+        state.scheduledClasses[index].status = ScheduledClassStatus.Canceled;
         state.scheduledClasses[index].cancelReason = action.payload.reason;
         state.scheduledClasses[index].updatedAt = new Date().toISOString();
       }
@@ -84,7 +85,7 @@ const schedulingSlice = createSlice({
         ? action.payload 
         : action.payload.toISOString();
     },
-    setViewMode: (state, action: PayloadAction<'day' | 'week' | 'month'>) => {
+    setViewMode: (state, action: PayloadAction<ViewMode>) => {
       state.viewMode = action.payload;
     },
     setFilters: (state, action: PayloadAction<Partial<SchedulingState['filters']>>) => {

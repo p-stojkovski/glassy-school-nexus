@@ -1,4 +1,5 @@
 import React from 'react';
+import { PaymentMethod } from '@/types/enums';
 import {
   Table,
   TableBody,
@@ -36,13 +37,13 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, obligations, onEdit
     return obligation ? `${obligation.type} (${obligation.period})` : 'Unknown';
   };
 
-  const formatPaymentMethod = (method: string) => {
+  const formatPaymentMethod = (method: PaymentMethod) => {
     switch (method) {
-      case 'cash':
+      case PaymentMethod.Cash:
         return 'Cash';
-      case 'card':
+      case PaymentMethod.Card:
         return 'Card';
-      case 'transfer':
+      case PaymentMethod.Transfer:
         return 'Bank Transfer';
       default:
         return 'Other';

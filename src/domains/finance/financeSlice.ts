@@ -2,6 +2,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '@/store';
 import { loadFromStorage, saveToStorage } from '@/lib/storage';
+import { ObligationStatus, PaymentMethod } from '@/types/enums';
 
 export interface Invoice {
   id: string;
@@ -22,7 +23,7 @@ export interface PaymentObligation {
   amount: number;
   dueDate: string; // ISO date string
   period: string; // "Fall 2023", "Spring 2024", etc.
-  status: 'pending' | 'partial' | 'paid' | 'overdue';
+  status: ObligationStatus;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -35,7 +36,7 @@ export interface Payment {
   studentName: string; // For easier display
   amount: number;
   date: string; // ISO date string
-  method: 'cash' | 'card' | 'transfer' | 'other';
+  method: PaymentMethod;
   reference?: string; // Receipt/transaction number
   notes?: string;
   createdBy: string;
@@ -73,17 +74,17 @@ const updateObligationStatuses = (obligations: PaymentObligation[], payments: Pa
     // Find all payments for this obligation
     const obligationPayments = payments.filter(payment => payment.obligationId === obligation.id);
     const totalPaid = obligationPayments.reduce((sum, payment) => sum + payment.amount, 0);
-    
-    let status: 'pending' | 'partial' | 'paid' | 'overdue';
+
+    let status: ObligationStatus;
     
     if (totalPaid >= obligation.amount) {
-      status = 'paid';
+      status = ObligationStatus.Paid;
     } else if (totalPaid > 0) {
-      status = 'partial';
+      status = ObligationStatus.Partial;
     } else if (String(obligation.dueDate).localeCompare(currentDate) < 0) {
-      status = 'overdue';
+      status = ObligationStatus.Overdue;
     } else {
-      status = 'pending';
+      status = ObligationStatus.Pending;
     }
     
     return {

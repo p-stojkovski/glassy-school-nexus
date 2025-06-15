@@ -1,3 +1,5 @@
+import { RecurringPattern } from '@/types/enums';
+
 export interface ScheduleFormData {
   id?: string;
   classId: string;
@@ -8,6 +10,6 @@ export interface ScheduleFormData {
   startTime: string;
   endTime: string;
   isRecurring: boolean;
-  recurringPattern?: 'weekly' | 'biweekly' | 'monthly';
+  recurringPattern?: RecurringPattern;
   notes?: string;
 }

@@ -8,6 +8,7 @@ import {
   selectError,
   Student,
 } from '../studentsSlice';
+import { StudentStatus } from '@/types/enums';
 import { toast } from '../../../hooks/use-toast';
 
 export const useStudentForm = () => {
@@ -52,7 +53,7 @@ export const useStudentForm = () => {
     name: string;
     email: string;
     phone: string;
-    status: 'active' | 'inactive';
+    status: StudentStatus;
     parentContact: string;
   };
 

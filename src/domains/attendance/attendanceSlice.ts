@@ -2,11 +2,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
 import { loadFromStorage, saveToStorage } from '@/lib/storage';
+import { AttendanceStatus } from '@/types/enums';
 
 export interface StudentAttendance {
   studentId: string;
   studentName: string; // For easier display without extra lookups
-  status: 'present' | 'absent' | 'late';
+  status: AttendanceStatus;
   notes?: string;
 }
 
@@ -27,7 +28,7 @@ export interface BasicAttendanceRecord {
   studentId: string;
   classId: string;
   date: string;
-  status: 'present' | 'absent' | 'excused';
+  status: AttendanceStatus;
 }
 
 interface AttendanceState {
@@ -110,11 +111,11 @@ const attendanceSlice = createSlice({
     // Update a student's attendance status within the current record
     updateStudentAttendance: (
       state, 
-      action: PayloadAction<{ 
-        recordId: string, 
-        studentId: string, 
-        status: 'present' | 'absent' | 'late',
-        notes?: string 
+      action: PayloadAction<{
+        recordId: string,
+        studentId: string,
+        status: AttendanceStatus,
+        notes?: string
       }>
     ) => {
       const { recordId, studentId, status, notes } = action.payload;

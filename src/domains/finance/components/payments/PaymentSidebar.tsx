@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { PaymentMethod, ObligationStatus } from '@/types/enums';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
@@ -51,7 +52,7 @@ import { Badge } from '@/components/ui/badge';
 const formSchema = z.object({
   amount: z.coerce.number().positive({ message: "Amount must be greater than 0" }),
   date: z.date({ required_error: "Payment date is required" }),
-  method: z.enum(['cash', 'card', 'transfer', 'other'], {
+  method: z.enum([PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Transfer, PaymentMethod.Other], {
     required_error: "Payment method is required",
   }),
   reference: z.string().optional(),
@@ -88,7 +89,7 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
     defaultValues: {
       amount: 0,
       date: new Date(),
-      method: 'cash',
+      method: PaymentMethod.Cash,
       reference: '',
       notes: '',
     },
@@ -113,7 +114,7 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
       form.reset({
         amount: 0,
         date: new Date(),
-        method: 'cash',
+        method: PaymentMethod.Cash,
         reference: '',
         notes: '',
       });
@@ -164,13 +165,13 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
   const totalPaid = existingPayments.reduce((sum, payment) => sum + payment.amount, 0);
   const remainingAmount = obligation ? obligation.amount - totalPaid : 0;
 
-  const getPaymentStatusColor = (status: string) => {
+  const getPaymentStatusColor = (status: ObligationStatus) => {
     switch (status) {
-      case 'paid':
+      case ObligationStatus.Paid:
         return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case 'partial':
+      case ObligationStatus.Partial:
         return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'overdue':
+      case ObligationStatus.Overdue:
         return 'bg-red-500/20 text-red-300 border-red-500/30';
       default:
         return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
