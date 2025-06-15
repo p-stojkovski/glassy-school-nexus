@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PaymentHistory from './PaymentHistory';
-import PaymentForm from './PaymentForm';
+import PaymentHistory from '../PaymentHistory';
+import PaymentForm from '../PaymentForm';
 
 
 const PaymentManagement: React.FC = () => {
