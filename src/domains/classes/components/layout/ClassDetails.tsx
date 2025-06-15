@@ -112,10 +112,10 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
           <div className="bg-white/5 p-4 rounded-lg">
             <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
               <Users className="w-5 h-5" />
-              Students ({classItem.studentCount})
+              Students ({classItem.studentIds.length})
             </h3>
             <p className="text-white/70">
-              {classItem.studentCount} students enrolled in this class
+              {classItem.studentIds.length} students enrolled in this class
             </p>
           </div>
 
