@@ -3,18 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
-import { Input } from '../components/ui/input';
-import SchedulingHeader from '../components/scheduling/SchedulingHeader';
-import SchedulingFilters from '../components/scheduling/SchedulingFilters';
-import SchedulingCalendar from '../components/scheduling/SchedulingCalendar';
-import SchedulingOverview from '../components/scheduling/SchedulingOverview';
-import ConfirmDialog from '../components/common/ConfirmDialog';
+import { Input } from '@/components/ui/input';
+import SchedulingHeader from '@/domains/scheduling/components/SchedulingHeader';
+import SchedulingFilters from '@/domains/scheduling/components/SchedulingFilters';
+import SchedulingCalendar from '@/domains/scheduling/components/SchedulingCalendar';
+import SchedulingOverview from '@/domains/scheduling/components/SchedulingOverview';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { 
   setScheduledClasses, 
   cancelScheduledClass,
   ScheduledClass 
-} from '../store/slices/schedulingSlice';
-import { toast } from '../hooks/use-toast';
+} from '@/domains/scheduling/schedulingSlice';
+import { toast } from '@/hooks/use-toast';
 
 const Scheduling: React.FC = () => {
   const dispatch = useAppDispatch();

@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { RootState } from '../../store';
-import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { RootState } from '@/store';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter } from 'lucide-react';
-import GlassCard from '../common/GlassCard';
-import { setFilters } from '../../store/slices/schedulingSlice';
+import GlassCard from '@/components/common/GlassCard';
+import { setFilters } from '@/domains/scheduling/schedulingSlice';
 
 interface SchedulingFiltersProps {
   searchTerm: string;

@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useAppDispatch } from '@/store/hooks';
-import { loginStart, loginSuccess, loginFailure } from '../../store/slices/authSlice';
-import { addNotification } from '../../store/slices/uiSlice';
-import authService from '../../services/authService';
-import GlassCard from '../common/GlassCard';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+import { loginStart, loginSuccess, loginFailure } from '@/domains/auth/authSlice';
+import { addNotification } from '@/store/slices/uiSlice';
+import authService from '@/services/authService';
+import GlassCard from '@/components/common/GlassCard';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('admin@school.com');

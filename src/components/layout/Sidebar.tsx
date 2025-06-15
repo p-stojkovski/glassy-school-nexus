@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { RootState } from '../../store';
 import { toggleSidebar } from '../../store/slices/uiSlice';
-import { logout } from '../../store/slices/authSlice';
+import { logout } from '@/domains/auth/authSlice';
 import GlassCard from '../common/GlassCard';
 import { cn } from '../../lib/utils';
 import styles from './Sidebar.module.scss';

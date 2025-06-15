@@ -11,8 +11,8 @@ import GlassCard from '@/components/common/GlassCard';
 import DemoModeNotification from '@/domains/students/components/notifications/DemoModeNotification';
 import PaymentSidebar from '@/domains/finance/components/payments/PaymentSidebar';
 import { selectObligationsByStudentId, selectPaymentsByStudentId, selectStudentOutstandingBalance, PaymentObligation } from '@/domains/finance/financeSlice';
-import { selectAttendanceByClassId } from '@/store/slices/attendanceSlice';
-import { selectGradesByStudentId } from '@/store/slices/gradesSlice';
+import { selectAttendanceByClassId } from '@/domains/attendance/attendanceSlice';
+import { selectGradesByStudentId } from '@/domains/grades/gradesSlice';
 
 const StudentProfile: React.FC = () => {
   const { studentId } = useParams<{ studentId: string }>();

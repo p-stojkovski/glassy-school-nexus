@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { RootState } from '../../store';
+import { RootState } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   Assessment,
   Grade,
   selectAssessmentsByClassId,
   selectGradesByClassId,
-} from '../../store/slices/gradesSlice';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { toast } from '../../hooks/use-toast';
-import GlassCard from '../common/GlassCard';
+} from '@/domains/grades/gradesSlice';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from '@/hooks/use-toast';
+import GlassCard from '@/components/common/GlassCard';
 import {
   Table,
   TableBody,
@@ -18,14 +18,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../ui/table';
+} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from '../ui/select';
+} from '@/components/ui/select';
 import { Search, Download, Filter } from 'lucide-react';
 
 interface GradebookProps {

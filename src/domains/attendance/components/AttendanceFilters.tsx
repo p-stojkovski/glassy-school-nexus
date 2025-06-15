@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { useAppSelector } from '@/store/hooks';
-import { RootState } from '../../store';
+import { RootState } from '@/store';
 import { Calendar } from 'lucide-react';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Button } from '../ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { Calendar as CalendarComponent } from '../ui/calendar';
-import GlassCard from '../common/GlassCard';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import GlassCard from '@/components/common/GlassCard';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '../ui/popover';
+} from '@/components/ui/popover';
 
 interface AttendanceFiltersProps {
   selectedDate: string;

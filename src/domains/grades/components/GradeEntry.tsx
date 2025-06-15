@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RootState } from '../../store';
+import { RootState } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   Assessment,
@@ -8,13 +8,13 @@ import {
   addGradesBatch,
   selectGradesByAssessmentId,
   updateGrade
-} from '../../store/slices/gradesSlice';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { toast } from '../../hooks/use-toast';
-import GlassCard from '../common/GlassCard';
-import { Textarea } from '../ui/textarea';
+} from '@/domains/grades/gradesSlice';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
+import GlassCard from '@/components/common/GlassCard';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -22,14 +22,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../ui/table';
+} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from '../ui/select';
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -37,7 +37,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
+} from '@/components/ui/dialog';
 
 interface GradeEntryProps {
   classId: string;

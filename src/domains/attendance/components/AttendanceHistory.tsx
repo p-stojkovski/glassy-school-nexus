@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { RootState } from '../../store';
+import { RootState } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { 
   AttendanceRecord,
   selectAttendanceByClassId,
   selectAllAttendanceRecords,
-} from '../../store/slices/attendanceSlice';
-import GlassCard from '../common/GlassCard';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+} from '@/domains/attendance/attendanceSlice';
+import GlassCard from '@/components/common/GlassCard';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -16,13 +16,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../ui/table';
+} from '@/components/ui/table';
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '../ui/tabs';
+} from '@/components/ui/tabs';
 import { format, parseISO } from 'date-fns';
 import { Search, Calendar, Filter } from 'lucide-react';
 

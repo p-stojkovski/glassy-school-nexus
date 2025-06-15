@@ -32,19 +32,19 @@
 ```
 src/
 ├── domains/            # Feature modules with slices, hooks, and components
+│   ├── auth/           # Authentication domain
+│   ├── attendance/     # Attendance tracking domain
 │   ├── classes/        # Class management domain
+│   ├── classrooms/     # Classroom management domain
 │   ├── finance/        # Finance management domain
+│   ├── grades/         # Grades & assessments domain
+│   ├── scheduling/     # Scheduling domain
 │   ├── students/       # Student management domain
 │   └── teachers/       # Teacher management domain
-├── components/         # Reusable UI components
-│   ├── attendance/     # Attendance-specific components
-│   ├── auth/           # Authentication components
-│   ├── classrooms/     # Classroom management components
-│   ├── common/         # Shared components
-│   ├── grades/         # Grades and assessments components
+├── components/         # Shared UI components
+│   ├── common/         # Generic components
 │   ├── layout/         # Layout components (Sidebar, TopBar, etc.)
-│   ├── scheduling/     # Scheduling components
-│   └── ui/            # Base UI components (shadcn/ui)
+│   └── ui/             # Base UI components (shadcn/ui)
 ├── hooks/              # Custom React hooks
 ├── lib/               # Utility functions
 ├── pages/             # Page components (route handlers)
@@ -423,6 +423,8 @@ export const store = configureStore({
     ui: uiReducer,
   },
 });
+// Each reducer above is imported from its domain module
+// e.g. `import attendanceReducer from '@/domains/attendance/attendanceSlice'`
 ```
 
 ### Slice Pattern

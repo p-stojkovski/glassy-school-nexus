@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '../store';
-import { setSelectedDate } from '../store/slices/attendanceSlice';
-import AttendanceHeader from '../components/attendance/AttendanceHeader';
-import AttendanceFilters from '@/components/attendance/AttendanceFilters';
-import DemoModeNotification from '@/components/attendance/DemoModeNotification';
-import AttendanceMarker from '@/components/attendance/AttendanceMarker';
-import AttendanceHistory from '@/components/attendance/AttendanceHistory';
+import { setSelectedDate } from '@/domains/attendance/attendanceSlice';
+import AttendanceHeader from '@/domains/attendance/components/AttendanceHeader';
+import AttendanceFilters from '@/domains/attendance/components/AttendanceFilters';
+import DemoModeNotification from '@/domains/attendance/components/DemoModeNotification';
+import AttendanceMarker from '@/domains/attendance/components/AttendanceMarker';
+import AttendanceHistory from '@/domains/attendance/components/AttendanceHistory';
 
 const AttendanceManagement: React.FC = () => {
   const dispatch = useAppDispatch();

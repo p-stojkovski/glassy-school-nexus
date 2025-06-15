@@ -1,9 +1,9 @@
 import React from 'react';
-import { RootState } from '../../store';
+import { RootState } from '@/store';
 import { useAppSelector } from '@/store/hooks';
-import { Label } from '../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import GlassCard from '../common/GlassCard';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import GlassCard from '@/components/common/GlassCard';
 
 interface GradesFiltersProps {
   selectedClassId: string;

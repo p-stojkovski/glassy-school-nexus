@@ -1,15 +1,15 @@
 
 import React from 'react';
 import { useAppSelector } from '@/store/hooks';
-import { RootState } from '../../../store';
-import { Label } from '../../ui/label';
+import { RootState } from '@/store';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../../ui/select';
+} from '@/components/ui/select';
 import { BookOpen, Users, MapPin } from 'lucide-react';
 import { ScheduleFormData } from '../types';
 

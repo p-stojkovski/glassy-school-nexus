@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Input } from '../ui/input';
-import ConfirmDialog from '../common/ConfirmDialog';
+import { Input } from '@/components/ui/input';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 
 interface CancelClassDialogProps {
   open: boolean;
