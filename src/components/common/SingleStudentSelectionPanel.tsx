@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAppSelector } from '@/store/hooks';
 import { X, Search, User, Filter, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,8 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Student } from '@/domains/students/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
-import { RootState } from '@/store';
-import { selectAllObligations, selectAllPayments } from '@/domains/finance/financeSlice';
+import { PaymentObligation, Payment } from '@/domains/finance/financeSlice';
 import { cn } from '@/lib/utils';
 
 interface SingleStudentSelectionPanelProps {
@@ -23,13 +21,21 @@ interface SingleStudentSelectionPanelProps {
   onOpenChange: (open: boolean) => void;
   onStudentSelect: (student: Student) => void;
   filterOngoingObligationsOnly?: boolean;
+  students: Student[];
+  classes: Class[];
+  obligations: PaymentObligation[];
+  payments: Payment[];
 }
 
 const SingleStudentSelectionPanel: React.FC<SingleStudentSelectionPanelProps> = ({
   open,
   onOpenChange,
   onStudentSelect,
-  filterOngoingObligationsOnly = false
+  filterOngoingObligationsOnly = false,
+  students,
+  classes,
+  obligations,
+  payments
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -37,13 +43,7 @@ const SingleStudentSelectionPanel: React.FC<SingleStudentSelectionPanelProps> = 
   const UNASSIGNED_FILTER = 'unassigned';
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
-  // Get students and classes from store
-  const { students } = useAppSelector((state: RootState) => state.students);
-  const { classes } = useAppSelector((state: RootState) => state.classes);
-
-  // Get financial data from store
-  const obligations = useAppSelector(selectAllObligations);
-  const payments = useAppSelector(selectAllPayments);
+  // Provided data
   // Reset selection when panel opens
   useEffect(() => {
     if (open) {

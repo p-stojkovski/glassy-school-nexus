@@ -37,6 +37,7 @@ export interface ClassFormData {
 const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, editingClass }) => {
   const { teachers } = useAppSelector((state: RootState) => state.teachers);
   const { students } = useAppSelector((state: RootState) => state.students);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
   const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
   const [isStudentPanelOpen, setIsStudentPanelOpen] = useState(false);
   const form = useForm<ClassFormData>({
@@ -318,6 +319,7 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
       {open && (
         <StudentSelectionPanel
           students={students}
+          classes={classes}
           selectedStudentIds={form.watch('studentIds') || []}
           onSelectionChange={(studentIds) => {
             form.setValue('studentIds', studentIds);

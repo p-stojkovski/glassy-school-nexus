@@ -317,6 +317,7 @@ Reusable component for selecting students:
 ```tsx
 <StudentSelectionPanel
   students={students}
+  classes={classes}
   selectedStudentIds={selectedIds}
   onSelectionChange={setSelectedIds}
   allowMultiple={true}

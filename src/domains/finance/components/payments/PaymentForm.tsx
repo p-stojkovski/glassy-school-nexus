@@ -15,6 +15,7 @@ import {
   selectObligationsByStudentId,
 } from '@/domains/finance/financeSlice';
 import { Student } from '@/domains/students/studentsSlice';
+import { Class } from '@/domains/classes/classesSlice';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -76,6 +77,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
   const dispatch = useAppDispatch();
   const allPayments = useAppSelector(selectAllPayments);
   const allObligations = useAppSelector(selectAllObligations);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
   const { toast } = useToast();
   const editedPayment = editingId
     ? allPayments.find(payment => payment.id === editingId)
@@ -437,6 +439,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
         onOpenChange={setIsStudentSelectionOpen}
         onStudentSelect={handleStudentSelect}
         filterOngoingObligationsOnly={true}
+        students={students}
+        classes={classes}
+        obligations={allObligations}
+        payments={allPayments}
       />
     </Form>
   );

@@ -82,6 +82,7 @@ const obligationTypes = [
 const BatchObligationForm: React.FC<BatchObligationFormProps> = ({ onCancel }) => {
   const dispatch = useAppDispatch();
   const students = useAppSelector((state: RootState) => selectStudents(state));
+  const { classes } = useAppSelector((state: RootState) => state.classes);
   const { toast } = useToast();
   
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
@@ -335,6 +336,7 @@ const BatchObligationForm: React.FC<BatchObligationFormProps> = ({ onCancel }) =
       {/* Student Selection Panel */}
       <StudentSelectionPanel
         students={students}
+        classes={classes}
         selectedStudentIds={selectedStudentIds}
         onSelectionChange={handleStudentSelectionChange}
         onClose={() => setIsStudentPanelOpen(false)}
