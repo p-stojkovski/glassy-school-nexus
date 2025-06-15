@@ -15,13 +15,14 @@ import { Classroom } from '@/domains/classrooms/classroomsSlice';
 import { loadFromStorage } from '@/lib/storage';
 import { useToast } from '../hooks/use-toast';
 import * as z from 'zod';
+import { ClassroomStatus } from '@/types/enums';
 
 // Import the classroom schema definition
 const classroomSchema = z.object({
   name: z.string().min(1, 'Classroom name is required').max(50, 'Name must be less than 50 characters'),
   location: z.string().max(100, 'Location must be less than 100 characters').optional(),
   capacity: z.number().min(1, 'Capacity must be at least 1').max(500, 'Capacity cannot exceed 500'),
-  status: z.enum(['active', 'inactive', 'maintenance']),
+  status: z.enum([ClassroomStatus.Active, ClassroomStatus.Inactive, ClassroomStatus.Maintenance]),
 });
 
 type ClassroomFormData = z.infer<typeof classroomSchema>;
@@ -49,7 +50,7 @@ const ClassroomManagement: React.FC = () => {  const {
       let loaded: Classroom[] | null = null;
       let error = false;
       try {
-        loaded = loadFromStorage();
+        loaded = loadFromStorage<Classroom[]>('classrooms');
       } catch (e) {
         error = true;
       }
@@ -62,7 +63,7 @@ const ClassroomManagement: React.FC = () => {  const {
             name: 'Room A-101',
             location: 'Building A, First Floor',
             capacity: 30,
-            status: 'active',
+            status: ClassroomStatus.Active,
             createdDate: new Date().toISOString(),
             lastUpdated: new Date().toISOString(),
           },
@@ -71,7 +72,7 @@ const ClassroomManagement: React.FC = () => {  const {
             name: 'Room B-205',
             location: 'Building B, Second Floor',
             capacity: 25,
-            status: 'active',
+            status: ClassroomStatus.Active,
             createdDate: new Date().toISOString(),
             lastUpdated: new Date().toISOString(),
           },
@@ -80,7 +81,7 @@ const ClassroomManagement: React.FC = () => {  const {
             name: 'Room C-301',
             location: 'Building C, Third Floor',
             capacity: 35,
-            status: 'maintenance',
+            status: ClassroomStatus.Maintenance,
             createdDate: new Date().toISOString(),
             lastUpdated: new Date().toISOString(),
           }
@@ -104,7 +105,7 @@ const ClassroomManagement: React.FC = () => {  const {
         name: 'Room A-101',
         location: 'Building A, First Floor',
         capacity: 30,
-        status: 'active',
+        status: ClassroomStatus.Active,
         createdDate: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
       },
@@ -113,7 +114,7 @@ const ClassroomManagement: React.FC = () => {  const {
         name: 'Room B-205',
         location: 'Building B, Second Floor',
         capacity: 25,
-        status: 'active',
+        status: ClassroomStatus.Active,
         createdDate: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
       },
@@ -122,7 +123,7 @@ const ClassroomManagement: React.FC = () => {  const {
         name: 'Room C-301',
         location: 'Building C, Third Floor',
         capacity: 35,
-        status: 'maintenance',
+        status: ClassroomStatus.Maintenance,
         createdDate: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
       }
