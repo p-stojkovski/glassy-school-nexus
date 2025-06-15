@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Mock API service to simulate HTTP requests
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
