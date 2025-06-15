@@ -1,5 +1,6 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { saveToStorage, loadFromStorage } from '@/lib/storage';
 
 export interface Classroom {
   id: string;
@@ -19,33 +20,17 @@ interface ClassroomsState {
   filterBy: 'all' | 'active' | 'inactive' | 'maintenance';
 }
 
+// Load initial classrooms from localStorage if available
+const loadInitialClassrooms = (): Classroom[] =>
+  loadFromStorage<Classroom[]>('classrooms') || [];
+
 const initialState: ClassroomsState = {
-  classrooms: [],
+  classrooms: loadInitialClassrooms(),
   loading: false,
   selectedClassroom: null,
   searchQuery: '',
   filterBy: 'all',
 };
-
-
-// Helpers for localStorage persistence
-const STORAGE_KEY = 'classrooms';
-function saveToStorage(classrooms: Classroom[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(classrooms));
-  } catch (error) {
-    console.error('Failed to save classrooms to localStorage', error);
-  }
-}
-function loadFromStorage(): Classroom[] | null {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (data) return JSON.parse(data);
-  } catch (error) {
-    console.error('Failed to load classrooms from localStorage', error);
-  }
-  return null;
-}
 
 const classroomsSlice = createSlice({
   name: 'classrooms',
@@ -53,22 +38,22 @@ const classroomsSlice = createSlice({
   reducers: {
     setClassrooms: (state, action: PayloadAction<Classroom[]>) => {
       state.classrooms = action.payload;
-      saveToStorage(state.classrooms);
+      saveToStorage('classrooms', state.classrooms);
     },
     addClassroom: (state, action: PayloadAction<Classroom>) => {
       state.classrooms.unshift(action.payload);
-      saveToStorage(state.classrooms);
+      saveToStorage('classrooms', state.classrooms);
     },
     updateClassroom: (state, action: PayloadAction<Classroom>) => {
       const index = state.classrooms.findIndex(c => c.id === action.payload.id);
       if (index !== -1) {
         state.classrooms[index] = action.payload;
-        saveToStorage(state.classrooms);
+        saveToStorage('classrooms', state.classrooms);
       }
     },
     deleteClassroom: (state, action: PayloadAction<string>) => {
       state.classrooms = state.classrooms.filter(c => c.id !== action.payload);
-      saveToStorage(state.classrooms);
+      saveToStorage('classrooms', state.classrooms);
     },
     setSelectedClassroom: (state, action: PayloadAction<Classroom | null>) => {
       state.selectedClassroom = action.payload;
@@ -84,7 +69,7 @@ const classroomsSlice = createSlice({
     },
     resetDemoClassrooms: (state, action: PayloadAction<Classroom[]>) => {
       state.classrooms = action.payload;
-      saveToStorage(state.classrooms);
+      saveToStorage('classrooms', state.classrooms);
     },
   },
 });
@@ -100,5 +85,4 @@ export const {
   setFilterBy,
   resetDemoClassrooms
 } = classroomsSlice.actions;
-export { loadFromStorage };
 export default classroomsSlice.reducer;
