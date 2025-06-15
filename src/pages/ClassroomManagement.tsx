@@ -11,7 +11,8 @@ import ClassroomCard from '@/domains/classrooms/components/ClassroomCard';
 import ClassroomForm from '@/domains/classrooms/components/ClassroomForm';
 import DemoModeNotification from '@/domains/classrooms/components/DemoModeNotification';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import { Classroom, loadFromStorage } from '@/domains/classrooms/classroomsSlice';
+import { Classroom } from '@/domains/classrooms/classroomsSlice';
+import { loadFromStorage } from '@/lib/storage';
 import { useToast } from '../hooks/use-toast';
 import * as z from 'zod';
 
