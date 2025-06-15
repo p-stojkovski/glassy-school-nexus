@@ -38,6 +38,7 @@ import {
 import { cn } from '@/lib/utils';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import StudentSelectionTrigger from '@/components/common/StudentSelectionTrigger';
+import { ObligationStatus } from '@/types/enums';
 
 const formSchema = z.object({
   type: z.string().min(1, { message: "Obligation type is required" }),
@@ -130,7 +131,7 @@ const BatchObligationForm: React.FC<BatchObligationFormProps> = ({ onCancel }) =
         type: data.type,
         amount: data.amount,
         period: data.period,
-        status: 'pending',
+        status: ObligationStatus.Pending,
         dueDate: formattedDueDate,
         notes: data.notes,
         createdAt: now,

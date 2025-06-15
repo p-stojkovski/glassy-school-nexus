@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -6,7 +6,6 @@ import { PaymentMethod, ObligationStatus } from '@/types/enums';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
-import { RootState } from '@/store';
 import { 
   createPayment,
   Payment,
@@ -33,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CalendarIcon, X, CreditCard } from 'lucide-react';
+import { CalendarIcon, CreditCard } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
