@@ -1,5 +1,6 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { saveToStorage, loadFromStorage } from '@/lib/storage';
 
 export interface Class {
   id: string;
@@ -42,16 +43,8 @@ interface ClassesState {
 
 
 // Load initial class data from localStorage if available
-const loadInitialClasses = (): Class[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const saved = localStorage.getItem('classes');
-    return saved ? JSON.parse(saved) : [];
-  } catch (e) {
-    console.error('Failed to load classes from localStorage', e);
-    return [];
-  }
-};
+const loadInitialClasses = (): Class[] =>
+  loadFromStorage<Class[]>('classes') || [];
 
 const initialState: ClassesState = {
   classes: loadInitialClasses(),
@@ -65,38 +58,22 @@ const classesSlice = createSlice({
   reducers: {
     setClasses: (state, action: PayloadAction<Class[]>) => {
       state.classes = action.payload;
-      try {
-        localStorage.setItem('classes', JSON.stringify(state.classes));
-      } catch (e) {
-        console.error('Failed to save classes to localStorage', e);
-      }
+      saveToStorage('classes', state.classes);
     },
     addClass: (state, action: PayloadAction<Class>) => {
       state.classes.push(action.payload);
-      try {
-        localStorage.setItem('classes', JSON.stringify(state.classes));
-      } catch (e) {
-        console.error('Failed to save classes to localStorage', e);
-      }
+      saveToStorage('classes', state.classes);
     },
     updateClass: (state, action: PayloadAction<{ id: string; updates: Partial<Class> }>) => {
       const index = state.classes.findIndex(c => c.id === action.payload.id);
       if (index !== -1) {
         state.classes[index] = { ...state.classes[index], ...action.payload.updates };
-        try {
-          localStorage.setItem('classes', JSON.stringify(state.classes));
-        } catch (e) {
-          console.error('Failed to save classes to localStorage', e);
-        }
+        saveToStorage('classes', state.classes);
       }
     },
     deleteClass: (state, action: PayloadAction<string>) => {
       state.classes = state.classes.filter(c => c.id !== action.payload);
-      try {
-        localStorage.setItem('classes', JSON.stringify(state.classes));
-      } catch (e) {
-        console.error('Failed to save classes to localStorage', e);
-      }
+      saveToStorage('classes', state.classes);
     },
     setSelectedClass: (state, action: PayloadAction<Class | null>) => {
       state.selectedClass = action.payload;
