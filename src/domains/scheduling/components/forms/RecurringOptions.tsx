@@ -4,12 +4,13 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Repeat } from 'lucide-react';
+import { RecurringPattern } from '@/types/enums';
 
 interface RecurringOptionsProps {
   isRecurring: boolean;
-  recurringPattern: 'weekly' | 'biweekly' | 'monthly';
+  recurringPattern: RecurringPattern;
   onRecurringChange: (isRecurring: boolean) => void;
-  onPatternChange: (pattern: 'weekly' | 'biweekly' | 'monthly') => void;
+  onPatternChange: (pattern: RecurringPattern) => void;
 }
 
 const RecurringOptions: React.FC<RecurringOptionsProps> = ({
@@ -35,9 +36,9 @@ const RecurringOptions: React.FC<RecurringOptionsProps> = ({
       {isRecurring && (
         <div>
           <Label className="text-white mb-2 block">Recurring Pattern</Label>
-          <Select 
-            value={recurringPattern} 
-            onValueChange={(value) => onPatternChange(value as 'weekly' | 'biweekly' | 'monthly')}
+          <Select
+            value={recurringPattern}
+            onValueChange={(value: RecurringPattern) => onPatternChange(value)}
           >
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <SelectValue />

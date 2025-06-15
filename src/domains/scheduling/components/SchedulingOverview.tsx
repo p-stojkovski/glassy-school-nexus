@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CalendarDays, Clock, Users, MapPin, Edit, X } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
 import { ScheduledClass } from '@/domains/scheduling/schedulingSlice';
+import { ScheduledClassStatus } from '@/types/enums';
 
 interface SchedulingOverviewProps {
   scheduledClasses: ScheduledClass[];
@@ -42,16 +43,16 @@ const SchedulingOverview: React.FC<SchedulingOverviewProps> = ({
                       </h3>
                       <Badge
                         variant={
-                          schedule.status === 'scheduled'
+                          schedule.status === ScheduledClassStatus.Scheduled
                             ? 'default'
-                            : schedule.status === 'canceled'
+                            : schedule.status === ScheduledClassStatus.Canceled
                             ? 'destructive'
                             : 'secondary'
                         }
                         className={
-                          schedule.status === 'scheduled'
+                          schedule.status === ScheduledClassStatus.Scheduled
                             ? 'bg-green-500/20 text-green-300'
-                            : schedule.status === 'canceled'
+                            : schedule.status === ScheduledClassStatus.Canceled
                             ? 'bg-red-500/20 text-red-300'
                             : 'bg-blue-500/20 text-blue-300'
                         }
@@ -92,7 +93,7 @@ const SchedulingOverview: React.FC<SchedulingOverviewProps> = ({
                     )}
                   </div>
                   <div className="flex gap-2">
-                    {schedule.status === 'scheduled' && (
+                    {schedule.status === ScheduledClassStatus.Scheduled && (
                       <>
                         <Button
                           variant="ghost"

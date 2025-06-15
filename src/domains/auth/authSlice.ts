@@ -1,11 +1,12 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { UserRole } from '@/types/enums';
 
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'teacher' | 'student';
+  role: UserRole;
   avatar: string;
 }
 
@@ -20,7 +21,7 @@ const initialState: AuthState = {
     id: '1',
     name: 'Nikolina Pejkovska',
     email: 'nikolina@thinkenglish.com',
-    role: 'admin',
+    role: UserRole.Admin,
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nikolina',
   },
   isAuthenticated: true,

@@ -3,6 +3,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { StudentStatus } from '@/types/enums';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,7 +15,7 @@ const studentSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email format').optional().or(z.literal('')),
   phone: z.string().optional(),
-  status: z.enum(['active', 'inactive']),
+  status: z.enum([StudentStatus.Active, StudentStatus.Inactive]),
   parentContact: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -34,7 +35,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
       name: student?.name || '',
       email: student?.email || '',
       phone: student?.phone || '',
-      status: student?.status || 'active',
+      status: student?.status || StudentStatus.Active,
       parentContact: student?.parentContact || '',
       notes: '',
     },

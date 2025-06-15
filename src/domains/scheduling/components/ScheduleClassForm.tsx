@@ -9,6 +9,7 @@ import BasicClassInfo from './forms/BasicClassInfo';
 import DateTimeFields from './forms/DateTimeFields';
 import RecurringOptions from './forms/RecurringOptions';
 import { ScheduleFormData } from './types';
+import { RecurringPattern } from '@/types/enums';
 
 
 interface ScheduleClassFormProps {
@@ -31,7 +32,7 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
     startTime: initialData?.startTime || '',
     endTime: initialData?.endTime || '',
     isRecurring: initialData?.isRecurring || false,
-    recurringPattern: initialData?.recurringPattern || 'weekly',
+    recurringPattern: initialData?.recurringPattern || RecurringPattern.Weekly,
     notes: initialData?.notes || '',
   });
 
@@ -80,7 +81,8 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
           isRecurring={formData.isRecurring}
           recurringPattern={formData.recurringPattern}
           onRecurringChange={(isRecurring) => setFormData({...formData, isRecurring})}
-          onPatternChange={(pattern) => setFormData({...formData, recurringPattern: pattern})}
+          onPatternChange={(pattern: RecurringPattern) =>
+            setFormData({ ...formData, recurringPattern: pattern })}
         />
 
         {/* Notes */}

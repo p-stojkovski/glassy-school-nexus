@@ -1,12 +1,13 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Theme, NotificationType } from '@/types/enums';
 
 interface UIState {
   sidebarCollapsed: boolean;
-  theme: 'light' | 'dark';
+  theme: Theme;
   notifications: Array<{
     id: string;
-    type: 'success' | 'error' | 'warning' | 'info';
+    type: NotificationType;
     message: string;
     timestamp: number;
   }>;
@@ -14,7 +15,7 @@ interface UIState {
 
 const initialState: UIState = {
   sidebarCollapsed: false,
-  theme: 'light',
+  theme: Theme.Light,
   notifications: [],
 };
 
@@ -25,7 +26,7 @@ const uiSlice = createSlice({
     toggleSidebar: (state) => {
       state.sidebarCollapsed = !state.sidebarCollapsed;
     },
-    setTheme: (state, action: PayloadAction<'light' | 'dark'>) => {
+    setTheme: (state, action: PayloadAction<Theme>) => {
       state.theme = action.payload;
     },
     addNotification: (state, action: PayloadAction<Omit<UIState['notifications'][0], 'id' | 'timestamp'>>) => {

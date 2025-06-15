@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { ClassroomStatus } from '@/types/enums';
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,7 +15,7 @@ const classroomSchema = z.object({
   name: z.string().min(1, 'Classroom name is required').max(50, 'Name must be less than 50 characters'),
   location: z.string().max(100, 'Location must be less than 100 characters').optional(),
   capacity: z.number().min(1, 'Capacity must be at least 1').max(500, 'Capacity cannot exceed 500'),
-  status: z.enum(['active', 'inactive', 'maintenance']),
+  status: z.enum([ClassroomStatus.Active, ClassroomStatus.Inactive, ClassroomStatus.Maintenance]),
 });
 
 type ClassroomFormData = z.infer<typeof classroomSchema>;
@@ -38,7 +39,7 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
       name: classroom?.name || '',
       location: classroom?.location || '',
       capacity: classroom?.capacity || 30,
-      status: classroom?.status || 'active',
+      status: classroom?.status || ClassroomStatus.Active,
     },
   });
 

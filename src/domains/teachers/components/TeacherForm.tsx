@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Teacher, addTeacher, updateTeacher } from '../teachersSlice';
+import { TeacherStatus } from '@/types/enums';
 import { toast } from '@/hooks/use-toast';
 
 const teacherSchema = z.object({
@@ -18,7 +19,7 @@ const teacherSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().optional(),
   subject: z.string().min(1, 'Subject is required'),
-  status: z.enum(['active', 'inactive']),
+  status: z.enum([TeacherStatus.Active, TeacherStatus.Inactive]),
   notes: z.string().optional(),
 });
 

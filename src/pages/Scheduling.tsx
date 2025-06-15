@@ -9,11 +9,12 @@ import SchedulingFilters from '@/domains/scheduling/components/SchedulingFilters
 import SchedulingCalendar from '@/domains/scheduling/components/SchedulingCalendar';
 import SchedulingOverview from '@/domains/scheduling/components/SchedulingOverview';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import { 
-  setScheduledClasses, 
+import {
+  setScheduledClasses,
   cancelScheduledClass,
-  ScheduledClass 
+  ScheduledClass
 } from '@/domains/scheduling/schedulingSlice';
+import { ScheduledClassStatus, RecurringPattern } from '@/types/enums';
 import { toast } from '@/hooks/use-toast';
 
 const Scheduling: React.FC = () => {
@@ -41,9 +42,9 @@ const Scheduling: React.FC = () => {
         date: new Date().toISOString().split('T')[0],
         startTime: '09:00',
         endTime: '10:30',
-        status: 'scheduled',
+        status: ScheduledClassStatus.Scheduled,
         isRecurring: true,
-        recurringPattern: 'weekly',
+        recurringPattern: RecurringPattern.Weekly,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -59,7 +60,7 @@ const Scheduling: React.FC = () => {
         date: new Date().toISOString().split('T')[0],
         startTime: '11:00',
         endTime: '12:30',
-        status: 'scheduled',
+        status: ScheduledClassStatus.Scheduled,
         isRecurring: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Clock } from 'lucide-react';
 import { Class } from '@/domains/classes/classesSlice';
+import { ClassStatus } from '@/types/enums';
 import { useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
@@ -31,7 +32,7 @@ export interface ClassFormData {
     endTime: string;
   }[];
   studentIds: string[];
-  status: 'active' | 'inactive' | 'pending';
+  status: ClassStatus;
 }
 
 const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, editingClass }) => {
@@ -56,7 +57,7 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
       classroomId: '',
       schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:30' }],
       studentIds: [],
-      status: 'active',
+      status: ClassStatus.Active,
     }
   });
 

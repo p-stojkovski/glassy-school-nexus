@@ -1,5 +1,6 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { StudentStatus } from '@/types/enums';
 
 export interface Student {
   id: string;
@@ -8,7 +9,7 @@ export interface Student {
   phone: string;
   avatar: string;
   classId: string;
-  status: 'active' | 'inactive';
+  status: StudentStatus;
   joinDate: string;
   parentContact: string;
   paymentDue?: boolean;

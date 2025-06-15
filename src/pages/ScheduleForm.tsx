@@ -9,6 +9,7 @@ import { addScheduledClass, updateScheduledClass, ScheduledClass } from '@/domai
 import { toast } from '@/hooks/use-toast';
 import ScheduleClassForm from '@/domains/scheduling/components/ScheduleClassForm';
 import { ScheduleFormData } from '@/domains/scheduling/components/types';
+import { ScheduledClassStatus } from '@/types/enums';
 
 const ScheduleForm: React.FC = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const ScheduleForm: React.FC = () => {
   const checkConflicts = (scheduleData: ScheduleFormData) => {
     const conflicts = scheduledClasses.filter(existing => 
       existing.date === scheduleData.date &&
-      existing.status === 'scheduled' &&
+      existing.status === ScheduledClassStatus.Scheduled &&
       existing.id !== scheduleData.id &&
       (
         (existing.teacherId === scheduleData.teacherId) ||
@@ -80,7 +81,7 @@ const ScheduleForm: React.FC = () => {
         className: selectedClass?.name || '',
         teacherName: selectedTeacher?.name || '',
         classroomName: selectedClassroom?.name || '',
-        status: 'scheduled' as const,
+        status: ScheduledClassStatus.Scheduled,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
