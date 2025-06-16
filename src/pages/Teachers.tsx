@@ -1,22 +1,19 @@
 import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { Plus, Search, Filter, Users } from 'lucide-react';
+import { Plus, Users, Grid3x3, Table2 } from 'lucide-react';
 import { RootState } from '../store';
 import { setTeachers, setLoading } from '@/domains/teachers/teachersSlice';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import GlassCard from '@/components/common/GlassCard';
+import DemoNotice from '@/components/common/DemoNotice';
 import TeacherCard from '@/domains/teachers/components/TeacherCard';
 import TeacherForm from '@/domains/teachers/components/TeacherForm';
+import TeacherFilters from '@/domains/teachers/components/filters/TeacherFilters';
+import TeacherTable from '@/domains/teachers/components/list/TeacherTable';
 import { Teacher } from '@/domains/teachers/teachersSlice';
 import { useTeachersData } from '@/data/hooks/useTeachersData';
+import { useTeacherManagement } from '@/domains/teachers/hooks/useTeacherManagement';
 
 const Teachers: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -31,22 +28,22 @@ const Teachers: React.FC = () => {
     showErrorToasts: true,
   });
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<
-    'all' | 'active' | 'inactive'
-  >('all');
+  // Teacher management hook
+  const {
+    searchTerm,
+    setSearchTerm,
+    statusFilter,
+    setStatusFilter,
+    subjectFilter,
+    setSubjectFilter,
+    clearFilters,
+    viewMode,
+    setViewMode,
+    filteredTeachers,
+  } = useTeacherManagement({ teachers });
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
-
-  const filteredTeachers = teachers.filter((teacher) => {
-    const matchesSearch =
-      teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      teacher.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      teacher.subject.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === 'all' || teacher.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
 
   const handleAddTeacher = () => {
     setSelectedTeacher(null);
@@ -73,6 +70,9 @@ const Teachers: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Demo Notice */}
+      <DemoNotice message="You are viewing demo teacher data. All changes are temporary and will be lost on page refresh." />
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">
@@ -81,50 +81,56 @@ const Teachers: React.FC = () => {
           <p className="text-white/70">
             Manage teacher profiles and information
           </p>
-        </div>{' '}
-        <Button
-          onClick={handleAddTeacher}
-          className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Add Teacher
-        </Button>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {/* View Toggle */}
+          <ToggleGroup
+            type="single"
+            value={viewMode}
+            onValueChange={(value) =>
+              value && setViewMode(value as 'grid' | 'table')
+            }
+            className="bg-white/5 border border-white/10 rounded-lg p-1"
+          >
+            <ToggleGroupItem
+              value="grid"
+              className="data-[state=on]:bg-white/20 text-white/70 data-[state=on]:text-white"
+            >
+              <Grid3x3 className="w-4 h-4 mr-2" />
+              Grid
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="table"
+              className="data-[state=on]:bg-white/20 text-white/70 data-[state=on]:text-white"
+            >
+              <Table2 className="w-4 h-4 mr-2" />
+              Table
+            </ToggleGroupItem>
+          </ToggleGroup>
+
+          <Button
+            onClick={handleAddTeacher}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add Teacher
+          </Button>
+        </div>
       </div>
 
-      {/* Search and Filter Controls */}
-      <GlassCard className="p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-            <Input
-              placeholder="Search teachers by name, email, or subject..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
-            />
-          </div>
-          <div className="sm:w-48">
-            <Select
-              value={statusFilter}
-              onValueChange={(value: 'all' | 'active' | 'inactive') =>
-                setStatusFilter(value)
-              }
-            >
-              <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </GlassCard>
+      {/* Enhanced Filters */}
+      <TeacherFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        subjectFilter={subjectFilter}
+        setSubjectFilter={setSubjectFilter}
+        clearFilters={clearFilters}
+      />
 
-      {/* Teachers Grid */}
+      {/* Teachers Display */}
       {filteredTeachers.length === 0 ? (
         <GlassCard className="p-12 text-center">
           <Users className="w-16 h-16 text-white/40 mx-auto mb-4" />
@@ -132,11 +138,11 @@ const Teachers: React.FC = () => {
             No Teachers Found
           </h3>
           <p className="text-white/60 mb-6">
-            {searchTerm || statusFilter !== 'all'
+            {searchTerm || statusFilter !== 'all' || subjectFilter !== 'all'
               ? 'No teachers match your current search criteria.'
               : 'Start by adding your first teacher to the system.'}
-          </p>{' '}
-          {!searchTerm && statusFilter === 'all' && (
+          </p>
+          {!searchTerm && statusFilter === 'all' && subjectFilter === 'all' && (
             <Button
               onClick={handleAddTeacher}
               className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
@@ -146,6 +152,8 @@ const Teachers: React.FC = () => {
             </Button>
           )}
         </GlassCard>
+      ) : viewMode === 'table' ? (
+        <TeacherTable teachers={filteredTeachers} onEdit={handleEditTeacher} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTeachers.map((teacher) => (
