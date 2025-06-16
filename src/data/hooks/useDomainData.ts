@@ -76,7 +76,9 @@ export const useDomainData = <T extends keyof MockDataState>(
   const loadData = useCallback(
     async (loadOptions: DataLoadOptions = {}) => {
       setIsLoading(true);
-      setError(null); // Set loading state in Redux if action provided
+      setError(null);
+
+      // Set loading state in Redux if action provided
       if (setLoadingAction) {
         const action = setLoadingAction(true);
         if (action) dispatch(action);

@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { StudentStatus } from '@/types/enums';
+import { mockDataService } from '@/data/MockDataService';
 
 export interface Student {
   id: string;
@@ -45,42 +46,40 @@ const studentsSlice = createSlice({
   reducers: {
     setStudents: (state, action: PayloadAction<Student[]>) => {
       state.students = action.payload;
-      try {
-        localStorage.setItem('students', JSON.stringify(action.payload));
-      } catch (e) {
+      // Use MockDataService for consistent persistence
+      mockDataService.saveDomainData('students', action.payload).catch((e) => {
         state.error = 'Failed to save students to local storage';
         console.error('Failed to save students to localStorage', e);
-      }
+      });
     },
     addStudent: (state, action: PayloadAction<Student>) => {
       state.students.push(action.payload);
-      try {
-        localStorage.setItem('students', JSON.stringify(state.students));
-      } catch (e) {
+      // Use MockDataService for consistent persistence
+      mockDataService.saveDomainData('students', state.students).catch((e) => {
         state.error = 'Failed to save student to local storage';
         console.error('Failed to save student to localStorage', e);
-      }
+      });
     },
     updateStudent: (state, action: PayloadAction<Student>) => {
       const index = state.students.findIndex((s) => s.id === action.payload.id);
       if (index !== -1) {
         state.students[index] = action.payload;
-        try {
-          localStorage.setItem('students', JSON.stringify(state.students));
-        } catch (e) {
-          state.error = 'Failed to save student updates to local storage';
-          console.error('Failed to save student updates to localStorage', e);
-        }
+        // Use MockDataService for consistent persistence
+        mockDataService
+          .saveDomainData('students', state.students)
+          .catch((e) => {
+            state.error = 'Failed to save student updates to local storage';
+            console.error('Failed to save student updates to localStorage', e);
+          });
       }
     },
     deleteStudent: (state, action: PayloadAction<string>) => {
       state.students = state.students.filter((s) => s.id !== action.payload);
-      try {
-        localStorage.setItem('students', JSON.stringify(state.students));
-      } catch (e) {
+      // Use MockDataService for consistent persistence
+      mockDataService.saveDomainData('students', state.students).catch((e) => {
         state.error = 'Failed to update local storage after deletion';
         console.error('Failed to update localStorage after deletion', e);
-      }
+      });
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;

@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { saveToStorage, loadFromStorage } from '@/lib/storage';
+import { loadFromStorage } from '@/lib/storage';
+import { mockDataService } from '@/data/MockDataService';
 import { ClassStatus } from '@/types/enums';
 
 export interface Class {
@@ -57,11 +58,15 @@ const classesSlice = createSlice({
   reducers: {
     setClasses: (state, action: PayloadAction<Class[]>) => {
       state.classes = action.payload;
-      saveToStorage('classes', state.classes);
+      mockDataService.saveDomainData('classes', state.classes).catch((e) => {
+        console.error('Failed to save classes to localStorage', e);
+      });
     },
     addClass: (state, action: PayloadAction<Class>) => {
       state.classes.push(action.payload);
-      saveToStorage('classes', state.classes);
+      mockDataService.saveDomainData('classes', state.classes).catch((e) => {
+        console.error('Failed to save classes to localStorage', e);
+      });
     },
     updateClass: (
       state,
@@ -73,12 +78,16 @@ const classesSlice = createSlice({
           ...state.classes[index],
           ...action.payload.updates,
         };
-        saveToStorage('classes', state.classes);
+        mockDataService.saveDomainData('classes', state.classes).catch((e) => {
+          console.error('Failed to save classes to localStorage', e);
+        });
       }
     },
     deleteClass: (state, action: PayloadAction<string>) => {
       state.classes = state.classes.filter((c) => c.id !== action.payload);
-      saveToStorage('classes', state.classes);
+      mockDataService.saveDomainData('classes', state.classes).catch((e) => {
+        console.error('Failed to save classes to localStorage', e);
+      });
     },
     setSelectedClass: (state, action: PayloadAction<Class | null>) => {
       state.selectedClass = action.payload;

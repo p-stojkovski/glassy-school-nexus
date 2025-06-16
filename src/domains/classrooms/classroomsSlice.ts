@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { saveToStorage, loadFromStorage } from '@/lib/storage';
+import { mockDataService } from '@/data/MockDataService';
 import { ClassroomStatus } from '@/types/enums';
 
 export interface Classroom {
@@ -38,11 +39,19 @@ const classroomsSlice = createSlice({
   reducers: {
     setClassrooms: (state, action: PayloadAction<Classroom[]>) => {
       state.classrooms = action.payload;
-      saveToStorage('classrooms', state.classrooms);
+      mockDataService
+        .saveDomainData('classrooms', state.classrooms)
+        .catch((e) => {
+          console.error('Failed to save classrooms to localStorage', e);
+        });
     },
     addClassroom: (state, action: PayloadAction<Classroom>) => {
       state.classrooms.unshift(action.payload);
-      saveToStorage('classrooms', state.classrooms);
+      mockDataService
+        .saveDomainData('classrooms', state.classrooms)
+        .catch((e) => {
+          console.error('Failed to save classrooms to localStorage', e);
+        });
     },
     updateClassroom: (state, action: PayloadAction<Classroom>) => {
       const index = state.classrooms.findIndex(
@@ -50,14 +59,22 @@ const classroomsSlice = createSlice({
       );
       if (index !== -1) {
         state.classrooms[index] = action.payload;
-        saveToStorage('classrooms', state.classrooms);
+        mockDataService
+          .saveDomainData('classrooms', state.classrooms)
+          .catch((e) => {
+            console.error('Failed to save classrooms to localStorage', e);
+          });
       }
     },
     deleteClassroom: (state, action: PayloadAction<string>) => {
       state.classrooms = state.classrooms.filter(
         (c) => c.id !== action.payload
       );
-      saveToStorage('classrooms', state.classrooms);
+      mockDataService
+        .saveDomainData('classrooms', state.classrooms)
+        .catch((e) => {
+          console.error('Failed to save classrooms to localStorage', e);
+        });
     },
     setSelectedClassroom: (state, action: PayloadAction<Classroom | null>) => {
       state.selectedClassroom = action.payload;

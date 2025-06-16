@@ -464,7 +464,6 @@ export class MockDataService {
 
     throw new Error(`Unable to load ${domain} data`);
   }
-
   /**
    * Load specific domain from localStorage
    */
@@ -473,13 +472,16 @@ export class MockDataService {
   ): Promise<MockDataState[T] | null> {
     try {
       const storageKey = this.getDomainStorageKey(domain);
-      const data = loadFromStorage<MockDataState[T]>(storageKey);
 
-      // Return null if no data or empty array
-      if (!data || (Array.isArray(data) && data.length === 0)) {
+      // Check if the key exists in localStorage
+      const rawData = localStorage.getItem(storageKey);
+      if (rawData === null) {
+        // Key doesn't exist - no data has been saved yet
         return null;
       }
 
+      // Parse the data - this includes empty arrays which are valid user state
+      const data = JSON.parse(rawData) as MockDataState[T];
       return data;
     } catch (error) {
       console.error(`Error loading ${domain} from localStorage:`, error);
@@ -506,16 +508,16 @@ export class MockDataService {
     options: DataSaveOptions = {}
   ): Promise<void> {
     const { updateTimestamp = true } = options;
-
     try {
       const storageKey = this.getDomainStorageKey(domain);
       saveToStorage(storageKey, data);
 
-      // Update cache
+      // Update cache with serialized data to avoid proxy issues
       if (!this.dataCache) {
         this.dataCache = this.createEmptyDataState();
       }
-      this.dataCache[domain] = data;
+      // Serialize and parse to remove any proxy wrapping
+      this.dataCache[domain] = JSON.parse(JSON.stringify(data));
 
       // Update metadata if requested
       if (updateTimestamp) {
@@ -567,7 +569,6 @@ export class MockDataService {
       version: '1.0.0',
     };
   }
-
   /**
    * Check if domain data is loaded in cache
    */
@@ -575,8 +576,19 @@ export class MockDataService {
     if (!this.dataCache) return false;
 
     const data = this.dataCache[domain];
-    if (Array.isArray(data)) {
-      return data.length > 0;
+
+    // Safely check if data is an array (handle proxy issues)
+    try {
+      if (Array.isArray(data)) {
+        return data.length > 0;
+      }
+    } catch (error) {
+      // If Array.isArray fails (e.g., revoked proxy), treat as not loaded
+      console.warn(
+        `Unable to check array status for domain ${String(domain)}:`,
+        error
+      );
+      return false;
     }
 
     return data !== undefined && data !== null;
