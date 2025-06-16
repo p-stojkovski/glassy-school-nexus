@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,9 @@ const StudentHeader: React.FC<StudentHeaderProps> = ({ onAddStudent }) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Student Management</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">
+          Student Management
+        </h1>
         <p className="text-white/70">Manage student profiles and information</p>
       </div>
       <Button

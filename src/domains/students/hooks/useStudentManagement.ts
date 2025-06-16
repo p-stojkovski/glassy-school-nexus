@@ -4,7 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { RootState } from '@/store';
 import { selectStudents, selectLoading, Student } from '../studentsSlice';
 import { useInitializeStudents } from './useInitializeStudents';
-import { useStudentFilters, getStudentPaymentStatus } from './useStudentFilters';
+import {
+  useStudentFilters,
+  getStudentPaymentStatus,
+} from './useStudentFilters';
 
 export const useStudentManagement = () => {
   const navigate = useNavigate();
@@ -16,9 +19,9 @@ export const useStudentManagement = () => {
   );
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>(
-    'all'
-  );
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'active' | 'inactive'
+  >('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<
     'all' | 'pending' | 'partial' | 'paid' | 'overdue'
   >('all');

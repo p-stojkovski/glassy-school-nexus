@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { refreshObligationStatuses, selectError } from '@/domains/finance/financeSlice';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  refreshObligationStatuses,
+  selectError,
+} from '@/domains/finance/financeSlice';
 import FinancialDashboard from '@/domains/finance/components/dashboard/FinancialDashboard';
 import ObligationManagement from '@/domains/finance/components/obligations/ObligationManagement';
 import PaymentManagement from '@/domains/finance/components/payments/PaymentManagement';
@@ -24,29 +27,46 @@ const FinancialManagement: React.FC = () => {
   useEffect(() => {
     if (error) {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
-  }, [error, toast]);  return (
+  }, [error, toast]);
+  return (
     <div className="space-y-6">
       <DemoModeNotification />
-      <FinancialHeader />        <Tabs defaultValue="dashboard" className="w-full">        <TabsList className="grid grid-cols-3 mb-8 bg-white/10 shadow-lg border border-white/10">
-          <TabsTrigger value="dashboard" className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white">Dashboard</TabsTrigger>
-          <TabsTrigger value="obligations" className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white">Payment Obligations</TabsTrigger>
-          <TabsTrigger value="payments" className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white">Payments</TabsTrigger>
+      <FinancialHeader />{' '}
+      <Tabs defaultValue="dashboard" className="w-full">
+        {' '}
+        <TabsList className="grid grid-cols-3 mb-8 bg-white/10 shadow-lg border border-white/10">
+          <TabsTrigger
+            value="dashboard"
+            className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white"
+          >
+            Dashboard
+          </TabsTrigger>
+          <TabsTrigger
+            value="obligations"
+            className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white"
+          >
+            Payment Obligations
+          </TabsTrigger>
+          <TabsTrigger
+            value="payments"
+            className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white"
+          >
+            Payments
+          </TabsTrigger>
         </TabsList>
-        
         <TabsContent value="dashboard" className="space-y-4">
           <FinancialDashboard />
         </TabsContent>
-          <TabsContent value="obligations" className="space-y-4">
+        <TabsContent value="obligations" className="space-y-4">
           <ErrorBoundary>
             <ObligationManagement />
           </ErrorBoundary>
         </TabsContent>
-        
         <TabsContent value="payments" className="space-y-4">
           <ErrorBoundary>
             <PaymentManagement />

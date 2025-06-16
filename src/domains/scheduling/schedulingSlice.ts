@@ -1,6 +1,10 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ScheduledClassStatus, RecurringPattern, ViewMode, ConflictType } from '@/types/enums';
+import {
+  ScheduledClassStatus,
+  RecurringPattern,
+  ViewMode,
+  ConflictType,
+} from '@/types/enums';
 
 export interface ScheduledClass {
   id: string;
@@ -65,30 +69,45 @@ const schedulingSlice = createSlice({
       state.scheduledClasses.push(action.payload);
     },
     updateScheduledClass: (state, action: PayloadAction<ScheduledClass>) => {
-      const index = state.scheduledClasses.findIndex(c => c.id === action.payload.id);
+      const index = state.scheduledClasses.findIndex(
+        (c) => c.id === action.payload.id
+      );
       if (index !== -1) {
         state.scheduledClasses[index] = action.payload;
       }
     },
     deleteScheduledClass: (state, action: PayloadAction<string>) => {
-      state.scheduledClasses = state.scheduledClasses.filter(c => c.id !== action.payload);
-    },    cancelScheduledClass: (state, action: PayloadAction<{ id: string; reason: string }>) => {
-      const index = state.scheduledClasses.findIndex(c => c.id === action.payload.id);
+      state.scheduledClasses = state.scheduledClasses.filter(
+        (c) => c.id !== action.payload
+      );
+    },
+    cancelScheduledClass: (
+      state,
+      action: PayloadAction<{ id: string; reason: string }>
+    ) => {
+      const index = state.scheduledClasses.findIndex(
+        (c) => c.id === action.payload.id
+      );
       if (index !== -1) {
         state.scheduledClasses[index].status = ScheduledClassStatus.Canceled;
         state.scheduledClasses[index].cancelReason = action.payload.reason;
         state.scheduledClasses[index].updatedAt = new Date().toISOString();
       }
-    },setSelectedDate: (state, action: PayloadAction<Date | string>) => {
+    },
+    setSelectedDate: (state, action: PayloadAction<Date | string>) => {
       // Convert Date object to ISO string if needed
-      state.selectedDate = typeof action.payload === 'string' 
-        ? action.payload 
-        : action.payload.toISOString();
+      state.selectedDate =
+        typeof action.payload === 'string'
+          ? action.payload
+          : action.payload.toISOString();
     },
     setViewMode: (state, action: PayloadAction<ViewMode>) => {
       state.viewMode = action.payload;
     },
-    setFilters: (state, action: PayloadAction<Partial<SchedulingState['filters']>>) => {
+    setFilters: (
+      state,
+      action: PayloadAction<Partial<SchedulingState['filters']>>
+    ) => {
       state.filters = { ...state.filters, ...action.payload };
     },
     setLoading: (state, action: PayloadAction<boolean>) => {

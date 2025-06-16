@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { saveToStorage, loadFromStorage } from '@/lib/storage';
 import { ClassStatus } from '@/types/enums';
@@ -42,7 +41,6 @@ interface ClassesState {
   selectedClass: Class | null;
 }
 
-
 // Load initial class data from localStorage if available
 const loadInitialClasses = (): Class[] =>
   loadFromStorage<Class[]>('classes') || [];
@@ -65,15 +63,21 @@ const classesSlice = createSlice({
       state.classes.push(action.payload);
       saveToStorage('classes', state.classes);
     },
-    updateClass: (state, action: PayloadAction<{ id: string; updates: Partial<Class> }>) => {
-      const index = state.classes.findIndex(c => c.id === action.payload.id);
+    updateClass: (
+      state,
+      action: PayloadAction<{ id: string; updates: Partial<Class> }>
+    ) => {
+      const index = state.classes.findIndex((c) => c.id === action.payload.id);
       if (index !== -1) {
-        state.classes[index] = { ...state.classes[index], ...action.payload.updates };
+        state.classes[index] = {
+          ...state.classes[index],
+          ...action.payload.updates,
+        };
         saveToStorage('classes', state.classes);
       }
     },
     deleteClass: (state, action: PayloadAction<string>) => {
-      state.classes = state.classes.filter(c => c.id !== action.payload);
+      state.classes = state.classes.filter((c) => c.id !== action.payload);
       saveToStorage('classes', state.classes);
     },
     setSelectedClass: (state, action: PayloadAction<Class | null>) => {
@@ -85,5 +89,12 @@ const classesSlice = createSlice({
   },
 });
 
-export const { setClasses, addClass, updateClass, deleteClass, setSelectedClass, setLoading } = classesSlice.actions;
+export const {
+  setClasses,
+  addClass,
+  updateClass,
+  deleteClass,
+  setSelectedClass,
+  setLoading,
+} = classesSlice.actions;
 export default classesSlice.reducer;

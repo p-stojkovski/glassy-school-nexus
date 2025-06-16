@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   AlertDialog,
@@ -48,11 +47,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {customContent && (
-          <div className="py-4">
-            {customContent}
-          </div>
-        )}
+        {customContent && <div className="py-4">{customContent}</div>}
         <AlertDialogFooter>
           <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">
             {cancelText}

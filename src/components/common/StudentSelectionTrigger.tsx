@@ -22,14 +22,14 @@ const StudentSelectionTrigger: React.FC<StudentSelectionTriggerProps> = ({
   disabled = false,
   placeholder = 'Assign students...',
   className,
-  showCount = true
+  showCount = true,
 }) => {
-  const selectedStudents = students.filter(student => 
+  const selectedStudents = students.filter((student) =>
     selectedStudentIds.includes(student.id)
   );
 
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn('space-y-3', className)}>
       <Button
         type="button"
         variant="outline"
@@ -41,7 +41,9 @@ const StudentSelectionTrigger: React.FC<StudentSelectionTriggerProps> = ({
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-white/70" />
             <span className="text-white/70">
-              {selectedStudents.length === 0 ? placeholder : `${selectedStudents.length} student${selectedStudents.length !== 1 ? 's' : ''} selected`}
+              {selectedStudents.length === 0
+                ? placeholder
+                : `${selectedStudents.length} student${selectedStudents.length !== 1 ? 's' : ''} selected`}
             </span>
           </div>
           <Plus className="w-4 h-4 text-white/70" />
@@ -52,7 +54,7 @@ const StudentSelectionTrigger: React.FC<StudentSelectionTriggerProps> = ({
       {selectedStudents.length > 0 && (
         <div className="space-y-2">
           <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
-            {selectedStudents.slice(0, 6).map(student => (
+            {selectedStudents.slice(0, 6).map((student) => (
               <Badge
                 key={student.id}
                 variant="secondary"
@@ -62,8 +64,8 @@ const StudentSelectionTrigger: React.FC<StudentSelectionTriggerProps> = ({
               </Badge>
             ))}
             {selectedStudents.length > 6 && (
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className="text-white/70 border-white/30 text-xs px-2 py-1"
               >
                 +{selectedStudents.length - 6} more

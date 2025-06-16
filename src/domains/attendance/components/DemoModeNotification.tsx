@@ -7,7 +7,8 @@ const DemoModeNotification: React.FC = () => {
     <Alert className="bg-blue-900/30 text-blue-100 border-blue-700 mb-6">
       <AlertTriangle className="h-4 w-4 mr-2" />
       <AlertDescription>
-        Demo Mode: Attendance data is stored locally in your browser. No backend available yet.
+        Demo Mode: Attendance data is stored locally in your browser. No backend
+        available yet.
       </AlertDescription>
     </Alert>
   );

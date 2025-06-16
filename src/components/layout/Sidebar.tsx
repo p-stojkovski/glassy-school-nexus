@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -72,14 +71,18 @@ const Sidebar: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-white font-semibold text-lg">Think English</span>
+                <span className="text-white font-semibold text-lg">
+                  Think English
+                </span>
               </motion.div>
             )}
             <button
               onClick={() => dispatch(toggleSidebar())}
               className={styles.collapseButton}
             >
-              <ChevronLeft className={`w-5 h-5 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} />
+              <ChevronLeft
+                className={`w-5 h-5 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`}
+              />
             </button>
           </div>
 
@@ -117,14 +120,13 @@ const Sidebar: React.FC = () => {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-white font-medium truncate">{user.name}</p>
-                  <p className="text-white/60 text-sm capitalize">{user.role}</p>
+                  <p className="text-white/60 text-sm capitalize">
+                    {user.role}
+                  </p>
                 </div>
               </motion.div>
             )}
-            <button
-              onClick={handleLogout}
-              className={styles.logoutButton}
-            >
+            <button onClick={handleLogout} className={styles.logoutButton}>
               <LogOut className="w-5 h-5" />
               {!sidebarCollapsed && <span>Logout</span>}
             </button>

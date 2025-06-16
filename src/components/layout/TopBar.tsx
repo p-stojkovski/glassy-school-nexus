@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Bell, Plus } from 'lucide-react';
@@ -14,7 +13,7 @@ const TopBar: React.FC = () => {
   const { notifications } = useAppSelector((state: RootState) => state.ui);
   const location = useLocation();
   const unreadCount = notifications.length;
-  
+
   const isDashboard = location.pathname === '/';
 
   return (

@@ -1,6 +1,13 @@
 import React from 'react';
 import { GraduationCap } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import GlassCard from '@/components/common/GlassCard';
 
 interface GradeAssessment {
@@ -28,7 +35,9 @@ const StudentGradesTab: React.FC<StudentGradesTabProps> = ({
         <div className="text-center py-8 text-white/60">
           <GraduationCap className="w-12 h-12 mx-auto mb-4 text-white/40" />
           <p>No grades recorded</p>
-          <p className="text-sm">Grades will appear here once assessments are completed</p>
+          <p className="text-sm">
+            Grades will appear here once assessments are completed
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -44,11 +53,22 @@ const StudentGradesTab: React.FC<StudentGradesTabProps> = ({
             </TableHeader>
             <TableBody>
               {gradeAssessments.map((item) => (
-                <TableRow key={item.id} className="border-white/10 hover:bg-white/5">
-                  <TableCell className="font-medium">{item.assessment?.title}</TableCell>
+                <TableRow
+                  key={item.id}
+                  className="border-white/10 hover:bg-white/5"
+                >
+                  <TableCell className="font-medium">
+                    {item.assessment?.title}
+                  </TableCell>
                   <TableCell>{item.assessment?.type}</TableCell>
-                  <TableCell>{item.assessment ? new Date(item.assessment.date).toLocaleDateString() : '-'}</TableCell>
-                  <TableCell className="font-semibold text-green-300">{item.value}</TableCell>
+                  <TableCell>
+                    {item.assessment
+                      ? new Date(item.assessment.date).toLocaleDateString()
+                      : '-'}
+                  </TableCell>
+                  <TableCell className="font-semibold text-green-300">
+                    {item.value}
+                  </TableCell>
                   <TableCell>{item.comments || '-'}</TableCell>
                 </TableRow>
               ))}

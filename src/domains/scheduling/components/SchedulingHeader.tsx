@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,9 @@ interface SchedulingHeaderProps {
   onScheduleClass: () => void;
 }
 
-const SchedulingHeader: React.FC<SchedulingHeaderProps> = ({ onScheduleClass }) => {
+const SchedulingHeader: React.FC<SchedulingHeaderProps> = ({
+  onScheduleClass,
+}) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
@@ -16,7 +17,7 @@ const SchedulingHeader: React.FC<SchedulingHeaderProps> = ({ onScheduleClass }) 
           Plan, schedule, and manage classes efficiently
         </p>
       </div>
-      <Button 
+      <Button
         onClick={onScheduleClass}
         className="bg-yellow-500 hover:bg-yellow-400 text-black font-medium"
       >

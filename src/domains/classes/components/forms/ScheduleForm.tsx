@@ -1,10 +1,20 @@
-
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
 import { Clock } from 'lucide-react';
 import { ClassFormData } from './ClassFormContent';
 
@@ -13,19 +23,28 @@ const ScheduleForm: React.FC = () => {
 
   const addScheduleSlot = () => {
     const currentSchedule = form.getValues('schedule');
-    form.setValue('schedule', [...currentSchedule, { day: 'Monday', startTime: '09:00', endTime: '10:30' }]);
+    form.setValue('schedule', [
+      ...currentSchedule,
+      { day: 'Monday', startTime: '09:00', endTime: '10:30' },
+    ]);
   };
 
   const removeScheduleSlot = (index: number) => {
     const currentSchedule = form.getValues('schedule');
-    form.setValue('schedule', currentSchedule.filter((_, i) => i !== index));
+    form.setValue(
+      'schedule',
+      currentSchedule.filter((_, i) => i !== index)
+    );
   };
 
   return (
     <div>
       <FormLabel className="text-white mb-4 block">Schedule</FormLabel>
       {form.watch('schedule').map((_, index) => (
-        <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 bg-white/5 rounded-lg">
+        <div
+          key={index}
+          className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 bg-white/5 rounded-lg"
+        >
           <FormField
             control={form.control}
             name={`schedule.${index}.day`}
@@ -99,7 +118,7 @@ const ScheduleForm: React.FC = () => {
           </div>
         </div>
       ))}
-      
+
       <Button
         type="button"
         variant="ghost"

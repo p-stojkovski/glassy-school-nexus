@@ -41,9 +41,9 @@ const StudentProfilePage: React.FC = () => {
   return (
     <div className="space-y-6">
       <DemoModeNotification />
-      
+
       <StudentProfileHeader onBack={handleBack} />
-      
+
       <StudentBasicInfo
         student={student}
         studentClass={studentClass}
@@ -51,21 +51,37 @@ const StudentProfilePage: React.FC = () => {
         getStatusColor={getStatusColor}
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="bg-white/10 border-white/20">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-white/20 text-white">
+          <TabsTrigger
+            value="overview"
+            className="data-[state=active]:bg-white/20 text-white"
+          >
             <User className="w-4 h-4 mr-2" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="attendance" className="data-[state=active]:bg-white/20 text-white">
+          <TabsTrigger
+            value="attendance"
+            className="data-[state=active]:bg-white/20 text-white"
+          >
             <Calendar className="w-4 h-4 mr-2" />
             Attendance
           </TabsTrigger>
-          <TabsTrigger value="grades" className="data-[state=active]:bg-white/20 text-white">
+          <TabsTrigger
+            value="grades"
+            className="data-[state=active]:bg-white/20 text-white"
+          >
             <GraduationCap className="w-4 h-4 mr-2" />
             Grades
           </TabsTrigger>
-          <TabsTrigger value="payments" className="data-[state=active]:bg-white/20 text-white">
+          <TabsTrigger
+            value="payments"
+            className="data-[state=active]:bg-white/20 text-white"
+          >
             <DollarSign className="w-4 h-4 mr-2" />
             Payments
           </TabsTrigger>

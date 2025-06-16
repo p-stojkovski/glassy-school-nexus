@@ -51,11 +51,18 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
           <SelectValue placeholder="All Periods" />
         </SelectTrigger>
         <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
-          <SelectItem value="all_periods" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+          <SelectItem
+            value="all_periods"
+            className="text-white hover:bg-gray-700 focus:bg-gray-700"
+          >
             All Periods
           </SelectItem>
           {periods.map((period) => (
-            <SelectItem key={period} value={period} className="text-white hover:bg-gray-700 focus:bg-gray-700">
+            <SelectItem
+              key={period}
+              value={period}
+              className="text-white hover:bg-gray-700 focus:bg-gray-700"
+            >
               {period}
             </SelectItem>
           ))}
@@ -70,11 +77,18 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
           <SelectValue placeholder="All Students" />
         </SelectTrigger>
         <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
-          <SelectItem value="all_students" className="text-white hover:bg-gray-700 focus:bg-gray-700">
+          <SelectItem
+            value="all_students"
+            className="text-white hover:bg-gray-700 focus:bg-gray-700"
+          >
             All Students
           </SelectItem>
           {students.map((student) => (
-            <SelectItem key={student.id} value={student.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
+            <SelectItem
+              key={student.id}
+              value={student.id}
+              className="text-white hover:bg-gray-700 focus:bg-gray-700"
+            >
               {student.name}
             </SelectItem>
           ))}
@@ -86,7 +100,16 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
         onClick={onClear}
         className="bg-blue-500/30 backdrop-blur-sm border-blue-400 text-white font-medium hover:bg-blue-500/50 shadow-sm"
       >
-        <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          className="mr-2 h-4 w-4"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M3 3l18 18"></path>
           <path d="M10.9 4a7.03 7.03 0 0 1 2.2 2.2"></path>
           <path d="M17.7 7.7a7.03 7.03 0 0 1 .8 3.3c0 1-.2 1.9-.6 2.8"></path>

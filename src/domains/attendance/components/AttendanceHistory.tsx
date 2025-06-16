@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RootState } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { 
+import {
   AttendanceRecord,
   selectAllAttendanceRecords,
 } from '@/domains/attendance/attendanceSlice';
@@ -25,44 +25,51 @@ interface AttendanceHistoryProps {
   date: string;
 }
 
-const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) => {
+const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
+  classId,
+  date,
+}) => {
   const dispatch = useAppDispatch();
   const allRecords = useAppSelector(selectAllAttendanceRecords);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
-  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'details'>('list');
   const { classes } = useAppSelector((state: RootState) => state.classes);
-    // Filter records based on classId and/or date
+  // Filter records based on classId and/or date
   useEffect(() => {
     let filtered = [...allRecords];
-    
+
     if (classId && classId !== 'all-classes') {
-      filtered = filtered.filter(record => record.classId === classId);
+      filtered = filtered.filter((record) => record.classId === classId);
     }
 
     if (searchTerm) {
-      filtered = filtered.filter(record => 
-        record.className.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.studentRecords.some(student => 
-          student.studentName.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+      filtered = filtered.filter(
+        (record) =>
+          record.className.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          record.studentRecords.some((student) =>
+            student.studentName.toLowerCase().includes(searchTerm.toLowerCase())
+          )
       );
     }
-    
+
     // Sort by date descending
-    filtered.sort((a, b) => 
-      new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime()
+    filtered.sort(
+      (a, b) =>
+        new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime()
     );
-    
+
     setRecords(filtered);
   }, [allRecords, classId, searchTerm]);
-  
+
   const handleRecordSelect = (record: AttendanceRecord) => {
     setSelectedRecord(record);
     setViewMode('details');
   };
-    const handleBackToList = () => {
+  const handleBackToList = () => {
     setViewMode('list');
     setSelectedRecord(null);
   };
@@ -72,16 +79,20 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
       <GlassCard className="p-6 text-white text-center py-12">
         <h3 className="text-xl">No attendance records found</h3>
         {classId ? (
-          <p className="text-white/70 mt-2">Try selecting a different class or date</p>
+          <p className="text-white/70 mt-2">
+            Try selecting a different class or date
+          </p>
         ) : (
-          <p className="text-white/70 mt-2">Start marking attendance to create records</p>
+          <p className="text-white/70 mt-2">
+            Start marking attendance to create records
+          </p>
         )}
       </GlassCard>
     );
   }
-  
+
   if (viewMode === 'details' && selectedRecord) {
-    const selectedClass = classes.find(c => c.id === selectedRecord.classId);
+    const selectedClass = classes.find((c) => c.id === selectedRecord.classId);
     return (
       <GlassCard className="p-6">
         <div className="space-y-6">
@@ -91,9 +102,13 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
                 {selectedRecord.className} - Attendance Details
               </h3>
               <p className="text-white/70">
-                {format(parseISO(selectedRecord.sessionDate), 'EEEE, MMMM d, yyyy')}
+                {format(
+                  parseISO(selectedRecord.sessionDate),
+                  'EEEE, MMMM d, yyyy'
+                )}
               </p>
-            </div>            <Button
+            </div>{' '}
+            <Button
               variant="ghost"
               onClick={handleBackToList}
               className="text-white hover:bg-white/5"
@@ -106,16 +121,25 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
             <TableHeader>
               <TableRow className="hover:bg-white/5 border-white/20">
                 <TableHead className="text-white/70">Student</TableHead>
-                <TableHead className="text-white/70 w-[150px]">Status</TableHead>
+                <TableHead className="text-white/70 w-[150px]">
+                  Status
+                </TableHead>
                 <TableHead className="text-white/70">Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {selectedRecord.studentRecords.map((student) => (
-                <TableRow key={student.studentId} className="hover:bg-white/5 border-white/10">
-                  <TableCell>{student.studentName}</TableCell>                  <TableCell>
-                    <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium ${getAttendanceStatusColor(student.status)}`}>
-                      {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
+                <TableRow
+                  key={student.studentId}
+                  className="hover:bg-white/5 border-white/10"
+                >
+                  <TableCell>{student.studentName}</TableCell>{' '}
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium ${getAttendanceStatusColor(student.status)}`}
+                    >
+                      {student.status.charAt(0).toUpperCase() +
+                        student.status.slice(1)}
                     </span>
                   </TableCell>
                   <TableCell>{student.notes || '-'}</TableCell>
@@ -123,24 +147,31 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
               ))}
             </TableBody>
           </Table>
-          
+
           <div className="flex justify-between text-white/70 text-sm">
-            <div>Created: {format(parseISO(selectedRecord.createdAt), 'MM/dd/yyyy HH:mm')}</div>
-            <div>Last Updated: {format(parseISO(selectedRecord.updatedAt), 'MM/dd/yyyy HH:mm')}</div>
+            <div>
+              Created:{' '}
+              {format(parseISO(selectedRecord.createdAt), 'MM/dd/yyyy HH:mm')}
+            </div>
+            <div>
+              Last Updated:{' '}
+              {format(parseISO(selectedRecord.updatedAt), 'MM/dd/yyyy HH:mm')}
+            </div>
           </div>
         </div>
       </GlassCard>
     );
   }
-  
+
   return (
     <GlassCard className="p-6">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-medium text-white">Attendance History</h3>
-          
+
           <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />            <Input
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />{' '}
+            <Input
               placeholder="Search records..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -148,27 +179,35 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
             />
           </div>
         </div>
-        
+
         <Table className="text-white">
           <TableHeader>
             <TableRow className="hover:bg-white/5 border-white/20">
               <TableHead className="text-white/70">Class</TableHead>
               <TableHead className="text-white/70">Date</TableHead>
               <TableHead className="text-white/70">Teacher</TableHead>
-              <TableHead className="text-white/70 text-right">Students</TableHead>
+              <TableHead className="text-white/70 text-right">
+                Students
+              </TableHead>
               <TableHead className="text-white/70 text-right"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {records.map((record) => {
-              const presentCount = record.studentRecords.filter(s => s.status === 'present').length;
-              const absentCount = record.studentRecords.filter(s => s.status === 'absent').length;
-              const lateCount = record.studentRecords.filter(s => s.status === 'late').length;
+              const presentCount = record.studentRecords.filter(
+                (s) => s.status === 'present'
+              ).length;
+              const absentCount = record.studentRecords.filter(
+                (s) => s.status === 'absent'
+              ).length;
+              const lateCount = record.studentRecords.filter(
+                (s) => s.status === 'late'
+              ).length;
               const totalCount = record.studentRecords.length;
-              
+
               return (
-                <TableRow 
-                  key={record.id} 
+                <TableRow
+                  key={record.id}
                   className="hover:bg-white/5 border-white/10 cursor-pointer"
                   onClick={() => handleRecordSelect(record)}
                 >
@@ -190,8 +229,10 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right">                    <Button 
-                      variant="ghost" 
+                  <TableCell className="text-right">
+                    {' '}
+                    <Button
+                      variant="ghost"
                       size="sm"
                       className="text-white/70 hover:text-white hover:bg-white/5"
                     >

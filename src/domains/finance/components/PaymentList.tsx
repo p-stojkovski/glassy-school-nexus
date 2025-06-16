@@ -31,7 +31,12 @@ interface PaymentListProps {
   onDelete: (id: string) => void;
 }
 
-const PaymentList: React.FC<PaymentListProps> = ({ payments, obligations, onEdit, onDelete }) => {
+const PaymentList: React.FC<PaymentListProps> = ({
+  payments,
+  obligations,
+  onEdit,
+  onDelete,
+}) => {
   const getObligationDetails = (obligationId: string) => {
     const obligation = obligations.find((o) => o.id === obligationId);
     return obligation ? `${obligation.type} (${obligation.period})` : 'Unknown';
@@ -74,13 +79,28 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, obligations, onEdit
           </TableRow>
         ) : (
           payments.map((payment) => (
-            <TableRow key={payment.id} className="border-white/20 hover:bg-white/10">
-              <TableCell className="text-white">{format(parseISO(payment.date), 'MMM d, yyyy')}</TableCell>
-              <TableCell className="text-white">{payment.studentName}</TableCell>
-              <TableCell className="text-white">{getObligationDetails(payment.obligationId)}</TableCell>
-              <TableCell className="text-white">{formatPaymentMethod(payment.method)}</TableCell>
-              <TableCell className="text-right text-white">${payment.amount.toFixed(2)}</TableCell>
-              <TableCell className="text-white">{payment.reference || '-'}</TableCell>
+            <TableRow
+              key={payment.id}
+              className="border-white/20 hover:bg-white/10"
+            >
+              <TableCell className="text-white">
+                {format(parseISO(payment.date), 'MMM d, yyyy')}
+              </TableCell>
+              <TableCell className="text-white">
+                {payment.studentName}
+              </TableCell>
+              <TableCell className="text-white">
+                {getObligationDetails(payment.obligationId)}
+              </TableCell>
+              <TableCell className="text-white">
+                {formatPaymentMethod(payment.method)}
+              </TableCell>
+              <TableCell className="text-right text-white">
+                ${payment.amount.toFixed(2)}
+              </TableCell>
+              <TableCell className="text-white">
+                {payment.reference || '-'}
+              </TableCell>
               <TableCell className="text-white">{payment.createdBy}</TableCell>
               <TableCell className="text-right">
                 <div className="flex gap-2 justify-end">
@@ -104,13 +124,18 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, obligations, onEdit
                     </AlertDialogTrigger>
                     <AlertDialogContent className="bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">
                       <AlertDialogHeader>
-                        <AlertDialogTitle className="text-white">Delete Payment</AlertDialogTitle>
+                        <AlertDialogTitle className="text-white">
+                          Delete Payment
+                        </AlertDialogTitle>
                         <AlertDialogDescription className="text-white/70">
-                          Are you sure you want to delete this payment record? This action cannot be undone.
+                          Are you sure you want to delete this payment record?
+                          This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                          Cancel
+                        </AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => onDelete(payment.id)}
                           className="bg-red-600 hover:bg-red-700 text-white"

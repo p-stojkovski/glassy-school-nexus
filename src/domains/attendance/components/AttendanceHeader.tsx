@@ -6,23 +6,33 @@ interface AttendanceHeaderProps {
   onTabChange: (tab: 'mark' | 'history') => void;
 }
 
-const AttendanceHeader: React.FC<AttendanceHeaderProps> = ({ activeTab, onTabChange }) => {
+const AttendanceHeader: React.FC<AttendanceHeaderProps> = ({
+  activeTab,
+  onTabChange,
+}) => {
   return (
     <div className="space-y-4">
       <div>
         <h1 className="text-3xl font-bold text-white">Attendance Management</h1>
-        <p className="text-white/70">Track and manage student attendance records</p>
+        <p className="text-white/70">
+          Track and manage student attendance records
+        </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as 'mark' | 'history')}>
-        <TabsList className="bg-white/5 border-white/10">          <TabsTrigger 
-            value="mark" 
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => onTabChange(value as 'mark' | 'history')}
+      >
+        <TabsList className="bg-white/5 border-white/10">
+          {' '}
+          <TabsTrigger
+            value="mark"
             className={`data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 ${activeTab === 'mark' ? 'bg-white/10 text-white' : ''}`}
           >
             Mark Attendance
           </TabsTrigger>
-          <TabsTrigger 
-            value="history" 
+          <TabsTrigger
+            value="history"
             className={`data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/60 ${activeTab === 'history' ? 'bg-white/10 text-white' : ''}`}
           >
             Attendance History

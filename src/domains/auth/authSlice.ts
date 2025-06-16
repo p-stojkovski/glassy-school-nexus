@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { UserRole } from '@/types/enums';
 
@@ -61,5 +60,12 @@ const authSlice = createSlice({
   },
 });
 
-export const { loginStart, loginSuccess, loginFailure, login, logout, setLoading } = authSlice.actions;
+export const {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+  login,
+  logout,
+  setLoading,
+} = authSlice.actions;
 export default authSlice.reducer;

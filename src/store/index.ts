@@ -1,4 +1,3 @@
-
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '@/domains/auth/authSlice';
 import uiReducer from './slices/uiSlice';
@@ -11,7 +10,8 @@ import financeReducer from '@/domains/finance/financeSlice';
 import schedulingReducer from '@/domains/scheduling/schedulingSlice';
 import gradesReducer from '@/domains/grades/gradesSlice';
 
-export const store = configureStore({  reducer: {
+export const store = configureStore({
+  reducer: {
     auth: authReducer,
     ui: uiReducer,
     classes: classesReducer,

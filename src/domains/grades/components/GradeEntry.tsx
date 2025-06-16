@@ -7,7 +7,7 @@ import {
   selectAssessmentsByClassId,
   addGradesBatch,
   selectGradesByAssessmentId,
-  updateGrade
+  updateGrade,
 } from '@/domains/grades/gradesSlice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,7 +28,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select';
 import {
   Dialog,
@@ -54,68 +54,86 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
   const dispatch = useAppDispatch();
   const { classes } = useAppSelector((state: RootState) => state.classes);
   const { students } = useAppSelector((state: RootState) => state.students);
-  const assessments = useAppSelector((state: RootState) => selectAssessmentsByClassId(state, classId));
+  const assessments = useAppSelector((state: RootState) =>
+    selectAssessmentsByClassId(state, classId)
+  );
   // Move the selector outside the useEffect to follow the Rules of Hooks
   const allGrades = useAppSelector((state: RootState) => state.grades.grades);
-  
-  const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
+
+  const [selectedAssessment, setSelectedAssessment] =
+    useState<Assessment | null>(null);
   const [studentGrades, setStudentGrades] = useState<StudentGrade[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [gradeValidation, setGradeValidation] = useState<Record<string, boolean>>({});
-  
+  const [gradeValidation, setGradeValidation] = useState<
+    Record<string, boolean>
+  >({});
+
   // Define validateGrade outside useEffect
-  const validateGrade = React.useCallback((grade: string, pointLimit?: number): boolean => {
-    if (!grade.trim()) {
-      return true; // Empty grades are allowed (for now)
-    }
-    
-    // If numeric assessment
-    if (pointLimit !== undefined) {
-      const numGrade = parseFloat(grade);
-      if (isNaN(numGrade) || numGrade < 0 || numGrade > pointLimit) {
-        return false;
+  const validateGrade = React.useCallback(
+    (grade: string, pointLimit?: number): boolean => {
+      if (!grade.trim()) {
+        return true; // Empty grades are allowed (for now)
       }
-      return true;
-    }
-    
-    // If letter grade
-    const letterPattern = /^[A-F][+-]?$/;
-    if (letterPattern.test(grade.toUpperCase())) {
-      return true;
-    }
-    
-    return false;
-  }, []);
-  
+
+      // If numeric assessment
+      if (pointLimit !== undefined) {
+        const numGrade = parseFloat(grade);
+        if (isNaN(numGrade) || numGrade < 0 || numGrade > pointLimit) {
+          return false;
+        }
+        return true;
+      }
+
+      // If letter grade
+      const letterPattern = /^[A-F][+-]?$/;
+      if (letterPattern.test(grade.toUpperCase())) {
+        return true;
+      }
+
+      return false;
+    },
+    []
+  );
+
   // Define validateAllGrades for use in the component
-  const validateAllGrades = React.useCallback((grades: StudentGrade[]) => {
-    const validation: Record<string, boolean> = {};
-    grades.forEach(entry => {
-      validation[entry.studentId] = validateGrade(entry.grade, selectedAssessment?.totalPoints);
-    });
-    setGradeValidation(validation);
-  }, [selectedAssessment, validateGrade]);
-  
+  const validateAllGrades = React.useCallback(
+    (grades: StudentGrade[]) => {
+      const validation: Record<string, boolean> = {};
+      grades.forEach((entry) => {
+        validation[entry.studentId] = validateGrade(
+          entry.grade,
+          selectedAssessment?.totalPoints
+        );
+      });
+      setGradeValidation(validation);
+    },
+    [selectedAssessment, validateGrade]
+  );
+
   // Get class students and check if assessment already has grades
   useEffect(() => {
     if (classId && selectedAssessment) {
       // For now, use all students since we don't have a proper class-student association
       const classStudents = students;
-      
+
       // Filter grades directly instead of using the selector inside useEffect
-      const existingGrades = allGrades.filter(grade => grade.assessmentId === selectedAssessment.id);
-      
+      const existingGrades = allGrades.filter(
+        (grade) => grade.assessmentId === selectedAssessment.id
+      );
+
       // Map students to grade entries (with existing grades if present)
-      const gradeEntries = classStudents.map(student => {
-        const existingGrade = existingGrades.find(g => g.studentId === student.id);
+      const gradeEntries = classStudents.map((student) => {
+        const existingGrade = existingGrades.find(
+          (g) => g.studentId === student.id
+        );
         return {
           studentId: student.id,
           studentName: student.name,
           grade: existingGrade?.value.toString() || '',
-          comments: existingGrade?.comments || ''
+          comments: existingGrade?.comments || '',
         };
       });
-      
+
       setStudentGrades(gradeEntries);
       validateAllGrades(gradeEntries);
     } else {
@@ -123,49 +141,55 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
       setGradeValidation({});
     }
   }, [classId, selectedAssessment, allGrades, students, validateAllGrades]);
-    const handleGradeChange = (value: string, studentId: string) => {
-    const updated = studentGrades.map(entry => 
+  const handleGradeChange = (value: string, studentId: string) => {
+    const updated = studentGrades.map((entry) =>
       entry.studentId === studentId ? { ...entry, grade: value } : entry
     );
     setStudentGrades(updated);
-    
+
     // Validate the changed grade
-    setGradeValidation(prev => ({
+    setGradeValidation((prev) => ({
       ...prev,
-      [studentId]: validateGrade(value, selectedAssessment?.totalPoints)
+      [studentId]: validateGrade(value, selectedAssessment?.totalPoints),
     }));
   };
-  
+
   const handleCommentsChange = (value: string, studentId: string) => {
-    setStudentGrades(studentGrades.map(entry => 
-      entry.studentId === studentId ? { ...entry, comments: value } : entry
-    ));
+    setStudentGrades(
+      studentGrades.map((entry) =>
+        entry.studentId === studentId ? { ...entry, comments: value } : entry
+      )
+    );
   };
-  
+
   const handleSubmit = () => {
     // Check if all grades are valid
-    const allValid = Object.values(gradeValidation).every(valid => valid);
+    const allValid = Object.values(gradeValidation).every((valid) => valid);
     if (!allValid) {
       toast({
-        title: "Invalid Grades",
-        description: "Please correct the invalid grades before submitting.",
-        variant: "destructive",
+        title: 'Invalid Grades',
+        description: 'Please correct the invalid grades before submitting.',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     setShowConfirmDialog(true);
   };
-    const confirmSubmit = () => {
+  const confirmSubmit = () => {
     if (!selectedAssessment) return;
-    
+
     // Filter grades directly using the allGrades from the top-level useSelector
-    const existingGrades = allGrades.filter(grade => grade.assessmentId === selectedAssessment.id);
-    
+    const existingGrades = allGrades.filter(
+      (grade) => grade.assessmentId === selectedAssessment.id
+    );
+
     const gradesToSave = studentGrades
-      .filter(entry => entry.grade !== '') // Only save non-empty grades
-      .map(entry => {
-        const existingGrade = existingGrades.find(g => g.studentId === entry.studentId);
+      .filter((entry) => entry.grade !== '') // Only save non-empty grades
+      .map((entry) => {
+        const existingGrade = existingGrades.find(
+          (g) => g.studentId === entry.studentId
+        );
         if (existingGrade) {
           // Update existing grade
           const updatedGrade: Grade = {
@@ -174,7 +198,7 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
             comments: entry.comments,
             dateRecorded: new Date().toISOString(),
           };
-          
+
           dispatch(updateGrade(updatedGrade));
           return null; // Don't add to batch
         } else {
@@ -190,22 +214,22 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
           };
         }
       })
-      .filter(grade => grade !== null) as Grade[];
-    
+      .filter((grade) => grade !== null) as Grade[];
+
     if (gradesToSave.length > 0) {
       dispatch(addGradesBatch(gradesToSave));
     }
-    
+
     toast({
-      title: "Grades Saved",
+      title: 'Grades Saved',
       description: `Grades for ${selectedAssessment.title} have been saved.`,
     });
-    
+
     setShowConfirmDialog(false);
   };
-  
-  const getSelectedClass = () => classes.find(c => c.id === classId);
-  
+
+  const getSelectedClass = () => classes.find((c) => c.id === classId);
+
   if (!classId) {
     return (
       <GlassCard className="p-6 text-white text-center">
@@ -214,7 +238,7 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
       </GlassCard>
     );
   }
-  
+
   if (assessments.length === 0) {
     return (
       <GlassCard className="p-6 text-white text-center">
@@ -225,7 +249,7 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
       </GlassCard>
     );
   }
-  
+
   return (
     <>
       <GlassCard className="p-6">
@@ -234,18 +258,22 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
             <h3 className="text-xl font-medium text-white">
               Enter Grades
               {getSelectedClass() && (
-                <span className="ml-2 text-white/70">for {getSelectedClass()?.name}</span>
+                <span className="ml-2 text-white/70">
+                  for {getSelectedClass()?.name}
+                </span>
               )}
             </h3>
           </div>
-          
+
           {/* Assessment Selection */}
           <div className="space-y-2 max-w-md">
-            <Label htmlFor="assessment" className="text-white">Select Assessment</Label>
-            <Select 
-              value={selectedAssessment?.id || ''} 
+            <Label htmlFor="assessment" className="text-white">
+              Select Assessment
+            </Label>
+            <Select
+              value={selectedAssessment?.id || ''}
               onValueChange={(value) => {
-                const assessment = assessments.find(a => a.id === value);
+                const assessment = assessments.find((a) => a.id === value);
                 setSelectedAssessment(assessment || null);
               }}
             >
@@ -261,60 +289,104 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
               </SelectContent>
             </Select>
           </div>
-          
+
           {selectedAssessment && (
             <>
               <div className="bg-white/5 p-4 rounded-lg space-y-2">
-                <div><strong className="text-white/80">Assessment:</strong> <span className="text-white">{selectedAssessment.title}</span></div>
-                <div><strong className="text-white/80">Type:</strong> <span className="text-white">{selectedAssessment.type}</span></div>
+                <div>
+                  <strong className="text-white/80">Assessment:</strong>{' '}
+                  <span className="text-white">{selectedAssessment.title}</span>
+                </div>
+                <div>
+                  <strong className="text-white/80">Type:</strong>{' '}
+                  <span className="text-white">{selectedAssessment.type}</span>
+                </div>
                 {selectedAssessment.totalPoints && (
-                  <div><strong className="text-white/80">Total Points:</strong> <span className="text-white">{selectedAssessment.totalPoints}</span></div>
+                  <div>
+                    <strong className="text-white/80">Total Points:</strong>{' '}
+                    <span className="text-white">
+                      {selectedAssessment.totalPoints}
+                    </span>
+                  </div>
                 )}
-                <div><strong className="text-white/80">Date:</strong> <span className="text-white">{new Date(selectedAssessment.date).toLocaleDateString()}</span></div>
+                <div>
+                  <strong className="text-white/80">Date:</strong>{' '}
+                  <span className="text-white">
+                    {new Date(selectedAssessment.date).toLocaleDateString()}
+                  </span>
+                </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-lg font-medium text-white">Student Grades</h4>
+                  <h4 className="text-lg font-medium text-white">
+                    Student Grades
+                  </h4>
                   <div className="text-white/70 text-sm">
-                    {selectedAssessment.totalPoints 
-                      ? `Enter numeric grades (0-${selectedAssessment.totalPoints})` 
-                      : 'Enter letter grades (A, B, C, D, F with optional + or -)'
-                    }
+                    {selectedAssessment.totalPoints
+                      ? `Enter numeric grades (0-${selectedAssessment.totalPoints})`
+                      : 'Enter letter grades (A, B, C, D, F with optional + or -)'}
                   </div>
                 </div>
-                
+
                 {studentGrades.length > 0 ? (
                   <div className="overflow-x-auto">
                     <Table className="text-white w-full">
                       <TableHeader>
                         <TableRow className="hover:bg-white/5 border-white/20">
-                          <TableHead className="text-white/70">Student</TableHead>
-                          <TableHead className="text-white/70 w-32">Grade</TableHead>
-                          <TableHead className="text-white/70">Comments</TableHead>
+                          <TableHead className="text-white/70">
+                            Student
+                          </TableHead>
+                          <TableHead className="text-white/70 w-32">
+                            Grade
+                          </TableHead>
+                          <TableHead className="text-white/70">
+                            Comments
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {studentGrades.map((entry) => (
-                          <TableRow key={entry.studentId} className="hover:bg-white/5 border-white/10">
+                          <TableRow
+                            key={entry.studentId}
+                            className="hover:bg-white/5 border-white/10"
+                          >
                             <TableCell>{entry.studentName}</TableCell>
                             <TableCell>
                               <Input
                                 value={entry.grade}
-                                onChange={(e) => handleGradeChange(e.target.value, entry.studentId)}
+                                onChange={(e) =>
+                                  handleGradeChange(
+                                    e.target.value,
+                                    entry.studentId
+                                  )
+                                }
                                 className={`bg-white/10 border-white/20 text-white placeholder:text-white/60 ${
-                                  !gradeValidation[entry.studentId] ? 'border-red-500' : ''
+                                  !gradeValidation[entry.studentId]
+                                    ? 'border-red-500'
+                                    : ''
                                 }`}
-                                placeholder={selectedAssessment.totalPoints ? "0-100" : "A-F"}
+                                placeholder={
+                                  selectedAssessment.totalPoints
+                                    ? '0-100'
+                                    : 'A-F'
+                                }
                               />
                               {!gradeValidation[entry.studentId] && (
-                                <p className="text-red-500 text-xs mt-1">Invalid grade</p>
+                                <p className="text-red-500 text-xs mt-1">
+                                  Invalid grade
+                                </p>
                               )}
                             </TableCell>
                             <TableCell>
                               <Input
                                 value={entry.comments}
-                                onChange={(e) => handleCommentsChange(e.target.value, entry.studentId)}
+                                onChange={(e) =>
+                                  handleCommentsChange(
+                                    e.target.value,
+                                    entry.studentId
+                                  )
+                                }
                                 className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
                                 placeholder="Optional comments"
                               />
@@ -329,7 +401,7 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
                     No students available for this class
                   </div>
                 )}
-                
+
                 <div className="flex justify-end pt-4">
                   <Button
                     onClick={handleSubmit}
@@ -344,13 +416,14 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
           )}
         </div>
       </GlassCard>
-      
+
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent className="bg-gray-900 text-white border-white/20">
           <DialogHeader>
             <DialogTitle>Confirm Grade Submission</DialogTitle>
             <DialogDescription className="text-white/70">
-              Are you sure you want to save these grades? This will update any existing grades for the students.
+              Are you sure you want to save these grades? This will update any
+              existing grades for the students.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
 import { RootState } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { createAssessment, Assessment, AssessmentType } from '@/domains/grades/gradesSlice';
+import {
+  createAssessment,
+  Assessment,
+  AssessmentType,
+} from '@/domains/grades/gradesSlice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import GlassCard from '@/components/common/GlassCard';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select';
 
 import {
@@ -32,8 +36,8 @@ interface CreateAssessmentProps {
 const CreateAssessment: React.FC<CreateAssessmentProps> = ({ classId }) => {
   const dispatch = useAppDispatch();
   const { classes } = useAppSelector((state: RootState) => state.classes);
-  const selectedClass = classes.find(c => c.id === classId);
-  
+  const selectedClass = classes.find((c) => c.id === classId);
+
   const [showDialog, setShowDialog] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -45,12 +49,18 @@ const CreateAssessment: React.FC<CreateAssessmentProps> = ({ classId }) => {
 
   const [customType, setCustomType] = useState('');
   const [assessmentTypes] = useState<AssessmentType[]>([
-    'Homework', 'Test', 'Quiz', 'Project', 'Participation'
+    'Homework',
+    'Test',
+    'Quiz',
+    'Project',
+    'Participation',
   ]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    
+
     // Validate totalPoints
     if (name === 'totalPoints') {
       const points = parseInt(value);
@@ -58,35 +68,35 @@ const CreateAssessment: React.FC<CreateAssessmentProps> = ({ classId }) => {
         return;
       }
     }
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleTypeChange = (value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      type: value as AssessmentType
+      type: value as AssessmentType,
     }));
   };
 
   const handleSubmit = () => {
     if (!classId) {
       toast({
-        title: "Please select a class",
-        description: "You must select a class before creating an assessment",
-        variant: "destructive",
+        title: 'Please select a class',
+        description: 'You must select a class before creating an assessment',
+        variant: 'destructive',
       });
       return;
     }
 
     if (!formData.title || !formData.type || !formData.date) {
       toast({
-        title: "Missing required fields",
-        description: "Please fill in all required fields",
-        variant: "destructive",
+        title: 'Missing required fields',
+        description: 'Please fill in all required fields',
+        variant: 'destructive',
       });
       return;
     }
@@ -110,9 +120,9 @@ const CreateAssessment: React.FC<CreateAssessmentProps> = ({ classId }) => {
     };
 
     dispatch(createAssessment(newAssessment));
-    
+
     toast({
-      title: "Assessment Created",
+      title: 'Assessment Created',
       description: `${newAssessment.title} has been created successfully.`,
     });
 
@@ -144,11 +154,13 @@ const CreateAssessment: React.FC<CreateAssessmentProps> = ({ classId }) => {
           <div>
             <h3 className="text-xl font-medium text-white mb-2">
               Create New Assessment
-              {selectedClass && <span className="ml-2 text-white/70">for {selectedClass.name}</span>}
+              {selectedClass && (
+                <span className="ml-2 text-white/70">
+                  for {selectedClass.name}
+                </span>
+              )}
             </h3>
-            <p className="text-white/70">
-              Define the assessment details below
-            </p>
+            <p className="text-white/70">Define the assessment details below</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -263,11 +275,22 @@ const CreateAssessment: React.FC<CreateAssessmentProps> = ({ classId }) => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
-            <div><strong>Title:</strong> {formData.title}</div>
-            <div><strong>Type:</strong> {formData.type === 'Custom' ? customType : formData.type}</div>
-            <div><strong>Class:</strong> {selectedClass?.name || 'Unknown'}</div>
-            <div><strong>Total Points:</strong> {formData.totalPoints}</div>
-            <div><strong>Date:</strong> {formData.date}</div>
+            <div>
+              <strong>Title:</strong> {formData.title}
+            </div>
+            <div>
+              <strong>Type:</strong>{' '}
+              {formData.type === 'Custom' ? customType : formData.type}
+            </div>
+            <div>
+              <strong>Class:</strong> {selectedClass?.name || 'Unknown'}
+            </div>
+            <div>
+              <strong>Total Points:</strong> {formData.totalPoints}
+            </div>
+            <div>
+              <strong>Date:</strong> {formData.date}
+            </div>
           </div>
           <DialogFooter>
             <Button

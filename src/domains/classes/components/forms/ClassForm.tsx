@@ -1,11 +1,28 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Clock } from 'lucide-react';
 import { Class } from '@/domains/classes/classesSlice';
 import { ClassStatus } from '@/types/enums';
@@ -35,30 +52,37 @@ export interface ClassFormData {
   status: ClassStatus;
 }
 
-const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, editingClass }) => {
+const ClassForm: React.FC<ClassFormProps> = ({
+  open,
+  onOpenChange,
+  onSubmit,
+  editingClass,
+}) => {
   const { teachers } = useAppSelector((state: RootState) => state.teachers);
   const { students } = useAppSelector((state: RootState) => state.students);
   const { classes } = useAppSelector((state: RootState) => state.classes);
   const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
   const [isStudentPanelOpen, setIsStudentPanelOpen] = useState(false);
   const form = useForm<ClassFormData>({
-    defaultValues: editingClass ? {
-      name: editingClass.name,
-      subject: editingClass.teacher.name.split(' ')[1] || 'English', // Extract subject from teacher name for now
-      teacherId: editingClass.teacher.id,
-      classroomId: editingClass.room.replace('Room ', ''),
-      schedule: editingClass.schedule,
-      studentIds: editingClass.studentIds || [],
-      status: editingClass.status,
-    } : {
-      name: '',
-      subject: '',
-      teacherId: '',
-      classroomId: '',
-      schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:30' }],
-      studentIds: [],
-      status: ClassStatus.Active,
-    }
+    defaultValues: editingClass
+      ? {
+          name: editingClass.name,
+          subject: editingClass.teacher.name.split(' ')[1] || 'English', // Extract subject from teacher name for now
+          teacherId: editingClass.teacher.id,
+          classroomId: editingClass.room.replace('Room ', ''),
+          schedule: editingClass.schedule,
+          studentIds: editingClass.studentIds || [],
+          status: editingClass.status,
+        }
+      : {
+          name: '',
+          subject: '',
+          teacherId: '',
+          classroomId: '',
+          schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:30' }],
+          studentIds: [],
+          status: ClassStatus.Active,
+        },
   });
 
   const handleSubmit = (data: ClassFormData) => {
@@ -69,12 +93,18 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
 
   const addScheduleSlot = () => {
     const currentSchedule = form.getValues('schedule');
-    form.setValue('schedule', [...currentSchedule, { day: 'Monday', startTime: '09:00', endTime: '10:30' }]);
+    form.setValue('schedule', [
+      ...currentSchedule,
+      { day: 'Monday', startTime: '09:00', endTime: '10:30' },
+    ]);
   };
 
   const removeScheduleSlot = (index: number) => {
     const currentSchedule = form.getValues('schedule');
-    form.setValue('schedule', currentSchedule.filter((_, i) => i !== index));
+    form.setValue(
+      'schedule',
+      currentSchedule.filter((_, i) => i !== index)
+    );
   };
 
   return (
@@ -85,14 +115,17 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
             {editingClass ? 'Edit Class' : 'Create New Class'}
           </DialogTitle>
         </DialogHeader>
-        
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="name"
-                rules={{ required: "Class name is required" }}
+                rules={{ required: 'Class name is required' }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-white">Class Name</FormLabel>
@@ -111,18 +144,23 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
               <FormField
                 control={form.control}
                 name="subject"
-                rules={{ required: "Subject is required" }}
+                rules={{ required: 'Subject is required' }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-white">Subject</FormLabel>
                     <FormControl>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <SelectTrigger className="bg-white/10 border-white/20 text-white">
                           <SelectValue placeholder="Select subject" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="English">English</SelectItem>
-                          <SelectItem value="Mathematics">Mathematics</SelectItem>
+                          <SelectItem value="Mathematics">
+                            Mathematics
+                          </SelectItem>
                           <SelectItem value="Physics">Physics</SelectItem>
                           <SelectItem value="Chemistry">Chemistry</SelectItem>
                           <SelectItem value="Biology">Biology</SelectItem>
@@ -135,17 +173,21 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                 )}
               />
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="teacherId"
-                rules={{ required: "Teacher is required" }}
+                rules={{ required: 'Teacher is required' }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Assigned Teacher</FormLabel>
+                    <FormLabel className="text-white">
+                      Assigned Teacher
+                    </FormLabel>
                     <FormControl>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <SelectTrigger className="bg-white/10 border-white/20 text-white">
                           <SelectValue placeholder="Select teacher" />
                         </SelectTrigger>
@@ -166,12 +208,17 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
               <FormField
                 control={form.control}
                 name="classroomId"
-                rules={{ required: "Classroom is required" }}
+                rules={{ required: 'Classroom is required' }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Assigned Classroom</FormLabel>
+                    <FormLabel className="text-white">
+                      Assigned Classroom
+                    </FormLabel>
                     <FormControl>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <SelectTrigger className="bg-white/10 border-white/20 text-white">
                           <SelectValue placeholder="Select classroom" />
                         </SelectTrigger>
@@ -189,11 +236,13 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                 )}
               />
             </div>
-
             <div>
               <FormLabel className="text-white mb-4 block">Schedule</FormLabel>
               {form.watch('schedule').map((_, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 bg-white/5 rounded-lg">
+                <div
+                  key={index}
+                  className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 bg-white/5 rounded-lg"
+                >
                   <FormField
                     control={form.control}
                     name={`schedule.${index}.day`}
@@ -201,14 +250,19 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                       <FormItem>
                         <FormLabel className="text-white/70">Day</FormLabel>
                         <FormControl>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
                             <SelectTrigger className="bg-white/10 border-white/20 text-white">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="Monday">Monday</SelectItem>
                               <SelectItem value="Tuesday">Tuesday</SelectItem>
-                              <SelectItem value="Wednesday">Wednesday</SelectItem>
+                              <SelectItem value="Wednesday">
+                                Wednesday
+                              </SelectItem>
                               <SelectItem value="Thursday">Thursday</SelectItem>
                               <SelectItem value="Friday">Friday</SelectItem>
                               <SelectItem value="Saturday">Saturday</SelectItem>
@@ -225,7 +279,9 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                     name={`schedule.${index}.startTime`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white/70">Start Time</FormLabel>
+                        <FormLabel className="text-white/70">
+                          Start Time
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -242,7 +298,9 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                     name={`schedule.${index}.endTime`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white/70">End Time</FormLabel>
+                        <FormLabel className="text-white/70">
+                          End Time
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -267,7 +325,7 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                   </div>
                 </div>
               ))}
-              
+
               <Button
                 type="button"
                 variant="ghost"
@@ -277,8 +335,12 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                 <Clock className="w-4 h-4 mr-2" />
                 Add Schedule Slot
               </Button>
-            </div>            <div>
-              <FormLabel className="text-white mb-4 block">Assign Students</FormLabel>              <FormField
+            </div>{' '}
+            <div>
+              <FormLabel className="text-white mb-4 block">
+                Assign Students
+              </FormLabel>{' '}
+              <FormField
                 control={form.control}
                 name="studentIds"
                 render={({ field }) => (
@@ -296,7 +358,6 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                 )}
               />
             </div>
-
             <div className="flex justify-end space-x-4 pt-4">
               <Button
                 type="button"
@@ -313,9 +374,10 @@ const ClassForm: React.FC<ClassFormProps> = ({ open, onOpenChange, onSubmit, edi
                 {editingClass ? 'Update Class' : 'Create Class'}
               </Button>
             </div>
-          </form>        </Form>
+          </form>{' '}
+        </Form>
       </DialogContent>
-      
+
       {/* Student Selection Panel - render outside dialog to avoid z-index issues */}
       {open && (
         <StudentSelectionPanel

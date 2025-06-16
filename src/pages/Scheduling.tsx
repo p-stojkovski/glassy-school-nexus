@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +11,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog';
 import {
   setScheduledClasses,
   cancelScheduledClass,
-  ScheduledClass
+  ScheduledClass,
 } from '@/domains/scheduling/schedulingSlice';
 import { ScheduledClassStatus, RecurringPattern } from '@/types/enums';
 import { toast } from '@/hooks/use-toast';
@@ -20,10 +19,13 @@ import { toast } from '@/hooks/use-toast';
 const Scheduling: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { scheduledClasses } = useAppSelector((state: RootState) => state.scheduling);
-  
+  const { scheduledClasses } = useAppSelector(
+    (state: RootState) => state.scheduling
+  );
+
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [scheduleToCancel, setScheduleToCancel] = useState<ScheduledClass | null>(null);
+  const [scheduleToCancel, setScheduleToCancel] =
+    useState<ScheduledClass | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -64,14 +66,15 @@ const Scheduling: React.FC = () => {
         isRecurring: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      }
+      },
     ];
     dispatch(setScheduledClasses(mockScheduledClasses));
   }, [dispatch]);
 
-  const filteredScheduledClasses = scheduledClasses.filter(schedule => {
-    const matchesSearch = schedule.className.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         schedule.teacherName.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredScheduledClasses = scheduledClasses.filter((schedule) => {
+    const matchesSearch =
+      schedule.className.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      schedule.teacherName.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
@@ -81,16 +84,18 @@ const Scheduling: React.FC = () => {
 
   const handleCancelClass = () => {
     if (scheduleToCancel && cancelReason.trim()) {
-      dispatch(cancelScheduledClass({
-        id: scheduleToCancel.id,
-        reason: cancelReason
-      }));
-      
+      dispatch(
+        cancelScheduledClass({
+          id: scheduleToCancel.id,
+          reason: cancelReason,
+        })
+      );
+
       toast({
-        title: "Class Canceled",
+        title: 'Class Canceled',
         description: `${scheduleToCancel.className} has been canceled.`,
       });
-      
+
       setShowCancelDialog(false);
       setScheduleToCancel(null);
       setCancelReason('');
@@ -141,14 +146,19 @@ const Scheduling: React.FC = () => {
       {showCancelDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-gray-900 p-6 rounded-lg border border-white/20 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-white mb-4">Cancel Class</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Cancel Class
+            </h3>
             <p className="text-white/70 mb-4">
               Are you sure you want to cancel {scheduleToCancel?.className}?
             </p>
             <div className="space-y-2 mb-4">
-              <label className="text-sm font-medium text-white">Reason for cancellation *</label>
+              <label className="text-sm font-medium text-white">
+                Reason for cancellation *
+              </label>
               <Input
-                value={cancelReason}                onChange={(e) => setCancelReason(e.target.value)}
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
                 placeholder="Please provide a reason..."
                 className="bg-white/5 border-white/10 text-white"
               />

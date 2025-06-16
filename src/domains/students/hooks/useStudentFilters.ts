@@ -84,10 +84,7 @@ export const useStudentFilters = ({
         }
 
         return (
-          matchesSearch &&
-          matchesStatus &&
-          matchesPaymentStatus &&
-          matchesClass
+          matchesSearch && matchesStatus && matchesPaymentStatus && matchesClass
         );
       }),
     [
@@ -99,4 +96,3 @@ export const useStudentFilters = ({
       classFilter,
     ]
   );
-

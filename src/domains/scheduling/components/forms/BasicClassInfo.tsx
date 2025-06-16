@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
@@ -18,7 +17,10 @@ interface BasicClassInfoProps {
   onFormDataChange: (data: ScheduleFormData) => void;
 }
 
-const BasicClassInfo: React.FC<BasicClassInfoProps> = ({ formData, onFormDataChange }) => {
+const BasicClassInfo: React.FC<BasicClassInfoProps> = ({
+  formData,
+  onFormDataChange,
+}) => {
   const { classes } = useAppSelector((state: RootState) => state.classes);
   const { teachers } = useAppSelector((state: RootState) => state.teachers);
   const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
@@ -31,9 +33,11 @@ const BasicClassInfo: React.FC<BasicClassInfoProps> = ({ formData, onFormDataCha
           <BookOpen className="w-4 h-4 inline mr-2" />
           Class *
         </Label>
-        <Select 
-          value={formData.classId} 
-          onValueChange={(value) => onFormDataChange({...formData, classId: value})}
+        <Select
+          value={formData.classId}
+          onValueChange={(value) =>
+            onFormDataChange({ ...formData, classId: value })
+          }
         >
           <SelectTrigger className="bg-white/10 border-white/20 text-white">
             <SelectValue placeholder="Select a class" />
@@ -54,9 +58,11 @@ const BasicClassInfo: React.FC<BasicClassInfoProps> = ({ formData, onFormDataCha
           <Users className="w-4 h-4 inline mr-2" />
           Teacher *
         </Label>
-        <Select 
-          value={formData.teacherId} 
-          onValueChange={(value) => onFormDataChange({...formData, teacherId: value})}
+        <Select
+          value={formData.teacherId}
+          onValueChange={(value) =>
+            onFormDataChange({ ...formData, teacherId: value })
+          }
         >
           <SelectTrigger className="bg-white/10 border-white/20 text-white">
             <SelectValue placeholder="Select a teacher" />
@@ -77,9 +83,11 @@ const BasicClassInfo: React.FC<BasicClassInfoProps> = ({ formData, onFormDataCha
           <MapPin className="w-4 h-4 inline mr-2" />
           Classroom *
         </Label>
-        <Select 
-          value={formData.classroomId} 
-          onValueChange={(value) => onFormDataChange({...formData, classroomId: value})}
+        <Select
+          value={formData.classroomId}
+          onValueChange={(value) =>
+            onFormDataChange({ ...formData, classroomId: value })
+          }
         >
           <SelectTrigger className="bg-white/10 border-white/20 text-white">
             <SelectValue placeholder="Select a classroom" />

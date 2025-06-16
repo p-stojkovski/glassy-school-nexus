@@ -35,7 +35,9 @@ const StudentOverview: React.FC<StudentOverviewProps> = ({
           <Calendar className="w-8 h-8 text-blue-400" />
           <div>
             <h3 className="font-semibold text-white">Attendance</h3>
-            <p className="text-2xl font-bold text-white">{attendanceStats.attendanceRate}%</p>
+            <p className="text-2xl font-bold text-white">
+              {attendanceStats.attendanceRate}%
+            </p>
           </div>
         </div>
         <div className="space-y-2 text-sm">
@@ -64,7 +66,9 @@ const StudentOverview: React.FC<StudentOverviewProps> = ({
           <GraduationCap className="w-8 h-8 text-green-400" />
           <div>
             <h3 className="font-semibold text-white">Grades</h3>
-            <p className="text-2xl font-bold text-white">{gradeAssessments.length}</p>
+            <p className="text-2xl font-bold text-white">
+              {gradeAssessments.length}
+            </p>
           </div>
         </div>
         <div className="space-y-2 text-sm">
@@ -73,7 +77,9 @@ const StudentOverview: React.FC<StudentOverviewProps> = ({
             <span>{gradeAssessments.length}</span>
           </div>
           <div className="text-white/60">
-            {gradeAssessments.length === 0 ? 'No grades recorded' : 'View Grades tab for details'}
+            {gradeAssessments.length === 0
+              ? 'No grades recorded'
+              : 'View Grades tab for details'}
           </div>
         </div>
       </GlassCard>
@@ -84,17 +90,25 @@ const StudentOverview: React.FC<StudentOverviewProps> = ({
           <DollarSign className="w-8 h-8 text-amber-400" />
           <div>
             <h3 className="font-semibold text-white">Payments</h3>
-            <p className="text-2xl font-bold text-white">${payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-white">
+              ${payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
+            </p>
           </div>
         </div>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between text-white/70">
             <span>Total Paid:</span>
-            <span>${payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</span>
+            <span>
+              ${payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
+            </span>
           </div>
           <div className="flex justify-between text-white/70">
             <span>Outstanding:</span>
-            <span className={outstandingBalance > 0 ? 'text-red-300' : 'text-green-300'}>
+            <span
+              className={
+                outstandingBalance > 0 ? 'text-red-300' : 'text-green-300'
+              }
+            >
               ${outstandingBalance.toFixed(2)}
             </span>
           </div>
@@ -107,7 +121,9 @@ const StudentOverview: React.FC<StudentOverviewProps> = ({
           <Users className="w-8 h-8 text-purple-400" />
           <div>
             <h3 className="font-semibold text-white">Class</h3>
-            <p className="text-lg font-bold text-white">{studentClass?.name || 'Unassigned'}</p>
+            <p className="text-lg font-bold text-white">
+              {studentClass?.name || 'Unassigned'}
+            </p>
           </div>
         </div>
         {studentClass && (

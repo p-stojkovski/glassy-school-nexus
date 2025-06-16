@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { saveToStorage, loadFromStorage } from '@/lib/storage';
 import { ClassroomStatus } from '@/types/enums';
@@ -46,14 +45,18 @@ const classroomsSlice = createSlice({
       saveToStorage('classrooms', state.classrooms);
     },
     updateClassroom: (state, action: PayloadAction<Classroom>) => {
-      const index = state.classrooms.findIndex(c => c.id === action.payload.id);
+      const index = state.classrooms.findIndex(
+        (c) => c.id === action.payload.id
+      );
       if (index !== -1) {
         state.classrooms[index] = action.payload;
         saveToStorage('classrooms', state.classrooms);
       }
     },
     deleteClassroom: (state, action: PayloadAction<string>) => {
-      state.classrooms = state.classrooms.filter(c => c.id !== action.payload);
+      state.classrooms = state.classrooms.filter(
+        (c) => c.id !== action.payload
+      );
       saveToStorage('classrooms', state.classrooms);
     },
     setSelectedClassroom: (state, action: PayloadAction<Classroom | null>) => {
@@ -75,15 +78,15 @@ const classroomsSlice = createSlice({
   },
 });
 
-export const { 
-  setClassrooms, 
-  addClassroom, 
-  updateClassroom, 
-  deleteClassroom, 
-  setSelectedClassroom, 
+export const {
+  setClassrooms,
+  addClassroom,
+  updateClassroom,
+  deleteClassroom,
+  setSelectedClassroom,
   setLoading,
   setSearchQuery,
   setFilterBy,
-  resetDemoClassrooms
+  resetDemoClassrooms,
 } = classroomsSlice.actions;
 export default classroomsSlice.reducer;

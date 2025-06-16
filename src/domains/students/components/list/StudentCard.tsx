@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Edit, Trash2, Eye, Phone, Mail, User } from 'lucide-react';
@@ -14,12 +13,14 @@ interface StudentCardProps {
   onView: () => void;
 }
 
-const StudentCard: React.FC<StudentCardProps> = ({ student, onEdit, onDelete, onView }) => {
+const StudentCard: React.FC<StudentCardProps> = ({
+  student,
+  onEdit,
+  onDelete,
+  onView,
+}) => {
   return (
-    <motion.div
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.2 }}
-    >
+    <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
       <GlassCard className="p-6 h-full">
         <div className="flex flex-col h-full">
           {/* Header with Avatar and Basic Info */}
@@ -33,12 +34,14 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onEdit, onDelete, on
               <h3 className="text-lg font-semibold text-white truncate">
                 {student.name}
               </h3>
-              <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStudentStatusColor(student.status)}`}>
-                {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
+              <div
+                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStudentStatusColor(student.status)}`}
+              >
+                {student.status.charAt(0).toUpperCase() +
+                  student.status.slice(1)}
               </div>
             </div>
           </div>
-
           {/* Contact Information */}
           <div className="space-y-2 mb-4 flex-1">
             {student.email && (
@@ -56,15 +59,17 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onEdit, onDelete, on
             {student.parentContact && (
               <div className="flex items-center gap-2 text-white/70">
                 <User className="w-4 h-4" />
-                <span className="text-sm truncate">{student.parentContact}</span>
+                <span className="text-sm truncate">
+                  {student.parentContact}
+                </span>
               </div>
             )}
           </div>
-
           {/* Join Date */}
           <div className="text-xs text-white/50 mb-4">
             Joined: {new Date(student.joinDate).toLocaleDateString()}
-          </div>          {/* Action Buttons */}
+          </div>{' '}
+          {/* Action Buttons */}
           <div className="flex gap-2">
             <Button
               variant="ghost"

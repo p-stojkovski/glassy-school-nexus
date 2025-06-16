@@ -4,7 +4,9 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
-import ClassFormContent, { ClassFormData } from '@/domains/classes/components/forms/ClassFormContent';
+import ClassFormContent, {
+  ClassFormData,
+} from '@/domains/classes/components/forms/ClassFormContent';
 import { useClassManagement } from '@/domains/classes/hooks/useClassManagement';
 import DemoModeNotification from '@/domains/classes/components/notifications/DemoModeNotification';
 import { useClassrooms } from '@/domains/classrooms/hooks/useClassrooms';
@@ -12,11 +14,12 @@ import { Classroom } from '@/domains/classrooms/classroomsSlice';
 import { ClassroomStatus } from '@/types/enums';
 
 const ClassForm: React.FC = () => {
-  const navigate = useNavigate();  const { id } = useParams();
+  const navigate = useNavigate();
+  const { id } = useParams();
   const { classes } = useAppSelector((state: RootState) => state.classes);
   const { classrooms, setClassrooms } = useClassrooms();
 
-  const editingClass = id ? classes.find(c => c.id === id) : null;
+  const editingClass = id ? classes.find((c) => c.id === id) : null;
   const isEditing = !!editingClass;
   // Initialize demo data on component mount
   useEffect(() => {
@@ -49,7 +52,7 @@ const ClassForm: React.FC = () => {
           status: ClassroomStatus.Active,
           createdDate: '2023-01-16T09:00:00Z',
           lastUpdated: '2023-06-01T15:00:00Z',
-        }
+        },
       ];
       setClassrooms(demoClassrooms);
     }
@@ -79,7 +82,9 @@ const ClassForm: React.FC = () => {
 
   return (
     <div className="space-y-6 w-full">
-      <div className="flex items-center gap-4">        <Button
+      <div className="flex items-center gap-4">
+        {' '}
+        <Button
           variant="ghost"
           onClick={handleBack}
           className="text-white hover:bg-white/5"
@@ -92,9 +97,12 @@ const ClassForm: React.FC = () => {
             {isEditing ? 'Edit Class' : 'Create New Class'}
           </h1>
           <p className="text-white/70">
-            {isEditing ? 'Update class information and settings' : 'Add a new class to the system'}
+            {isEditing
+              ? 'Update class information and settings'
+              : 'Add a new class to the system'}
           </p>
-        </div>      </div>
+        </div>{' '}
+      </div>
 
       <DemoModeNotification />
 

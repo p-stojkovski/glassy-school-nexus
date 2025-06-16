@@ -37,7 +37,7 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
   selectedStudentIds,
   onChange,
   disabled = false,
-  placeholder = 'Select students...'
+  placeholder = 'Select students...',
 }) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,27 +45,30 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
 
   // Get selected students from IDs
   const selectedStudents = useMemo(() => {
-    return students.filter(student => selectedStudentIds.includes(student.id));
+    return students.filter((student) =>
+      selectedStudentIds.includes(student.id)
+    );
   }, [students, selectedStudentIds]);
 
   // Filter students based on search query and status filter
   const filteredStudents = useMemo(() => {
     let filtered = students;
-    
+
     // Apply status filter
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(student => student.status === statusFilter);
+      filtered = filtered.filter((student) => student.status === statusFilter);
     }
-    
+
     // Apply search query filter
     if (searchQuery) {
       const lowercasedQuery = searchQuery.toLowerCase();
-      filtered = filtered.filter(student => 
-        student.name.toLowerCase().includes(lowercasedQuery) || 
-        student.email.toLowerCase().includes(lowercasedQuery)
+      filtered = filtered.filter(
+        (student) =>
+          student.name.toLowerCase().includes(lowercasedQuery) ||
+          student.email.toLowerCase().includes(lowercasedQuery)
       );
     }
-    
+
     return filtered;
   }, [students, searchQuery, statusFilter]);
 
@@ -75,7 +78,7 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
       if (open) setOpen(false);
     };
   }, [open]);
-  
+
   // Handle cleanup when the component unmounts
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -95,10 +98,10 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
 
   const handleSelect = (student: Student) => {
     const isSelected = selectedStudentIds.includes(student.id);
-    
+
     if (isSelected) {
       // Remove student
-      onChange(selectedStudentIds.filter(id => id !== student.id));
+      onChange(selectedStudentIds.filter((id) => id !== student.id));
     } else {
       // Add student - check for duplicates to prevent infinite loops
       if (!selectedStudentIds.includes(student.id)) {
@@ -108,7 +111,7 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
   };
 
   const handleRemoveSelected = (studentId: string) => {
-    onChange(selectedStudentIds.filter(id => id !== studentId));
+    onChange(selectedStudentIds.filter((id) => id !== studentId));
   };
 
   const handleClearAll = () => {
@@ -117,15 +120,19 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
 
   // Function to select all filtered students
   const handleSelectAllFiltered = () => {
-    const filteredIds = filteredStudents.map(s => s.id);
-    const newSelectedIds = [...new Set([...selectedStudentIds, ...filteredIds])];
+    const filteredIds = filteredStudents.map((s) => s.id);
+    const newSelectedIds = [
+      ...new Set([...selectedStudentIds, ...filteredIds]),
+    ];
     onChange(newSelectedIds);
   };
-  
+
   // Function to deselect all filtered students
   const handleDeselectAllFiltered = () => {
-    const filteredIds = new Set(filteredStudents.map(s => s.id));
-    const remainingIds = selectedStudentIds.filter(id => !filteredIds.has(id));
+    const filteredIds = new Set(filteredStudents.map((s) => s.id));
+    const remainingIds = selectedStudentIds.filter(
+      (id) => !filteredIds.has(id)
+    );
     onChange(remainingIds);
   };
 
@@ -141,13 +148,14 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
         </div>
         <div className="p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
           <p className="text-yellow-300 text-sm">
-            No students found. Please add students first before creating a class.
+            No students found. Please add students first before creating a
+            class.
           </p>
         </div>
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-4">
       {/* Status filter */}
@@ -158,9 +166,24 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
-              <SelectItem value="all" className="text-white hover:bg-gray-700 focus:bg-gray-700">All Students</SelectItem>
-              <SelectItem value="active" className="text-white hover:bg-gray-700 focus:bg-gray-700">Active Students</SelectItem>
-              <SelectItem value="inactive" className="text-white hover:bg-gray-700 focus:bg-gray-700">Inactive Students</SelectItem>
+              <SelectItem
+                value="all"
+                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+              >
+                All Students
+              </SelectItem>
+              <SelectItem
+                value="active"
+                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+              >
+                Active Students
+              </SelectItem>
+              <SelectItem
+                value="inactive"
+                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+              >
+                Inactive Students
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -177,10 +200,7 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
       </div>
 
       <div className="flex flex-col space-y-4">
-        <Popover 
-          open={open} 
-          onOpenChange={setOpen}
-        >
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -195,9 +215,9 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
                     <span className="text-white/70">{placeholder}</span>
                   ) : (
                     <div className="flex flex-wrap gap-1">
-                      {selectedStudents.slice(0, 3).map(student => (
-                        <Badge 
-                          key={student.id} 
+                      {selectedStudents.slice(0, 3).map((student) => (
+                        <Badge
+                          key={student.id}
                           variant="secondary"
                           className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
                         >
@@ -214,7 +234,7 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
                         </Badge>
                       ))}
                       {selectedStudents.length > 3 && (
-                        <Badge 
+                        <Badge
                           variant="secondary"
                           className="bg-gray-500/20 text-gray-300 border border-gray-500/30"
                         >
@@ -226,7 +246,7 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
                 </div>
                 <div className="ml-2 flex-shrink-0">
                   {selectedStudents.length > 0 ? (
-                    <span 
+                    <span
                       role="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -244,28 +264,33 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
               </div>
             </Button>
           </PopoverTrigger>
-          
-          <PopoverContent 
-            className="w-full p-0 bg-gray-800 text-white border border-white/30 backdrop-blur-sm" 
+
+          <PopoverContent
+            className="w-full p-0 bg-gray-800 text-white border border-white/30 backdrop-blur-sm"
             align="start"
             sideOffset={4}
           >
-            <Command className="rounded-lg border-none bg-gray-800 text-white w-full" shouldFilter={false}>
-              <CommandInput 
-                placeholder="Search students..." 
-                onValueChange={setSearchQuery} 
+            <Command
+              className="rounded-lg border-none bg-gray-800 text-white w-full"
+              shouldFilter={false}
+            >
+              <CommandInput
+                placeholder="Search students..."
+                onValueChange={setSearchQuery}
                 autoFocus={false}
                 className="text-white placeholder:text-white/70"
               />
               <CommandList>
-                <CommandEmpty className="py-6 text-center text-white/70">No students found.</CommandEmpty>
-                
+                <CommandEmpty className="py-6 text-center text-white/70">
+                  No students found.
+                </CommandEmpty>
+
                 {/* Add select/deselect all buttons */}
                 {availableStudents.length > 0 && (
                   <div className="flex justify-between p-2 border-b border-white/20">
-                    <Button 
+                    <Button
                       type="button"
-                      variant="ghost" 
+                      variant="ghost"
                       size="sm"
                       onClick={(e) => {
                         e.preventDefault();
@@ -277,11 +302,11 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
                       <Check className="mr-1 h-3 w-3" />
                       Select all ({availableStudents.length})
                     </Button>
-                    
+
                     {selectedStudents.length > 0 && (
-                      <Button 
+                      <Button
                         type="button"
-                        variant="ghost" 
+                        variant="ghost"
                         size="sm"
                         onClick={(e) => {
                           e.preventDefault();
@@ -296,11 +321,11 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
                     )}
                   </div>
                 )}
-                
+
                 <CommandGroup>
-                  {availableStudents.map(student => {
+                  {availableStudents.map((student) => {
                     const isSelected = selectedStudentIds.includes(student.id);
-                    
+
                     return (
                       <CommandItem
                         key={student.id}
@@ -310,28 +335,32 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
                         <div className="flex items-center">
                           {student.avatar && (
                             <div className="w-6 h-6 rounded-full overflow-hidden mr-2 bg-white/20">
-                              <img 
-                                src={student.avatar} 
-                                alt={student.name} 
-                                className="w-full h-full object-cover" 
+                              <img
+                                src={student.avatar}
+                                alt={student.name}
+                                className="w-full h-full object-cover"
                               />
                             </div>
                           )}
                           <div className="flex flex-col">
                             <span className="text-white">{student.name}</span>
-                            <span className="text-xs text-white/60">{student.email}</span>
+                            <span className="text-xs text-white/60">
+                              {student.email}
+                            </span>
                           </div>
                         </div>
-                        {isSelected && <Check className="h-4 w-4 ml-2 text-green-400" />}
+                        {isSelected && (
+                          <Check className="h-4 w-4 ml-2 text-green-400" />
+                        )}
                       </CommandItem>
                     );
                   })}
                 </CommandGroup>
               </CommandList>
-              
+
               {/* Add a Done button to provide a clear way to close the popover */}
               <div className="p-2 border-t border-white/20">
-                <Button 
+                <Button
                   type="button"
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium"
                   onClick={(e) => {

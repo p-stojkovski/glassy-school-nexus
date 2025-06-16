@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { 
-  selectAllObligations, 
+import {
+  selectAllObligations,
   selectSelectedPeriod,
   selectSelectedStudentId,
-  setSelectedPeriod, 
-  setSelectedStudent, 
+  setSelectedPeriod,
+  setSelectedStudent,
   deleteObligation,
-  PaymentObligation
+  PaymentObligation,
 } from '@/domains/finance/financeSlice';
 import { ObligationStatus } from '@/types/enums';
 import { useToast } from '@/hooks/use-toast';
 import { getPaymentStatusColor } from '@/utils/statusColors';
-import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import {
   Select,
@@ -57,11 +57,11 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
   const { toast } = useToast();
   const [search, setSearch] = useState('');
   // Generate unique list of periods from obligations
-  const periods = [...new Set(obligations.map(o => o.period))];
-  
+  const periods = [...new Set(obligations.map((o) => o.period))];
+
   // Generate unique list of students from obligations with proper deduplication
   const studentsMap = new Map();
-  obligations.forEach(o => {
+  obligations.forEach((o) => {
     if (!studentsMap.has(o.studentId)) {
       studentsMap.set(o.studentId, { id: o.studentId, name: o.studentName });
     }
@@ -73,21 +73,36 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
   };
 
   const handleStudentChange = (studentId: string) => {
-    dispatch(setSelectedStudent(studentId === 'all_students' ? null : studentId));
+    dispatch(
+      setSelectedStudent(studentId === 'all_students' ? null : studentId)
+    );
   };
 
   const handleDeleteObligation = (id: string) => {
     // Find obligation details before deleting for use in notification
-    const obligation = obligations.find(obl => obl.id === id);
+    const obligation = obligations.find((obl) => obl.id === id);
     dispatch(deleteObligation(id));
-      if (obligation) {
+    if (obligation) {
       toast({
-        title: "Obligation deleted",
+        title: 'Obligation deleted',
         description: `${obligation.type} obligation for ${obligation.studentName} has been deleted.`,
-        variant: "destructive",
-        icon: <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>,
+        variant: 'destructive',
+        icon: (
+          <svg
+            className="w-4 h-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+        ),
       });
     }
   };
@@ -99,20 +114,27 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
   };
 
   // Filter obligations based on selected filters and search
-  const filteredObligations = obligations.filter(obligation => {
-    const matchesSearch = search === '' || 
+  const filteredObligations = obligations.filter((obligation) => {
+    const matchesSearch =
+      search === '' ||
       obligation.studentName.toLowerCase().includes(search.toLowerCase()) ||
       obligation.type.toLowerCase().includes(search.toLowerCase());
-    
-    const matchesPeriod = !selectedPeriod || obligation.period === selectedPeriod;
-    const matchesStudent = !selectedStudentId || obligation.studentId === selectedStudentId;
-    
-    return matchesSearch && matchesPeriod && matchesStudent;  });
+
+    const matchesPeriod =
+      !selectedPeriod || obligation.period === selectedPeriod;
+    const matchesStudent =
+      !selectedStudentId || obligation.studentId === selectedStudentId;
+
+    return matchesSearch && matchesPeriod && matchesStudent;
+  });
 
   // Function to render status badge with appropriate color
   const renderStatusBadge = (status: ObligationStatus) => {
     return (
-      <Badge variant="outline" className={`${getPaymentStatusColor(status)} border`}>
+      <Badge
+        variant="outline"
+        className={`${getPaymentStatusColor(status)} border`}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
@@ -122,14 +144,14 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row gap-4 justify-between">
         <div className="flex-1">
-          <Input 
+          <Input
             placeholder="Search by student or type..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/70"
           />
         </div>
-        
+
         <div className="flex flex-col md:flex-row gap-4">
           <Select
             value={selectedPeriod || 'all_periods'}
@@ -137,10 +159,20 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
           >
             <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="All Periods" />
-            </SelectTrigger>            <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
-              <SelectItem value="all_periods" className="text-white hover:bg-gray-700 focus:bg-gray-700">All Students</SelectItem>
-              {periods.map(period => (
-                <SelectItem key={period} value={period} className="text-white hover:bg-gray-700 focus:bg-gray-700">
+            </SelectTrigger>{' '}
+            <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+              <SelectItem
+                value="all_periods"
+                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+              >
+                All Students
+              </SelectItem>
+              {periods.map((period) => (
+                <SelectItem
+                  key={period}
+                  value={period}
+                  className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                >
                   {period}
                 </SelectItem>
               ))}
@@ -153,22 +185,41 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
           >
             <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
               <SelectValue placeholder="All Students" />
-            </SelectTrigger>            <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
-              <SelectItem value="all_students" className="text-white hover:bg-gray-700 focus:bg-gray-700">All Students</SelectItem>
-              {students.map(student => (
-                <SelectItem key={student.id} value={student.id} className="text-white hover:bg-gray-700 focus:bg-gray-700">
+            </SelectTrigger>{' '}
+            <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+              <SelectItem
+                value="all_students"
+                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+              >
+                All Students
+              </SelectItem>
+              {students.map((student) => (
+                <SelectItem
+                  key={student.id}
+                  value={student.id}
+                  className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                >
                   {student.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <Button 
-            variant="outline" 
-            onClick={handleClearFilters} 
+          <Button
+            variant="outline"
+            onClick={handleClearFilters}
             className="bg-blue-500/30 backdrop-blur-sm border-blue-400 text-white font-medium hover:bg-blue-500/50 shadow-sm"
           >
-            <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              className="mr-2 h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M3 3l18 18"></path>
               <path d="M10.9 4a7.03 7.03 0 0 1 2.2 2.2"></path>
               <path d="M17.7 7.7a7.03 7.03 0 0 1 .8 3.3c0 1-.2 1.9-.6 2.8"></path>
@@ -179,9 +230,11 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
           </Button>
         </div>
       </div>
-      
+
       <Table className="text-white">
-        <TableCaption className="text-white">Payment obligations for students.</TableCaption>
+        <TableCaption className="text-white">
+          Payment obligations for students.
+        </TableCaption>
         <TableHeader className="border-white/20">
           <TableRow className="border-white/20 hover:bg-white/10">
             <TableHead className="text-white">Student</TableHead>
@@ -202,15 +255,28 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
             </TableRow>
           ) : (
             filteredObligations.map((obligation) => (
-              <TableRow key={obligation.id} className="border-white/20 hover:bg-white/10">
-                <TableCell className="font-medium text-white">{obligation.studentName}</TableCell>
+              <TableRow
+                key={obligation.id}
+                className="border-white/20 hover:bg-white/10"
+              >
+                <TableCell className="font-medium text-white">
+                  {obligation.studentName}
+                </TableCell>
                 <TableCell className="text-white">{obligation.type}</TableCell>
-                <TableCell className="text-right text-white">${obligation.amount.toFixed(2)}</TableCell>
-                <TableCell className="text-white">{format(parseISO(obligation.dueDate), 'MMM d, yyyy')}</TableCell>
-                <TableCell className="text-white">{obligation.period}</TableCell>
-                <TableCell>{renderStatusBadge(obligation.status)}</TableCell>                <TableCell className="text-right">
+                <TableCell className="text-right text-white">
+                  ${obligation.amount.toFixed(2)}
+                </TableCell>
+                <TableCell className="text-white">
+                  {format(parseISO(obligation.dueDate), 'MMM d, yyyy')}
+                </TableCell>
+                <TableCell className="text-white">
+                  {obligation.period}
+                </TableCell>
+                <TableCell>{renderStatusBadge(obligation.status)}</TableCell>{' '}
+                <TableCell className="text-right">
                   <div className="flex gap-2 justify-end">
-                    {onEdit && (                      <Button
+                    {onEdit && (
+                      <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onEdit(obligation.id)}
@@ -231,15 +297,22 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
                       </AlertDialogTrigger>
                       <AlertDialogContent className="bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white">
                         <AlertDialogHeader>
-                          <AlertDialogTitle className="text-white">Delete Obligation</AlertDialogTitle>
+                          <AlertDialogTitle className="text-white">
+                            Delete Obligation
+                          </AlertDialogTitle>
                           <AlertDialogDescription className="text-white/70">
-                            Are you sure you want to delete this payment obligation? This action cannot be undone.
+                            Are you sure you want to delete this payment
+                            obligation? This action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => handleDeleteObligation(obligation.id)}
+                          <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() =>
+                              handleDeleteObligation(obligation.id)
+                            }
                             className="bg-red-600 hover:bg-red-700 text-white"
                           >
                             Delete

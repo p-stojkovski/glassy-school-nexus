@@ -1,7 +1,14 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import GlassCard from '@/components/common/GlassCard';
 import { AttendanceStatus } from '@/types/enums';
 
@@ -29,12 +36,16 @@ const StudentAttendanceTab: React.FC<StudentAttendanceTabProps> = ({
 }) => {
   return (
     <GlassCard className="p-6">
-      <h3 className="text-xl font-semibold text-white mb-4">Attendance Records</h3>
+      <h3 className="text-xl font-semibold text-white mb-4">
+        Attendance Records
+      </h3>
       {attendanceRecords.length === 0 ? (
         <div className="text-center py-8 text-white/60">
           <Calendar className="w-12 h-12 mx-auto mb-4 text-white/40" />
           <p>No attendance records found</p>
-          <p className="text-sm">Attendance records will appear here once classes begin</p>
+          <p className="text-sm">
+            Attendance records will appear here once classes begin
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -49,16 +60,26 @@ const StudentAttendanceTab: React.FC<StudentAttendanceTabProps> = ({
             </TableHeader>
             <TableBody>
               {attendanceRecords.map((record) => {
-                const studentRecord = record.studentRecords.find(sr => sr.studentId === studentId);
+                const studentRecord = record.studentRecords.find(
+                  (sr) => sr.studentId === studentId
+                );
                 if (!studentRecord) return null;
-                
+
                 return (
-                  <TableRow key={record.id} className="border-white/10 hover:bg-white/5">
-                    <TableCell>{new Date(record.sessionDate).toLocaleDateString()}</TableCell>
+                  <TableRow
+                    key={record.id}
+                    className="border-white/10 hover:bg-white/5"
+                  >
+                    <TableCell>
+                      {new Date(record.sessionDate).toLocaleDateString()}
+                    </TableCell>
                     <TableCell>{record.className}</TableCell>
                     <TableCell>
-                      <Badge className={`${getAttendanceStatusColor(studentRecord.status)} border`}>
-                        {studentRecord.status.charAt(0).toUpperCase() + studentRecord.status.slice(1)}
+                      <Badge
+                        className={`${getAttendanceStatusColor(studentRecord.status)} border`}
+                      >
+                        {studentRecord.status.charAt(0).toUpperCase() +
+                          studentRecord.status.slice(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>{studentRecord.notes || '-'}</TableCell>

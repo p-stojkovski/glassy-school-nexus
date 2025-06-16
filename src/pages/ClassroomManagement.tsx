@@ -4,8 +4,19 @@ import { Plus, Search, Filter, Building } from 'lucide-react';
 import { RootState } from '../store';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../components/ui/sheet';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '../components/ui/sheet';
 import GlassCard from '../components/common/GlassCard';
 import ClassroomCard from '@/domains/classrooms/components/ClassroomCard';
 import ClassroomForm from '@/domains/classrooms/components/ClassroomForm';
@@ -19,15 +30,29 @@ import { ClassroomStatus } from '@/types/enums';
 
 // Import the classroom schema definition
 const classroomSchema = z.object({
-  name: z.string().min(1, 'Classroom name is required').max(50, 'Name must be less than 50 characters'),
-  location: z.string().max(100, 'Location must be less than 100 characters').optional(),
-  capacity: z.number().min(1, 'Capacity must be at least 1').max(500, 'Capacity cannot exceed 500'),
-  status: z.enum([ClassroomStatus.Active, ClassroomStatus.Inactive, ClassroomStatus.Maintenance]),
+  name: z
+    .string()
+    .min(1, 'Classroom name is required')
+    .max(50, 'Name must be less than 50 characters'),
+  location: z
+    .string()
+    .max(100, 'Location must be less than 100 characters')
+    .optional(),
+  capacity: z
+    .number()
+    .min(1, 'Capacity must be at least 1')
+    .max(500, 'Capacity cannot exceed 500'),
+  status: z.enum([
+    ClassroomStatus.Active,
+    ClassroomStatus.Inactive,
+    ClassroomStatus.Maintenance,
+  ]),
 });
 
 type ClassroomFormData = z.infer<typeof classroomSchema>;
 
-const ClassroomManagement: React.FC = () => {  const {
+const ClassroomManagement: React.FC = () => {
+  const {
     classrooms,
     loading,
     setClassrooms,
@@ -38,10 +63,17 @@ const ClassroomManagement: React.FC = () => {  const {
     resetDemoClassrooms,
   } = useClassrooms();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'maintenance'>('all');  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'active' | 'inactive' | 'maintenance'
+  >('all');
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [selectedClassroom, setSelectedClassroom] = useState<Classroom | null>(null);
-  const [classroomToDelete, setClassroomToDelete] = useState<Classroom | null>(null);
+  const [selectedClassroom, setSelectedClassroom] = useState<Classroom | null>(
+    null
+  );
+  const [classroomToDelete, setClassroomToDelete] = useState<Classroom | null>(
+    null
+  );
   const { toast } = useToast();
   // Demo Mode: Load from localStorage or fallback to mock data
   useEffect(() => {
@@ -84,17 +116,19 @@ const ClassroomManagement: React.FC = () => {  const {
             status: ClassroomStatus.Maintenance,
             createdDate: new Date().toISOString(),
             lastUpdated: new Date().toISOString(),
-          }
+          },
         ];
         setClassrooms(mockClassrooms);
         if (error) {
           toast({
             title: 'Storage Error',
-            description: 'Local storage is not available. Data will only persist for this session.',
+            description:
+              'Local storage is not available. Data will only persist for this session.',
             variant: 'warning',
           });
         }
-      }      setLoading(false);
+      }
+      setLoading(false);
     }, 500);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // This effect should only run once on mount to avoid infinite loops// Demo Mode Reset
@@ -126,7 +160,7 @@ const ClassroomManagement: React.FC = () => {  const {
         status: ClassroomStatus.Maintenance,
         createdDate: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
-      }
+      },
     ];
     resetDemoClassrooms(mockClassrooms);
     toast({
@@ -136,10 +170,12 @@ const ClassroomManagement: React.FC = () => {  const {
     });
   };
 
-  const filteredClassrooms = classrooms.filter(classroom => {
-    const matchesSearch = classroom.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         classroom.location?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || classroom.status === statusFilter;
+  const filteredClassrooms = classrooms.filter((classroom) => {
+    const matchesSearch =
+      classroom.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      classroom.location?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === 'all' || classroom.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -161,9 +197,9 @@ const ClassroomManagement: React.FC = () => {  const {
     if (classroomToDelete) {
       deleteClassroom(classroomToDelete.id);
       toast({
-        title: "Classroom Deleted",
+        title: 'Classroom Deleted',
         description: `${classroomToDelete.name} has been successfully deleted.`,
-        variant: "default",
+        variant: 'default',
       });
       setClassroomToDelete(null);
     }
@@ -188,11 +224,12 @@ const ClassroomManagement: React.FC = () => {  const {
         };
         updateClassroom(updatedClassroom);
         toast({
-          title: "Classroom Updated",
+          title: 'Classroom Updated',
           description: `${data.name} has been successfully updated.`,
-          variant: "success",
+          variant: 'success',
         });
-      } else {        // Ensure all required fields are present
+      } else {
+        // Ensure all required fields are present
         const newClassroom: Classroom = {
           id: Date.now().toString(),
           name: data.name,
@@ -204,17 +241,17 @@ const ClassroomManagement: React.FC = () => {  const {
         };
         addClassroom(newClassroom);
         toast({
-          title: "Classroom Added",
+          title: 'Classroom Added',
           description: `${data.name} has been successfully added.`,
-          variant: "success",
+          variant: 'success',
         });
       }
       handleCloseForm();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Something went wrong. Please try again.',
+        variant: 'destructive',
       });
     }
   };
@@ -231,9 +268,14 @@ const ClassroomManagement: React.FC = () => {  const {
       <DemoModeNotification onResetDemo={handleResetDemo} />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Classroom Management</h1>
-          <p className="text-white/70">Manage classroom information and availability</p>
-        </div>        <Button 
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Classroom Management
+          </h1>
+          <p className="text-white/70">
+            Manage classroom information and availability
+          </p>
+        </div>{' '}
+        <Button
           onClick={handleAddClassroom}
           className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
         >
@@ -241,7 +283,6 @@ const ClassroomManagement: React.FC = () => {  const {
           Add Classroom
         </Button>
       </div>
-
       {/* Search and Filter Controls */}
       <GlassCard className="p-6">
         <div className="flex flex-col sm:flex-row gap-4">
@@ -249,12 +290,18 @@ const ClassroomManagement: React.FC = () => {  const {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
             <Input
               placeholder="Search classrooms by name or location..."
-              value={searchTerm}              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
             />
           </div>
           <div className="sm:w-48">
-            <Select value={statusFilter} onValueChange={(value: 'all' | 'active' | 'inactive' | 'maintenance') => setStatusFilter(value)}>
+            <Select
+              value={statusFilter}
+              onValueChange={(
+                value: 'all' | 'active' | 'inactive' | 'maintenance'
+              ) => setStatusFilter(value)}
+            >
               <SelectTrigger className="bg-white/5 border-white/10 text-white">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue />
@@ -269,18 +316,20 @@ const ClassroomManagement: React.FC = () => {  const {
           </div>
         </div>
       </GlassCard>
-
       {/* Classrooms Grid */}
       {filteredClassrooms.length === 0 ? (
         <GlassCard className="p-12 text-center">
           <Building className="w-16 h-16 text-white/40 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">No Classrooms Found</h3>
+          <h3 className="text-xl font-semibold text-white mb-2">
+            No Classrooms Found
+          </h3>
           <p className="text-white/60 mb-6">
-            {searchTerm || statusFilter !== 'all' 
-              ? 'No classrooms match your current search criteria.' 
+            {searchTerm || statusFilter !== 'all'
+              ? 'No classrooms match your current search criteria.'
               : 'Start by adding your first classroom to the system.'}
-          </p>          {(!searchTerm && statusFilter === 'all') && (
-            <Button 
+          </p>{' '}
+          {!searchTerm && statusFilter === 'all' && (
+            <Button
               onClick={handleAddClassroom}
               className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
             >
@@ -302,11 +351,10 @@ const ClassroomManagement: React.FC = () => {  const {
           ))}
         </div>
       )}
-
       {/* Classroom Form Sidebar */}
       <Sheet open={isFormOpen} onOpenChange={handleCloseForm}>
-        <SheetContent 
-          side="right" 
+        <SheetContent
+          side="right"
           className="w-full sm:max-w-md bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"
         >
           <SheetHeader className="pb-6 border-b border-white/20">
@@ -314,7 +362,7 @@ const ClassroomManagement: React.FC = () => {  const {
               {selectedClassroom ? 'Edit Classroom' : 'Add New Classroom'}
             </SheetTitle>
           </SheetHeader>
-          
+
           <div className="mt-6">
             <ClassroomForm
               classroom={selectedClassroom}
@@ -324,13 +372,17 @@ const ClassroomManagement: React.FC = () => {  const {
           </div>
         </SheetContent>
       </Sheet>
-
-      {/* Confirm Dialog */}      <ConfirmDialog
+      {/* Confirm Dialog */}{' '}
+      <ConfirmDialog
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
         onConfirm={confirmDeleteClassroom}
         title="Delete Classroom"
-        description={classroomToDelete ? `Are you sure you want to delete ${classroomToDelete.name}? This action cannot be undone.` : 'Are you sure you want to delete this classroom?'}
+        description={
+          classroomToDelete
+            ? `Are you sure you want to delete ${classroomToDelete.name}? This action cannot be undone.`
+            : 'Are you sure you want to delete this classroom?'
+        }
       />
     </div>
   );

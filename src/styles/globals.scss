@@ -1,25 +1,48 @@
 /* Status indicators */
-.status-active { @apply bg-green-500/20 text-green-300 border-green-500/30; }
-.status-inactive { @apply bg-red-500/20 text-red-300 border-red-500/30; }
-.status-pending { @apply bg-yellow-500/20 text-yellow-300 border-yellow-500/30; }
-.status-maintenance { @apply bg-yellow-500/20 text-yellow-300 border-yellow-500/30; }
+.status-active {
+  @apply bg-green-500/20 text-green-300 border-green-500/30;
+}
+.status-inactive {
+  @apply bg-red-500/20 text-red-300 border-red-500/30;
+}
+.status-pending {
+  @apply bg-yellow-500/20 text-yellow-300 border-yellow-500/30;
+}
+.status-maintenance {
+  @apply bg-yellow-500/20 text-yellow-300 border-yellow-500/30;
+}
 
 /* Payment statuses */
-.payment-paid { @apply bg-green-500/20 text-green-300 border-green-500/30; }
-.payment-pending { @apply bg-yellow-500/20 text-yellow-300 border-yellow-500/30; }
-.payment-overdue { @apply bg-red-500/20 text-red-300 border-red-500/30; }
-.payment-partial { @apply bg-blue-500/20 text-blue-300 border-blue-500/30; }
+.payment-paid {
+  @apply bg-green-500/20 text-green-300 border-green-500/30;
+}
+.payment-pending {
+  @apply bg-yellow-500/20 text-yellow-300 border-yellow-500/30;
+}
+.payment-overdue {
+  @apply bg-red-500/20 text-red-300 border-red-500/30;
+}
+.payment-partial {
+  @apply bg-blue-500/20 text-blue-300 border-blue-500/30;
+}
 
 /* Attendance statuses */
-.attendance-present { @apply bg-green-500/20 text-green-300; }
-.attendance-absent { @apply bg-red-500/20 text-red-300; }
-.attendance-late { @apply bg-yellow-500/20 text-yellow-300; }
+.attendance-present {
+  @apply bg-green-500/20 text-green-300;
+}
+.attendance-absent {
+  @apply bg-red-500/20 text-red-300;
+}
+.attendance-late {
+  @apply bg-yellow-500/20 text-yellow-300;
+}
 
 /* Main app background */
 .app-background {
-  background: linear-gradient(to bottom right,
-    rgb(30, 64, 175), /* blue-800 */
-    rgb(107, 33, 168), /* purple-800 */
-    rgb(4, 120, 87)    /* green-700 */
+  background: linear-gradient(
+    to bottom right,
+    rgb(30, 64, 175),
+    /* blue-800 */ rgb(107, 33, 168),
+    /* purple-800 */ rgb(4, 120, 87) /* green-700 */
   );
 }

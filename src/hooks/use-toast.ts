@@ -1,5 +1,5 @@
-import { toast as sonnerToast } from "sonner";
-import React from "react";
+import { toast as sonnerToast } from 'sonner';
+import React from 'react';
 
 type ToastProps = {
   title?: React.ReactNode;
@@ -8,8 +8,14 @@ type ToastProps = {
   actionLabel?: string;
   cancel?: React.ReactNode | (() => void);
   cancelLabel?: string;
-  variant?: "default" | "destructive" | "success" | "warning" | "info";
-  position?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
+  variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info';
+  position?:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right';
   duration?: number;
   dismissible?: boolean;
   important?: boolean;
@@ -19,23 +25,26 @@ type ToastProps = {
 // Enhanced wrapper around Sonner toast to maintain compatibility with existing calls
 // while providing more modern features
 function toast(props: ToastProps) {
-  const { 
-    title, 
-    description, 
-    variant, 
+  const {
+    title,
+    description,
+    variant,
     action,
-    actionLabel, 
+    actionLabel,
     cancel,
-    cancelLabel, 
-    position, 
+    cancelLabel,
+    position,
     duration = 5000,
     dismissible = true,
     important = false,
-    icon 
+    icon,
   } = props;
-  
+
   // Only pass action/cancel if they are valid types for Sonner
-  let actionComponent: React.ReactNode | { label: string; onClick: () => void } | undefined = undefined;
+  let actionComponent:
+    | React.ReactNode
+    | { label: string; onClick: () => void }
+    | undefined = undefined;
   if (action && actionLabel && typeof action === 'function') {
     actionComponent = { label: actionLabel, onClick: action };
   } else if (React.isValidElement(action)) {
@@ -44,7 +53,10 @@ function toast(props: ToastProps) {
     actionComponent = undefined;
   }
 
-  let cancelComponent: React.ReactNode | { label: string; onClick: () => void } | undefined = undefined;
+  let cancelComponent:
+    | React.ReactNode
+    | { label: string; onClick: () => void }
+    | undefined = undefined;
   if (cancel && cancelLabel && typeof cancel === 'function') {
     cancelComponent = { label: cancelLabel, onClick: cancel };
   } else if (React.isValidElement(cancel)) {
@@ -63,15 +75,15 @@ function toast(props: ToastProps) {
     icon,
     position,
   };
-  
+
   switch (variant) {
-    case "destructive":
+    case 'destructive':
       return sonnerToast.error(title as string, options);
-    case "success":
+    case 'success':
       return sonnerToast.success(title as string, options);
-    case "warning":
+    case 'warning':
       return sonnerToast.warning(title as string, options);
-    case "info":
+    case 'info':
       return sonnerToast.info(title as string, options);
     default:
       return sonnerToast(title as string, options);
@@ -86,4 +98,4 @@ function useToast() {
   };
 }
 
-export { useToast, toast }
+export { useToast, toast };

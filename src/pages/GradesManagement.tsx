@@ -14,29 +14,31 @@ type ActiveTab = 'create' | 'grades' | 'gradebook';
 const GradesManagement: React.FC = () => {
   const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState<ActiveTab>('create');
-  const { selectedClassId } = useAppSelector((state: RootState) => state.grades);
-    return (
+  const { selectedClassId } = useAppSelector(
+    (state: RootState) => state.grades
+  );
+  return (
     <div className="space-y-6">
       <DemoModeNotification />
-      
-      <GradesHeader 
+
+      <GradesHeader
         activeTab={activeTab}
         onTabChange={(tab: ActiveTab) => setActiveTab(tab)}
       />
-      
+
       <GradesFilters
         selectedClassId={selectedClassId || ''}
-        onClassChange={(classId) => dispatch(setSelectedClass(classId === 'all-classes' ? null : classId))}
+        onClassChange={(classId) =>
+          dispatch(setSelectedClass(classId === 'all-classes' ? null : classId))
+        }
       />
-      
+
       {activeTab === 'create' && (
         <CreateAssessment classId={selectedClassId || ''} />
       )}
-      
-      {activeTab === 'grades' && (
-        <GradeEntry classId={selectedClassId || ''} />
-      )}
-      
+
+      {activeTab === 'grades' && <GradeEntry classId={selectedClassId || ''} />}
+
       {activeTab === 'gradebook' && (
         <Gradebook classId={selectedClassId || ''} />
       )}

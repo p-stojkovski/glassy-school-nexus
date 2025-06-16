@@ -1,16 +1,18 @@
-import { 
-  StudentStatus, 
-  AttendanceStatus, 
-  ObligationStatus, 
-  TeacherStatus, 
+import {
+  StudentStatus,
+  AttendanceStatus,
+  ObligationStatus,
+  TeacherStatus,
   ClassStatus,
-  ClassroomStatus 
+  ClassroomStatus,
 } from '@/types/enums';
 
 /**
  * Get color classes for student status
  */
-export const getStudentStatusColor = (status: StudentStatus | string): string => {
+export const getStudentStatusColor = (
+  status: StudentStatus | string
+): string => {
   switch (status) {
     case StudentStatus.Active:
       return 'bg-green-500/20 text-green-300 border-green-500/30';
@@ -24,7 +26,9 @@ export const getStudentStatusColor = (status: StudentStatus | string): string =>
 /**
  * Get color classes for attendance status
  */
-export const getAttendanceStatusColor = (status: AttendanceStatus | string): string => {
+export const getAttendanceStatusColor = (
+  status: AttendanceStatus | string
+): string => {
   switch (status) {
     case AttendanceStatus.Present:
       return 'bg-green-500/20 text-green-300 border-green-500/30';
@@ -42,7 +46,9 @@ export const getAttendanceStatusColor = (status: AttendanceStatus | string): str
 /**
  * Get color classes for payment/obligation status
  */
-export const getPaymentStatusColor = (status: ObligationStatus | string): string => {
+export const getPaymentStatusColor = (
+  status: ObligationStatus | string
+): string => {
   switch (status) {
     case ObligationStatus.Paid:
       return 'bg-green-500/20 text-green-300 border-green-500/30';
@@ -60,7 +66,9 @@ export const getPaymentStatusColor = (status: ObligationStatus | string): string
 /**
  * Get color classes for teacher status
  */
-export const getTeacherStatusColor = (status: TeacherStatus | string): string => {
+export const getTeacherStatusColor = (
+  status: TeacherStatus | string
+): string => {
   switch (status) {
     case TeacherStatus.Active:
       return 'bg-green-500/20 text-green-300 border-green-500/30';
@@ -90,7 +98,9 @@ export const getClassStatusColor = (status: ClassStatus | string): string => {
 /**
  * Get color classes for classroom status
  */
-export const getClassroomStatusColor = (status: ClassroomStatus | string): string => {
+export const getClassroomStatusColor = (
+  status: ClassroomStatus | string
+): string => {
   switch (status) {
     case ClassroomStatus.Active:
       return 'bg-green-500/20 text-green-300 border-green-500/30';

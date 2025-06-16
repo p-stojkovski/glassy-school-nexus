@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,9 @@ const StudentEmptyState: React.FC<StudentEmptyStateProps> = ({
   return (
     <GlassCard className="p-12 text-center">
       <Users className="w-16 h-16 text-white/40 mx-auto mb-4" />
-      <h3 className="text-xl font-semibold text-white mb-2">No Students Found</h3>
+      <h3 className="text-xl font-semibold text-white mb-2">
+        No Students Found
+      </h3>
       <p className="text-white/60 mb-6">
         {hasFilters
           ? 'No students match your current search criteria.'

@@ -76,6 +76,7 @@ The application includes a comprehensive Financial Management system that allows
 All financial data is stored locally using localStorage for demonstration purposes.
 
 For more information, see:
+
 - [Financial Management Documentation](./docs/financial-management.md)
 - [Financial Management User Guide](./docs/financial-management-user-guide.md)
 

@@ -1,4 +1,3 @@
-
 import GlassCard from '@/components/common/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Class } from '@/domains/classes/classesSlice';
@@ -17,7 +16,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
   onEdit,
   onDelete,
 }) => {
-  return (    
+  return (
     <GlassCard className="p-6">
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-xl font-semibold text-white">{classItem.name}</h3>
@@ -40,10 +39,19 @@ const ClassCard: React.FC<ClassCardProps> = ({
           </Button>
         </div>
       </div>
-      <p className="text-white/70 mb-1"><span className="text-sm font-medium text-white">Teacher:</span> {classItem.teacher.name}</p>
-      <p className="text-white/70 mb-1"><span className="text-sm font-medium text-white">Room: </span> {classItem.room}</p>
-      <p className="text-white/70 mb-2"><span className="text-sm font-medium text-white">Students: </span> {classItem.students}/{classItem.maxStudents}</p>
-      
+      <p className="text-white/70 mb-1">
+        <span className="text-sm font-medium text-white">Teacher:</span>{' '}
+        {classItem.teacher.name}
+      </p>
+      <p className="text-white/70 mb-1">
+        <span className="text-sm font-medium text-white">Room: </span>{' '}
+        {classItem.room}
+      </p>
+      <p className="text-white/70 mb-2">
+        <span className="text-sm font-medium text-white">Students: </span>{' '}
+        {classItem.students}/{classItem.maxStudents}
+      </p>
+
       <div className="space-y-2">
         <p className="text-sm font-medium text-white">Schedule:</p>
         {classItem.schedule.map((schedule, index) => (
@@ -52,18 +60,20 @@ const ClassCard: React.FC<ClassCardProps> = ({
           </p>
         ))}
       </div>
-        <div className="mt-4">
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          classItem.status === 'active' 
-            ? 'bg-green-500/20 text-green-300' 
-            : classItem.status === 'inactive'
-            ? 'bg-red-500/20 text-red-300'
-            : 'bg-yellow-500/20 text-yellow-300'
-        }`}>
+      <div className="mt-4">
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            classItem.status === 'active'
+              ? 'bg-green-500/20 text-green-300'
+              : classItem.status === 'inactive'
+                ? 'bg-red-500/20 text-red-300'
+                : 'bg-yellow-500/20 text-yellow-300'
+          }`}
+        >
           {classItem.status}
         </span>
       </div>
-      
+
       <div className="text-xs text-white/50 border-t border-white/10 pt-3 mt-4">
         Last updated: {new Date(classItem.updatedAt).toLocaleDateString()}
       </div>

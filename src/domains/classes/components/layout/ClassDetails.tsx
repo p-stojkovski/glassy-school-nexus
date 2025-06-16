@@ -1,6 +1,10 @@
-
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, MapPin, User, Users, Calendar } from 'lucide-react';
@@ -37,27 +41,29 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
             {classItem.name}
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {/* Status Badge */}
           <div className="flex items-center gap-4">
-            <Badge 
+            <Badge
               className={`${
-                classItem.status === 'active' 
-                  ? 'bg-green-500/20 text-green-300' 
+                classItem.status === 'active'
+                  ? 'bg-green-500/20 text-green-300'
                   : classItem.status === 'inactive'
-                  ? 'bg-red-500/20 text-red-300'
-                  : 'bg-yellow-500/20 text-yellow-300'
+                    ? 'bg-red-500/20 text-red-300'
+                    : 'bg-yellow-500/20 text-yellow-300'
               }`}
             >
               {classItem.status}
             </Badge>
-            
-            <Badge className={`${
-              isUpcoming() 
-                ? 'bg-blue-500/20 text-blue-300' 
-                : 'bg-gray-500/20 text-gray-300'
-            }`}>
+
+            <Badge
+              className={`${
+                isUpcoming()
+                  ? 'bg-blue-500/20 text-blue-300'
+                  : 'bg-gray-500/20 text-gray-300'
+              }`}
+            >
               {isUpcoming() ? 'Upcoming' : 'Past'}
             </Badge>
           </div>
@@ -75,7 +81,9 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
                 className="w-10 h-10 rounded-full"
               />
               <div>
-                <p className="text-white font-medium">{classItem.teacher.name}</p>
+                <p className="text-white font-medium">
+                  {classItem.teacher.name}
+                </p>
                 <p className="text-white/70 text-sm">Subject Specialist</p>
               </div>
             </div>

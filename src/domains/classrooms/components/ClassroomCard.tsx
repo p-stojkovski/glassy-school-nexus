@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Users } from 'lucide-react';
@@ -26,28 +25,33 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-    >      <GlassCard className="p-6 transition-all duration-300">
+    >
+      {' '}
+      <GlassCard className="p-6 transition-all duration-300">
         <div className="flex items-start justify-between mb-4">
           <div onClick={() => onView(classroom)} className="flex-1">
             <h3 className="text-xl font-semibold text-white mb-2">
               {classroom.name}
             </h3>
-            
+
             <div className="flex items-center text-white/70 mb-2">
               <MapPin className="w-4 h-4 mr-2" />
               <span>{classroom.location || 'No location specified'}</span>
             </div>
-            
+
             <div className="flex items-center text-white/70 mb-3">
               <Users className="w-4 h-4 mr-2" />
               <span>{classroom.capacity} seats</span>
             </div>
-            
-            <div className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${getClassroomStatusColor(classroom.status)}`}>
-              {classroom.status.charAt(0).toUpperCase() + classroom.status.slice(1)}
+
+            <div
+              className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${getClassroomStatusColor(classroom.status)}`}
+            >
+              {classroom.status.charAt(0).toUpperCase() +
+                classroom.status.slice(1)}
             </div>
           </div>
-            <div className="flex space-x-2">
+          <div className="flex space-x-2">
             <Button
               size="sm"
               variant="ghost"
@@ -72,7 +76,7 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
             </Button>
           </div>
         </div>
-        
+
         <div className="text-xs text-white/50 border-t border-white/10 pt-3">
           Last updated: {new Date(classroom.lastUpdated).toLocaleDateString()}
         </div>

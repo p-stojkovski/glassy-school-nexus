@@ -1,29 +1,57 @@
-
 import React, { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
-import { getStudentStatusColor, getPaymentStatusColor } from '@/utils/statusColors';
+import {
+  getStudentStatusColor,
+  getPaymentStatusColor,
+} from '@/utils/statusColors';
 
 interface StudentTableProps {
   students: Student[];
   onEdit: (student: Student) => void;
   onDelete: (student: Student) => void;
   onView: (student: Student) => void;
-  getPaymentStatus?: (studentId: string) => 'pending' | 'partial' | 'paid' | 'overdue';
+  getPaymentStatus?: (
+    studentId: string
+  ) => 'pending' | 'partial' | 'paid' | 'overdue';
 }
 
 const ITEMS_PER_PAGE = 10;
 
-const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete, onView, getPaymentStatus }) => {
+const StudentTable: React.FC<StudentTableProps> = ({
+  students,
+  onEdit,
+  onDelete,
+  onView,
+  getPaymentStatus,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(students.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedStudents = students.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const paginatedStudents = students.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -32,7 +60,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
   const renderPaginationItems = () => {
     const items = [];
     const maxVisiblePages = 5;
-      if (totalPages <= maxVisiblePages) {
+    if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         items.push(
           <PaginationItem key={i}>
@@ -46,7 +74,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
           </PaginationItem>
         );
       }
-    } else {      // Show first page
+    } else {
+      // Show first page
       items.push(
         <PaginationItem key={1}>
           <PaginationLink
@@ -71,8 +100,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
       // Show current page and surrounding pages
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
-      
-      for (let i = start; i <= end; i++) {        items.push(
+
+      for (let i = start; i <= end; i++) {
+        items.push(
           <PaginationItem key={i}>
             <PaginationLink
               onClick={() => handlePageChange(i)}
@@ -96,8 +126,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
 
       // Show last page
       if (totalPages > 1) {
-        items.push(        <PaginationItem key={totalPages}>
-          <PaginationLink
+        items.push(
+          <PaginationItem key={totalPages}>
+            <PaginationLink
               onClick={() => handlePageChange(totalPages)}
               isActive={currentPage === totalPages}
               className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
@@ -118,17 +149,32 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
         <Table>
           <TableHeader>
             <TableRow className="border-white/20 hover:bg-white/5">
-              <TableHead className="text-white/90 font-semibold">Student</TableHead>
-              <TableHead className="text-white/90 font-semibold">Contact</TableHead>
-              <TableHead className="text-white/90 font-semibold">Status</TableHead>
-              <TableHead className="text-white/90 font-semibold">Payment</TableHead>
-              <TableHead className="text-white/90 font-semibold">Join Date</TableHead>
-              <TableHead className="text-white/90 font-semibold text-right">Actions</TableHead>
+              <TableHead className="text-white/90 font-semibold">
+                Student
+              </TableHead>
+              <TableHead className="text-white/90 font-semibold">
+                Contact
+              </TableHead>
+              <TableHead className="text-white/90 font-semibold">
+                Status
+              </TableHead>
+              <TableHead className="text-white/90 font-semibold">
+                Payment
+              </TableHead>
+              <TableHead className="text-white/90 font-semibold">
+                Join Date
+              </TableHead>
+              <TableHead className="text-white/90 font-semibold text-right">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedStudents.map((student) => (
-              <TableRow key={student.id} className="border-white/10 hover:bg-white/5">
+              <TableRow
+                key={student.id}
+                className="border-white/10 hover:bg-white/5"
+              >
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <img
@@ -137,25 +183,38 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
                       className="w-10 h-10 rounded-full border-2 border-white/20"
                     />
                     <div>
-                      <div className="font-medium text-white">{student.name}</div>
-                      <div className="text-sm text-white/60">{student.email}</div>
+                      <div className="font-medium text-white">
+                        {student.name}
+                      </div>
+                      <div className="text-sm text-white/60">
+                        {student.email}
+                      </div>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="text-sm">
                     <div className="text-white/80">{student.phone}</div>
-                    <div className="text-white/60 truncate max-w-[200px]">{student.parentContact}</div>
+                    <div className="text-white/60 truncate max-w-[200px]">
+                      {student.parentContact}
+                    </div>
                   </div>
-                </TableCell>                <TableCell>
-                  <Badge className={`${getStudentStatusColor(student.status)} border`}>
-                    {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
+                </TableCell>{' '}
+                <TableCell>
+                  <Badge
+                    className={`${getStudentStatusColor(student.status)} border`}
+                  >
+                    {student.status.charAt(0).toUpperCase() +
+                      student.status.slice(1)}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   {getPaymentStatus ? (
-                    <Badge className={`${getPaymentStatusColor(getPaymentStatus(student.id))} border`}>
-                      {getPaymentStatus(student.id).charAt(0).toUpperCase() + getPaymentStatus(student.id).slice(1)}
+                    <Badge
+                      className={`${getPaymentStatusColor(getPaymentStatus(student.id))} border`}
+                    >
+                      {getPaymentStatus(student.id).charAt(0).toUpperCase() +
+                        getPaymentStatus(student.id).slice(1)}
                     </Badge>
                   ) : (
                     <div className="flex items-center gap-2">
@@ -165,7 +224,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
                           <span className="text-sm font-medium">Due</span>
                         </div>
                       ) : (
-                        <div className="text-green-400 text-sm font-medium">Paid</div>
+                        <div className="text-green-400 text-sm font-medium">
+                          Paid
+                        </div>
                       )}
                     </div>
                   )}
@@ -212,22 +273,29 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
       {totalPages > 1 && (
         <div className="flex justify-center">
           <Pagination>
-            <PaginationContent>              <PaginationItem>
+            <PaginationContent>
+              {' '}
+              <PaginationItem>
                 <PaginationPrevious
-                  onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                  onClick={() =>
+                    currentPage > 1 && handlePageChange(currentPage - 1)
+                  }
                   className={`cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10 ${
                     currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 />
               </PaginationItem>
-              
               {renderPaginationItems()}
-              
               <PaginationItem>
                 <PaginationNext
-                  onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                  onClick={() =>
+                    currentPage < totalPages &&
+                    handlePageChange(currentPage + 1)
+                  }
                   className={`cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10 ${
-                    currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                    currentPage === totalPages
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
                   }`}
                 />
               </PaginationItem>
@@ -237,7 +305,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
       )}
 
       <div className="text-center text-white/60 text-sm">
-        Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, students.length)} of {students.length} students
+        Showing {startIndex + 1} to{' '}
+        {Math.min(startIndex + ITEMS_PER_PAGE, students.length)} of{' '}
+        {students.length} students
       </div>
     </div>
   );

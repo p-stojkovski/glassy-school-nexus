@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TeacherStatus } from '@/types/enums';
 
@@ -35,13 +34,13 @@ const teachersSlice = createSlice({
       state.teachers.push(action.payload);
     },
     updateTeacher: (state, action: PayloadAction<Teacher>) => {
-      const index = state.teachers.findIndex(t => t.id === action.payload.id);
+      const index = state.teachers.findIndex((t) => t.id === action.payload.id);
       if (index !== -1) {
         state.teachers[index] = action.payload;
       }
     },
     deleteTeacher: (state, action: PayloadAction<string>) => {
-      state.teachers = state.teachers.filter(t => t.id !== action.payload);
+      state.teachers = state.teachers.filter((t) => t.id !== action.payload);
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -49,5 +48,11 @@ const teachersSlice = createSlice({
   },
 });
 
-export const { setTeachers, addTeacher, updateTeacher, deleteTeacher, setLoading } = teachersSlice.actions;
+export const {
+  setTeachers,
+  addTeacher,
+  updateTeacher,
+  deleteTeacher,
+  setLoading,
+} = teachersSlice.actions;
 export default teachersSlice.reducer;

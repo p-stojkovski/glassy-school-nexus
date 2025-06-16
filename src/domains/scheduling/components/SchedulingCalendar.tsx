@@ -1,15 +1,19 @@
-
 import React from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
-import { setSelectedDate, setViewMode } from '@/domains/scheduling/schedulingSlice';
+import {
+  setSelectedDate,
+  setViewMode,
+} from '@/domains/scheduling/schedulingSlice';
 
 const SchedulingCalendar: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { selectedDate, viewMode } = useAppSelector((state: RootState) => state.scheduling);
+  const { selectedDate, viewMode } = useAppSelector(
+    (state: RootState) => state.scheduling
+  );
   // Parse the string date to a Date object for the Calendar component
   const parsedSelectedDate = selectedDate ? new Date(selectedDate) : new Date();
 
@@ -35,7 +39,8 @@ const SchedulingCalendar: React.FC = () => {
               </Button>
             ))}
           </div>
-        </div>        <Calendar
+        </div>{' '}
+        <Calendar
           mode="single"
           selected={parsedSelectedDate}
           onSelect={(date) => dispatch(setSelectedDate(date || new Date()))}

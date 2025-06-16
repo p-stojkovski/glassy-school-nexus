@@ -2,7 +2,14 @@ import React from 'react';
 import { DollarSign, CheckCircle, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import GlassCard from '@/components/common/GlassCard';
 import { PaymentObligation, Payment } from '@/domains/finance/financeSlice';
 import { ObligationStatus } from '@/types/enums';
@@ -26,12 +33,16 @@ const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
     <div className="space-y-6">
       {/* Payment Obligations */}
       <GlassCard className="p-6">
-        <h3 className="text-xl font-semibold text-white mb-4">Payment Obligations</h3>
+        <h3 className="text-xl font-semibold text-white mb-4">
+          Payment Obligations
+        </h3>
         {obligations.length === 0 ? (
           <div className="text-center py-8 text-white/60">
             <DollarSign className="w-12 h-12 mx-auto mb-4 text-white/40" />
             <p>No payment obligations</p>
-            <p className="text-sm">Payment obligations will appear here when assigned</p>
+            <p className="text-sm">
+              Payment obligations will appear here when assigned
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -48,14 +59,24 @@ const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
               </TableHeader>
               <TableBody>
                 {obligations.map((obligation) => (
-                  <TableRow key={obligation.id} className="border-white/10 hover:bg-white/5">
-                    <TableCell className="font-medium">{obligation.type}</TableCell>
+                  <TableRow
+                    key={obligation.id}
+                    className="border-white/10 hover:bg-white/5"
+                  >
+                    <TableCell className="font-medium">
+                      {obligation.type}
+                    </TableCell>
                     <TableCell>{obligation.period}</TableCell>
                     <TableCell>${obligation.amount.toFixed(2)}</TableCell>
-                    <TableCell>{new Date(obligation.dueDate).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Badge className={`${getPaymentStatusColor(obligation.status)} border`}>
-                        {obligation.status.charAt(0).toUpperCase() + obligation.status.slice(1)}
+                      {new Date(obligation.dueDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={`${getPaymentStatusColor(obligation.status)} border`}
+                      >
+                        {obligation.status.charAt(0).toUpperCase() +
+                          obligation.status.slice(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -81,12 +102,16 @@ const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
 
       {/* Payment History */}
       <GlassCard className="p-6">
-        <h3 className="text-xl font-semibold text-white mb-4">Payment History</h3>
+        <h3 className="text-xl font-semibold text-white mb-4">
+          Payment History
+        </h3>
         {payments.length === 0 ? (
           <div className="text-center py-8 text-white/60">
             <CheckCircle className="w-12 h-12 mx-auto mb-4 text-white/40" />
             <p>No payments recorded</p>
-            <p className="text-sm">Payment history will appear here when payments are made</p>
+            <p className="text-sm">
+              Payment history will appear here when payments are made
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -102,10 +127,20 @@ const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
               </TableHeader>
               <TableBody>
                 {payments.map((payment) => (
-                  <TableRow key={payment.id} className="border-white/10 hover:bg-white/5">
-                    <TableCell>{new Date(payment.date).toLocaleDateString()}</TableCell>
-                    <TableCell className="font-semibold text-green-300">${payment.amount.toFixed(2)}</TableCell>
-                    <TableCell>{payment.method.charAt(0).toUpperCase() + payment.method.slice(1)}</TableCell>
+                  <TableRow
+                    key={payment.id}
+                    className="border-white/10 hover:bg-white/5"
+                  >
+                    <TableCell>
+                      {new Date(payment.date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="font-semibold text-green-300">
+                      ${payment.amount.toFixed(2)}
+                    </TableCell>
+                    <TableCell>
+                      {payment.method.charAt(0).toUpperCase() +
+                        payment.method.slice(1)}
+                    </TableCell>
                     <TableCell>{payment.reference || '-'}</TableCell>
                     <TableCell>{payment.notes || '-'}</TableCell>
                   </TableRow>

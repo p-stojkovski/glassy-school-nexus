@@ -14,14 +14,16 @@ interface SingleStudentSelectionTriggerProps {
   showObligationHint?: boolean;
 }
 
-const SingleStudentSelectionTrigger: React.FC<SingleStudentSelectionTriggerProps> = ({
+const SingleStudentSelectionTrigger: React.FC<
+  SingleStudentSelectionTriggerProps
+> = ({
   selectedStudent,
   onOpen,
   onClear,
-  placeholder = "Select a student",
+  placeholder = 'Select a student',
   disabled = false,
   className,
-  showObligationHint = false
+  showObligationHint = false,
 }) => {
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -35,16 +37,15 @@ const SingleStudentSelectionTrigger: React.FC<SingleStudentSelectionTriggerProps
       onClick={onOpen}
       disabled={disabled}
       className={cn(
-        "w-full justify-between bg-white/20 border-white/30 text-white hover:bg-white/30 hover:text-white",
+        'w-full justify-between bg-white/20 border-white/30 text-white hover:bg-white/30 hover:text-white',
         className
       )}
     >
       <div className="flex items-center gap-2 flex-1 text-left">
-        <User className="w-4 h-4 text-white/60" />        {selectedStudent ? (
+        <User className="w-4 h-4 text-white/60" />{' '}
+        {selectedStudent ? (
           <div className="flex-1">
-            <span className="font-medium">
-              {selectedStudent.name}
-            </span>
+            <span className="font-medium">{selectedStudent.name}</span>
             <span className="text-white/70 text-sm ml-2">
               (ID: {selectedStudent.id})
             </span>
@@ -60,7 +61,7 @@ const SingleStudentSelectionTrigger: React.FC<SingleStudentSelectionTriggerProps
           </span>
         )}
       </div>
-      
+
       <div className="flex items-center gap-1">
         {selectedStudent && onClear && (
           <Button

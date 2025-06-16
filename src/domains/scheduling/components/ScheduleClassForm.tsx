@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -10,7 +9,6 @@ import DateTimeFields from './forms/DateTimeFields';
 import RecurringOptions from './forms/RecurringOptions';
 import { ScheduleFormData } from './types';
 import { RecurringPattern } from '@/types/enums';
-
 
 interface ScheduleClassFormProps {
   onSubmit: (data: ScheduleFormData) => void;
@@ -38,23 +36,29 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
-    if (!formData.classId || !formData.teacherId || !formData.classroomId || 
-        !formData.date || !formData.startTime || !formData.endTime) {
+    if (
+      !formData.classId ||
+      !formData.teacherId ||
+      !formData.classroomId ||
+      !formData.date ||
+      !formData.startTime ||
+      !formData.endTime
+    ) {
       toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
+        title: 'Validation Error',
+        description: 'Please fill in all required fields.',
+        variant: 'destructive',
       });
       return;
     }
 
     if (formData.studentIds.length === 0) {
       toast({
-        title: "Validation Error",
-        description: "Please select at least one student.",
-        variant: "destructive",
+        title: 'Validation Error',
+        description: 'Please select at least one student.',
+        variant: 'destructive',
       });
       return;
     }
@@ -74,15 +78,18 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <BasicClassInfo formData={formData} onFormDataChange={setFormData} />
-        
+
         <DateTimeFields formData={formData} onFormDataChange={setFormData} />
 
         <RecurringOptions
           isRecurring={formData.isRecurring}
           recurringPattern={formData.recurringPattern}
-          onRecurringChange={(isRecurring) => setFormData({...formData, isRecurring})}
+          onRecurringChange={(isRecurring) =>
+            setFormData({ ...formData, isRecurring })
+          }
           onPatternChange={(pattern: RecurringPattern) =>
-            setFormData({ ...formData, recurringPattern: pattern })}
+            setFormData({ ...formData, recurringPattern: pattern })
+          }
         />
 
         {/* Notes */}
@@ -90,7 +97,9 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
           <Label className="text-white mb-2 block">Notes</Label>
           <Textarea
             value={formData.notes}
-            onChange={(e) => setFormData({...formData, notes: e.target.value})}
+            onChange={(e) =>
+              setFormData({ ...formData, notes: e.target.value })
+            }
             placeholder="Additional notes for this class session..."
             className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
             rows={3}

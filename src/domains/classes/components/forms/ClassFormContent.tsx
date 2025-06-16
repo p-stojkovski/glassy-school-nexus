@@ -1,10 +1,22 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Class } from '@/domains/classes/classesSlice';
 import { useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
@@ -33,7 +45,11 @@ export interface ClassFormData {
   status: 'active' | 'inactive' | 'pending';
 }
 
-const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel, editingClass }) => {
+const ClassFormContent: React.FC<ClassFormContentProps> = ({
+  onSubmit,
+  onCancel,
+  editingClass,
+}) => {
   const { teachers } = useAppSelector((state: RootState) => state.teachers);
   const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
   const { students } = useAppSelector((state: RootState) => state.students);
@@ -41,23 +57,25 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
   const [isStudentPanelOpen, setIsStudentPanelOpen] = useState(false);
 
   const form = useForm<ClassFormData>({
-    defaultValues: editingClass ? {
-      name: editingClass.name,
-      subject: editingClass.teacher.subject,
-      teacherId: editingClass.teacher.id,
-      classroomId: editingClass.roomId || '',
-      schedule: editingClass.schedule,
-      studentIds: editingClass.studentIds || [],
-      status: editingClass.status,
-    } : {
-      name: '',
-      subject: '',
-      teacherId: '',
-      classroomId: '',
-      schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:30' }],
-      studentIds: [],
-      status: 'active',
-    }
+    defaultValues: editingClass
+      ? {
+          name: editingClass.name,
+          subject: editingClass.teacher.subject,
+          teacherId: editingClass.teacher.id,
+          classroomId: editingClass.roomId || '',
+          schedule: editingClass.schedule,
+          studentIds: editingClass.studentIds || [],
+          status: editingClass.status,
+        }
+      : {
+          name: '',
+          subject: '',
+          teacherId: '',
+          classroomId: '',
+          schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:30' }],
+          studentIds: [],
+          status: 'active',
+        },
   });
 
   const handleSubmit = (data: ClassFormData) => {
@@ -72,7 +90,7 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
             <FormField
               control={form.control}
               name="name"
-              rules={{ required: "Class name is required" }}
+              rules={{ required: 'Class name is required' }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-white">Class Name</FormLabel>
@@ -91,7 +109,7 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
             <FormField
               control={form.control}
               name="subject"
-              rules={{ required: "Subject is required" }}
+              rules={{ required: 'Subject is required' }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-white">Subject</FormLabel>
@@ -112,10 +130,12 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">            <FormField
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {' '}
+            <FormField
               control={form.control}
               name="teacherId"
-              rules={{ required: "Teacher is required" }}
+              rules={{ required: 'Teacher is required' }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-white">Assigned Teacher</FormLabel>
@@ -145,13 +165,16 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
                   <FormMessage />
                 </FormItem>
               )}
-            /><FormField
+            />
+            <FormField
               control={form.control}
               name="classroomId"
-              rules={{ required: "Classroom is required" }}
+              rules={{ required: 'Classroom is required' }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white">Assigned Classroom</FormLabel>
+                  <FormLabel className="text-white">
+                    Assigned Classroom
+                  </FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger className="bg-white/10 border-white/20 text-white">
@@ -176,16 +199,22 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
                     </Select>
                   </FormControl>
                   <FormMessage />
-                </FormItem>              )}
-            />          </div>
+                </FormItem>
+              )}
+            />{' '}
+          </div>
 
           {/* Student Assignment Section */}
-          <div>            <FormField
+          <div>
+            {' '}
+            <FormField
               control={form.control}
               name="studentIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white mb-4 block">Assign Students</FormLabel>
+                  <FormLabel className="text-white mb-4 block">
+                    Assign Students
+                  </FormLabel>
                   <FormControl>
                     <StudentSelectionTrigger
                       students={students}
@@ -198,10 +227,10 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
                 </FormItem>
               )}
             />
-          </div>          
-          
+          </div>
+
           <ScheduleForm />
-          
+
           <div className="flex justify-end items-center space-x-4 pt-4">
             <Button
               type="button"
@@ -216,10 +245,11 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({ onSubmit, onCancel,
               className="bg-yellow-500 hover:bg-yellow-600 text-black"
             >
               {editingClass ? 'Update Class' : 'Create Class'}
-            </Button>          </div>
+            </Button>{' '}
+          </div>
         </form>
       </Form>
-      
+
       {/* Student Selection Panel */}
       <StudentSelectionPanel
         students={students}

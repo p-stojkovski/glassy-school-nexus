@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { StudentStatus } from '@/types/enums';
 
@@ -43,7 +42,8 @@ const initialState: StudentsState = {
 const studentsSlice = createSlice({
   name: 'students',
   initialState,
-  reducers: {    setStudents: (state, action: PayloadAction<Student[]>) => {
+  reducers: {
+    setStudents: (state, action: PayloadAction<Student[]>) => {
       state.students = action.payload;
       try {
         localStorage.setItem('students', JSON.stringify(action.payload));
@@ -62,7 +62,7 @@ const studentsSlice = createSlice({
       }
     },
     updateStudent: (state, action: PayloadAction<Student>) => {
-      const index = state.students.findIndex(s => s.id === action.payload.id);
+      const index = state.students.findIndex((s) => s.id === action.payload.id);
       if (index !== -1) {
         state.students[index] = action.payload;
         try {
@@ -74,7 +74,7 @@ const studentsSlice = createSlice({
       }
     },
     deleteStudent: (state, action: PayloadAction<string>) => {
-      state.students = state.students.filter(s => s.id !== action.payload);
+      state.students = state.students.filter((s) => s.id !== action.payload);
       try {
         localStorage.setItem('students', JSON.stringify(state.students));
       } catch (e) {
@@ -100,19 +100,22 @@ const studentsSlice = createSlice({
   },
 });
 
-export const { 
-  setStudents, 
-  addStudent, 
-  updateStudent, 
-  deleteStudent, 
-  setLoading, 
+export const {
+  setStudents,
+  addStudent,
+  updateStudent,
+  deleteStudent,
+  setLoading,
   setError,
-  clearAllStudentData 
+  clearAllStudentData,
 } = studentsSlice.actions;
 
 // Selectors
-export const selectStudents = (state: { students: StudentsState }) => state.students.students;
-export const selectLoading = (state: { students: StudentsState }) => state.students.loading;
-export const selectError = (state: { students: StudentsState }) => state.students.error;
+export const selectStudents = (state: { students: StudentsState }) =>
+  state.students.students;
+export const selectLoading = (state: { students: StudentsState }) =>
+  state.students.loading;
+export const selectError = (state: { students: StudentsState }) =>
+  state.students.error;
 
 export default studentsSlice.reducer;

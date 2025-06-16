@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,10 @@ interface DateTimeFieldsProps {
   onFormDataChange: (data: ScheduleFormData) => void;
 }
 
-const DateTimeFields: React.FC<DateTimeFieldsProps> = ({ formData, onFormDataChange }) => {
+const DateTimeFields: React.FC<DateTimeFieldsProps> = ({
+  formData,
+  onFormDataChange,
+}) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Date */}
@@ -22,7 +24,9 @@ const DateTimeFields: React.FC<DateTimeFieldsProps> = ({ formData, onFormDataCha
         <Input
           type="date"
           value={formData.date}
-          onChange={(e) => onFormDataChange({...formData, date: e.target.value})}
+          onChange={(e) =>
+            onFormDataChange({ ...formData, date: e.target.value })
+          }
           className="bg-white/10 border-white/20 text-white"
         />
       </div>
@@ -36,7 +40,9 @@ const DateTimeFields: React.FC<DateTimeFieldsProps> = ({ formData, onFormDataCha
         <Input
           type="time"
           value={formData.startTime}
-          onChange={(e) => onFormDataChange({...formData, startTime: e.target.value})}
+          onChange={(e) =>
+            onFormDataChange({ ...formData, startTime: e.target.value })
+          }
           className="bg-white/10 border-white/20 text-white"
         />
       </div>
@@ -50,7 +56,9 @@ const DateTimeFields: React.FC<DateTimeFieldsProps> = ({ formData, onFormDataCha
         <Input
           type="time"
           value={formData.endTime}
-          onChange={(e) => onFormDataChange({...formData, endTime: e.target.value})}
+          onChange={(e) =>
+            onFormDataChange({ ...formData, endTime: e.target.value })
+          }
           className="bg-white/10 border-white/20 text-white"
         />
       </div>

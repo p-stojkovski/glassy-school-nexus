@@ -7,7 +7,8 @@ const DemoModeNotification: React.FC = () => {
     <Alert className="bg-blue-900/30 text-blue-100 border-blue-700 mb-6">
       <AlertTriangle className="h-4 w-4 mr-2" />
       <AlertDescription>
-        <strong>Demo Mode:</strong> Grades and assessments are stored locally in your browser and not permanent.
+        <strong>Demo Mode:</strong> Grades and assessments are stored locally in
+        your browser and not permanent.
       </AlertDescription>
     </Alert>
   );

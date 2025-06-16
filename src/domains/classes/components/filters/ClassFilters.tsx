@@ -1,8 +1,13 @@
-
 import React from 'react';
 import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import GlassCard from '@/components/common/GlassCard';
 
 interface ClassFiltersProps {
@@ -35,7 +40,10 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
           />
         </div>
         <div className="sm:w-48">
-          <Select value={statusFilter} onValueChange={(value) => onFilterChange('status', value)}>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => onFilterChange('status', value)}
+          >
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue />
@@ -49,7 +57,10 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
           </Select>
         </div>
         <div className="sm:w-48">
-          <Select value={subjectFilter} onValueChange={(value) => onFilterChange('subject', value)}>
+          <Select
+            value={subjectFilter}
+            onValueChange={(value) => onFilterChange('subject', value)}
+          >
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue />

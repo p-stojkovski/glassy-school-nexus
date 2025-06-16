@@ -1,12 +1,11 @@
-
 import React from 'react';
 import { Provider } from 'react-redux';
 import { useAppSelector } from '@/store/hooks';
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "next-themes";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { ThemeProvider } from 'next-themes';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { store } from './store';
 import { RootState } from './store';
 import LoginForm from '@/domains/auth/components/LoginForm';
@@ -23,7 +22,7 @@ import AttendanceManagement from './pages/AttendanceManagement';
 import GradesManagement from './pages/GradesManagement';
 import FinancialManagement from './pages/FinancialManagement';
 import StudentProfilePage from './domains/students/components/profile/StudentProfilePage';
-import NotFound from "./pages/NotFound";
+import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,13 +44,17 @@ const AppContent: React.FC = () => {
   return (
     <AppLayout>
       <Routes>
-        <Route path="/" element={<Dashboard />} />        <Route path="/classrooms" element={<ClassroomManagement />} />        <Route path="/students" element={<StudentManagement />} />
+        <Route path="/" element={<Dashboard />} />{' '}
+        <Route path="/classrooms" element={<ClassroomManagement />} />{' '}
+        <Route path="/students" element={<StudentManagement />} />
         <Route path="/students/:studentId" element={<StudentProfilePage />} />
         <Route path="/classes" element={<ClassManagement />} />
         <Route path="/classes/new" element={<ClassForm />} />
         <Route path="/classes/edit/:id" element={<ClassForm />} />
-        <Route path="/teachers" element={<Teachers />} />        <Route path="/scheduling" element={<Scheduling />} />
-        <Route path="/scheduling/new" element={<ScheduleForm />} />        <Route path="/scheduling/edit/:id" element={<ScheduleForm />} />
+        <Route path="/teachers" element={<Teachers />} />{' '}
+        <Route path="/scheduling" element={<Scheduling />} />
+        <Route path="/scheduling/new" element={<ScheduleForm />} />{' '}
+        <Route path="/scheduling/edit/:id" element={<ScheduleForm />} />
         <Route path="/attendance" element={<AttendanceManagement />} />
         <Route path="/grades" element={<GradesManagement />} />
         <Route path="/finance" element={<FinancialManagement />} />

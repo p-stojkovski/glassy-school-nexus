@@ -1,9 +1,14 @@
-
 import React from 'react';
 import { Search, Filter, CreditCard, GraduationCap, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import GlassCard from '@/components/common/GlassCard';
 import { Class } from '@/domains/classes/classesSlice';
 
@@ -13,7 +18,9 @@ interface StudentFiltersProps {
   statusFilter: 'all' | 'active' | 'inactive';
   setStatusFilter: (filter: 'all' | 'active' | 'inactive') => void;
   paymentStatusFilter: 'all' | 'pending' | 'partial' | 'paid' | 'overdue';
-  setPaymentStatusFilter: (filter: 'all' | 'pending' | 'partial' | 'paid' | 'overdue') => void;
+  setPaymentStatusFilter: (
+    filter: 'all' | 'pending' | 'partial' | 'paid' | 'overdue'
+  ) => void;
   classFilter: 'all' | 'unassigned' | string;
   setClassFilter: (filter: 'all' | 'unassigned' | string) => void;
   clearFilters: () => void;
@@ -31,7 +38,8 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
   setClassFilter,
   clearFilters,
   classes,
-}) => {return (
+}) => {
+  return (
     <GlassCard className="p-6">
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Search Input */}
@@ -44,10 +52,14 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
             className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
           />
         </div>
-        
         {/* Status Filter */}
         <div className="w-full lg:w-48">
-          <Select value={statusFilter} onValueChange={(value: 'all' | 'active' | 'inactive') => setStatusFilter(value)}>
+          <Select
+            value={statusFilter}
+            onValueChange={(value: 'all' | 'active' | 'inactive') =>
+              setStatusFilter(value)
+            }
+          >
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue />
@@ -59,10 +71,14 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
             </SelectContent>
           </Select>
         </div>
-        
         {/* Payment Status Filter */}
         <div className="w-full lg:w-48">
-          <Select value={paymentStatusFilter} onValueChange={(value: 'all' | 'pending' | 'partial' | 'paid' | 'overdue') => setPaymentStatusFilter(value)}>
+          <Select
+            value={paymentStatusFilter}
+            onValueChange={(
+              value: 'all' | 'pending' | 'partial' | 'paid' | 'overdue'
+            ) => setPaymentStatusFilter(value)}
+          >
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <CreditCard className="w-4 h-4 mr-2" />
               <SelectValue />
@@ -75,9 +91,13 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
               <SelectItem value="overdue">Overdue</SelectItem>
             </SelectContent>
           </Select>
-        </div>        {/* Class Filter */}
+        </div>{' '}
+        {/* Class Filter */}
         <div className="w-full lg:w-48">
-          <Select value={classFilter} onValueChange={(value: string) => setClassFilter(value)}>
+          <Select
+            value={classFilter}
+            onValueChange={(value: string) => setClassFilter(value)}
+          >
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <GraduationCap className="w-4 h-4 mr-2" />
               <SelectValue />
@@ -92,7 +112,8 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
               ))}
             </SelectContent>
           </Select>
-        </div>        {/* Clear Filters Button */}
+        </div>{' '}
+        {/* Clear Filters Button */}
         <div className="w-full lg:w-auto">
           <Button
             onClick={clearFilters}

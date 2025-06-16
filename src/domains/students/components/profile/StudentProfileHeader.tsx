@@ -6,7 +6,9 @@ interface StudentProfileHeaderProps {
   onBack: () => void;
 }
 
-const StudentProfileHeader: React.FC<StudentProfileHeaderProps> = ({ onBack }) => {
+const StudentProfileHeader: React.FC<StudentProfileHeaderProps> = ({
+  onBack,
+}) => {
   return (
     <div className="flex items-center gap-4">
       <Button

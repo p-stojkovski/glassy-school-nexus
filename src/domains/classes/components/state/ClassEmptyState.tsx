@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BookOpen, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,18 +8,23 @@ interface ClassEmptyStateProps {
   onCreateClass: () => void;
 }
 
-const ClassEmptyState: React.FC<ClassEmptyStateProps> = ({ hasFilters, onCreateClass }) => {
+const ClassEmptyState: React.FC<ClassEmptyStateProps> = ({
+  hasFilters,
+  onCreateClass,
+}) => {
   return (
     <GlassCard className="p-12 text-center">
       <BookOpen className="w-16 h-16 text-white/40 mx-auto mb-4" />
-      <h3 className="text-xl font-semibold text-white mb-2">No Classes Found</h3>
+      <h3 className="text-xl font-semibold text-white mb-2">
+        No Classes Found
+      </h3>
       <p className="text-white/60 mb-6">
         {hasFilters
-          ? 'No classes match your current search criteria.' 
+          ? 'No classes match your current search criteria.'
           : 'Start by creating your first class.'}
       </p>
       {!hasFilters && (
-        <Button 
+        <Button
           onClick={onCreateClass}
           className="bg-yellow-500 hover:bg-yellow-600 text-black"
         >

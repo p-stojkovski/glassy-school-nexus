@@ -13,10 +13,17 @@ import { Class } from '@/domains/classes/classesSlice';
 const ClassManagement: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [subjectFilter, setSubjectFilter] = useState<'all' | 'English' | 'Mathematics' | 'Physics'>('all');
-  const [levelFilter, setLevelFilter] = useState<'all' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [showOnlyWithAvailableSlots, setShowOnlyWithAvailableSlots] = useState(false);
+  const [subjectFilter, setSubjectFilter] = useState<
+    'all' | 'English' | 'Mathematics' | 'Physics'
+  >('all');
+  const [levelFilter, setLevelFilter] = useState<
+    'all' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'
+  >('all');
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'active' | 'inactive'
+  >('all');
+  const [showOnlyWithAvailableSlots, setShowOnlyWithAvailableSlots] =
+    useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [classToDelete, setClassToDelete] = useState<Class | null>(null);
 
@@ -25,13 +32,13 @@ const ClassManagement: React.FC = () => {
     filteredClasses,
     handleCreateClass,
     handleUpdateClass,
-    handleDeleteClass
+    handleDeleteClass,
   } = useClassManagement({
     searchTerm,
     subjectFilter,
     levelFilter,
     statusFilter,
-    showOnlyWithAvailableSlots
+    showOnlyWithAvailableSlots,
   });
 
   const handleAddClass = () => {
@@ -62,12 +69,25 @@ const ClassManagement: React.FC = () => {
   const handleFilterChange = (type: string, value: string) => {
     switch (type) {
       case 'subject':
-        if (value === 'all' || value === 'English' || value === 'Mathematics' || value === 'Physics') {
+        if (
+          value === 'all' ||
+          value === 'English' ||
+          value === 'Mathematics' ||
+          value === 'Physics'
+        ) {
           setSubjectFilter(value);
         }
         break;
       case 'level':
-        if (value === 'all' || value === 'A1' || value === 'A2' || value === 'B1' || value === 'B2' || value === 'C1' || value === 'C2') {
+        if (
+          value === 'all' ||
+          value === 'A1' ||
+          value === 'A2' ||
+          value === 'B1' ||
+          value === 'B2' ||
+          value === 'C1' ||
+          value === 'C2'
+        ) {
           setLevelFilter(value);
         }
         break;
@@ -86,7 +106,12 @@ const ClassManagement: React.FC = () => {
     return <ClassLoading />;
   }
 
-  const hasFilters = searchTerm !== '' || subjectFilter !== 'all' || levelFilter !== 'all' || statusFilter !== 'all' || showOnlyWithAvailableSlots;
+  const hasFilters =
+    searchTerm !== '' ||
+    subjectFilter !== 'all' ||
+    levelFilter !== 'all' ||
+    statusFilter !== 'all' ||
+    showOnlyWithAvailableSlots;
 
   return (
     <div className="space-y-6">
@@ -103,7 +128,7 @@ const ClassManagement: React.FC = () => {
       />
 
       {filteredClasses.length === 0 ? (
-        <ClassEmptyState 
+        <ClassEmptyState
           onCreateClass={handleAddClass}
           hasFilters={hasFilters}
         />

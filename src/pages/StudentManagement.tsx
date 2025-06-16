@@ -1,5 +1,10 @@
 import React from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import StudentHeader from '@/domains/students/components/layout/StudentHeader';
 import StudentFilters from '@/domains/students/components/filters/StudentFilters';
 import StudentTable from '@/domains/students/components/list/StudentTable';

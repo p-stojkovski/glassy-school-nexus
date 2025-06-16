@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,15 +6,36 @@ import { useAppDispatch } from '@/store/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Teacher, addTeacher, updateTeacher } from '../teachersSlice';
 import { TeacherStatus } from '@/types/enums';
 import { toast } from '@/hooks/use-toast';
 
 const teacherSchema = z.object({
-  name: z.string().min(1, 'Full name is required').max(100, 'Name must be less than 100 characters'),
+  name: z
+    .string()
+    .min(1, 'Full name is required')
+    .max(100, 'Name must be less than 100 characters'),
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().optional(),
   subject: z.string().min(1, 'Subject is required'),
@@ -31,7 +51,11 @@ interface TeacherFormProps {
   onClose: () => void;
 }
 
-const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) => {
+const TeacherForm: React.FC<TeacherFormProps> = ({
+  teacher,
+  isOpen,
+  onClose,
+}) => {
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,8 +75,8 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       if (teacher) {
         const updatedTeacher: Teacher = {
           ...teacher,
@@ -64,7 +88,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
         };
         dispatch(updateTeacher(updatedTeacher));
         toast({
-          title: "Teacher Updated",
+          title: 'Teacher Updated',
           description: `${data.name} has been successfully updated.`,
         });
       } else {
@@ -81,18 +105,18 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
         };
         dispatch(addTeacher(newTeacher));
         toast({
-          title: "Teacher Added",
+          title: 'Teacher Added',
           description: `${data.name} has been successfully added.`,
         });
       }
-      
+
       onClose();
       form.reset();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Something went wrong. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -101,8 +125,8 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent 
-        side="right" 
+      <SheetContent
+        side="right"
         className="w-full sm:max-w-md bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"
       >
         <SheetHeader className="pb-6 border-b border-white/20">
@@ -110,15 +134,22 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
             {teacher ? 'Edit Teacher' : 'Add New Teacher'}
           </SheetTitle>
         </SheetHeader>
-        
+
         <div className="mt-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">              <FormField
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-6"
+            >
+              {' '}
+              <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white font-semibold">Full Name *</FormLabel>
+                    <FormLabel className="text-white font-semibold">
+                      Full Name *
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter full name"
@@ -130,13 +161,14 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white font-semibold">Email Address *</FormLabel>
+                    <FormLabel className="text-white font-semibold">
+                      Email Address *
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
@@ -149,13 +181,14 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white font-semibold">Phone Number</FormLabel>
+                    <FormLabel className="text-white font-semibold">
+                      Phone Number
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter phone number"
@@ -167,62 +200,116 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="subject"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white font-semibold">Subject *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel className="text-white font-semibold">
+                      Subject *
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-yellow-400 focus:ring-yellow-400">
                           <SelectValue placeholder="Select subject" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-gray-800 border-white/20">
-                        <SelectItem value="Grammar & Writing" className="text-white hover:bg-white/10">Grammar & Writing</SelectItem>
-                        <SelectItem value="Conversation & Speaking" className="text-white hover:bg-white/10">Conversation & Speaking</SelectItem>
-                        <SelectItem value="Reading & Comprehension" className="text-white hover:bg-white/10">Reading & Comprehension</SelectItem>
-                        <SelectItem value="Listening & Pronunciation" className="text-white hover:bg-white/10">Listening & Pronunciation</SelectItem>
-                        <SelectItem value="Business English" className="text-white hover:bg-white/10">Business English</SelectItem>
-                        <SelectItem value="IELTS Preparation" className="text-white hover:bg-white/10">IELTS Preparation</SelectItem>
-                        <SelectItem value="TOEFL Preparation" className="text-white hover:bg-white/10">TOEFL Preparation</SelectItem>
+                        <SelectItem
+                          value="Grammar & Writing"
+                          className="text-white hover:bg-white/10"
+                        >
+                          Grammar & Writing
+                        </SelectItem>
+                        <SelectItem
+                          value="Conversation & Speaking"
+                          className="text-white hover:bg-white/10"
+                        >
+                          Conversation & Speaking
+                        </SelectItem>
+                        <SelectItem
+                          value="Reading & Comprehension"
+                          className="text-white hover:bg-white/10"
+                        >
+                          Reading & Comprehension
+                        </SelectItem>
+                        <SelectItem
+                          value="Listening & Pronunciation"
+                          className="text-white hover:bg-white/10"
+                        >
+                          Listening & Pronunciation
+                        </SelectItem>
+                        <SelectItem
+                          value="Business English"
+                          className="text-white hover:bg-white/10"
+                        >
+                          Business English
+                        </SelectItem>
+                        <SelectItem
+                          value="IELTS Preparation"
+                          className="text-white hover:bg-white/10"
+                        >
+                          IELTS Preparation
+                        </SelectItem>
+                        <SelectItem
+                          value="TOEFL Preparation"
+                          className="text-white hover:bg-white/10"
+                        >
+                          TOEFL Preparation
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage className="text-red-300" />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white font-semibold">Employment Status *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel className="text-white font-semibold">
+                      Employment Status *
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-yellow-400 focus:ring-yellow-400">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-gray-800 border-white/20">
-                        <SelectItem value="active" className="text-white hover:bg-white/10">Active</SelectItem>
-                        <SelectItem value="inactive" className="text-white hover:bg-white/10">Inactive</SelectItem>
+                        <SelectItem
+                          value="active"
+                          className="text-white hover:bg-white/10"
+                        >
+                          Active
+                        </SelectItem>
+                        <SelectItem
+                          value="inactive"
+                          className="text-white hover:bg-white/10"
+                        >
+                          Inactive
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage className="text-red-300" />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white font-semibold">Additional Notes</FormLabel>
+                    <FormLabel className="text-white font-semibold">
+                      Additional Notes
+                    </FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Enter any additional notes..."
@@ -234,17 +321,21 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, isOpen, onClose }) =
                   </FormItem>
                 )}
               />
-
               <div className="flex gap-4 pt-6 border-t border-white/20">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isLoading}
                   className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
                 >
-                  {isLoading ? 'Saving...' : (teacher ? 'Update Teacher' : 'Add Teacher')}                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                  {isLoading
+                    ? 'Saving...'
+                    : teacher
+                      ? 'Update Teacher'
+                      : 'Add Teacher'}{' '}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={onClose}
                   className="flex-1 bg-white/5 hover:bg-white/10 text-white border-white/10 hover:border-white/20 font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                 >

@@ -33,7 +33,7 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
               {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
             </Badge>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="flex items-center gap-2 text-white/70">
               <Mail className="w-4 h-4" />
@@ -49,11 +49,15 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
             </div>
             <div className="flex items-center gap-2 text-white/70">
               <Calendar className="w-4 h-4" />
-              <span>Joined: {new Date(student.joinDate).toLocaleDateString()}</span>
+              <span>
+                Joined: {new Date(student.joinDate).toLocaleDateString()}
+              </span>
             </div>
             <div className="flex items-center gap-2 text-white/70">
               <Users className="w-4 h-4" />
-              <span>Class: {studentClass ? studentClass.name : 'Unassigned'}</span>
+              <span>
+                Class: {studentClass ? studentClass.name : 'Unassigned'}
+              </span>
             </div>
             {outstandingBalance > 0 && (
               <div className="flex items-center gap-2 text-red-400">

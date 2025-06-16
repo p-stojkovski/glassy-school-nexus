@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -46,21 +45,24 @@ const SchedulingOverview: React.FC<SchedulingOverviewProps> = ({
                           schedule.status === ScheduledClassStatus.Scheduled
                             ? 'default'
                             : schedule.status === ScheduledClassStatus.Canceled
-                            ? 'destructive'
-                            : 'secondary'
+                              ? 'destructive'
+                              : 'secondary'
                         }
                         className={
                           schedule.status === ScheduledClassStatus.Scheduled
                             ? 'bg-green-500/20 text-green-300'
                             : schedule.status === ScheduledClassStatus.Canceled
-                            ? 'bg-red-500/20 text-red-300'
-                            : 'bg-blue-500/20 text-blue-300'
+                              ? 'bg-red-500/20 text-red-300'
+                              : 'bg-blue-500/20 text-blue-300'
                         }
                       >
                         {schedule.status}
                       </Badge>
                       {schedule.isRecurring && (
-                        <Badge variant="outline" className="border-yellow-500/50 text-yellow-300">
+                        <Badge
+                          variant="outline"
+                          className="border-yellow-500/50 text-yellow-300"
+                        >
                           Recurring
                         </Badge>
                       )}

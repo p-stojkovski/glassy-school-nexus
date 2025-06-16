@@ -1,9 +1,12 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useAppDispatch } from '@/store/hooks';
-import { loginStart, loginSuccess, loginFailure } from '@/domains/auth/authSlice';
+import {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+} from '@/domains/auth/authSlice';
 import { addNotification } from '@/store/slices/uiSlice';
 import authService from '@/services/authService';
 import GlassCard from '@/components/common/GlassCard';
@@ -25,16 +28,20 @@ const LoginForm: React.FC = () => {
     try {
       const user = await authService.login({ email, password });
       dispatch(loginSuccess(user));
-      dispatch(addNotification({
-        type: 'success',
-        message: 'Welcome back! Login successful.',
-      }));
+      dispatch(
+        addNotification({
+          type: 'success',
+          message: 'Welcome back! Login successful.',
+        })
+      );
     } catch (error) {
       dispatch(loginFailure());
-      dispatch(addNotification({
-        type: 'error',
-        message: 'Invalid credentials. Please try again.',
-      }));
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: 'Invalid credentials. Please try again.',
+        })
+      );
     } finally {
       setLoading(false);
     }
@@ -55,9 +62,9 @@ const LoginForm: React.FC = () => {
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
               className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center overflow-hidden"
             >
-              <img 
-                src="/lovable-uploads/0a12f78e-1752-49f8-8f2d-a8b7c70871ab.png" 
-                alt="Think English" 
+              <img
+                src="/lovable-uploads/0a12f78e-1752-49f8-8f2d-a8b7c70871ab.png"
+                alt="Think English"
                 className="w-full h-full object-cover"
               />
             </motion.div>
@@ -67,7 +74,8 @@ const LoginForm: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />              <Input
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />{' '}
+              <Input
                 type="email"
                 placeholder="Email address"
                 value={email}
@@ -92,7 +100,11 @@ const LoginForm: React.FC = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
 
