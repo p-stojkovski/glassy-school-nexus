@@ -10,6 +10,7 @@ import {
 } from '../classesSlice';
 import type { ClassFormData } from '../components/forms/ClassFormContent';
 import { toast } from '@/hooks/use-toast';
+import { ClassStatus } from '@/types/enums';
 
 interface UseClassManagementProps {
   searchTerm: string;
@@ -68,7 +69,7 @@ export const useClassManagement = ({
           { day: 'Monday', startTime: '09:00', endTime: '10:30' },
           { day: 'Wednesday', startTime: '09:00', endTime: '10:30' },
         ],
-        status: 'active',
+        status: ClassStatus.Active,
         subject: 'English',
         level: 'A1',
         price: 75,
@@ -115,7 +116,7 @@ export const useClassManagement = ({
           { day: 'Tuesday', startTime: '11:00', endTime: '12:30' },
           { day: 'Thursday', startTime: '11:00', endTime: '12:30' },
         ],
-        status: 'active',
+        status: ClassStatus.Active,
         subject: 'English',
         level: 'B1',
         price: 85,
@@ -182,7 +183,7 @@ export const useClassManagement = ({
         room: selectedClassroom?.name || '',
         roomId: data.classroomId, // Store classroom ID reference
         schedule: data.schedule,
-        status: data.status,
+        status: data.status as ClassStatus,
         subject: data.subject,
         level: 'A1',
         price: 75,
@@ -229,7 +230,7 @@ export const useClassManagement = ({
         room: selectedClassroom?.name || '',
         roomId: data.classroomId,
         schedule: data.schedule,
-        status: data.status,
+        status: data.status as ClassStatus,
         subject: data.subject,
         students: data.studentIds ? data.studentIds.length : 0, // Update student count based on selected students
         studentIds: data.studentIds || [], // Include updated student IDs
