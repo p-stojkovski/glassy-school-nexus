@@ -43,20 +43,8 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Status Badge */}
+          {/* Class Info */}
           <div className="flex items-center gap-4">
-            <Badge
-              className={`${
-                classItem.status === 'active'
-                  ? 'bg-green-500/20 text-green-300'
-                  : classItem.status === 'inactive'
-                    ? 'bg-red-500/20 text-red-300'
-                    : 'bg-yellow-500/20 text-yellow-300'
-              }`}
-            >
-              {classItem.status}
-            </Badge>
-
             <Badge
               className={`${
                 isUpcoming()

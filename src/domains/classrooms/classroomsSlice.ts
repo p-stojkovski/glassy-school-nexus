@@ -1,14 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { saveToStorage, loadFromStorage } from '@/lib/storage';
 import { mockDataService } from '@/data/MockDataService';
-import { ClassroomStatus } from '@/types/enums';
 
 export interface Classroom {
   id: string;
   name: string;
   location: string;
   capacity: number;
-  status: ClassroomStatus;
   createdDate: string;
   lastUpdated: string;
 }
@@ -18,7 +16,7 @@ interface ClassroomsState {
   loading: boolean;
   selectedClassroom: Classroom | null;
   searchQuery: string;
-  filterBy: 'all' | ClassroomStatus;
+  filterBy: 'all';
 }
 
 // Load initial classrooms from localStorage if available
@@ -85,7 +83,7 @@ const classroomsSlice = createSlice({
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.searchQuery = action.payload;
     },
-    setFilterBy: (state, action: PayloadAction<'all' | ClassroomStatus>) => {
+    setFilterBy: (state, action: PayloadAction<'all'>) => {
       state.filterBy = action.payload;
     },
     resetDemoClassrooms: (state, action: PayloadAction<Classroom[]>) => {

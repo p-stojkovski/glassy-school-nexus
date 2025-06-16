@@ -11,7 +11,6 @@ import { useClassManagement } from '@/domains/classes/hooks/useClassManagement';
 import { DemoManager } from '@/data/components/DemoManager';
 import { useClassrooms } from '@/domains/classrooms/hooks/useClassrooms';
 import { Classroom } from '@/domains/classrooms/classroomsSlice';
-import { ClassroomStatus } from '@/types/enums';
 
 const ClassForm: React.FC = () => {
   const navigate = useNavigate();
@@ -31,7 +30,6 @@ const ClassForm: React.FC = () => {
           name: 'Room 101',
           location: 'Building A, 1st Floor',
           capacity: 25,
-          status: ClassroomStatus.Active,
           createdDate: '2023-01-15T10:00:00Z',
           lastUpdated: '2023-06-01T14:30:00Z',
         },
@@ -40,7 +38,6 @@ const ClassForm: React.FC = () => {
           name: 'Room 202',
           location: 'Building A, 2nd Floor',
           capacity: 20,
-          status: ClassroomStatus.Active,
           createdDate: '2023-01-15T10:30:00Z',
           lastUpdated: '2023-06-01T14:45:00Z',
         },
@@ -49,7 +46,6 @@ const ClassForm: React.FC = () => {
           name: 'Room 305',
           location: 'Building B, 3rd Floor',
           capacity: 30,
-          status: ClassroomStatus.Active,
           createdDate: '2023-01-16T09:00:00Z',
           lastUpdated: '2023-06-01T15:00:00Z',
         },
@@ -63,7 +59,6 @@ const ClassForm: React.FC = () => {
     searchTerm: '',
     subjectFilter: 'all',
     levelFilter: 'all',
-    statusFilter: 'all',
     showOnlyWithAvailableSlots: false,
   });
 

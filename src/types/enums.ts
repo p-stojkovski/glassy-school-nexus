@@ -4,12 +4,6 @@ export enum UserRole {
   Student = 'student',
 }
 
-export enum ClassroomStatus {
-  Active = 'active',
-  Inactive = 'inactive',
-  Maintenance = 'maintenance',
-}
-
 export enum AttendanceStatus {
   Present = 'present',
   Absent = 'absent',
@@ -56,20 +50,9 @@ export enum NotificationType {
   Info = 'info',
 }
 
-export enum TeacherStatus {
-  Active = 'active',
-  Inactive = 'inactive',
-}
-
 export enum StudentStatus {
   Active = 'active',
   Inactive = 'inactive',
-}
-
-export enum ClassStatus {
-  Active = 'active',
-  Inactive = 'inactive',
-  Pending = 'pending',
 }
 
 export enum ViewMode {

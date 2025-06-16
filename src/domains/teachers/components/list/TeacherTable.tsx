@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/pagination';
 import GlassCard from '@/components/common/GlassCard';
 import { Teacher } from '@/domains/teachers/teachersSlice';
-import { getTeacherStatusColor } from '@/utils/statusColors';
 
 interface TeacherTableProps {
   teachers: Teacher[];
@@ -149,12 +148,9 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit }) => {
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
                 Contact
-              </TableHead>
+              </TableHead>{' '}
               <TableHead className="text-white/90 font-semibold">
                 Subject
-              </TableHead>
-              <TableHead className="text-white/90 font-semibold">
-                Status
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
                 Classes
@@ -193,17 +189,9 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit }) => {
                       <div className="text-white/60">{teacher.phone}</div>
                     )}
                   </div>
-                </TableCell>
+                </TableCell>{' '}
                 <TableCell>
                   <div className="text-sm text-white/80">{teacher.subject}</div>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    className={`${getTeacherStatusColor(teacher.status)} border`}
-                  >
-                    {teacher.status.charAt(0).toUpperCase() +
-                      teacher.status.slice(1)}
-                  </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="text-sm text-white/80">

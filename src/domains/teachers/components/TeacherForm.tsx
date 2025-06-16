@@ -28,7 +28,6 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Teacher, addTeacher, updateTeacher } from '../teachersSlice';
-import { TeacherStatus } from '@/types/enums';
 import { toast } from '@/hooks/use-toast';
 import { RootState } from '@/store';
 
@@ -80,7 +79,6 @@ const createTeacherSchema = (
         }
       ),
     subject: z.string().min(1, 'Subject is required'),
-    status: z.enum([TeacherStatus.Active, TeacherStatus.Inactive]),
     notes: z.string().optional(),
   });
 
@@ -112,7 +110,6 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
       email: teacher?.email || '',
       phone: teacher?.phone || '',
       subject: teacher?.subject || '',
-      status: teacher?.status || TeacherStatus.Active,
       notes: teacher?.notes || '',
     },
   });
@@ -125,7 +122,6 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
         email: teacher.email,
         phone: teacher.phone || '',
         subject: teacher.subject,
-        status: teacher.status,
         notes: teacher.notes || '',
       });
     } else {
@@ -134,7 +130,6 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
         email: '',
         phone: '',
         subject: '',
-        status: TeacherStatus.Active,
         notes: '',
       });
     }
@@ -159,7 +154,6 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
           email: data.email,
           phone: data.phone?.trim() || '',
           subject: data.subject,
-          status: data.status,
           notes: data.notes?.trim() || '',
         };
         dispatch(updateTeacher(updatedTeacher));
@@ -175,7 +169,6 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
           email: data.email,
           phone: data.phone?.trim() || '',
           subject: data.subject,
-          status: data.status,
           joinDate: new Date().toISOString(),
           classIds: [],
           notes: data.notes?.trim() || '',
@@ -345,42 +338,6 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
                           className="text-white hover:bg-white/10"
                         >
                           TOEFL Preparation
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-300" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white font-semibold">
-                      Employment Status *
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-yellow-400 focus:ring-yellow-400">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-gray-800 border-white/20">
-                        <SelectItem
-                          value="active"
-                          className="text-white hover:bg-white/10"
-                        >
-                          Active
-                        </SelectItem>
-                        <SelectItem
-                          value="inactive"
-                          className="text-white hover:bg-white/10"
-                        >
-                          Inactive
                         </SelectItem>
                       </SelectContent>
                     </Select>

@@ -13,7 +13,6 @@ import GlassCard from '@/components/common/GlassCard';
 interface ClassFiltersProps {
   searchTerm: string;
   subjectFilter: string;
-  statusFilter: string;
   showOnlyWithAvailableSlots: boolean;
   onSearchChange: (value: string) => void;
   onFilterChange: (type: string, value: string) => void;
@@ -22,7 +21,6 @@ interface ClassFiltersProps {
 const ClassFilters: React.FC<ClassFiltersProps> = ({
   searchTerm,
   subjectFilter,
-  statusFilter,
   showOnlyWithAvailableSlots,
   onSearchChange,
   onFilterChange,
@@ -38,23 +36,6 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
           />
-        </div>
-        <div className="sm:w-48">
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => onFilterChange('status', value)}
-          >
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
         <div className="sm:w-48">
           <Select

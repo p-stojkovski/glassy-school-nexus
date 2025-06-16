@@ -69,23 +69,13 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher, onEdit }) => {
   return (
     <GlassCard className="p-6 hover:bg-white/5 transition-all duration-300">
       <div className="flex flex-col h-full">
-        {/* Header with Status */}
+        {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div>
               <h3 className="text-lg font-semibold text-white">
                 {teacher.name}
               </h3>
-              <Badge
-                variant={teacher.status === 'active' ? 'default' : 'secondary'}
-                className={
-                  teacher.status === 'active'
-                    ? 'bg-green-500/20 text-green-300 border-green-500/30'
-                    : 'bg-gray-500/20 text-gray-300 border-gray-500/30'
-                }
-              >
-                {teacher.status}
-              </Badge>
             </div>
           </div>{' '}
           <div className="flex space-x-2">

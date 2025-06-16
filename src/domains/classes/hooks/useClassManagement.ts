@@ -10,14 +10,12 @@ import {
 } from '../classesSlice';
 import type { ClassFormData } from '../components/forms/ClassFormContent';
 import { toast } from '@/hooks/use-toast';
-import { ClassStatus } from '@/types/enums';
 import { useMockData } from '@/data/hooks/useMockData';
 
 interface UseClassManagementProps {
   searchTerm: string;
   subjectFilter: 'all' | 'English' | 'Mathematics' | 'Physics';
   levelFilter: 'all' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
-  statusFilter: 'all' | 'active' | 'inactive';
   showOnlyWithAvailableSlots: boolean;
 }
 
@@ -25,7 +23,6 @@ export const useClassManagement = ({
   searchTerm,
   subjectFilter,
   levelFilter,
-  statusFilter,
   showOnlyWithAvailableSlots,
 }: UseClassManagementProps) => {
   const dispatch = useAppDispatch();
@@ -53,17 +50,11 @@ export const useClassManagement = ({
       subjectFilter === 'all' || classItem.subject === subjectFilter;
     const matchesLevel =
       levelFilter === 'all' || classItem.level === levelFilter;
-    const matchesStatus =
-      statusFilter === 'all' || classItem.status === statusFilter;
     const matchesAvailableSlots =
       !showOnlyWithAvailableSlots || classItem.students < classItem.maxStudents;
 
     return (
-      matchesSearch &&
-      matchesSubject &&
-      matchesLevel &&
-      matchesStatus &&
-      matchesAvailableSlots
+      matchesSearch && matchesSubject && matchesLevel && matchesAvailableSlots
     );
   });
   const handleCreateClass = async (data: ClassFormData) => {
@@ -89,7 +80,6 @@ export const useClassManagement = ({
         room: selectedClassroom?.name || '',
         roomId: data.classroomId, // Store classroom ID reference
         schedule: data.schedule,
-        status: data.status as ClassStatus,
         subject: data.subject,
         level: 'A1',
         price: 75,
@@ -135,7 +125,6 @@ export const useClassManagement = ({
         room: selectedClassroom?.name || '',
         roomId: data.classroomId,
         schedule: data.schedule,
-        status: data.status as ClassStatus,
         subject: data.subject,
         students: data.studentIds ? data.studentIds.length : 0, // Update student count based on selected students
         studentIds: data.studentIds || [], // Include updated student IDs

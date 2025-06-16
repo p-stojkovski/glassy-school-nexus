@@ -27,13 +27,10 @@ const Teachers: React.FC = () => {
     loadOnMount: true,
     showErrorToasts: true,
   });
-
   // Teacher management hook
   const {
     searchTerm,
     setSearchTerm,
-    statusFilter,
-    setStatusFilter,
     subjectFilter,
     setSubjectFilter,
     clearFilters,
@@ -72,7 +69,6 @@ const Teachers: React.FC = () => {
     <div className="space-y-6">
       {/* Demo Notice */}
       <DemoNotice message="You are viewing demo teacher data. All changes are temporary and will be lost on page refresh." />
-
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">
@@ -92,32 +88,28 @@ const Teachers: React.FC = () => {
             Add Teacher
           </Button>
         </div>
-      </div>
-
+      </div>{' '}
       {/* Enhanced Filters */}
       <TeacherFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
         subjectFilter={subjectFilter}
         setSubjectFilter={setSubjectFilter}
         clearFilters={clearFilters}
       />
-
       {/* Teachers Display */}
       {filteredTeachers.length === 0 ? (
         <GlassCard className="p-12 text-center">
           <Users className="w-16 h-16 text-white/40 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">
             No Teachers Found
-          </h3>
+          </h3>{' '}
           <p className="text-white/60 mb-6">
-            {searchTerm || statusFilter !== 'all' || subjectFilter !== 'all'
+            {searchTerm || subjectFilter !== 'all'
               ? 'No teachers match your current search criteria.'
               : 'Start by adding your first teacher to the system.'}
           </p>
-          {!searchTerm && statusFilter === 'all' && subjectFilter === 'all' && (
+          {!searchTerm && subjectFilter === 'all' && (
             <Button
               onClick={handleAddTeacher}
               className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
@@ -140,7 +132,6 @@ const Teachers: React.FC = () => {
           ))}
         </div>
       )}
-
       {/* Teacher Form Modal */}
       {isFormOpen && (
         <TeacherForm

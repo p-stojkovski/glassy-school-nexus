@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ClassroomStatus } from '@/types/enums';
 
 import {
   Form,
@@ -37,11 +36,6 @@ const classroomSchema = z.object({
     .number()
     .min(1, 'Capacity must be at least 1')
     .max(500, 'Capacity cannot exceed 500'),
-  status: z.enum([
-    ClassroomStatus.Active,
-    ClassroomStatus.Inactive,
-    ClassroomStatus.Maintenance,
-  ]),
 });
 
 type ClassroomFormData = z.infer<typeof classroomSchema>;
@@ -65,7 +59,6 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
       name: classroom?.name || '',
       location: classroom?.location || '',
       capacity: classroom?.capacity || 30,
-      status: classroom?.status || ClassroomStatus.Active,
     },
   });
 
@@ -132,46 +125,6 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
                   }
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                 />
-              </FormControl>
-              <FormMessage className="text-red-300" />
-            </FormItem>
-          )}
-        />{' '}
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-white font-semibold">Status</FormLabel>
-              <FormControl>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-yellow-400 focus:ring-yellow-400">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-white/20">
-                    <SelectItem
-                      value="active"
-                      className="text-white hover:bg-white/10"
-                    >
-                      Active
-                    </SelectItem>
-                    <SelectItem
-                      value="inactive"
-                      className="text-white hover:bg-white/10"
-                    >
-                      Inactive
-                    </SelectItem>
-                    <SelectItem
-                      value="maintenance"
-                      className="text-white hover:bg-white/10"
-                    >
-                      Maintenance
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
               </FormControl>
               <FormMessage className="text-red-300" />
             </FormItem>

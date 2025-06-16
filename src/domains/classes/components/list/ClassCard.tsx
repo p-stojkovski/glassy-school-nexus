@@ -60,19 +60,6 @@ const ClassCard: React.FC<ClassCardProps> = ({
           </p>
         ))}
       </div>
-      <div className="mt-4">
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            classItem.status === 'active'
-              ? 'bg-green-500/20 text-green-300'
-              : classItem.status === 'inactive'
-                ? 'bg-red-500/20 text-red-300'
-                : 'bg-yellow-500/20 text-yellow-300'
-          }`}
-        >
-          {classItem.status}
-        </span>
-      </div>
 
       <div className="text-xs text-white/50 border-t border-white/10 pt-3 mt-4">
         Last updated: {new Date(classItem.updatedAt).toLocaleDateString()}

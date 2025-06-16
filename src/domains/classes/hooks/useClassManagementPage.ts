@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
 import { Class, deleteClass } from '../classesSlice';
-import { ClassStatus } from '@/types/enums';
 import { toast } from '@/hooks/use-toast';
 import { useClassesData } from '@/data/hooks/useClassesData';
 import { useTeachersData } from '@/data/hooks/useTeachersData';
@@ -11,7 +10,6 @@ import { useClassroomsData } from '@/data/hooks/useClassroomsData';
 
 export type SubjectFilter = 'all' | 'English' | 'Mathematics' | 'Physics';
 export type LevelFilter = 'all' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
-export type StatusFilter = 'all' | 'active' | 'inactive';
 
 export const useClassManagementPage = () => {
   const navigate = useNavigate();
@@ -40,12 +38,10 @@ export const useClassManagementPage = () => {
     loadOnMount: true,
     showErrorToasts: true,
   });
-
   // Filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<SubjectFilter>('all');
   const [levelFilter, setLevelFilter] = useState<LevelFilter>('all');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [showOnlyWithAvailableSlots, setShowOnlyWithAvailableSlots] =
     useState(false); // UI state
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -60,25 +56,14 @@ export const useClassManagementPage = () => {
 
     const matchesSubject =
       subjectFilter === 'all' || classItem.subject === subjectFilter;
-
     const matchesLevel =
       levelFilter === 'all' || classItem.level === levelFilter;
-
-    const matchesStatus =
-      statusFilter === 'all' ||
-      (statusFilter === 'active' && classItem.status === ClassStatus.Active) ||
-      (statusFilter === 'inactive' &&
-        classItem.status === ClassStatus.Inactive);
 
     const matchesAvailableSlots =
       !showOnlyWithAvailableSlots || classItem.students < classItem.maxStudents;
 
     return (
-      matchesSearch &&
-      matchesSubject &&
-      matchesLevel &&
-      matchesStatus &&
-      matchesAvailableSlots
+      matchesSearch && matchesSubject && matchesLevel && matchesAvailableSlots
     );
   });
 
@@ -147,11 +132,6 @@ export const useClassManagementPage = () => {
           setLevelFilter(value as LevelFilter);
         }
         break;
-      case 'status':
-        if (value === 'all' || value === 'active' || value === 'inactive') {
-          setStatusFilter(value as StatusFilter);
-        }
-        break;
       case 'availableSlots':
         setShowOnlyWithAvailableSlots(value === 'true');
         break;
@@ -161,7 +141,6 @@ export const useClassManagementPage = () => {
     setSearchTerm('');
     setSubjectFilter('all');
     setLevelFilter('all');
-    setStatusFilter('all');
     setShowOnlyWithAvailableSlots(false);
   };
 
@@ -169,7 +148,6 @@ export const useClassManagementPage = () => {
     searchTerm !== '' ||
     subjectFilter !== 'all' ||
     levelFilter !== 'all' ||
-    statusFilter !== 'all' ||
     showOnlyWithAvailableSlots;
 
   return {
@@ -178,17 +156,13 @@ export const useClassManagementPage = () => {
     filteredClasses,
     loading,
     teachers,
-    classrooms,
-
-    // Filter state
+    classrooms, // Filter state
     searchTerm,
     setSearchTerm,
     subjectFilter,
     setSubjectFilter,
     levelFilter,
     setLevelFilter,
-    statusFilter,
-    setStatusFilter,
     showOnlyWithAvailableSlots,
     setShowOnlyWithAvailableSlots,
     hasFilters,

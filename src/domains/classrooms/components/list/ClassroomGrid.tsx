@@ -8,7 +8,6 @@ import { Classroom } from '../../classroomsSlice';
 interface ClassroomGridProps {
   classrooms: Classroom[];
   searchTerm: string;
-  statusFilter: string;
   onAddClassroom: () => void;
   onEditClassroom: (classroom: Classroom) => void;
   onDeleteClassroom: (classroom: Classroom) => void;
@@ -18,7 +17,6 @@ interface ClassroomGridProps {
 const ClassroomGrid: React.FC<ClassroomGridProps> = ({
   classrooms,
   searchTerm,
-  statusFilter,
   onAddClassroom,
   onEditClassroom,
   onDeleteClassroom,
@@ -30,13 +28,13 @@ const ClassroomGrid: React.FC<ClassroomGridProps> = ({
         <Building className="w-16 h-16 text-white/40 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-white mb-2">
           No Classrooms Found
-        </h3>
+        </h3>{' '}
         <p className="text-white/60 mb-6">
-          {searchTerm || statusFilter !== 'all'
+          {searchTerm
             ? 'No classrooms match your current search criteria.'
             : 'Start by adding your first classroom to the system.'}
         </p>
-        {!searchTerm && statusFilter === 'all' && (
+        {!searchTerm && (
           <Button
             onClick={onAddClassroom}
             className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"

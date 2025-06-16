@@ -14,8 +14,6 @@ import GlassCard from '@/components/common/GlassCard';
 interface TeacherFiltersProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  statusFilter: 'all' | 'active' | 'inactive';
-  setStatusFilter: (filter: 'all' | 'active' | 'inactive') => void;
   subjectFilter: string;
   setSubjectFilter: (filter: string) => void;
   clearFilters: () => void;
@@ -35,8 +33,6 @@ const SUBJECT_OPTIONS = [
 const TeacherFilters: React.FC<TeacherFiltersProps> = ({
   searchTerm,
   setSearchTerm,
-  statusFilter,
-  setStatusFilter,
   subjectFilter,
   setSubjectFilter,
   clearFilters,
@@ -53,28 +49,7 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
           />
-        </div>
-
-        {/* Status Filter */}
-        <div className="w-full lg:w-48">
-          <Select
-            value={statusFilter}
-            onValueChange={(value: 'all' | 'active' | 'inactive') =>
-              setStatusFilter(value)
-            }
-          >
-            <SelectTrigger className="bg-white/5 border-white/10 text-white">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
+        </div>{' '}
         {/* Subject Filter */}
         <div className="w-full lg:w-56">
           <Select
@@ -95,7 +70,6 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
             </SelectContent>
           </Select>
         </div>
-
         {/* Clear Filters Button */}
         <div className="w-full lg:w-auto">
           <Button

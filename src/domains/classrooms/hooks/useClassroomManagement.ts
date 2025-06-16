@@ -1,21 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useClassrooms } from './useClassrooms';
 import { Classroom } from '../classroomsSlice';
-import { ClassroomStatus } from '@/types/enums';
 import { useToast } from '@/hooks/use-toast';
 import { useClassroomsData } from '@/data/hooks/useClassroomsData';
-
-export type ClassroomFilterStatus =
-  | 'all'
-  | 'active'
-  | 'inactive'
-  | 'maintenance';
 
 export interface ClassroomFormData {
   name: string;
   location?: string;
   capacity: number;
-  status: ClassroomStatus;
 }
 
 export const useClassroomManagement = () => {
@@ -36,11 +28,8 @@ export const useClassroomManagement = () => {
     loadOnMount: true,
     showErrorToasts: true,
   });
-
   // Filter and search state
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] =
-    useState<ClassroomFilterStatus>('all');
 
   // UI state
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -52,18 +41,15 @@ export const useClassroomManagement = () => {
     null
   );
   const { toast } = useToast();
-
   // Filtered classrooms
   const filteredClassrooms = useMemo(() => {
     return classrooms.filter((classroom) => {
       const matchesSearch =
         classroom.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         classroom.location?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus =
-        statusFilter === 'all' || classroom.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      return matchesSearch;
     });
-  }, [classrooms, searchTerm, statusFilter]);
+  }, [classrooms, searchTerm]);
 
   // Handlers
   const handleAddClassroom = () => {
@@ -111,7 +97,6 @@ export const useClassroomManagement = () => {
           name: data.name,
           location: data.location || '',
           capacity: data.capacity,
-          status: data.status,
           createdDate: new Date().toISOString(),
           lastUpdated: new Date().toISOString(),
         };
@@ -144,23 +129,17 @@ export const useClassroomManagement = () => {
       setIsConfirmOpen(false);
     }
   };
-
   const clearFilters = () => {
     setSearchTerm('');
-    setStatusFilter('all');
   };
 
   return {
     // Data
     classrooms,
     filteredClassrooms,
-    loading,
-
-    // Filter state
+    loading, // Filter state
     searchTerm,
     setSearchTerm,
-    statusFilter,
-    setStatusFilter,
     clearFilters,
 
     // UI state

@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { loadFromStorage } from '@/lib/storage';
 import { mockDataService } from '@/data/MockDataService';
-import { ClassStatus } from '@/types/enums';
 
 export interface Class {
   id: string;
@@ -19,7 +18,6 @@ export interface Class {
     startTime: string;
     endTime: string;
   }[];
-  status: ClassStatus;
   students: number;
   maxStudents: number;
   studentIds: string[]; // Store assigned student IDs

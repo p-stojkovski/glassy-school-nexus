@@ -4,7 +4,6 @@ import { MapPin, Users } from 'lucide-react';
 import { Classroom } from '@/domains/classrooms/classroomsSlice';
 import GlassCard from '@/components/common/GlassCard';
 import { Button } from '@/components/ui/button';
-import { getClassroomStatusColor } from '@/utils/statusColors';
 
 interface ClassroomCardProps {
   classroom: Classroom;
@@ -42,13 +41,6 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
             <div className="flex items-center text-white/70 mb-3">
               <Users className="w-4 h-4 mr-2" />
               <span>{classroom.capacity} seats</span>
-            </div>
-
-            <div
-              className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${getClassroomStatusColor(classroom.status)}`}
-            >
-              {classroom.status.charAt(0).toUpperCase() +
-                classroom.status.slice(1)}
             </div>
           </div>
           <div className="flex space-x-2">

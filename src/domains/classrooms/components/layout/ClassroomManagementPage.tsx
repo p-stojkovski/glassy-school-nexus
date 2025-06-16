@@ -17,13 +17,9 @@ const ClassroomManagementPage: React.FC = () => {
   const {
     // Data
     filteredClassrooms,
-    loading,
-
-    // Filter state
+    loading, // Filter state
     searchTerm,
     setSearchTerm,
-    statusFilter,
-    setStatusFilter,
 
     // UI state
     isFormOpen,
@@ -58,26 +54,16 @@ const ClassroomManagementPage: React.FC = () => {
         title="Classroom Management Demo"
         description="Manage classroom facilities and resources. All data is stored locally and persists between sessions."
       />
-
-      <ClassroomHeader onAddClassroom={handleAddClassroom} />
-
-      <ClassroomFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-      />
-
+      <ClassroomHeader onAddClassroom={handleAddClassroom} />{' '}
+      <ClassroomFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <ClassroomGrid
         classrooms={filteredClassrooms}
         searchTerm={searchTerm}
-        statusFilter={statusFilter}
         onAddClassroom={handleAddClassroom}
         onEditClassroom={handleEditClassroom}
         onDeleteClassroom={handleDeleteClassroom}
         onViewClassroom={handleViewClassroom}
       />
-
       {/* Classroom Form Sidebar */}
       <Sheet open={isFormOpen} onOpenChange={handleCloseForm}>
         <SheetContent
@@ -99,7 +85,6 @@ const ClassroomManagementPage: React.FC = () => {
           </div>
         </SheetContent>
       </Sheet>
-
       {/* Confirm Dialog */}
       <ConfirmDialog
         open={isConfirmOpen}

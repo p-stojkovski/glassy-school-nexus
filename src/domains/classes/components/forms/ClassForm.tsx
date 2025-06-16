@@ -26,7 +26,6 @@ import {
 } from '@/components/ui/dialog';
 import { Clock } from 'lucide-react';
 import { Class } from '@/domains/classes/classesSlice';
-import { ClassStatus } from '@/types/enums';
 import { useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
@@ -50,7 +49,6 @@ export interface ClassFormData {
     endTime: string;
   }[];
   studentIds: string[];
-  status: ClassStatus;
 }
 
 const ClassForm: React.FC<ClassFormProps> = ({
@@ -73,7 +71,6 @@ const ClassForm: React.FC<ClassFormProps> = ({
           classroomId: editingClass.room.replace('Room ', ''),
           schedule: editingClass.schedule,
           studentIds: editingClass.studentIds || [],
-          status: editingClass.status,
         }
       : {
           name: '',
@@ -82,7 +79,6 @@ const ClassForm: React.FC<ClassFormProps> = ({
           classroomId: '',
           schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:30' }],
           studentIds: [],
-          status: ClassStatus.Active,
         },
   });
 

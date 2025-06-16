@@ -13,13 +13,10 @@ const ClassManagementPage: React.FC = () => {
     // Data
     filteredClasses,
     loading,
-    hasFilters,
-
-    // Filter state
+    hasFilters, // Filter state
     searchTerm,
     setSearchTerm,
     subjectFilter,
-    statusFilter,
     showOnlyWithAvailableSlots,
 
     // UI state
@@ -44,18 +41,14 @@ const ClassManagementPage: React.FC = () => {
         title="Class Management Demo"
         description="Manage classes, schedules, and enrollment. All data is stored locally and persists between sessions."
       />
-
-      <ClassHeader onAddClass={handleAddClass} />
-
+      <ClassHeader onAddClass={handleAddClass} />{' '}
       <ClassFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         subjectFilter={subjectFilter}
-        statusFilter={statusFilter}
         showOnlyWithAvailableSlots={showOnlyWithAvailableSlots}
         onFilterChange={handleFilterChange}
       />
-
       {filteredClasses.length === 0 ? (
         <ClassEmptyState
           onCreateClass={handleAddClass}
@@ -74,7 +67,6 @@ const ClassManagementPage: React.FC = () => {
           ))}
         </div>
       )}
-
       <ConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
