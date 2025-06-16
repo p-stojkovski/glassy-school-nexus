@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
+import { getStudentStatusColor, getPaymentStatusColor } from '@/utils/statusColors';
 
 interface StudentTableProps {
   students: Student[];
@@ -20,34 +21,9 @@ const ITEMS_PER_PAGE = 10;
 
 const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete, onView, getPaymentStatus }) => {
   const [currentPage, setCurrentPage] = useState(1);
-
   const totalPages = Math.ceil(students.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedStudents = students.slice(startIndex, startIndex + ITEMS_PER_PAGE);  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/20';
-      case 'inactive':
-        return 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/20';
-      default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30 hover:bg-gray-500/20';
-    }
-  };
-
-  const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/20';
-      case 'pending':
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30 hover:bg-yellow-500/20';
-      case 'partial':
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/20';
-      case 'overdue':
-        return 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/20';
-      default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30 hover:bg-gray-500/20';
-    }
-  };
+  const paginatedStudents = students.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -172,7 +148,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete,
                     <div className="text-white/60 truncate max-w-[200px]">{student.parentContact}</div>
                   </div>
                 </TableCell>                <TableCell>
-                  <Badge className={`${getStatusColor(student.status)} border`}>
+                  <Badge className={`${getStudentStatusColor(student.status)} border`}>
                     {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
                   </Badge>
                 </TableCell>

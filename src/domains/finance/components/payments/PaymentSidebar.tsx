@@ -13,6 +13,7 @@ import {
   selectAllPayments,
 } from '@/domains/finance/financeSlice';
 import { useToast } from '@/hooks/use-toast';
+import { getPaymentStatusColor } from '@/utils/statusColors';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -156,26 +157,12 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
     form.reset();
     onClose();
   };
-
   // Calculate existing payments and remaining amount
   const existingPayments = obligation ? allPayments.filter(
     payment => payment.obligationId === obligation.id
   ) : [];
   const totalPaid = existingPayments.reduce((sum, payment) => sum + payment.amount, 0);
   const remainingAmount = obligation ? obligation.amount - totalPaid : 0;
-
-  const getPaymentStatusColor = (status: ObligationStatus) => {
-    switch (status) {
-      case ObligationStatus.Paid:
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case ObligationStatus.Partial:
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case ObligationStatus.Overdue:
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
-      default:
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-    }
-  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>

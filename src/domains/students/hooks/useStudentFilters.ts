@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Student } from '../studentsSlice';
 import { PaymentObligation } from '@/domains/finance/financeSlice';
+import { ObligationStatus } from '@/types/enums';
 
 export const getStudentPaymentStatus = (
   studentId: string,
@@ -19,16 +20,16 @@ export const getStudentPaymentStatus = (
   }
 
   const hasOverdue = studentObligations.some(
-    (obligation) => obligation.status === 'overdue'
+    (obligation) => obligation.status === ObligationStatus.Overdue
   );
   const hasPending = studentObligations.some(
-    (obligation) => obligation.status === 'pending'
+    (obligation) => obligation.status === ObligationStatus.Pending
   );
   const hasPartial = studentObligations.some(
-    (obligation) => obligation.status === 'partial'
+    (obligation) => obligation.status === ObligationStatus.Partial
   );
   const allPaid = studentObligations.every(
-    (obligation) => obligation.status === 'paid'
+    (obligation) => obligation.status === ObligationStatus.Paid
   );
 
   if (hasOverdue) return 'overdue';

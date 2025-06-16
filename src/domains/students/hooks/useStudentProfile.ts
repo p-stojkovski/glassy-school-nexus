@@ -6,6 +6,11 @@ import { selectObligationsByStudentId, selectPaymentsByStudentId, selectStudentO
 import { selectAttendanceByClassId } from '@/domains/attendance/attendanceSlice';
 import { selectGradesByStudentId } from '@/domains/grades/gradesSlice';
 import { AttendanceStatus, StudentStatus, ObligationStatus } from '@/types/enums';
+import { 
+  getStudentStatusColor, 
+  getAttendanceStatusColor, 
+  getPaymentStatusColor 
+} from '@/utils/statusColors';
 
 export const useStudentProfile = () => {
   const { studentId } = useParams<{ studentId: string }>();
@@ -74,48 +79,9 @@ export const useStudentProfile = () => {
   const handleClosePaymentSidebar = () => {
     setIsPaymentSidebarOpen(false);
     setSelectedObligation(null);
-  };
-  // Utility functions
+  };  // Utility functions
   const canMakePayment = (status: string) => {
     return [ObligationStatus.Pending, ObligationStatus.Partial, ObligationStatus.Overdue].includes(status as ObligationStatus);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case StudentStatus.Active:
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case StudentStatus.Inactive:
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-    }
-  };
-
-  const getAttendanceStatusColor = (status: string) => {
-    switch (status) {
-      case AttendanceStatus.Present:
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case AttendanceStatus.Absent:
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
-      case AttendanceStatus.Late:
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-    }
-  };
-  const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case ObligationStatus.Paid:
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case ObligationStatus.Partial:
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      case ObligationStatus.Overdue:
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
-      case ObligationStatus.Pending:
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-    }
   };
 
   useEffect(() => {
@@ -150,7 +116,7 @@ export const useStudentProfile = () => {
     
     // Utils
     canMakePayment,
-    getStatusColor,
+    getStatusColor: getStudentStatusColor,
     getAttendanceStatusColor,
     getPaymentStatusColor,
   };

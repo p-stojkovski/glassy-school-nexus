@@ -3,7 +3,6 @@ import { RootState } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { 
   AttendanceRecord,
-  selectAttendanceByClassId,
   selectAllAttendanceRecords,
 } from '@/domains/attendance/attendanceSlice';
 import GlassCard from '@/components/common/GlassCard';
@@ -17,14 +16,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
 import { format, parseISO } from 'date-fns';
-import { Search, Calendar, Filter } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { getAttendanceStatusColor } from '@/utils/statusColors';
 
 interface AttendanceHistoryProps {
   classId: string;
@@ -68,23 +62,9 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
     setSelectedRecord(record);
     setViewMode('details');
   };
-  
-  const handleBackToList = () => {
+    const handleBackToList = () => {
     setViewMode('list');
     setSelectedRecord(null);
-  };
-  
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'present':
-        return 'bg-green-500/20 text-green-300';
-      case 'absent':
-        return 'bg-red-500/20 text-red-300';
-      case 'late':
-        return 'bg-yellow-500/20 text-yellow-300';
-      default:
-        return 'bg-gray-500/20 text-gray-300';
-    }
   };
 
   if (records.length === 0) {
@@ -133,9 +113,8 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ classId, date }) 
             <TableBody>
               {selectedRecord.studentRecords.map((student) => (
                 <TableRow key={student.studentId} className="hover:bg-white/5 border-white/10">
-                  <TableCell>{student.studentName}</TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(student.status)}`}>
+                  <TableCell>{student.studentName}</TableCell>                  <TableCell>
+                    <span className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium ${getAttendanceStatusColor(student.status)}`}>
                       {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
                     </span>
                   </TableCell>

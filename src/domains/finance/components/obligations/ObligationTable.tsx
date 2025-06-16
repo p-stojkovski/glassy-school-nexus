@@ -11,6 +11,7 @@ import {
 } from '@/domains/finance/financeSlice';
 import { ObligationStatus } from '@/types/enums';
 import { useToast } from '@/hooks/use-toast';
+import { getPaymentStatusColor } from '@/utils/statusColors';
 import { 
   Table, 
   TableBody, 
@@ -106,21 +107,15 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
     const matchesPeriod = !selectedPeriod || obligation.period === selectedPeriod;
     const matchesStudent = !selectedStudentId || obligation.studentId === selectedStudentId;
     
-    return matchesSearch && matchesPeriod && matchesStudent;
-  });
+    return matchesSearch && matchesPeriod && matchesStudent;  });
 
   // Function to render status badge with appropriate color
   const renderStatusBadge = (status: ObligationStatus) => {
-    switch (status) {
-      case ObligationStatus.Paid:
-        return <Badge variant="outline" className="bg-green-500/20 text-green-300 border-green-500/50">Paid</Badge>;
-      case ObligationStatus.Partial:
-        return <Badge variant="outline" className="bg-blue-500/20 text-blue-300 border-blue-500/50">Partial</Badge>;
-      case ObligationStatus.Overdue:
-        return <Badge variant="outline" className="bg-red-500/20 text-red-300 border-red-500/50">Overdue</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-yellow-500/20 text-yellow-300 border-yellow-500/50">Pending</Badge>;
-    }
+    return (
+      <Badge variant="outline" className={`${getPaymentStatusColor(status)} border`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
   };
 
   return (

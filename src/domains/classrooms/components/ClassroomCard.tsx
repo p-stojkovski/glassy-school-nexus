@@ -5,6 +5,7 @@ import { MapPin, Users } from 'lucide-react';
 import { Classroom } from '@/domains/classrooms/classroomsSlice';
 import GlassCard from '@/components/common/GlassCard';
 import { Button } from '@/components/ui/button';
+import { getClassroomStatusColor } from '@/utils/statusColors';
 
 interface ClassroomCardProps {
   classroom: Classroom;
@@ -19,19 +20,6 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
   onDelete,
   onView,
 }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case 'inactive':
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-      case 'maintenance':
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      default:
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-    }
-  };
-
   return (
     <motion.div
       layout
@@ -55,7 +43,7 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
               <span>{classroom.capacity} seats</span>
             </div>
             
-            <div className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(classroom.status)}`}>
+            <div className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${getClassroomStatusColor(classroom.status)}`}>
               {classroom.status.charAt(0).toUpperCase() + classroom.status.slice(1)}
             </div>
           </div>

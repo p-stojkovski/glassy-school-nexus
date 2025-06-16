@@ -13,6 +13,11 @@ import PaymentSidebar from '@/domains/finance/components/payments/PaymentSidebar
 import { selectObligationsByStudentId, selectPaymentsByStudentId, selectStudentOutstandingBalance, PaymentObligation } from '@/domains/finance/financeSlice';
 import { selectAttendanceByClassId } from '@/domains/attendance/attendanceSlice';
 import { selectGradesByStudentId } from '@/domains/grades/gradesSlice';
+import { 
+  getStudentStatusColor, 
+  getAttendanceStatusColor, 
+  getPaymentStatusColor 
+} from '@/utils/statusColors';
 
 const StudentProfile: React.FC = () => {
   const { studentId } = useParams<{ studentId: string }>();
@@ -61,47 +66,8 @@ const StudentProfile: React.FC = () => {
   if (!student) {
     return null; // Will redirect
   }
-
   const handleBack = () => {
     navigate('/students');
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case 'inactive':
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-    }
-  };
-
-  const getAttendanceStatusColor = (status: string) => {
-    switch (status) {
-      case 'present':
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case 'absent':
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
-      case 'late':
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-    }
-  };
-  const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case 'partial':
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      case 'overdue':
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
-      case 'pending':
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-    }
   };
 
   // Payment sidebar handlers
@@ -164,10 +130,9 @@ const StudentProfile: React.FC = () => {
             alt={student.name}
             className="w-24 h-24 rounded-full border-2 border-white/20"
           />
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-4">
+          <div className="flex-1">            <div className="flex items-center gap-4 mb-4">
               <h2 className="text-2xl font-bold text-white">{student.name}</h2>
-              <Badge className={`${getStatusColor(student.status)} border`}>
+              <Badge className={`${getStudentStatusColor(student.status)} border`}>
                 {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
               </Badge>
             </div>
@@ -357,8 +322,7 @@ const StudentProfile: React.FC = () => {
                       
                       return (
                         <TableRow key={record.id} className="border-white/10 hover:bg-white/5">
-                          <TableCell>{new Date(record.sessionDate).toLocaleDateString()}</TableCell>
-                          <TableCell>{record.className}</TableCell>
+                          <TableCell>{new Date(record.sessionDate).toLocaleDateString()}</TableCell>                          <TableCell>{record.className}</TableCell>
                           <TableCell>
                             <Badge className={`${getAttendanceStatusColor(studentRecord.status)} border`}>
                               {studentRecord.status.charAt(0).toUpperCase() + studentRecord.status.slice(1)}
@@ -442,8 +406,7 @@ const StudentProfile: React.FC = () => {
                       <TableRow key={obligation.id} className="border-white/10 hover:bg-white/5">
                         <TableCell className="font-medium">{obligation.type}</TableCell>
                         <TableCell>{obligation.period}</TableCell>
-                        <TableCell>${obligation.amount.toFixed(2)}</TableCell>
-                        <TableCell>{new Date(obligation.dueDate).toLocaleDateString()}</TableCell>
+                        <TableCell>${obligation.amount.toFixed(2)}</TableCell>                        <TableCell>{new Date(obligation.dueDate).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <Badge className={`${getPaymentStatusColor(obligation.status)} border`}>
                             {obligation.status.charAt(0).toUpperCase() + obligation.status.slice(1)}

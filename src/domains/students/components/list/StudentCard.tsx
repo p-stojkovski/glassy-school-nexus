@@ -5,6 +5,7 @@ import { Edit, Trash2, Eye, Phone, Mail, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
+import { getStudentStatusColor } from '@/utils/statusColors';
 
 interface StudentCardProps {
   student: Student;
@@ -14,17 +15,6 @@ interface StudentCardProps {
 }
 
 const StudentCard: React.FC<StudentCardProps> = ({ student, onEdit, onDelete, onView }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case 'inactive':
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-    }
-  };
-
   return (
     <motion.div
       whileHover={{ y: -2 }}
@@ -43,7 +33,7 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onEdit, onDelete, on
               <h3 className="text-lg font-semibold text-white truncate">
                 {student.name}
               </h3>
-              <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(student.status)}`}>
+              <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStudentStatusColor(student.status)}`}>
                 {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
               </div>
             </div>
