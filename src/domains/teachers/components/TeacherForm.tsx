@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAppDispatch } from '@/store/hooks';
-import { Button } from '@/components/ui/button';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import FormButtons from '@/components/common/FormButtons';
@@ -31,20 +30,61 @@ import {
 import { Teacher, addTeacher, updateTeacher } from '../teachersSlice';
 import { TeacherStatus } from '@/types/enums';
 import { toast } from '@/hooks/use-toast';
+import { RootState } from '@/store';
 
-const teacherSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Full name is required')
-    .max(100, 'Name must be less than 100 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  phone: z.string().optional(),
-  subject: z.string().min(1, 'Subject is required'),
-  status: z.enum([TeacherStatus.Active, TeacherStatus.Inactive]),
-  notes: z.string().optional(),
-});
+// Email uniqueness validation helper
+const createTeacherSchema = (
+  existingTeachers: Teacher[],
+  currentTeacherId?: string
+) =>
+  z.object({
+    name: z
+      .string()
+      .min(1, 'Full name is required')
+      .max(100, 'Name must be less than 100 characters')
+      .regex(
+        /^[a-zA-Z\s'-]+$/,
+        'Name can only contain letters, spaces, apostrophes, and hyphens'
+      ),
+    email: z
+      .string()
+      .email('Please enter a valid email address')
+      .toLowerCase()
+      .refine(
+        (email) => {
+          // Check if email is unique (exclude current teacher when editing)
+          const emailExists = existingTeachers.some(
+            (teacher) =>
+              teacher.email.toLowerCase() === email &&
+              teacher.id !== currentTeacherId
+          );
+          return !emailExists;
+        },
+        {
+          message:
+            'This email address is already registered to another teacher',
+        }
+      ),
+    phone: z
+      .string()
+      .optional()
+      .refine(
+        (phone) => {
+          if (!phone || phone === '') return true;
+          // Basic phone validation - accepts various formats
+          const phoneRegex = /^[+]?[\d\s\-().]{7,15}$/;
+          return phoneRegex.test(phone);
+        },
+        {
+          message: 'Please enter a valid phone number',
+        }
+      ),
+    subject: z.string().min(1, 'Subject is required'),
+    status: z.enum([TeacherStatus.Active, TeacherStatus.Inactive]),
+    notes: z.string().optional(),
+  });
 
-type TeacherFormData = z.infer<typeof teacherSchema>;
+type TeacherFormData = z.infer<ReturnType<typeof createTeacherSchema>>;
 
 interface TeacherFormProps {
   teacher?: Teacher | null;
@@ -58,65 +98,105 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
   onClose,
 }) => {
   const dispatch = useAppDispatch();
+  const { teachers } = useAppSelector((state: RootState) => state.teachers);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Create dynamic schema with email uniqueness validation
+  const teacherSchema = createTeacherSchema(teachers, teacher?.id);
 
   const form = useForm<TeacherFormData>({
     resolver: zodResolver(teacherSchema),
+    mode: 'onBlur', // Validate on blur for better UX
     defaultValues: {
       name: teacher?.name || '',
       email: teacher?.email || '',
       phone: teacher?.phone || '',
       subject: teacher?.subject || '',
       status: teacher?.status || TeacherStatus.Active,
-      notes: '',
+      notes: teacher?.notes || '',
     },
   });
+
+  // Reset form when teacher prop changes
+  useEffect(() => {
+    if (teacher) {
+      form.reset({
+        name: teacher.name,
+        email: teacher.email,
+        phone: teacher.phone || '',
+        subject: teacher.subject,
+        status: teacher.status,
+        notes: teacher.notes || '',
+      });
+    } else {
+      form.reset({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        status: TeacherStatus.Active,
+        notes: '',
+      });
+    }
+  }, [teacher, form]);
 
   const handleSubmit = async (data: TeacherFormData) => {
     setIsLoading(true);
     try {
+      // Additional validation before submission
+      if (data.email) {
+        data.email = data.email.toLowerCase().trim();
+      }
+
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       if (teacher) {
+        // Update existing teacher
         const updatedTeacher: Teacher = {
           ...teacher,
-          name: data.name,
+          name: data.name.trim(),
           email: data.email,
-          phone: data.phone || '',
+          phone: data.phone?.trim() || '',
           subject: data.subject,
           status: data.status,
+          notes: data.notes?.trim() || '',
         };
         dispatch(updateTeacher(updatedTeacher));
         toast({
-          title: 'Teacher Updated',
-          description: `${data.name} has been successfully updated.`,
+          title: 'Teacher Updated Successfully',
+          description: `${data.name} has been successfully updated with the latest information.`,
         });
       } else {
+        // Add new teacher
         const newTeacher: Teacher = {
-          id: Date.now().toString(),
-          name: data.name,
+          id: `teacher-${Date.now()}`,
+          name: data.name.trim(),
           email: data.email,
-          phone: data.phone || '',
+          phone: data.phone?.trim() || '',
           subject: data.subject,
           status: data.status,
           avatar: `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150`,
           joinDate: new Date().toISOString(),
           classIds: [],
+          notes: data.notes?.trim() || '',
         };
         dispatch(addTeacher(newTeacher));
         toast({
-          title: 'Teacher Added',
-          description: `${data.name} has been successfully added.`,
+          title: 'Teacher Added Successfully',
+          description: `${data.name} has been successfully added to the system.`,
         });
       }
 
-      onClose();
+      // Reset form and close
       form.reset();
+      onClose();
     } catch (error) {
+      console.error('Teacher form submission error:', error);
       toast({
-        title: 'Error',
-        description: 'Something went wrong. Please try again.',
+        title: 'Submission Failed',
+        description:
+          'Unable to save teacher information. Please check your data and try again.',
         variant: 'destructive',
       });
     } finally {
@@ -124,8 +204,14 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
     }
   };
 
+  // Handle form close
+  const handleClose = () => {
+    form.reset();
+    onClose();
+  };
+
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={isOpen} onOpenChange={handleClose}>
       <SheetContent
         side="right"
         className="w-full sm:max-w-md bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"
@@ -325,7 +411,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
               <FormButtons
                 submitText={teacher ? 'Update Teacher' : 'Add Teacher'}
                 isLoading={isLoading}
-                onCancel={onClose}
+                onCancel={handleClose}
               />
             </form>
           </Form>

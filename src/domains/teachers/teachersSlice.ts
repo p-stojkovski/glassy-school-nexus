@@ -11,6 +11,7 @@ export interface Teacher {
   status: TeacherStatus;
   joinDate: string;
   classIds: string[];
+  notes?: string;
 }
 
 interface TeachersState {
