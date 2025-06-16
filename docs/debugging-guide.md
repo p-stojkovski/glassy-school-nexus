@@ -1,51 +1,57 @@
-# Debugging & Verification Guide
+# Debugging & Verification Guide for GitHub Copilot Agent
 
-## 1. Adopt a Detective Mindset
-- **Reproduce reliably**: confirm the bug steps in a clean environment.
-- **Gather clues**:
-  - Error messages  
-  - Stack traces  
-  - Logs (timestamps, request IDs, user IDs)
+## 1. Problem Identification
 
-## 2. Isolate the Problem
-- **Binary search**:
-  - Comment out or disable half the code.
-  - Narrow down until you find the culprit.
-- **Write a minimal repro**:
-  - Strip away unrelated code.
-  - Makes it easier to spot the issue.
+* **Clarify Issue**: Clearly understand and restate the user's described bug or unexpected behavior.
+* **Check Context**:
 
-## 3. Instrument & Inspect
-- **Use breakpoints** in your IDE:
-  - Step through the execution flow.
-- **Add temporary logging**:
-  - Log variable values, function entry/exits.
-- **Inspect state**:
-  - Before and after transformations.
+  * Identify specific error messages, logs, and stack traces from provided context.
+  * Confirm reproducible steps clearly, noting any environment or input specifics.
 
-## 4. Hypothesize & Test
-- **Formulate a theory**: “I think X is null because…”
-- **Validate**:
-  - Write a quick unit test.
-  - Try out fixes in the debugger or REPL.
+## 2. Initial Hypothesis
 
-## 5. Common Pitfalls
-- **Off-by-one errors** in loops.
-- **Async timing issues** (race conditions).
-- **State mutation** vs. copying.
-- **Configuration/environment mismatches**.
+* **Formulate a logical hypothesis** based on known symptoms (e.g., "This may be caused by a null value in variable `X` because of improper initialization").
+* **Review recent changes**: check diffs or commits that might have introduced the problem.
 
-## 6. Use Automated Tools
-- **Linters**: catch syntax and style issues early.
-- **Static analyzers**: detect potential null dereferences.
-- **Memory profilers**: uncover leaks.
-- **Performance profilers**: identify hotspots.
+## 3. Code Inspection
 
-## 7. Rubber-Duck & Pair Debugging
-- **Explain the problem aloud** (even to an inanimate object).
-- **Pair with a colleague**: a fresh pair of eyes often spots subtle bugs.
+* **Inspect suspicious code blocks** identified from the hypothesis:
 
-## 8. Final Verification
-- **Re-run full test suite** after fix.
-- **Write regression tests** to lock in the bug fix.
-- **Check related functionality** hasn’t been broken.
+  * Confirm variable initializations, null checks, loops, and conditional branches.
+  * Identify potential issues such as off-by-one errors, incorrect conditionals, or missing exception handling.
+
+## 4. Create a Minimal Repro
+
+* **Suggest or generate** a simplified code snippet or unit test to consistently reproduce the problem.
+* Ensure it isolates and demonstrates the problem without unrelated dependencies.
+
+## 5. Automated Instrumentation & Logging
+
+* **Propose debug logs or assertions** at key points:
+
+  * Entry and exit of relevant functions.
+  * Values of critical variables before and after transformations.
+  * Conditional branches to reveal unexpected execution paths.
+
+## 6. Propose Fixes & Validations
+
+* **Offer possible code solutions** explicitly tied to the identified issue:
+
+  * Provide reasoning (e.g., why adding a null check resolves the problem).
+* Suggest tests or assertions to confirm the fix works correctly, covering both happy and edge cases.
+
+## 7. Evaluate & Verify
+
+* **Automatically suggest tests** (unit/integration) that demonstrate the bug is resolved.
+* Recommend running automated checks:
+
+  * Static analyzers to catch side-effects.
+  * Test suites to ensure regression-free fixes.
+* Confirm no related functionality is negatively impacted.
+
+## 8. Document the Resolution
+
+* Clearly summarize the fix:
+
+  * The root cause and resolution clearly articulated.
+  * Changes explicitly described and justified.
