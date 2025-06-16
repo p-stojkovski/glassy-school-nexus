@@ -31,12 +31,6 @@
 * **Use exceptions sparingly**; prefer result types or error objects when appropriate.
 * **Log meaningful context** on errors (but avoid PII).
 
-## 6. Testing Standards
-
-* **Aim for high coverage** on new code (e.g., > 80%).
-* **Use descriptive test names**: `shouldDoXWhenY`.
-* **Group tests** by feature or component.
-
 ## 8. Code Reviews
 
 * **Review for logic, style, and performance**.

@@ -22,7 +22,7 @@ import ScheduleForm from './pages/ScheduleForm';
 import AttendanceManagement from './pages/AttendanceManagement';
 import GradesManagement from './pages/GradesManagement';
 import FinancialManagement from './pages/FinancialManagement';
-import StudentProfile from './pages/StudentProfile';
+import StudentProfilePage from './domains/students/components/profile/StudentProfilePage';
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -45,9 +45,8 @@ const AppContent: React.FC = () => {
   return (
     <AppLayout>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/classrooms" element={<ClassroomManagement />} />        <Route path="/students" element={<StudentManagement />} />
-        <Route path="/students/:studentId" element={<StudentProfile />} />
+        <Route path="/" element={<Dashboard />} />        <Route path="/classrooms" element={<ClassroomManagement />} />        <Route path="/students" element={<StudentManagement />} />
+        <Route path="/students/:studentId" element={<StudentProfilePage />} />
         <Route path="/classes" element={<ClassManagement />} />
         <Route path="/classes/new" element={<ClassForm />} />
         <Route path="/classes/edit/:id" element={<ClassForm />} />
