@@ -39,7 +39,7 @@ const TopBar: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="bg-yellow-400/20 border-yellow-400/30 text-yellow-300 hover:bg-yellow-400/30"
+              className="bg-yellow-500/20 border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/30 hover:text-yellow-100 font-semibold"
             >
               <Plus className="w-4 h-4 mr-2" />
               Quick Add

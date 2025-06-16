@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import FormButtons from '@/components/common/FormButtons';
 import {
   Select,
   SelectContent,
@@ -358,22 +359,10 @@ const ClassForm: React.FC<ClassFormProps> = ({
                 )}
               />
             </div>
-            <div className="flex justify-end space-x-4 pt-4">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-                className="text-white hover:bg-white/10"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="bg-yellow-500 hover:bg-yellow-600 text-black"
-              >
-                {editingClass ? 'Update Class' : 'Create Class'}
-              </Button>
-            </div>
+            <FormButtons
+              submitText={editingClass ? 'Update Class' : 'Create Class'}
+              onCancel={() => onOpenChange(false)}
+            />
           </form>{' '}
         </Form>
       </DialogContent>

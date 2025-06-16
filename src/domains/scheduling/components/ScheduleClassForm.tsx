@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import GlassCard from '@/components/common/GlassCard';
+import FormButtons from '@/components/common/FormButtons';
 import BasicClassInfo from './forms/BasicClassInfo';
 import DateTimeFields from './forms/DateTimeFields';
 import RecurringOptions from './forms/RecurringOptions';
@@ -106,23 +107,10 @@ const ScheduleClassForm: React.FC<ScheduleClassFormProps> = ({
           />
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-4 justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onCancel}
-            className="text-white/70 hover:text-white hover:bg-white/10"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            className="bg-yellow-500 hover:bg-yellow-400 text-black font-medium"
-          >
-            {initialData ? 'Update Schedule' : 'Schedule Class'}
-          </Button>
-        </div>
+        <FormButtons
+          submitText={initialData ? 'Update Schedule' : 'Schedule Class'}
+          onCancel={onCancel}
+        />
       </form>
     </GlassCard>
   );

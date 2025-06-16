@@ -189,6 +189,24 @@ Sidebar navigation styles are defined in `Sidebar.module.scss` following the sam
 </Button>
 ```
 
+#### Sidebar Navigation
+```scss
+// Active navigation item (glass-themed consistency with primary buttons)
+.menuActive {
+  @apply bg-yellow-500/30 text-yellow-100 font-semibold shadow-lg border border-yellow-500/20;
+}
+
+// Inactive navigation item
+.menuInactive {
+  @apply text-white/70 hover:text-yellow-100 hover:bg-yellow-500/10 font-medium transition-all;
+}
+
+// Base navigation item
+.menuItem {
+  @apply w-full flex items-center space-x-3 p-3 rounded-xl transition-all font-medium border border-transparent;
+}
+```
+
 #### Form Elements
 ```tsx
 // Input fields
@@ -196,6 +214,94 @@ Sidebar navigation styles are defined in `Sidebar.module.scss` following the sam
 
 // Select components
 <SelectTrigger className="bg-white/10 border-white/20 text-white">
+```
+
+#### Form Buttons (Standardized)
+```tsx
+// Primary action button (for forms in sidebars)
+<Button className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50">
+  Add Item
+</Button>
+
+// Cancel button (for forms in sidebars)
+<Button 
+  variant="outline"
+  className="flex-1 bg-white/5 hover:bg-white/10 text-white border-white/10 hover:border-white/20 font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+>
+  Cancel
+</Button>
+
+// Button container for forms
+<div className="flex gap-4 pt-6 border-t border-white/20">
+  {/* Primary button first, Cancel second */}
+</div>
+
+// Use the FormButtons component for consistency
+import FormButtons from '@/components/common/FormButtons';
+
+<FormButtons
+  onSubmit={handleSubmit}
+  onCancel={handleCancel}
+  submitText="Add Student"
+  isLoading={loading}
+/>
+```
+
+#### FormButtons Component API
+```tsx
+interface FormButtonsProps {
+  onSubmit?: () => void;           // Submit handler (optional if using form onSubmit)
+  onCancel?: () => void;           // Cancel handler
+  submitText?: string;             // Primary button text (default: "Submit")
+  cancelText?: string;             // Cancel button text (default: "Cancel")
+  isLoading?: boolean;             // Shows "Saving..." when true
+  disabled?: boolean;              // Disables submit button
+  submitIcon?: React.ReactNode;    // Icon for submit button
+  className?: string;              // Additional CSS classes
+  variant?: 'default' | 'compact'; // Styling variant
+}
+
+// Examples:
+<FormButtons 
+  submitText="Add Student" 
+  onCancel={handleCancel}
+/>
+
+<FormButtons
+  submitText="Record Payment"
+  submitIcon={<CreditCard className="h-4 w-4" />}
+  isLoading={isSubmitting}
+  disabled={!isValid}
+  onCancel={onClose}
+/>
+
+<FormButtons
+  submitText="Update Teacher"
+  isLoading={loading}
+  onCancel={onClose}
+  variant="compact"  // For smaller forms
+/>
+```
+
+#### Migration from Manual Buttons
+Replace manual button implementations:
+```tsx
+// ❌ Old manual implementation
+<div className="flex gap-4 pt-6 border-t border-white/20">
+  <Button type="submit" className="flex-1 bg-gradient-to-r...">
+    Add Student
+  </Button>
+  <Button variant="outline" onClick={onCancel} className="flex-1...">
+    Cancel
+  </Button>
+</div>
+
+// ✅ New FormButtons component
+<FormButtons 
+  submitText="Add Student" 
+  onCancel={onCancel} 
+/>
+```
 ```
 
 #### Cards and Containers

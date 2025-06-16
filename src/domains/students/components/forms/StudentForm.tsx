@@ -6,6 +6,7 @@ import { StudentStatus } from '@/types/enums';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import FormButtons from '@/components/common/FormButtons';
 import {
   Select,
   SelectContent,
@@ -184,22 +185,10 @@ const StudentForm: React.FC<StudentFormProps> = ({
             </FormItem>
           )}
         />
-        <div className="flex gap-4 pt-6 border-t border-white/20">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onCancel}
-            className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-          >
-            {student ? 'Update Student' : 'Add Student'}
-          </Button>
-        </div>
+        <FormButtons
+          submitText={student ? 'Update Student' : 'Add Student'}
+          onCancel={onCancel}
+        />
       </form>
     </Form>
   );

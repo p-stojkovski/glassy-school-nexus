@@ -22,6 +22,7 @@ import {
 import { Classroom } from '@/domains/classrooms/classroomsSlice';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import FormButtons from '@/components/common/FormButtons';
 
 const classroomSchema = z.object({
   name: z
@@ -176,27 +177,11 @@ const ClassroomForm: React.FC<ClassroomFormProps> = ({
             </FormItem>
           )}
         />
-        <div className="flex gap-4 pt-6 border-t border-white/20">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onCancel}
-            className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-          >
-            {isLoading
-              ? 'Saving...'
-              : classroom
-                ? 'Update Classroom'
-                : 'Add Classroom'}
-          </Button>
-        </div>
+        <FormButtons
+          submitText={classroom ? 'Update Classroom' : 'Add Classroom'}
+          isLoading={isLoading}
+          onCancel={onCancel}
+        />
       </form>
     </Form>
   );

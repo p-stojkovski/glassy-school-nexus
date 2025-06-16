@@ -15,6 +15,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { getPaymentStatusColor } from '@/utils/statusColors';
 import { Button } from '@/components/ui/button';
+import FormButtons from '@/components/common/FormButtons';
 import {
   Form,
   FormControl,
@@ -439,24 +440,12 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
                   />
                 </div>
 
-                <div className="flex items-center justify-end space-x-4 pt-4 border-t border-white/20">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                    onClick={onClose}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                    disabled={remainingAmount <= 0}
-                  >
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Record Payment
-                  </Button>
-                </div>
+                <FormButtons
+                  submitText="Record Payment"
+                  submitIcon={<CreditCard className="h-4 w-4" />}
+                  disabled={remainingAmount <= 0}
+                  onCancel={onClose}
+                />
               </form>
             </Form>
           </div>

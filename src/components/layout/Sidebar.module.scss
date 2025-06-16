@@ -26,13 +26,13 @@
   @apply flex-1 space-y-2;
 }
 .menuItem {
-  @apply w-full flex items-center space-x-3 p-3 rounded-xl transition-all;
+  @apply w-full flex items-center space-x-3 p-3 rounded-xl transition-all font-medium border border-transparent;
 }
 .menuActive {
-  @apply bg-yellow-400/20 text-yellow-300 shadow-lg;
+  @apply bg-yellow-500/30 text-yellow-100 font-semibold shadow-lg border border-yellow-500/20;
 }
 .menuInactive {
-  @apply text-white/70 hover:text-white hover:bg-white/10;
+  @apply text-white/70 hover:text-yellow-100 hover:bg-yellow-500/10 font-medium transition-all;
 }
 .userSection {
   @apply border-t border-white/10 pt-4;

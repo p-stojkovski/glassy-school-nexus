@@ -6,6 +6,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import FormButtons from '@/components/common/FormButtons';
 import {
   Form,
   FormControl,
@@ -66,7 +67,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
       email: teacher?.email || '',
       phone: teacher?.phone || '',
       subject: teacher?.subject || '',
-      status: teacher?.status || 'active',
+      status: teacher?.status || TeacherStatus.Active,
       notes: '',
     },
   });
@@ -321,27 +322,11 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
                   </FormItem>
                 )}
               />
-              <div className="flex gap-4 pt-6 border-t border-white/20">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
-                >
-                  {isLoading
-                    ? 'Saving...'
-                    : teacher
-                      ? 'Update Teacher'
-                      : 'Add Teacher'}{' '}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                  className="flex-1 bg-white/5 hover:bg-white/10 text-white border-white/10 hover:border-white/20 font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  Cancel
-                </Button>
-              </div>
+              <FormButtons
+                submitText={teacher ? 'Update Teacher' : 'Add Teacher'}
+                isLoading={isLoading}
+                onCancel={onClose}
+              />
             </form>
           </Form>
         </div>
