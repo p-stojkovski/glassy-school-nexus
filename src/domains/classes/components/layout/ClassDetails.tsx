@@ -75,11 +75,6 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
               Teacher
             </h3>
             <div className="flex items-center gap-3">
-              <img
-                src={classItem.teacher.avatar}
-                alt={classItem.teacher.name}
-                className="w-10 h-10 rounded-full"
-              />
               <div>
                 <p className="text-white font-medium">
                   {classItem.teacher.name}

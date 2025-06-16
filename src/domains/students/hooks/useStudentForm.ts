@@ -72,7 +72,6 @@ export const useStudentForm = () => {
       } else {
         const newStudent: Student = {
           id: Date.now().toString(),
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`,
           classId: 'unassigned',
           joinDate: new Date().toISOString(),
           paymentDue: false,

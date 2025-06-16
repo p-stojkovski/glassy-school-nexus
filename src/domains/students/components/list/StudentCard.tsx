@@ -23,13 +23,8 @@ const StudentCard: React.FC<StudentCardProps> = ({
     <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
       <GlassCard className="p-6 h-full">
         <div className="flex flex-col h-full">
-          {/* Header with Avatar and Basic Info */}
+          {/* Header with Basic Info */}
           <div className="flex items-start gap-4 mb-4">
-            <img
-              src={student.avatar}
-              alt={student.name}
-              className="w-16 h-16 rounded-full border-2 border-white/20"
-            />
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-semibold text-white truncate">
                 {student.name}

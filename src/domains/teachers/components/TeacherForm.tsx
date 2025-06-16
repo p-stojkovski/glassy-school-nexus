@@ -176,7 +176,6 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
           phone: data.phone?.trim() || '',
           subject: data.subject,
           status: data.status,
-          avatar: `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150`,
           joinDate: new Date().toISOString(),
           classIds: [],
           notes: data.notes?.trim() || '',

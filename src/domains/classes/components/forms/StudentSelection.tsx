@@ -333,15 +333,6 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
                         className="flex items-center justify-between cursor-pointer hover:bg-white/10"
                       >
                         <div className="flex items-center">
-                          {student.avatar && (
-                            <div className="w-6 h-6 rounded-full overflow-hidden mr-2 bg-white/20">
-                              <img
-                                src={student.avatar}
-                                alt={student.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
                           <div className="flex flex-col">
                             <span className="text-white">{student.name}</span>
                             <span className="text-xs text-white/60">

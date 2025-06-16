@@ -16,7 +16,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  avatar: string;
+  avatar?: string;
   role: UserRole;
 }
 
@@ -33,8 +33,6 @@ class AuthService {
         id: '1',
         name: 'John Administrator',
         email: 'admin@school.com',
-        avatar:
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
         role: UserRole.Admin,
       };
     }
@@ -52,8 +50,6 @@ class AuthService {
       id: Date.now().toString(),
       name: userData.name,
       email: userData.email,
-      avatar:
-        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
       role: UserRole.Admin,
     };
   }

@@ -170,11 +170,6 @@ const StudentProfile: React.FC = () => {
       {/* Student Basic Information */}
       <GlassCard className="p-6">
         <div className="flex items-start gap-6">
-          <img
-            src={student.avatar}
-            alt={student.name}
-            className="w-24 h-24 rounded-full border-2 border-white/20"
-          />
           <div className="flex-1">
             {' '}
             <div className="flex items-center gap-4 mb-4">

@@ -7,7 +7,7 @@ export interface Teacher {
   name: string;
   email: string;
   phone: string;
-  avatar: string;
+  avatar?: string;
   subject: string;
   status: TeacherStatus;
   joinDate: string;

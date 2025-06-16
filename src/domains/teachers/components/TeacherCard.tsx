@@ -69,14 +69,9 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher, onEdit }) => {
   return (
     <GlassCard className="p-6 hover:bg-white/5 transition-all duration-300">
       <div className="flex flex-col h-full">
-        {/* Header with Avatar and Status */}
+        {/* Header with Status */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <img
-              src={teacher.avatar}
-              alt={teacher.name}
-              className="w-12 h-12 rounded-full object-cover border-2 border-white/20"
-            />
             <div>
               <h3 className="text-lg font-semibold text-white">
                 {teacher.name}

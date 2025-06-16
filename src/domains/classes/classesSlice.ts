@@ -9,7 +9,7 @@ export interface Class {
   teacher: {
     id: string;
     name: string;
-    avatar: string;
+    avatar?: string;
     subject: string;
   };
   room: string;

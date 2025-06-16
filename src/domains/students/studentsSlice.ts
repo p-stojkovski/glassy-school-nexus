@@ -7,7 +7,7 @@ export interface Student {
   name: string;
   email: string;
   phone: string;
-  avatar: string;
+  avatar?: string;
   classId: string;
   status: StudentStatus;
   joinDate: string;

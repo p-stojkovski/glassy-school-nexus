@@ -84,31 +84,6 @@ const Teachers: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* View Toggle */}
-          <ToggleGroup
-            type="single"
-            value={viewMode}
-            onValueChange={(value) =>
-              value && setViewMode(value as 'grid' | 'table')
-            }
-            className="bg-white/5 border border-white/10 rounded-lg p-1"
-          >
-            <ToggleGroupItem
-              value="grid"
-              className="data-[state=on]:bg-white/20 text-white/70 data-[state=on]:text-white"
-            >
-              <Grid3x3 className="w-4 h-4 mr-2" />
-              Grid
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="table"
-              className="data-[state=on]:bg-white/20 text-white/70 data-[state=on]:text-white"
-            >
-              <Table2 className="w-4 h-4 mr-2" />
-              Table
-            </ToggleGroupItem>
-          </ToggleGroup>
-
           <Button
             onClick={handleAddTeacher}
             className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"

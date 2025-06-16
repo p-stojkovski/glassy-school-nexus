@@ -81,9 +81,8 @@ export const useClassManagement = ({
               id: selectedTeacher.id,
               name: selectedTeacher.name,
               subject: selectedTeacher.subject,
-              avatar: selectedTeacher.avatar,
             }
-          : { id: '', name: '', subject: '', avatar: '/placeholder.svg' },
+          : { id: '', name: '', subject: '' },
         students: data.studentIds ? data.studentIds.length : 0, // Set student count based on selected students
         maxStudents: 20,
         studentIds: data.studentIds || [], // Include selected student IDs
@@ -131,7 +130,6 @@ export const useClassManagement = ({
               id: selectedTeacher.id,
               name: selectedTeacher.name,
               subject: selectedTeacher.subject,
-              avatar: selectedTeacher.avatar,
             }
           : undefined,
         room: selectedClassroom?.name || '',

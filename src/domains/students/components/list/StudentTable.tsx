@@ -177,11 +177,6 @@ const StudentTable: React.FC<StudentTableProps> = ({
               >
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <img
-                      src={student.avatar}
-                      alt={student.name}
-                      className="w-10 h-10 rounded-full border-2 border-white/20"
-                    />
                     <div>
                       <div className="font-medium text-white">
                         {student.name}

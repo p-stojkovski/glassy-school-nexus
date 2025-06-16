@@ -21,11 +21,6 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
   return (
     <GlassCard className="p-6">
       <div className="flex items-start gap-6">
-        <img
-          src={student.avatar}
-          alt={student.name}
-          className="w-24 h-24 rounded-full border-2 border-white/20"
-        />
         <div className="flex-1">
           <div className="flex items-center gap-4 mb-4">
             <h2 className="text-2xl font-bold text-white">{student.name}</h2>

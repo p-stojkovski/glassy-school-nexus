@@ -173,13 +173,9 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit }) => {
                 key={teacher.id}
                 className="border-white/10 hover:bg-white/5"
               >
+                {' '}
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <img
-                      src={teacher.avatar}
-                      alt={teacher.name}
-                      className="w-10 h-10 rounded-full border-2 border-white/20"
-                    />
                     <div>
                       <div className="font-medium text-white">
                         {teacher.name}
