@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { store } from './store';
 import { RootState } from './store';
+import { DataProvider } from '@/app/providers/DataProvider';
 import LoginForm from '@/domains/auth/components/LoginForm';
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
@@ -70,10 +71,12 @@ const App = () => (
     <ThemeProvider attribute="class" defaultTheme="dark">
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
+          <DataProvider>
+            <Toaster />
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </DataProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>

@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useClassrooms } from './useClassrooms';
 import { Classroom } from '../classroomsSlice';
 import { ClassroomStatus } from '@/types/enums';
-import { loadFromStorage } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
+import { useClassroomsData } from '@/data/hooks/useClassroomsData';
 
 export type ClassroomFilterStatus =
   | 'all'
@@ -30,6 +30,13 @@ export const useClassroomManagement = () => {
     resetDemoClassrooms,
   } = useClassrooms();
 
+  // Load classrooms data when needed
+  const classroomsHook = useClassroomsData({
+    autoLoad: true,
+    loadOnMount: true,
+    showErrorToasts: true,
+  });
+
   // Filter and search state
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] =
@@ -44,67 +51,7 @@ export const useClassroomManagement = () => {
   const [classroomToDelete, setClassroomToDelete] = useState<Classroom | null>(
     null
   );
-
   const { toast } = useToast();
-
-  // Mock data for demo mode
-  const mockClassrooms: Classroom[] = [
-    {
-      id: '1',
-      name: 'Room A-101',
-      location: 'Building A, First Floor',
-      capacity: 30,
-      status: ClassroomStatus.Active,
-      createdDate: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      name: 'Room B-205',
-      location: 'Building B, Second Floor',
-      capacity: 25,
-      status: ClassroomStatus.Active,
-      createdDate: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-    },
-    {
-      id: '3',
-      name: 'Room C-301',
-      location: 'Building C, Third Floor',
-      capacity: 35,
-      status: ClassroomStatus.Maintenance,
-      createdDate: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-    },
-  ];
-
-  // Initialize classrooms data
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      let loaded: Classroom[] | null = null;
-      let error = false;
-      try {
-        loaded = loadFromStorage<Classroom[]>('classrooms');
-      } catch (e) {
-        error = true;
-      }
-      if (loaded && Array.isArray(loaded) && loaded.length > 0) {
-        setClassrooms(loaded);
-      } else {
-        setClassrooms(mockClassrooms);
-        if (error) {
-          toast({
-            title: 'Storage Error',
-            description:
-              'Local storage is not available. Data will only persist for this session.',
-            variant: 'warning',
-          });
-        }
-      }
-      setLoading(false);
-    }, 500);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filtered classrooms
   const filteredClassrooms = useMemo(() => {
@@ -198,15 +145,6 @@ export const useClassroomManagement = () => {
     }
   };
 
-  const handleResetDemo = () => {
-    resetDemoClassrooms(mockClassrooms);
-    toast({
-      title: 'Demo Data Reset',
-      description: 'Classroom data has been reset to default values.',
-      variant: 'info',
-    });
-  };
-
   const clearFilters = () => {
     setSearchTerm('');
     setStatusFilter('all');
@@ -229,9 +167,7 @@ export const useClassroomManagement = () => {
     isFormOpen,
     isConfirmOpen,
     selectedClassroom,
-    classroomToDelete,
-
-    // Handlers
+    classroomToDelete, // Handlers
     handleAddClassroom,
     handleEditClassroom,
     handleDeleteClassroom,
@@ -239,7 +175,6 @@ export const useClassroomManagement = () => {
     handleCloseForm,
     handleSubmit,
     confirmDeleteClassroom,
-    handleResetDemo,
 
     // UI state setters
     setIsFormOpen,

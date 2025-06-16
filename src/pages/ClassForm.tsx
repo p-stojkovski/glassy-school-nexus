@@ -8,7 +8,7 @@ import ClassFormContent, {
   ClassFormData,
 } from '@/domains/classes/components/forms/ClassFormContent';
 import { useClassManagement } from '@/domains/classes/hooks/useClassManagement';
-import DemoModeNotification from '@/domains/classes/components/notifications/DemoModeNotification';
+import { DemoManager } from '@/data/components/DemoManager';
 import { useClassrooms } from '@/domains/classrooms/hooks/useClassrooms';
 import { Classroom } from '@/domains/classrooms/classroomsSlice';
 import { ClassroomStatus } from '@/types/enums';
@@ -104,7 +104,11 @@ const ClassForm: React.FC = () => {
         </div>{' '}
       </div>
 
-      <DemoModeNotification />
+      <DemoManager
+        showFullControls={true}
+        title="Class Form Demo"
+        description="Create and edit class information. All data is stored locally and persists between sessions."
+      />
 
       <div className="w-full">
         <ClassFormContent

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Plus, Search, Filter, Users } from 'lucide-react';
 import { RootState } from '../store';
@@ -16,65 +16,27 @@ import GlassCard from '@/components/common/GlassCard';
 import TeacherCard from '@/domains/teachers/components/TeacherCard';
 import TeacherForm from '@/domains/teachers/components/TeacherForm';
 import { Teacher } from '@/domains/teachers/teachersSlice';
+import { useTeachersData } from '@/data/hooks/useTeachersData';
 
 const Teachers: React.FC = () => {
   const dispatch = useAppDispatch();
   const { teachers, loading } = useAppSelector(
     (state: RootState) => state.teachers
   );
+
+  // Load teachers data when needed
+  const teachersHook = useTeachersData({
+    autoLoad: true,
+    loadOnMount: true,
+    showErrorToasts: true,
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<
     'all' | 'active' | 'inactive'
   >('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
-
-  // Mock data - in a real app, this would come from an API
-  useEffect(() => {
-    dispatch(setLoading(true));
-    setTimeout(() => {
-      const mockTeachers: Teacher[] = [
-        {
-          id: '1',
-          name: 'Sarah Johnson',
-          email: 'sarah.johnson@thinkenglish.com',
-          phone: '+1 (555) 123-4567',
-          avatar:
-            'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150',
-          subject: 'Grammar & Writing',
-          status: 'active',
-          joinDate: '2023-01-15',
-          classIds: ['class1', 'class2'],
-        },
-        {
-          id: '2',
-          name: 'Michael Chen',
-          email: 'michael.chen@thinkenglish.com',
-          phone: '+1 (555) 234-5678',
-          avatar:
-            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-          subject: 'Conversation & Speaking',
-          status: 'active',
-          joinDate: '2023-03-22',
-          classIds: ['class3'],
-        },
-        {
-          id: '3',
-          name: 'Emily Rodriguez',
-          email: 'emily.rodriguez@thinkenglish.com',
-          phone: '+1 (555) 345-6789',
-          avatar:
-            'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-          subject: 'Reading & Comprehension',
-          status: 'inactive',
-          joinDate: '2022-09-10',
-          classIds: [],
-        },
-      ];
-      dispatch(setTeachers(mockTeachers));
-      dispatch(setLoading(false));
-    }, 1000);
-  }, [dispatch]);
 
   const filteredTeachers = teachers.filter((teacher) => {
     const matchesSearch =

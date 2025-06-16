@@ -1,0 +1,255 @@
+{
+  "classes": [
+    {
+      "id": "class-1",
+      "name": "English Basics A1",
+      "teacher": {
+        "id": "teacher-1",
+        "name": "Sarah Johnson",
+        "subject": "English",
+        "avatar": "/placeholder.svg"
+      },
+      "room": "Room A-101",
+      "roomId": "classroom-1",
+      "schedule": [
+        { "day": "Monday", "startTime": "09:00", "endTime": "10:30" },
+        { "day": "Wednesday", "startTime": "09:00", "endTime": "10:30" },
+        { "day": "Friday", "startTime": "09:00", "endTime": "10:30" }
+      ],
+      "status": "active",
+      "students": 15,
+      "maxStudents": 20,
+      "studentIds": [
+        "student-1",
+        "student-2",
+        "student-3",
+        "student-4",
+        "student-5",
+        "student-6",
+        "student-7",
+        "student-8",
+        "student-9",
+        "student-10",
+        "student-11",
+        "student-12",
+        "student-13",
+        "student-14",
+        "student-15"
+      ],
+      "subject": "English",
+      "level": "A1",
+      "price": 150,
+      "duration": 90,
+      "description": "Basic English course for beginners",
+      "requirements": "No prior experience required",
+      "objectives": [
+        "Learn basic vocabulary",
+        "Understand simple sentences",
+        "Basic conversation skills"
+      ],
+      "materials": ["Textbook", "Workbook", "Audio files"],
+      "createdAt": "2024-01-15T10:00:00.000Z",
+      "updatedAt": "2024-01-15T10:00:00.000Z",
+      "color": "#3B82F6"
+    },
+    {
+      "id": "class-2",
+      "name": "Mathematics Intermediate B1",
+      "teacher": {
+        "id": "teacher-2",
+        "name": "John Smith",
+        "subject": "Mathematics",
+        "avatar": "/placeholder.svg"
+      },
+      "room": "Room B-205",
+      "roomId": "classroom-2",
+      "schedule": [
+        { "day": "Tuesday", "startTime": "14:00", "endTime": "15:30" },
+        { "day": "Thursday", "startTime": "14:00", "endTime": "15:30" }
+      ],
+      "status": "active",
+      "students": 18,
+      "maxStudents": 25,
+      "studentIds": [
+        "student-16",
+        "student-17",
+        "student-18",
+        "student-19",
+        "student-20",
+        "student-21",
+        "student-22",
+        "student-23",
+        "student-24",
+        "student-25",
+        "student-26",
+        "student-27",
+        "student-28",
+        "student-29",
+        "student-30",
+        "student-31",
+        "student-32",
+        "student-33"
+      ],
+      "subject": "Mathematics",
+      "level": "B1",
+      "price": 180,
+      "duration": 90,
+      "description": "Intermediate mathematics covering algebra and geometry",
+      "requirements": "Basic math knowledge required",
+      "objectives": [
+        "Algebra fundamentals",
+        "Geometric principles",
+        "Problem-solving skills"
+      ],
+      "materials": ["Mathematics textbook", "Calculator", "Graph paper"],
+      "createdAt": "2024-02-01T10:00:00.000Z",
+      "updatedAt": "2024-02-01T10:00:00.000Z",
+      "color": "#10B981"
+    },
+    {
+      "id": "class-3",
+      "name": "Physics Advanced C1",
+      "teacher": {
+        "id": "teacher-3",
+        "name": "Dr. Emily Davis",
+        "subject": "Physics",
+        "avatar": "/placeholder.svg"
+      },
+      "room": "Room C-301",
+      "roomId": "classroom-3",
+      "schedule": [
+        { "day": "Monday", "startTime": "16:00", "endTime": "17:30" },
+        { "day": "Wednesday", "startTime": "16:00", "endTime": "17:30" }
+      ],
+      "status": "active",
+      "students": 12,
+      "maxStudents": 15,
+      "studentIds": [
+        "student-34",
+        "student-35",
+        "student-36",
+        "student-37",
+        "student-38",
+        "student-39",
+        "student-40",
+        "student-41",
+        "student-42",
+        "student-43",
+        "student-44",
+        "student-45"
+      ],
+      "subject": "Physics",
+      "level": "C1",
+      "price": 200,
+      "duration": 90,
+      "description": "Advanced physics covering mechanics and thermodynamics",
+      "requirements": "Strong mathematics background required",
+      "objectives": [
+        "Classical mechanics",
+        "Thermodynamics",
+        "Laboratory skills"
+      ],
+      "materials": ["Physics textbook", "Lab manual", "Safety equipment"],
+      "createdAt": "2024-02-15T10:00:00.000Z",
+      "updatedAt": "2024-02-15T10:00:00.000Z",
+      "color": "#8B5CF6"
+    },
+    {
+      "id": "class-4",
+      "name": "English Conversation B2",
+      "teacher": {
+        "id": "teacher-4",
+        "name": "Michael Chen",
+        "subject": "English",
+        "avatar": "/placeholder.svg"
+      },
+      "room": "Room A-102",
+      "roomId": "classroom-4",
+      "schedule": [
+        { "day": "Tuesday", "startTime": "10:00", "endTime": "11:30" },
+        { "day": "Thursday", "startTime": "10:00", "endTime": "11:30" }
+      ],
+      "status": "active",
+      "students": 14,
+      "maxStudents": 18,
+      "studentIds": [
+        "student-46",
+        "student-47",
+        "student-48",
+        "student-49",
+        "student-50",
+        "student-51",
+        "student-52",
+        "student-53",
+        "student-54",
+        "student-55",
+        "student-56",
+        "student-57",
+        "student-58",
+        "student-59"
+      ],
+      "subject": "English",
+      "level": "B2",
+      "price": 165,
+      "duration": 90,
+      "description": "Advanced conversation skills and fluency development",
+      "requirements": "Intermediate English level required",
+      "objectives": [
+        "Fluent conversation",
+        "Advanced vocabulary",
+        "Presentation skills"
+      ],
+      "materials": ["Conversation book", "Audio recordings", "Video materials"],
+      "createdAt": "2024-03-01T10:00:00.000Z",
+      "updatedAt": "2024-03-01T10:00:00.000Z",
+      "color": "#F59E0B"
+    },
+    {
+      "id": "class-5",
+      "name": "Computer Science Fundamentals",
+      "teacher": {
+        "id": "teacher-5",
+        "name": "Lisa Thompson",
+        "subject": "Computer Science",
+        "avatar": "/placeholder.svg"
+      },
+      "room": "Room A-102",
+      "roomId": "classroom-4",
+      "schedule": [
+        { "day": "Friday", "startTime": "13:00", "endTime": "14:30" }
+      ],
+      "status": "inactive",
+      "students": 8,
+      "maxStudents": 20,
+      "studentIds": [
+        "student-60",
+        "student-61",
+        "student-62",
+        "student-63",
+        "student-64",
+        "student-65",
+        "student-66",
+        "student-67"
+      ],
+      "subject": "Computer Science",
+      "level": "A1",
+      "price": 220,
+      "duration": 90,
+      "description": "Introduction to programming and computer concepts",
+      "requirements": "Basic computer literacy",
+      "objectives": [
+        "Programming basics",
+        "Algorithm thinking",
+        "Software development"
+      ],
+      "materials": [
+        "Programming textbook",
+        "Computer access",
+        "Software tools"
+      ],
+      "createdAt": "2024-03-15T10:00:00.000Z",
+      "updatedAt": "2024-03-15T10:00:00.000Z",
+      "color": "#EF4444"
+    }
+  ]
+}

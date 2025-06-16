@@ -4,7 +4,7 @@ import { RootState } from '../store';
 import { setSelectedDate } from '@/domains/attendance/attendanceSlice';
 import AttendanceHeader from '@/domains/attendance/components/AttendanceHeader';
 import AttendanceFilters from '@/domains/attendance/components/AttendanceFilters';
-import DemoModeNotification from '@/domains/attendance/components/DemoModeNotification';
+import { DemoManager } from '@/data/components/DemoManager';
 import AttendanceMarker from '@/domains/attendance/components/AttendanceMarker';
 import AttendanceHistory from '@/domains/attendance/components/AttendanceHistory';
 
@@ -30,7 +30,11 @@ const AttendanceManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <DemoModeNotification />
+      <DemoManager
+        showFullControls={true}
+        title="Attendance Management Demo"
+        description="Track student attendance and manage records. All data is stored locally and persists between sessions."
+      />
 
       <AttendanceHeader activeTab={activeTab} onTabChange={setActiveTab} />
       <AttendanceFilters

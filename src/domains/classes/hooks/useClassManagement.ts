@@ -11,6 +11,7 @@ import {
 import type { ClassFormData } from '../components/forms/ClassFormContent';
 import { toast } from '@/hooks/use-toast';
 import { ClassStatus } from '@/types/enums';
+import { useMockData } from '@/data/hooks/useMockData';
 
 interface UseClassManagementProps {
   searchTerm: string;
@@ -33,109 +34,15 @@ export const useClassManagement = ({
   );
   const { teachers } = useAppSelector((state: RootState) => state.teachers);
   const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
-  // Load mock data on component mount
+  const { isLoading: dataLoading, refreshClasses } = useMockData();
+
+  // Initialize classes data from MockDataService
   useEffect(() => {
-    const mockClasses: Class[] = [
-      {
-        id: 'class-1',
-        name: 'English Basics A1',
-        teacher: {
-          id: 'teacher-1',
-          name: 'Sarah Johnson',
-          subject: 'English',
-          avatar: '/placeholder.svg',
-        },
-        students: 15,
-        maxStudents: 20,
-        studentIds: [
-          'student-1',
-          'student-2',
-          'student-3',
-          'student-4',
-          'student-5',
-          'student-6',
-          'student-7',
-          'student-8',
-          'student-9',
-          'student-10',
-          'student-11',
-          'student-12',
-          'student-13',
-          'student-14',
-          'student-15',
-        ],
-        room: 'Room 101',
-        schedule: [
-          { day: 'Monday', startTime: '09:00', endTime: '10:30' },
-          { day: 'Wednesday', startTime: '09:00', endTime: '10:30' },
-        ],
-        status: ClassStatus.Active,
-        subject: 'English',
-        level: 'A1',
-        price: 75,
-        duration: 90,
-        description: 'Basic English course for beginners',
-        requirements: 'No previous English knowledge required',
-        objectives: [
-          'Learn basic vocabulary',
-          'Simple conversations',
-          'Basic grammar',
-        ],
-        materials: ['Course book', 'Workbook', 'Audio materials'],
-        createdAt: '2024-01-15T10:00:00Z',
-        updatedAt: '2024-01-15T10:00:00Z',
-        color: '#3B82F6',
-      },
-      {
-        id: 'class-2',
-        name: 'English Intermediate B1',
-        teacher: {
-          id: 'teacher-2',
-          name: 'Michael Brown',
-          subject: 'English',
-          avatar: '/placeholder.svg',
-        },
-        students: 12,
-        maxStudents: 18,
-        studentIds: [
-          'student-16',
-          'student-17',
-          'student-18',
-          'student-19',
-          'student-20',
-          'student-21',
-          'student-22',
-          'student-23',
-          'student-24',
-          'student-25',
-          'student-26',
-          'student-27',
-        ],
-        room: 'Room 102',
-        schedule: [
-          { day: 'Tuesday', startTime: '11:00', endTime: '12:30' },
-          { day: 'Thursday', startTime: '11:00', endTime: '12:30' },
-        ],
-        status: ClassStatus.Active,
-        subject: 'English',
-        level: 'B1',
-        price: 85,
-        duration: 90,
-        description: 'Intermediate English course',
-        requirements: 'A2 level English knowledge',
-        objectives: [
-          'Improve speaking skills',
-          'Advanced grammar',
-          'Reading comprehension',
-        ],
-        materials: ['Course book', 'Workbook', 'Online resources'],
-        createdAt: '2024-01-16T10:00:00Z',
-        updatedAt: '2024-01-16T10:00:00Z',
-        color: '#10B981',
-      },
-    ];
-    dispatch(setClasses(mockClasses));
-  }, [dispatch]);
+    if (classes.length === 0 && !dataLoading) {
+      // Trigger refresh to ensure data is loaded from MockDataService
+      refreshClasses();
+    }
+  }, [classes.length, dataLoading, refreshClasses]);
 
   // Filter classes based on criteria
   const filteredClasses = classes.filter((classItem) => {

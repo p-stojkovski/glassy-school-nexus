@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/sheet';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import ClassroomForm from '../ClassroomForm';
-import DemoModeNotification from '../DemoModeNotification';
+import { DemoManager } from '@/data/components/DemoManager';
 import ClassroomHeader from './ClassroomHeader';
 import ClassroomFilters from '../filters/ClassroomFilters';
 import ClassroomGrid from '../list/ClassroomGrid';
@@ -39,7 +39,6 @@ const ClassroomManagementPage: React.FC = () => {
     handleCloseForm,
     handleSubmit,
     confirmDeleteClassroom,
-    handleResetDemo,
 
     // UI state setters
     setIsConfirmOpen,
@@ -52,10 +51,13 @@ const ClassroomManagementPage: React.FC = () => {
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
-      <DemoModeNotification onResetDemo={handleResetDemo} />
+      <DemoManager
+        showFullControls={true}
+        title="Classroom Management Demo"
+        description="Manage classroom facilities and resources. All data is stored locally and persists between sessions."
+      />
 
       <ClassroomHeader onAddClassroom={handleAddClassroom} />
 

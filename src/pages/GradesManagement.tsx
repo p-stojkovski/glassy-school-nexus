@@ -7,7 +7,7 @@ import GradesFilters from '@/domains/grades/components/GradesFilters';
 import CreateAssessment from '@/domains/grades/components/CreateAssessment';
 import GradeEntry from '@/domains/grades/components/GradeEntry';
 import Gradebook from '@/domains/grades/components/Gradebook';
-import DemoModeNotification from '@/domains/grades/components/DemoModeNotification';
+import { DemoManager } from '@/data/components/DemoManager';
 
 type ActiveTab = 'create' | 'grades' | 'gradebook';
 
@@ -19,7 +19,11 @@ const GradesManagement: React.FC = () => {
   );
   return (
     <div className="space-y-6">
-      <DemoModeNotification />
+      <DemoManager
+        showFullControls={true}
+        title="Grades Management Demo"
+        description="Manage student grades and assessments. All data is stored locally and persists between sessions."
+      />
 
       <GradesHeader
         activeTab={activeTab}

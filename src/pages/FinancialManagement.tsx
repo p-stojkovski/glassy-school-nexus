@@ -9,14 +9,30 @@ import FinancialDashboard from '@/domains/finance/components/dashboard/Financial
 import ObligationManagement from '@/domains/finance/components/obligations/ObligationManagement';
 import PaymentManagement from '@/domains/finance/components/payments/PaymentManagement';
 import FinancialHeader from '@/domains/finance/components/common/FinancialHeader';
-import DemoModeNotification from '@/domains/finance/components/common/DemoModeNotification';
+import { DemoManager } from '@/data/components/DemoManager';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useToast } from '@/hooks/use-toast';
+import { useFinancialData } from '@/data/hooks/useFinancialData';
+import { useStudentsData } from '@/data/hooks/useStudentsData';
 
 const FinancialManagement: React.FC = () => {
   const dispatch = useAppDispatch();
   const error = useAppSelector(selectError);
   const { toast } = useToast();
+
+  // Load financial data and dependencies when needed
+  const financialHook = useFinancialData({
+    autoLoad: true,
+    loadOnMount: true,
+    showErrorToasts: true,
+  });
+
+  // Load students data (required for financial data relationships)
+  const studentsHook = useStudentsData({
+    autoLoad: true,
+    loadOnMount: true,
+    showErrorToasts: true,
+  });
 
   // Refresh obligation statuses on page load to update any overdue items
   useEffect(() => {
@@ -35,7 +51,11 @@ const FinancialManagement: React.FC = () => {
   }, [error, toast]);
   return (
     <div className="space-y-6">
-      <DemoModeNotification />
+      <DemoManager
+        showFullControls={true}
+        title="Financial Management Demo"
+        description="Manage payments, obligations, and financial records. All data is stored locally and persists between sessions."
+      />
       <FinancialHeader />{' '}
       <Tabs defaultValue="dashboard" className="w-full">
         {' '}

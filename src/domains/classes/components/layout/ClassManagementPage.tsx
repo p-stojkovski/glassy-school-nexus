@@ -5,7 +5,7 @@ import ClassCard from '../list/ClassCard';
 import ClassEmptyState from '../state/ClassEmptyState';
 import ClassLoading from '../state/ClassLoading';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import DemoModeNotification from '../notifications/DemoModeNotification';
+import { DemoManager } from '@/data/components/DemoManager';
 import { useClassManagementPage } from '../../hooks/useClassManagementPage';
 
 const ClassManagementPage: React.FC = () => {
@@ -25,25 +25,25 @@ const ClassManagementPage: React.FC = () => {
     // UI state
     showDeleteDialog,
     setShowDeleteDialog,
-    classToDelete,
-
-    // Handlers
+    classToDelete, // Handlers
     handleAddClass,
     handleEdit,
     handleDelete,
     handleView,
     confirmDelete,
     handleFilterChange,
-    handleResetDemo,
   } = useClassManagementPage();
 
   if (loading) {
     return <ClassLoading />;
   }
-
   return (
     <div className="space-y-6">
-      <DemoModeNotification onResetDemo={handleResetDemo} />
+      <DemoManager
+        showFullControls={true}
+        title="Class Management Demo"
+        description="Manage classes, schedules, and enrollment. All data is stored locally and persists between sessions."
+      />
 
       <ClassHeader onAddClass={handleAddClass} />
 

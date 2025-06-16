@@ -1,0 +1,69 @@
+{
+  "classrooms": [
+    {
+      "id": "classroom-1",
+      "name": "Room A-101",
+      "location": "Building A, First Floor",
+      "capacity": 30,
+      "status": "active",
+      "equipment": [
+        "Projector",
+        "Whiteboard",
+        "Air Conditioning",
+        "Sound System"
+      ],
+      "type": "Lecture Hall",
+      "facilityId": "building-a",
+      "createdDate": "2024-01-01T00:00:00.000Z",
+      "lastUpdated": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "classroom-2",
+      "name": "Room B-205",
+      "location": "Building B, Second Floor",
+      "capacity": 25,
+      "status": "active",
+      "equipment": ["Projector", "Interactive Board", "Air Conditioning"],
+      "type": "Classroom",
+      "facilityId": "building-b",
+      "createdDate": "2024-01-01T00:00:00.000Z",
+      "lastUpdated": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "classroom-3",
+      "name": "Room C-301",
+      "location": "Building C, Third Floor",
+      "capacity": 35,
+      "status": "maintenance",
+      "equipment": ["Projector", "Whiteboard", "Laboratory Equipment"],
+      "type": "Laboratory",
+      "facilityId": "building-c",
+      "createdDate": "2024-01-01T00:00:00.000Z",
+      "lastUpdated": "2024-06-01T00:00:00.000Z"
+    },
+    {
+      "id": "classroom-4",
+      "name": "Room A-102",
+      "location": "Building A, First Floor",
+      "capacity": 20,
+      "status": "active",
+      "equipment": ["Computer Lab", "Projector", "Air Conditioning"],
+      "type": "Computer Lab",
+      "facilityId": "building-a",
+      "createdDate": "2024-01-01T00:00:00.000Z",
+      "lastUpdated": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "classroom-5",
+      "name": "Room B-110",
+      "location": "Building B, First Floor",
+      "capacity": 40,
+      "status": "active",
+      "equipment": ["Stage", "Sound System", "Lighting", "Projector"],
+      "type": "Auditorium",
+      "facilityId": "building-b",
+      "createdDate": "2024-01-01T00:00:00.000Z",
+      "lastUpdated": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
