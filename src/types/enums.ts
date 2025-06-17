@@ -25,13 +25,6 @@ export enum PaymentMethod {
   Other = 'other',
 }
 
-export enum ScheduledClassStatus {
-  Scheduled = 'scheduled',
-  Completed = 'completed',
-  Canceled = 'canceled',
-  Rescheduled = 'rescheduled',
-}
-
 export enum RecurringPattern {
   Weekly = 'weekly',
   Biweekly = 'biweekly',

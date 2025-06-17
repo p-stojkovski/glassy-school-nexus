@@ -17,8 +17,6 @@ import StudentManagement from './pages/StudentManagement';
 import ClassManagement from './pages/ClassManagement';
 import ClassForm from './pages/ClassForm';
 import Teachers from './pages/Teachers';
-import Scheduling from './pages/Scheduling';
-import ScheduleForm from './pages/ScheduleForm';
 import AttendanceManagement from './pages/AttendanceManagement';
 import GradesManagement from './pages/GradesManagement';
 import FinancialManagement from './pages/FinancialManagement';
@@ -53,9 +51,6 @@ const AppContent: React.FC = () => {
         <Route path="/classes/new" element={<ClassForm />} />
         <Route path="/classes/edit/:id" element={<ClassForm />} />
         <Route path="/teachers" element={<Teachers />} />{' '}
-        <Route path="/scheduling" element={<Scheduling />} />
-        <Route path="/scheduling/new" element={<ScheduleForm />} />{' '}
-        <Route path="/scheduling/edit/:id" element={<ScheduleForm />} />
         <Route path="/attendance" element={<AttendanceManagement />} />
         <Route path="/grades" element={<GradesManagement />} />
         <Route path="/finance" element={<FinancialManagement />} />

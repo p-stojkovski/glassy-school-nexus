@@ -13,7 +13,6 @@ import {
   Settings,
   ChevronLeft,
   LogOut,
-  CalendarDays,
   GraduationCap as Grades,
 } from 'lucide-react';
 import { RootState } from '../../store';
@@ -29,7 +28,6 @@ const menuItems = [
   { icon: Users, label: 'Students', path: '/students' },
   { icon: BookOpen, label: 'Classes', path: '/classes' },
   { icon: GraduationCap, label: 'Teachers', path: '/teachers' },
-  { icon: CalendarDays, label: 'Scheduling', path: '/scheduling' },
   { icon: Calendar, label: 'Attendance', path: '/attendance' },
   { icon: Grades, label: 'Grades', path: '/grades' },
   { icon: DollarSign, label: 'Finance', path: '/finance' },

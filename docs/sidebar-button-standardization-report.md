@@ -55,15 +55,7 @@ Forms were missing:
 - Fixed button order
 - Enhanced visual styling
 
-### 4. ScheduleClassForm.tsx
-**Location**: `src/domains/scheduling/components/ScheduleClassForm.tsx`
-
-**Changes**:
-- Updated form buttons to match standard
-- Fixed button order
-- Added proper container styling
-
-### 5. PaymentSidebar.tsx
+### 4. PaymentSidebar.tsx
 **Location**: `src/domains/finance/components/payments/PaymentSidebar.tsx`
 
 **Changes**:

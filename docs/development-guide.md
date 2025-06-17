@@ -19,12 +19,11 @@
 ### Key Features
 - **Student Management**: CRUD operations for student records
 - **Teacher Management**: Teacher profiles and assignments
-- **Class Management**: Class creation, scheduling, and student assignments
+- **Class Management**: Class creation and student assignments
 - **Attendance Tracking**: Mark and track student attendance
 - **Financial Management**: Payment obligations and tracking
 - **Grades & Assessments**: Grade management and academic records
 - **Classroom Management**: Physical classroom resources
-- **Scheduling**: Class scheduling and calendar management
 
 ## Architecture
 
@@ -38,7 +37,6 @@ src/
 │   ├── classrooms/     # Classroom management domain
 │   ├── finance/        # Finance management domain
 │   ├── grades/         # Grades & assessments domain
-│   ├── scheduling/     # Scheduling domain
 │   ├── students/       # Student management domain
 │   └── teachers/       # Teacher management domain
 ├── components/         # Shared UI components
@@ -525,7 +523,6 @@ export const store = configureStore({
     classrooms: classroomsReducer,
     attendance: attendanceReducer,
     finance: financeReducer,
-    scheduling: schedulingReducer,
     grades: gradesReducer,
     ui: uiReducer,
   },
@@ -610,14 +607,11 @@ const Component: React.FC = () => {
   <Route path="/students" element={<StudentManagement />} />
   <Route path="/students/:studentId" element={<StudentProfile />} />
   <Route path="/teachers" element={<Teachers />} />
-  <Route path="/classes" element={<ClassManagement />} />
-  <Route path="/classes/new" element={<ClassForm />} />
+  <Route path="/classes" element={<ClassManagement />} />  <Route path="/classes/new" element={<ClassForm />} />
   <Route path="/classrooms" element={<ClassroomManagement />} />
   <Route path="/attendance" element={<AttendanceManagement />} />
   <Route path="/grades" element={<GradesManagement />} />
   <Route path="/finance" element={<FinancialManagement />} />
-  <Route path="/scheduling" element={<Scheduling />} />
-  <Route path="/scheduling/new" element={<ScheduleForm />} />
   <Route path="*" element={<NotFound />} />
 </Routes>
 ```

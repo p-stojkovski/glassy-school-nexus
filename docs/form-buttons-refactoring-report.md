@@ -97,7 +97,7 @@ interface FormButtonsProps {
 />
 ```
 
-### ✅ 7. PaymentSidebar.tsx
+### ✅ 6. PaymentSidebar.tsx
 **Before**: 16 lines of manual button implementation
 **After**: 6 lines using FormButtons component with icon
 ```tsx
@@ -118,9 +118,8 @@ interface FormButtonsProps {
 | TeacherForm | 20 | 5 | -15 lines |
 | ClassFormContent | 16 | 4 | -12 lines |
 | ClassForm (Dialog) | 16 | 4 | -12 lines |
-| ScheduleClassForm | 14 | 4 | -10 lines |
 | PaymentSidebar | 16 | 6 | -10 lines |
-| **Total** | **122** | **32** | **-90 lines** |
+| **Total** | **108** | **28** | **-80 lines** |
 
 **Result**: **74% reduction** in button-related code across all forms!
 
@@ -236,8 +235,8 @@ The FormButtons component is designed to be extensible:
 
 ## Impact Summary
 
-✅ **7 forms refactored** to use the new component
-✅ **90 lines of code eliminated** through deduplication  
+✅ **6 forms refactored** to use the new component
+✅ **80 lines of code eliminated** through deduplication  
 ✅ **100% consistency** achieved across all sidebar forms
 ✅ **Zero breaking changes** - all functionality preserved
 ✅ **Enhanced maintainability** through single source of truth

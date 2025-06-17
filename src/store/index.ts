@@ -7,7 +7,6 @@ import teachersReducer from '@/domains/teachers/teachersSlice';
 import classroomsReducer from '@/domains/classrooms/classroomsSlice';
 import attendanceReducer from '@/domains/attendance/attendanceSlice';
 import financeReducer from '@/domains/finance/financeSlice';
-import schedulingReducer from '@/domains/scheduling/schedulingSlice';
 import gradesReducer from '@/domains/grades/gradesSlice';
 
 export const store = configureStore({
@@ -20,7 +19,6 @@ export const store = configureStore({
     classrooms: classroomsReducer,
     attendance: attendanceReducer,
     finance: financeReducer,
-    scheduling: schedulingReducer,
     grades: gradesReducer,
   },
 });
