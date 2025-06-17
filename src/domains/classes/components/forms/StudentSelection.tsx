@@ -165,7 +165,7 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
             <SelectTrigger className="bg-white/10 border-white/20 text-white">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+            <SelectContent className="bg-gray-800 text-white border border-white/20 backdrop-blur-sm">
               <SelectItem
                 value="all"
                 className="text-white hover:bg-gray-700 focus:bg-gray-700"
@@ -266,7 +266,7 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
           </PopoverTrigger>
 
           <PopoverContent
-            className="w-full p-0 bg-gray-800 text-white border border-white/30 backdrop-blur-sm"
+            className="w-full p-0 bg-gray-800 text-white border border-white/20 backdrop-blur-sm"
             align="start"
             sideOffset={4}
           >

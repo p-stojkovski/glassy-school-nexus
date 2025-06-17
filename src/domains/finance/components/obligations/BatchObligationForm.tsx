@@ -12,6 +12,7 @@ import {
 import { selectStudents } from '@/domains/students/studentsSlice';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import FormButtons from '@/components/common/FormButtons';
 import {
   Form,
   FormControl,
@@ -219,11 +220,11 @@ const BatchObligationForm: React.FC<BatchObligationFormProps> = ({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+                      <SelectContent className="bg-gray-800 text-white border border-white/20 backdrop-blur-sm">
                         {obligationTypes.map((type) => (
                           <SelectItem
                             key={type}
@@ -278,7 +279,7 @@ const BatchObligationForm: React.FC<BatchObligationFormProps> = ({
                           <Button
                             variant={'outline'}
                             className={cn(
-                              'w-full pl-3 text-left font-normal bg-white/20 border-white/30 text-white',
+                              'w-full pl-3 text-left font-normal bg-white/10 border-white/20 text-white',
                               !field.value && 'text-white/70'
                             )}
                           >
@@ -292,7 +293,7 @@ const BatchObligationForm: React.FC<BatchObligationFormProps> = ({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent
-                        className="w-auto p-0 bg-gray-800 border border-white/30 backdrop-blur-sm"
+                        className="w-auto p-0 bg-gray-800 border border-white/20 backdrop-blur-sm"
                         align="start"
                       >
                         <Calendar
@@ -350,38 +351,13 @@ const BatchObligationForm: React.FC<BatchObligationFormProps> = ({
               )}
             />
 
-            <div className="flex items-center justify-end space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="bg-white/50 backdrop-blur-sm border-white text-white font-medium hover:bg-white/60 shadow-sm"
-                onClick={onCancel}
-              >
-                <svg
-                  className="mr-2 h-4 w-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="shadow-md bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                disabled={selectedStudentIds.length === 0}
-              >
-                <Users className="mr-2 h-4 w-4" />
-                Create for {selectedStudentIds.length} Student
-                {selectedStudentIds.length !== 1 ? 's' : ''}
-              </Button>
-            </div>
+            <FormButtons
+              onCancel={onCancel}
+              submitText={`Create for ${selectedStudentIds.length} Student${selectedStudentIds.length !== 1 ? 's' : ''}`}
+              submitIcon={<Users className="h-4 w-4" />}
+              disabled={selectedStudentIds.length === 0}
+              variant="default"
+            />
           </div>
         </form>
       </Form>

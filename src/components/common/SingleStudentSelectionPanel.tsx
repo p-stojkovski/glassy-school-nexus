@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { X, Search, User, Filter, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import FormButtons from '@/components/common/FormButtons';
 import {
   Select,
   SelectContent,
@@ -239,16 +240,16 @@ const SingleStudentSelectionPanel: React.FC<
                 placeholder="Search students..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white/20 border-white/30 text-white placeholder:text-white/60"
+                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                <SelectTrigger className="bg-white/10 border-white/20 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-white/30">
+                <SelectContent className="bg-gray-800 border-white/20">
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
@@ -257,10 +258,10 @@ const SingleStudentSelectionPanel: React.FC<
               </Select>
 
               <Select value={gradeFilter} onValueChange={setGradeFilter}>
-                <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                <SelectTrigger className="bg-white/10 border-white/20 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-white/30">
+                <SelectContent className="bg-gray-800 border-white/20">
                   <SelectItem value="all">All Classes</SelectItem>
                   <SelectItem value={UNASSIGNED_FILTER}>Unassigned</SelectItem>
                   {availableClasses.map((cls) => (
@@ -426,22 +427,13 @@ const SingleStudentSelectionPanel: React.FC<
           </ScrollArea>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-white/20">
-            <Button
-              onClick={handleConfirm}
-              disabled={!selectedStudentId}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Confirm Selection
-            </Button>
-            <Button
-              onClick={handleCancel}
-              variant="outline"
-              className="flex-1 border-white/30 text-white hover:bg-white/20"
-            >
-              Cancel
-            </Button>
-          </div>
+          <FormButtons
+            onSubmit={handleConfirm}
+            onCancel={handleCancel}
+            submitText="Confirm Selection"
+            disabled={!selectedStudentId}
+            variant="default"
+          />
         </div>
       </SheetContent>
     </Sheet>

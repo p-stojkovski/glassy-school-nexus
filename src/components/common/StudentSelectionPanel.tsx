@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import FormButtons from '@/components/common/FormButtons';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -233,7 +234,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                 <SelectTrigger className="bg-white/5 border-white/10 text-white text-sm">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 text-white border border-white/30">
+                <SelectContent className="bg-gray-800 text-white border border-white/20">
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
@@ -243,7 +244,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                 <SelectTrigger className="bg-white/5 border-white/10 text-white text-sm">
                   <SelectValue placeholder="Class" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 text-white border border-white/30">
+                <SelectContent className="bg-gray-800 text-white border border-white/20">
                   <SelectItem value="all">All Classes</SelectItem>
                   <SelectItem value={UNASSIGNED_FILTER}>Unassigned</SelectItem>
                   {availableClasses.map((classItem) => (
@@ -437,22 +438,13 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
           </ScrollArea>{' '}
           {/* Footer Actions */}
           <div className="p-6 border-t border-white/20">
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleApply}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                disabled={!allowMultiple && tempSelectedIds.length === 0}
-              >
-                Apply ({tempSelectedIds.length})
-              </Button>
-            </div>
+            <FormButtons
+              onSubmit={handleApply}
+              onCancel={handleCancel}
+              submitText={`Apply (${tempSelectedIds.length})`}
+              disabled={!allowMultiple && tempSelectedIds.length === 0}
+              variant="compact"
+            />
           </div>
         </div>
       </SheetContent>

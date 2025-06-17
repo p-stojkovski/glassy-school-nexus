@@ -37,7 +37,7 @@ const SingleStudentSelectionTrigger: React.FC<
       onClick={onOpen}
       disabled={disabled}
       className={cn(
-        'w-full justify-between bg-white/20 border-white/30 text-white hover:bg-white/30 hover:text-white',
+        'w-full justify-between bg-white/10 border-white/20 text-white hover:bg-white/30 hover:text-white',
         className
       )}
     >
