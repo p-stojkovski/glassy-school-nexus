@@ -286,7 +286,7 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
                             min="0"
                             step="0.01"
                             placeholder="0.00"
-                            className="bg-white/20 border-white/30 text-white placeholder:text-white/70"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
                             {...field}
                           />
                         </FormControl>
@@ -312,8 +312,8 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
                               <Button
                                 variant={'outline'}
                                 className={cn(
-                                  'w-full pl-3 text-left font-normal bg-white/20 border-white/30 text-white',
-                                  !field.value && 'text-white/70'
+                                  'w-full pl-3 text-left font-normal bg-white/10 border-white/20 text-white',
+                                  !field.value && 'text-white/60'
                                 )}
                               >
                                 {field.value ? (
@@ -326,7 +326,7 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
                             </FormControl>
                           </PopoverTrigger>
                           <PopoverContent
-                            className="w-auto p-0 bg-gray-800 border border-white/30 backdrop-blur-sm"
+                            className="w-auto p-0 bg-gray-800 border border-white/20 backdrop-blur-sm"
                             align="start"
                           >
                             <Calendar
@@ -360,11 +360,11 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                            <SelectTrigger className="bg-white/10 border-white/20 text-white">
                               <SelectValue placeholder="Select method" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+                          <SelectContent className="bg-gray-800 text-white border border-white/20 backdrop-blur-sm">
                             <SelectItem
                               value="cash"
                               className="text-white hover:bg-gray-700 focus:bg-gray-700"
@@ -407,7 +407,7 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
                         <FormControl>
                           <Input
                             placeholder="Receipt or transaction number"
-                            className="bg-white/20 border-white/30 text-white placeholder:text-white/70"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
                             {...field}
                           />
                         </FormControl>
@@ -430,7 +430,7 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
                         <FormControl>
                           <Textarea
                             placeholder="Additional information about this payment"
-                            className="resize-none bg-white/20 border-white/30 text-white placeholder:text-white/70"
+                            className="resize-none bg-white/10 border-white/20 text-white placeholder:text-white/60"
                             {...field}
                           />
                         </FormControl>

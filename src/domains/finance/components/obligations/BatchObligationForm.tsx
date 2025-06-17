@@ -252,7 +252,7 @@ const BatchObligationForm: React.FC<BatchObligationFormProps> = ({
                         min="0"
                         step="0.01"
                         placeholder="0.00"
-                        className="bg-white/20 border-white/30 text-white placeholder:text-white/70"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
                         {...field}
                       />
                     </FormControl>
@@ -319,7 +319,7 @@ const BatchObligationForm: React.FC<BatchObligationFormProps> = ({
                     <FormControl>
                       <Input
                         placeholder="2023/2024"
-                        className="bg-white/20 border-white/30 text-white placeholder:text-white/70"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
                         {...field}
                       />
                     </FormControl>
@@ -341,7 +341,7 @@ const BatchObligationForm: React.FC<BatchObligationFormProps> = ({
                   <FormControl>
                     <Textarea
                       placeholder="Additional information about this payment obligation"
-                      className="resize-none bg-white/20 border-white/30 text-white placeholder:text-white/70"
+                      className="resize-none bg-white/10 border-white/20 text-white placeholder:text-white/60"
                       {...field}
                     />
                   </FormControl>

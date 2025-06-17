@@ -233,7 +233,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
                       <Input
                         placeholder="Enter full name"
                         {...field}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                       />
                     </FormControl>
                     <FormMessage className="text-red-300" />
@@ -253,7 +253,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
                         type="email"
                         placeholder="Enter email address"
                         {...field}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                       />
                     </FormControl>
                     <FormMessage className="text-red-300" />
@@ -272,7 +272,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
                       <Input
                         placeholder="Enter phone number"
                         {...field}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-amber-600 focus:ring-amber-600"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
                       />
                     </FormControl>
                     <FormMessage className="text-red-300" />

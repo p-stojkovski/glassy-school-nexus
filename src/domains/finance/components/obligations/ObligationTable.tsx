@@ -148,7 +148,7 @@ const ObligationTable: React.FC<ObligationTableProps> = ({ onEdit }) => {
             placeholder="Search by student or type..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/70"
+            className="w-full bg-white/10 border-white/20 text-white placeholder:text-white/60"
           />
         </div>
 

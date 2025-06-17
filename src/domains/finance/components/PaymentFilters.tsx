@@ -38,7 +38,7 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
         placeholder="Search by student or reference..."
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="w-full bg-white/20 border-white/30 text-white placeholder:text-white/70"
+        className="w-full bg-white/10 border-white/20 text-white placeholder:text-white/60"
       />
     </div>
 
@@ -47,10 +47,10 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
         value={selectedPeriod || 'all_periods'}
         onValueChange={onPeriodChange}
       >
-        <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
+        <SelectTrigger className="w-full md:w-[180px] bg-white/10 border-white/20 text-white">
           <SelectValue placeholder="All Periods" />
         </SelectTrigger>
-        <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+        <SelectContent className="bg-gray-800 text-white border border-white/20 backdrop-blur-sm">
           <SelectItem
             value="all_periods"
             className="text-white hover:bg-gray-700 focus:bg-gray-700"
@@ -73,10 +73,10 @@ const PaymentFilters: React.FC<PaymentFiltersProps> = ({
         value={selectedStudentId || 'all_students'}
         onValueChange={onStudentChange}
       >
-        <SelectTrigger className="w-full md:w-[180px] bg-white/20 border-white/30 text-white">
+        <SelectTrigger className="w-full md:w-[180px] bg-white/10 border-white/20 text-white">
           <SelectValue placeholder="All Students" />
         </SelectTrigger>
-        <SelectContent className="bg-gray-800 text-white border border-white/30 backdrop-blur-sm">
+        <SelectContent className="bg-gray-800 text-white border border-white/20 backdrop-blur-sm">
           <SelectItem
             value="all_students"
             className="text-white hover:bg-gray-700 focus:bg-gray-700"

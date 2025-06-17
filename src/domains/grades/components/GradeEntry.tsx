@@ -373,7 +373,7 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
                                 }
                               />
                               {!gradeValidation[entry.studentId] && (
-                                <p className="text-red-500 text-xs mt-1">
+                                <p className="text-red-300 text-xs mt-1">
                                   Invalid grade
                                 </p>
                               )}

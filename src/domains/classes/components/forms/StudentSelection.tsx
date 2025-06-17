@@ -278,7 +278,7 @@ const StudentSelection: React.FC<StudentSelectionProps> = ({
                 placeholder="Search students..."
                 onValueChange={setSearchQuery}
                 autoFocus={false}
-                className="text-white placeholder:text-white/70"
+                className="text-white placeholder:text-white/60"
               />
               <CommandList>
                 <CommandEmpty className="py-6 text-center text-white/70">
