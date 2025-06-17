@@ -9,7 +9,7 @@ import {
   Student,
 } from '../studentsSlice';
 import { StudentStatus } from '@/types/enums';
-import { toast } from '../../../hooks/use-toast';
+import { toast } from 'sonner';
 
 export const useStudentForm = () => {
   const dispatch = useAppDispatch();
@@ -36,8 +36,7 @@ export const useStudentForm = () => {
   const confirmDeleteStudent = () => {
     if (studentToDelete) {
       dispatch(deleteStudent(studentToDelete.id));
-      toast({
-        title: 'Student Deleted',
+      toast.success('Student Deleted', {
         description: `${studentToDelete.name} has been successfully deleted.`,
       });
       setStudentToDelete(null);
@@ -65,8 +64,7 @@ export const useStudentForm = () => {
           ...data,
         };
         dispatch(updateStudent(updatedStudent));
-        toast({
-          title: 'Student Updated',
+        toast.success('Student Updated', {
           description: `${data.name} has been successfully updated.`,
         });
       } else {
@@ -79,27 +77,22 @@ export const useStudentForm = () => {
           ...data,
         };
         dispatch(addStudent(newStudent));
-        toast({
-          title: 'Student Added',
+        toast.success('Student Added', {
           description: `${data.name} has been successfully added.`,
         });
       }
       handleCloseForm();
     } catch (e) {
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Something went wrong. Please try again.',
-        variant: 'destructive',
       });
     }
   };
 
   useEffect(() => {
     if (error) {
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error,
-        variant: 'destructive',
       });
       dispatch(setError(null));
     }

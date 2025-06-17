@@ -12,6 +12,7 @@ interface FormButtonsProps {
   submitIcon?: React.ReactNode;
   className?: string;
   variant?: 'default' | 'compact';
+  submitVariant?: 'default' | 'danger' | 'warning';
 }
 
 /**
@@ -37,16 +38,36 @@ const FormButtons: React.FC<FormButtonsProps> = ({
   submitIcon,
   className,
   variant = 'default',
+  submitVariant = 'default',
 }) => {
   const containerClass =
     variant === 'compact'
       ? 'flex gap-3 pt-4'
       : 'flex gap-4 pt-6 border-t border-white/20';
 
-  const submitButtonClass =
-    variant === 'compact'
-      ? 'flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold'
-      : 'flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50';
+  // Different submit button styles based on variant
+  const getSubmitButtonClass = () => {
+    const baseCompactClass =
+      'flex-1 font-semibold px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50';
+    const baseDefaultClass =
+      'flex-1 font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50';
+
+    const baseClass =
+      variant === 'compact' ? baseCompactClass : baseDefaultClass;
+
+    switch (submitVariant) {
+      case 'danger':
+        return `${baseClass} bg-red-500/20 text-red-300 border border-red-400/30 hover:bg-red-500/30`;
+      case 'warning':
+        return `${baseClass} bg-yellow-500/20 text-yellow-300 border border-yellow-400/30 hover:bg-yellow-500/30`;
+      default:
+        return variant === 'compact'
+          ? `${baseClass} bg-yellow-500 hover:bg-yellow-600 text-black`
+          : `${baseClass} bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black`;
+    }
+  };
+
+  const submitButtonClass = getSubmitButtonClass();
 
   const cancelButtonClass =
     variant === 'compact'

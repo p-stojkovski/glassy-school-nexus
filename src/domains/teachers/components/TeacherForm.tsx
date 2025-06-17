@@ -28,7 +28,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Teacher, addTeacher, updateTeacher } from '../teachersSlice';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { RootState } from '@/store';
 
 // Email uniqueness validation helper
@@ -157,8 +157,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
           notes: data.notes?.trim() || '',
         };
         dispatch(updateTeacher(updatedTeacher));
-        toast({
-          title: 'Teacher Updated Successfully',
+        toast.success('Teacher Updated Successfully', {
           description: `${data.name} has been successfully updated with the latest information.`,
         });
       } else {
@@ -174,8 +173,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
           notes: data.notes?.trim() || '',
         };
         dispatch(addTeacher(newTeacher));
-        toast({
-          title: 'Teacher Added Successfully',
+        toast.success('Teacher Added Successfully', {
           description: `${data.name} has been successfully added to the system.`,
         });
       }
@@ -185,11 +183,9 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
       onClose();
     } catch (error) {
       console.error('Teacher form submission error:', error);
-      toast({
-        title: 'Submission Failed',
+      toast.error('Submission Failed', {
         description:
           'Unable to save teacher information. Please check your data and try again.',
-        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);

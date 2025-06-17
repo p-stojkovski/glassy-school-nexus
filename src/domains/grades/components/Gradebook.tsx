@@ -9,7 +9,7 @@ import {
 } from '@/domains/grades/gradesSlice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import GlassCard from '@/components/common/GlassCard';
 import {
   Table,
@@ -148,8 +148,7 @@ const Gradebook: React.FC<GradebookProps> = ({ classId }) => {
     link.click();
     document.body.removeChild(link);
 
-    toast({
-      title: 'Export Successful',
+    toast.success('Export Successful', {
       description: 'The gradebook has been exported to CSV.',
     });
   };

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useClassrooms } from './useClassrooms';
 import { Classroom } from '../classroomsSlice';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useClassroomsData } from '@/data/hooks/useClassroomsData';
 
 export interface ClassroomFormData {
@@ -40,7 +40,7 @@ export const useClassroomManagement = () => {
   const [classroomToDelete, setClassroomToDelete] = useState<Classroom | null>(
     null
   );
-  const { toast } = useToast();
+
   // Filtered classrooms
   const filteredClassrooms = useMemo(() => {
     return classrooms.filter((classroom) => {
@@ -86,10 +86,8 @@ export const useClassroomManagement = () => {
           lastUpdated: new Date().toISOString(),
         };
         updateClassroom(updatedClassroom);
-        toast({
-          title: 'Classroom Updated',
+        toast.success('Classroom Updated', {
           description: `${data.name} has been successfully updated.`,
-          variant: 'success',
         });
       } else {
         const newClassroom: Classroom = {
@@ -101,29 +99,22 @@ export const useClassroomManagement = () => {
           lastUpdated: new Date().toISOString(),
         };
         addClassroom(newClassroom);
-        toast({
-          title: 'Classroom Added',
+        toast.success('Classroom Added', {
           description: `${data.name} has been successfully added.`,
-          variant: 'success',
         });
       }
       handleCloseForm();
     } catch (error) {
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Something went wrong. Please try again.',
-        variant: 'destructive',
       });
     }
   };
-
   const confirmDeleteClassroom = () => {
     if (classroomToDelete) {
       deleteClassroom(classroomToDelete.id);
-      toast({
-        title: 'Classroom Deleted',
+      toast.success('Classroom Deleted', {
         description: `${classroomToDelete.name} has been successfully deleted.`,
-        variant: 'default',
       });
       setClassroomToDelete(null);
       setIsConfirmOpen(false);

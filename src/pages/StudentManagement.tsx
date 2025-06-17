@@ -12,6 +12,7 @@ import StudentForm from '@/domains/students/components/forms/StudentForm';
 import StudentEmptyState from '@/domains/students/components/state/StudentEmptyState';
 import StudentLoading from '@/domains/students/components/state/StudentLoading';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import StandardDemoNotice from '@/components/common/StandardDemoNotice';
 import { DemoManager } from '@/data/components/DemoManager';
 import { useStudentManagement } from '@/domains/students/hooks/useStudentManagement';
 import { useStudentForm } from '@/domains/students/hooks/useStudentForm';
@@ -50,13 +51,17 @@ const StudentManagement: React.FC = () => {
   if (loading) {
     return <StudentLoading />;
   }
-
   return (
     <div className="space-y-6">
+      <StandardDemoNotice
+        title="Student Management Demo"
+        message="Manage student information and enrollment. All data is stored locally and persists between sessions."
+      />
       <DemoManager
         showFullControls={true}
-        title="Student Management Demo"
-        description="Manage student information and enrollment. All data is stored locally and persists between sessions."
+        title="Advanced Demo Controls"
+        description="Additional demo management features for data import/export and system controls."
+        compactMode={true}
       />
       <StudentHeader onAddStudent={handleAddStudent} />
       <StudentFilters

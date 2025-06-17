@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import GlassCard from '@/components/common/GlassCard';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -166,10 +166,8 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
     // Check if all grades are valid
     const allValid = Object.values(gradeValidation).every((valid) => valid);
     if (!allValid) {
-      toast({
-        title: 'Invalid Grades',
+      toast.error('Invalid Grades', {
         description: 'Please correct the invalid grades before submitting.',
-        variant: 'destructive',
       });
       return;
     }
@@ -220,8 +218,7 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
       dispatch(addGradesBatch(gradesToSave));
     }
 
-    toast({
-      title: 'Grades Saved',
+    toast.success('Grades Saved', {
       description: `Grades for ${selectedAssessment.title} have been saved.`,
     });
 

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import GlassCard from '@/components/common/GlassCard';
 import {
   Select,
@@ -84,19 +84,15 @@ const CreateAssessment: React.FC<CreateAssessmentProps> = ({ classId }) => {
 
   const handleSubmit = () => {
     if (!classId) {
-      toast({
-        title: 'Please select a class',
+      toast.error('Please select a class', {
         description: 'You must select a class before creating an assessment',
-        variant: 'destructive',
       });
       return;
     }
 
     if (!formData.title || !formData.type || !formData.date) {
-      toast({
-        title: 'Missing required fields',
+      toast.error('Missing required fields', {
         description: 'Please fill in all required fields',
-        variant: 'destructive',
       });
       return;
     }
@@ -121,8 +117,7 @@ const CreateAssessment: React.FC<CreateAssessmentProps> = ({ classId }) => {
 
     dispatch(createAssessment(newAssessment));
 
-    toast({
-      title: 'Assessment Created',
+    toast.success('Assessment Created', {
       description: `${newAssessment.title} has been created successfully.`,
     });
 

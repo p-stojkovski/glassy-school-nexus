@@ -17,7 +17,7 @@ import {
 } from '@/domains/finance/financeSlice';
 import { Student } from '@/domains/students/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -91,7 +91,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
   const allPayments = useAppSelector(selectAllPayments);
   const allObligations = useAppSelector(selectAllObligations);
   const { classes } = useAppSelector((state: RootState) => state.classes);
-  const { toast } = useToast();
   const editedPayment = editingId
     ? allPayments.find((payment) => payment.id === editingId)
     : null;
@@ -202,26 +201,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
         })
       );
       // Display toast notification for successful payment update
-      toast({
-        title: 'Payment updated',
+      toast.success('Payment updated', {
         description: `Payment of $${data.amount.toFixed(2)} for ${selectedObligation.type} has been updated successfully.`,
-        variant: 'success',
-        icon: (
-          <svg
-            className="w-4 h-4"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-            />
-          </svg>
-        ),
       });
     } else {
       const newPayment: Payment = {
@@ -239,26 +220,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ editingId, onCancel }) => {
         updatedAt: now,
       };
       dispatch(createPayment(newPayment)); // Display toast notification for successful payment creation
-      toast({
-        title: 'Payment recorded',
+      toast.success('Payment recorded', {
         description: `Payment of $${data.amount.toFixed(2)} for ${selectedObligation.studentName}'s ${selectedObligation.type} has been recorded.`,
-        variant: 'success',
-        icon: (
-          <svg
-            className="w-4 h-4"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-        ),
       });
     }
 

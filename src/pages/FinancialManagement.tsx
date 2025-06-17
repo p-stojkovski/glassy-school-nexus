@@ -11,14 +11,13 @@ import PaymentManagement from '@/domains/finance/components/payments/PaymentMana
 import FinancialHeader from '@/domains/finance/components/common/FinancialHeader';
 import { DemoManager } from '@/data/components/DemoManager';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useFinancialData } from '@/data/hooks/useFinancialData';
 import { useStudentsData } from '@/data/hooks/useStudentsData';
 
 const FinancialManagement: React.FC = () => {
   const dispatch = useAppDispatch();
   const error = useAppSelector(selectError);
-  const { toast } = useToast();
 
   // Load financial data and dependencies when needed
   const financialHook = useFinancialData({
@@ -38,17 +37,14 @@ const FinancialManagement: React.FC = () => {
   useEffect(() => {
     dispatch(refreshObligationStatuses());
   }, [dispatch]);
-
   // Show error toast if there's an error in the finance state
   useEffect(() => {
     if (error) {
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error,
-        variant: 'destructive',
       });
     }
-  }, [error, toast]);
+  }, [error]);
   return (
     <div className="space-y-6">
       <DemoManager
