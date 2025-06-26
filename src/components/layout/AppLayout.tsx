@@ -3,7 +3,6 @@ import { useAppSelector } from '@/store/hooks';
 import { useLocation } from 'react-router-dom';
 import { RootState } from '../../store';
 import Sidebar from './Sidebar';
-import TopBar from './TopBar';
 import { ToastProvider } from '@/components/common/ToastProvider';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -23,7 +22,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           <div
             className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}
           >
-            {isDashboard && <TopBar />}
             <main
               className={`flex-1 overflow-auto ${isDashboard ? 'p-6' : 'p-6 pt-6'}`}
             >

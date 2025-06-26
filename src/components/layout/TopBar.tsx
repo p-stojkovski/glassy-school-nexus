@@ -34,30 +34,6 @@ const TopBar: React.FC = () => {
               </div>
             )}
           </div>
-
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-yellow-500/20 border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/30 hover:text-yellow-100 font-semibold"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Quick Add
-            </Button>
-
-            <motion.button
-              className="relative p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Bell className="w-5 h-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </motion.button>
-          </div>
         </div>
       </GlassCard>
     </div>
