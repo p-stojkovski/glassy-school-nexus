@@ -86,8 +86,6 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
   onViewDetails,
 }) => {
   const canEdit = lesson.status !== PrivateLessonStatus.Completed;
-  const canCancel = lesson.status === PrivateLessonStatus.Scheduled;
-  const canComplete = lesson.status === PrivateLessonStatus.Scheduled;
 
   const paymentStatus = calculatePaymentStatus(lesson);
 
@@ -96,13 +94,12 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
       <GlassCard className="p-6 h-full">
         {/*No hover effects*/}
         <div className="flex flex-col h-full">
-          {/* Header with Status and Actions */}
+          {/* Header with Subject and Actions */}
           <div className="flex items-start justify-between mb-4">
-            <Badge
-              className={`${getStatusColor(lesson.status)} border font-medium`}
-            >
-              {lesson.status.charAt(0).toUpperCase() + lesson.status.slice(1)}
-            </Badge>
+            {/* Subject - Main Title */}
+            <h3 className="text-xl font-semibold text-white">
+              {lesson.subject}
+            </h3>
 
             <div className="flex space-x-2">
               {onViewDetails && (
@@ -116,16 +113,6 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
                   Details
                 </Button>
               )}
-              {canComplete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onComplete(lesson)}
-                  className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                >
-                  Complete
-                </Button>
-              )}
               {canEdit && (
                 <Button
                   variant="ghost"
@@ -136,26 +123,11 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
                   Edit
                 </Button>
               )}
-              {canCancel && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onCancel(lesson)}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                >
-                  Cancel
-                </Button>
-              )}
             </div>
           </div>
 
           {/* Main Content */}
           <div className="flex-1 space-y-3">
-            {/* Subject - Main Title */}
-            <h3 className="text-xl font-semibold text-white mb-4">
-              {lesson.subject}
-            </h3>
-
             {/* Student */}
             <p className="text-white/70">
               <span className="text-sm font-medium text-white">Student:</span>{' '}

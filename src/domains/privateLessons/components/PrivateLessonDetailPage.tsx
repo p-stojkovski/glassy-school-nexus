@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import GlassCard from '@/components/common/GlassCard';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import StandardConfirmDialog from '@/components/common/StandardConfirmDialog';
 import { DemoManager } from '@/data/components/DemoManager';
 import { usePrivateLessonsManagement } from '../hooks/usePrivateLessonsManagement';
 import {
@@ -47,10 +48,36 @@ import PaymentObligationForm from './PaymentObligationForm';
 const PrivateLessonDetailPage: React.FC = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
   const navigate = useNavigate();
-  const { allLessons, calculatePaymentStatus } = usePrivateLessonsManagement();
+  const {
+    allLessons,
+    calculatePaymentStatus,
+    handleCompleteLesson,
+    handleDeleteLesson,
+    confirmCompleteLesson,
+    confirmDeleteLesson,
+    lessonToComplete,
+    setLessonToComplete,
+    lessonToCancel,
+    setLessonToCancel,
+  } = usePrivateLessonsManagement();
 
   // Find the lesson
   const lesson = allLessons.find((l) => l.id === lessonId);
+
+  // Navigate back to list if lesson is completed or cancelled from this page
+  useEffect(() => {
+    if (
+      lesson &&
+      (lesson.status === PrivateLessonStatus.Completed ||
+        lesson.status === PrivateLessonStatus.Cancelled)
+    ) {
+      // Small delay to allow user to see the status change
+      const timeout = setTimeout(() => {
+        navigate('/private-lessons');
+      }, 1500);
+      return () => clearTimeout(timeout);
+    }
+  }, [lesson, navigate]);
 
   // UI State
   const [activeTab, setActiveTab] = useState('overview');
@@ -182,12 +209,37 @@ const PrivateLessonDetailPage: React.FC = () => {
             </p>
           </div>
         </div>
-        <Badge
-          className={`${getStatusColor(safeLesson.status)} border font-medium text-sm px-3 py-1`}
-        >
-          {safeLesson.status.charAt(0).toUpperCase() +
-            safeLesson.status.slice(1)}
-        </Badge>
+        <div className="flex items-center space-x-3">
+          {/* Action Buttons */}
+          {safeLesson.status === PrivateLessonStatus.Scheduled && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCompleteLesson(safeLesson)}
+                className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
+              >
+                Complete
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteLesson(safeLesson)}
+                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              >
+                Cancel
+              </Button>
+            </>
+          )}
+
+          {/* Status Badge */}
+          <Badge
+            className={`${getStatusColor(safeLesson.status)} border font-medium text-sm px-3 py-1`}
+          >
+            {safeLesson.status.charAt(0).toUpperCase() +
+              safeLesson.status.slice(1)}
+          </Badge>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -539,6 +591,42 @@ const PrivateLessonDetailPage: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Complete Confirmation Dialog */}
+      <StandardConfirmDialog
+        isOpen={!!lessonToComplete}
+        onClose={() => setLessonToComplete(null)}
+        title="Complete Private Lesson"
+        description={`Are you sure you want to mark the private lesson with ${lessonToComplete?.studentName} as completed? This action will finalize the lesson.`}
+        confirmText="Mark as Complete"
+        cancelText="Cancel"
+        variant="default"
+        onConfirm={confirmCompleteLesson}
+      />
+
+      {/* Cancel/Delete Confirmation Dialog */}
+      <StandardConfirmDialog
+        isOpen={!!lessonToCancel}
+        onClose={() => setLessonToCancel(null)}
+        title={
+          lessonToCancel?.status === 'scheduled'
+            ? 'Cancel Private Lesson'
+            : 'Delete Private Lesson'
+        }
+        description={
+          lessonToCancel?.status === 'scheduled'
+            ? `Are you sure you want to cancel the private lesson with ${lessonToCancel?.studentName}? This action will mark the lesson as cancelled.`
+            : `Are you sure you want to delete this private lesson with ${lessonToCancel?.studentName}? This action cannot be undone.`
+        }
+        confirmText={
+          lessonToCancel?.status === 'scheduled'
+            ? 'Cancel Lesson'
+            : 'Delete Lesson'
+        }
+        cancelText="Keep Lesson"
+        variant="danger"
+        onConfirm={confirmDeleteLesson}
+      />
     </div>
   );
 };
