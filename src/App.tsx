@@ -21,6 +21,7 @@ import AttendanceManagement from './pages/AttendanceManagement';
 import GradesManagement from './pages/GradesManagement';
 import FinancialManagement from './pages/FinancialManagement';
 import PrivateLessons from './pages/PrivateLessons';
+import PrivateLessonDetailPage from './domains/privateLessons/components/PrivateLessonDetailPage';
 import StudentProfilePage from './domains/students/components/profile/StudentProfilePage';
 import NotFound from './pages/NotFound';
 
@@ -78,6 +79,10 @@ const AppContent: React.FC = () => {
         <Route path="/grades" element={<GradesManagement />} />
         <Route path="/finance" element={<FinancialManagement />} />
         <Route path="/private-lessons" element={<PrivateLessons />} />
+        <Route
+          path="/private-lessons/:lessonId"
+          element={<PrivateLessonDetailPage />}
+        />
         <Route path="/settings" element={<Dashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

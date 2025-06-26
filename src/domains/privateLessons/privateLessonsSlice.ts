@@ -1,7 +1,29 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '@/store';
 import { loadFromStorage, saveToStorage } from '@/lib/storage';
-import { PrivateLessonStatus } from '@/types/enums';
+import {
+  PrivateLessonStatus,
+  PaymentMethod,
+  ObligationStatus,
+} from '@/types/enums';
+
+export interface PaymentObligation {
+  id: string;
+  amount: number;
+  dueDate: string; // ISO date string
+  notes?: string;
+  status: ObligationStatus;
+  createdAt: string; // ISO datetime
+}
+
+export interface PaymentRecord {
+  id: string;
+  amount: number;
+  paymentDate: string; // ISO date string
+  method: PaymentMethod;
+  notes?: string;
+  createdAt: string; // ISO datetime
+}
 
 export interface PrivateLesson {
   id: string;
@@ -17,6 +39,9 @@ export interface PrivateLesson {
   classroomName: string; // For easier display
   status: PrivateLessonStatus;
   notes?: string;
+  // Payment-related fields
+  paymentObligation?: PaymentObligation;
+  paymentRecords: PaymentRecord[];
   createdAt: string; // ISO datetime
   updatedAt: string; // ISO datetime
 }
@@ -29,8 +54,15 @@ interface PrivateLessonsState {
 }
 
 // Load initial data from localStorage if available
-const loadInitialLessons = (): PrivateLesson[] =>
-  loadFromStorage<PrivateLesson[]>('privateLessons') || [];
+const loadInitialLessons = (): PrivateLesson[] => {
+  const lessons = loadFromStorage<PrivateLesson[]>('privateLessons') || [];
+
+  // Ensure all lessons have payment fields (migration for existing data)
+  return lessons.map((lesson) => ({
+    ...lesson,
+    paymentRecords: lesson.paymentRecords || [],
+  }));
+};
 
 const initialState: PrivateLessonsState = {
   lessons: loadInitialLessons(),
@@ -107,6 +139,133 @@ const privateLessonsSlice = createSlice({
       }
     },
 
+    // Payment obligation management
+    setPaymentObligation: (
+      state,
+      action: PayloadAction<{ lessonId: string; obligation: PaymentObligation }>
+    ) => {
+      const { lessonId, obligation } = action.payload;
+      const index = state.lessons.findIndex((l) => l.id === lessonId);
+      if (index !== -1) {
+        state.lessons[index] = {
+          ...state.lessons[index],
+          paymentObligation: obligation,
+          updatedAt: new Date().toISOString(),
+        };
+        saveToStorage('privateLessons', state.lessons);
+      }
+    },
+
+    updatePaymentObligation: (
+      state,
+      action: PayloadAction<{ lessonId: string; obligation: PaymentObligation }>
+    ) => {
+      const { lessonId, obligation } = action.payload;
+      const index = state.lessons.findIndex((l) => l.id === lessonId);
+      if (index !== -1) {
+        state.lessons[index] = {
+          ...state.lessons[index],
+          paymentObligation: obligation,
+          updatedAt: new Date().toISOString(),
+        };
+        saveToStorage('privateLessons', state.lessons);
+      }
+    },
+
+    removePaymentObligation: (state, action: PayloadAction<string>) => {
+      const index = state.lessons.findIndex((l) => l.id === action.payload);
+      if (index !== -1) {
+        state.lessons[index] = {
+          ...state.lessons[index],
+          paymentObligation: undefined,
+          updatedAt: new Date().toISOString(),
+        };
+        saveToStorage('privateLessons', state.lessons);
+      }
+    },
+
+    // Payment record management
+    addPaymentRecord: (
+      state,
+      action: PayloadAction<{ lessonId: string; payment: PaymentRecord }>
+    ) => {
+      const { lessonId, payment } = action.payload;
+      const index = state.lessons.findIndex((l) => l.id === lessonId);
+      if (index !== -1) {
+        state.lessons[index] = {
+          ...state.lessons[index],
+          paymentRecords: [...state.lessons[index].paymentRecords, payment],
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Auto-update obligation status based on payments
+        if (state.lessons[index].paymentObligation) {
+          const totalPaid = state.lessons[index].paymentRecords.reduce(
+            (sum, p) => sum + p.amount,
+            0
+          );
+          const obligationAmount =
+            state.lessons[index].paymentObligation!.amount;
+
+          let newStatus: ObligationStatus;
+          if (totalPaid >= obligationAmount) {
+            newStatus = ObligationStatus.Paid;
+          } else if (totalPaid > 0) {
+            newStatus = ObligationStatus.Partial;
+          } else {
+            const dueDate = new Date(
+              state.lessons[index].paymentObligation!.dueDate
+            );
+            const today = new Date();
+            newStatus =
+              today > dueDate
+                ? ObligationStatus.Overdue
+                : ObligationStatus.Pending;
+          }
+
+          state.lessons[index].paymentObligation!.status = newStatus;
+        }
+
+        saveToStorage('privateLessons', state.lessons);
+      }
+    },
+
+    updatePaymentRecord: (
+      state,
+      action: PayloadAction<{ lessonId: string; payment: PaymentRecord }>
+    ) => {
+      const { lessonId, payment } = action.payload;
+      const index = state.lessons.findIndex((l) => l.id === lessonId);
+      if (index !== -1) {
+        const paymentIndex = state.lessons[index].paymentRecords.findIndex(
+          (p) => p.id === payment.id
+        );
+        if (paymentIndex !== -1) {
+          state.lessons[index].paymentRecords[paymentIndex] = payment;
+          state.lessons[index].updatedAt = new Date().toISOString();
+          saveToStorage('privateLessons', state.lessons);
+        }
+      }
+    },
+
+    removePaymentRecord: (
+      state,
+      action: PayloadAction<{ lessonId: string; paymentId: string }>
+    ) => {
+      const { lessonId, paymentId } = action.payload;
+      const index = state.lessons.findIndex((l) => l.id === lessonId);
+      if (index !== -1) {
+        state.lessons[index] = {
+          ...state.lessons[index],
+          paymentRecords: state.lessons[index].paymentRecords.filter(
+            (p) => p.id !== paymentId
+          ),
+          updatedAt: new Date().toISOString(),
+        };
+        saveToStorage('privateLessons', state.lessons);
+      }
+    },
+
     // Clear all data (for testing/demo purposes)
     clearAllPrivateLessons: (state) => {
       state.lessons = [];
@@ -126,6 +285,12 @@ export const {
   cancelPrivateLesson,
   completePrivateLesson,
   clearAllPrivateLessons,
+  setPaymentObligation,
+  updatePaymentObligation,
+  removePaymentObligation,
+  addPaymentRecord,
+  updatePaymentRecord,
+  removePaymentRecord,
 } = privateLessonsSlice.actions;
 
 // Selectors

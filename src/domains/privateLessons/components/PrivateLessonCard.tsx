@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  User,
-  GraduationCap,
-  BookOpen,
-} from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import GlassCard from '@/components/common/GlassCard';
@@ -18,6 +11,7 @@ interface PrivateLessonCardProps {
   onEdit: (lesson: PrivateLesson) => void;
   onCancel: (lesson: PrivateLesson) => void;
   onComplete: (lesson: PrivateLesson) => void;
+  onViewDetails?: (lesson: PrivateLesson) => void;
 }
 
 const getStatusColor = (status: PrivateLessonStatus): string => {
@@ -46,15 +40,56 @@ const formatDate = (date: string): string => {
   });
 };
 
+// Helper function to calculate payment status
+const calculatePaymentStatus = (lesson: PrivateLesson) => {
+  if (!lesson.paymentObligation) {
+    return { status: 'no_obligation', totalPaid: 0, balance: 0 };
+  }
+
+  const totalPaid = (lesson.paymentRecords || []).reduce(
+    (sum, payment) => sum + payment.amount,
+    0
+  );
+  const balance = lesson.paymentObligation.amount - totalPaid;
+
+  return {
+    status: lesson.paymentObligation.status,
+    totalPaid,
+    balance,
+    obligationAmount: lesson.paymentObligation.amount,
+  };
+};
+
+// Helper function to get payment status color
+const getPaymentStatusColor = (status: string): string => {
+  switch (status) {
+    case 'paid':
+      return 'bg-green-500/20 text-green-300 border-green-500/30';
+    case 'pending':
+      return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+    case 'overdue':
+      return 'bg-red-500/20 text-red-300 border-red-500/30';
+    case 'partial':
+      return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+    case 'no_obligation':
+      return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+    default:
+      return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+  }
+};
+
 const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
   lesson,
   onEdit,
   onCancel,
   onComplete,
+  onViewDetails,
 }) => {
   const canEdit = lesson.status !== PrivateLessonStatus.Completed;
   const canCancel = lesson.status === PrivateLessonStatus.Scheduled;
   const canComplete = lesson.status === PrivateLessonStatus.Scheduled;
+
+  const paymentStatus = calculatePaymentStatus(lesson);
 
   return (
     <div>
@@ -70,6 +105,17 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
             </Badge>
 
             <div className="flex space-x-2">
+              {onViewDetails && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onViewDetails(lesson)}
+                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  Details
+                </Button>
+              )}
               {canComplete && (
                 <Button
                   variant="ghost"
@@ -107,7 +153,6 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
           <div className="flex-1 space-y-4">
             {/* Subject */}
             <div className="flex items-center gap-3">
-              <BookOpen className="w-5 h-5 text-blue-400" />
               <div>
                 <h3 className="text-lg font-semibold text-white">
                   {lesson.subject}
@@ -117,7 +162,6 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
 
             {/* Student */}
             <div className="flex items-center gap-3">
-              <User className="w-4 h-4 text-green-400" />
               <div>
                 <p className="text-sm text-white/70">Student</p>
                 <p className="text-white font-medium">{lesson.studentName}</p>
@@ -126,7 +170,6 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
 
             {/* Teacher */}
             <div className="flex items-center gap-3">
-              <GraduationCap className="w-4 h-4 text-purple-400" />
               <div>
                 <p className="text-sm text-white/70">Teacher</p>
                 <p className="text-white font-medium">{lesson.teacherName}</p>
@@ -136,7 +179,6 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
             {/* Date and Time */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
-                <Calendar className="w-4 h-4 text-yellow-400" />
                 <div>
                   <p className="text-sm text-white/70">Date</p>
                   <p className="text-white font-medium">
@@ -146,7 +188,6 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
               </div>
 
               <div className="flex items-center gap-3">
-                <Clock className="w-4 h-4 text-orange-400" />
                 <div>
                   <p className="text-sm text-white/70">Time</p>
                   <p className="text-white font-medium">
@@ -159,7 +200,6 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
 
             {/* Classroom */}
             <div className="flex items-center gap-3">
-              <MapPin className="w-4 h-4 text-cyan-400" />
               <div>
                 <p className="text-sm text-white/70">Classroom</p>
                 <p className="text-white font-medium">{lesson.classroomName}</p>
@@ -173,6 +213,39 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
                 <p className="text-white text-sm">{lesson.notes}</p>
               </div>
             )}
+
+            {/* Payment Status */}
+            <div className="pt-2 border-t border-white/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="text-sm text-white/70">Payment Status</p>
+                    {paymentStatus.status === 'no_obligation' ? (
+                      <Badge
+                        className={getPaymentStatusColor(paymentStatus.status)}
+                      >
+                        No Payment Required
+                      </Badge>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-white text-sm">
+                          ${paymentStatus.totalPaid}/$
+                          {paymentStatus.obligationAmount}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {paymentStatus.balance > 0 && (
+                  <div className="text-right">
+                    <p className="text-sm text-white/70">Balance Due</p>
+                    <p className="text-red-400 font-medium">
+                      ${paymentStatus.balance}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </GlassCard>

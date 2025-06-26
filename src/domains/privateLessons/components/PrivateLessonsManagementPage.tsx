@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Sheet,
   SheetContent,
@@ -15,8 +16,11 @@ import PrivateLessonCard from './PrivateLessonCard';
 import PrivateLessonForm from './PrivateLessonForm';
 import PrivateLessonEmptyState from './PrivateLessonEmptyState';
 import { usePrivateLessonsManagement } from '../hooks/usePrivateLessonsManagement';
+import { PrivateLesson } from '../privateLessonsSlice';
 
 const PrivateLessonsManagementPage: React.FC = () => {
+  const navigate = useNavigate();
+
   const {
     // Data
     lessons,
@@ -60,6 +64,11 @@ const PrivateLessonsManagementPage: React.FC = () => {
     isEditing,
   } = usePrivateLessonsManagement();
 
+  // Handler for viewing lesson details
+  const handleViewDetails = (lesson: PrivateLesson) => {
+    navigate(`/private-lessons/${lesson.id}`);
+  };
+
   if (loading && allLessons.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -100,6 +109,7 @@ const PrivateLessonsManagementPage: React.FC = () => {
               onEdit={handleEditLesson}
               onCancel={handleDeleteLesson}
               onComplete={handleCompleteLesson}
+              onViewDetails={handleViewDetails} // Pass the handler to the card
             />
           ))}
         </div>

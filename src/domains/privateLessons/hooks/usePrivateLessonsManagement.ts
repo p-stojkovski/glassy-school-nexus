@@ -3,18 +3,30 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
 import {
   PrivateLesson,
+  PaymentObligation,
+  PaymentRecord,
   addPrivateLesson,
   updatePrivateLesson,
   deletePrivateLesson,
   cancelPrivateLesson,
   completePrivateLesson,
+  setPaymentObligation,
+  updatePaymentObligation,
+  removePaymentObligation,
+  addPaymentRecord,
+  updatePaymentRecord,
+  removePaymentRecord,
   setLoading,
   setError,
   selectAllPrivateLessons,
   selectPrivateLessonsLoading,
   selectPrivateLessonsError,
 } from '../privateLessonsSlice';
-import { PrivateLessonStatus } from '@/types/enums';
+import {
+  PrivateLessonStatus,
+  PaymentMethod,
+  ObligationStatus,
+} from '@/types/enums';
 import { toast } from 'sonner';
 
 export interface PrivateLessonFormData {
@@ -25,6 +37,19 @@ export interface PrivateLessonFormData {
   startTime: string;
   endTime: string;
   classroomId: string;
+  notes?: string;
+}
+
+export interface PaymentObligationFormData {
+  amount: number;
+  dueDate: string;
+  notes?: string;
+}
+
+export interface PaymentRecordFormData {
+  amount: number;
+  paymentDate: string;
+  method: PaymentMethod;
   notes?: string;
 }
 
@@ -130,6 +155,9 @@ export const usePrivateLessonsManagement = () => {
             ? selectedLesson.status
             : PrivateLessonStatus.Scheduled,
           notes: data.notes,
+          // Payment-related fields
+          paymentObligation: selectedLesson?.paymentObligation,
+          paymentRecords: selectedLesson?.paymentRecords || [],
           createdAt: selectedLesson
             ? selectedLesson.createdAt
             : new Date().toISOString(),
@@ -209,15 +237,196 @@ export const usePrivateLessonsManagement = () => {
     }
   }, [dispatch, lessonToComplete]);
 
-  const handleCloseForm = useCallback(() => {
-    setIsFormOpen(false);
-    setSelectedLesson(null);
+  // Payment management functions
+  const handleSetPaymentObligation = useCallback(
+    async (lessonId: string, data: PaymentObligationFormData) => {
+      try {
+        dispatch(setLoading(true));
+
+        const obligation: PaymentObligation = {
+          id: crypto.randomUUID(),
+          amount: data.amount,
+          dueDate: data.dueDate,
+          notes: data.notes,
+          status: ObligationStatus.Pending,
+          createdAt: new Date().toISOString(),
+        };
+
+        dispatch(setPaymentObligation({ lessonId, obligation }));
+        toast.success('Payment obligation assigned successfully');
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Failed to set payment obligation';
+        toast.error(errorMessage);
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
+
+  const handleUpdatePaymentObligation = useCallback(
+    async (
+      lessonId: string,
+      obligationId: string,
+      data: PaymentObligationFormData
+    ) => {
+      try {
+        dispatch(setLoading(true));
+
+        const obligation: PaymentObligation = {
+          id: obligationId,
+          amount: data.amount,
+          dueDate: data.dueDate,
+          notes: data.notes,
+          status: ObligationStatus.Pending, // Recalculated in reducer
+          createdAt: new Date().toISOString(), // Will be overwritten in reducer if existing
+        };
+
+        dispatch(updatePaymentObligation({ lessonId, obligation }));
+        toast.success('Payment obligation updated successfully');
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Failed to update payment obligation';
+        toast.error(errorMessage);
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
+
+  const handleRemovePaymentObligation = useCallback(
+    async (lessonId: string) => {
+      try {
+        dispatch(setLoading(true));
+        dispatch(removePaymentObligation(lessonId));
+        toast.success('Payment obligation removed successfully');
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Failed to remove payment obligation';
+        toast.error(errorMessage);
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
+
+  const handleAddPaymentRecord = useCallback(
+    async (lessonId: string, data: PaymentRecordFormData) => {
+      try {
+        dispatch(setLoading(true));
+
+        const payment: PaymentRecord = {
+          id: crypto.randomUUID(),
+          amount: data.amount,
+          paymentDate: data.paymentDate,
+          method: data.method,
+          notes: data.notes,
+          createdAt: new Date().toISOString(),
+        };
+
+        dispatch(addPaymentRecord({ lessonId, payment }));
+        toast.success('Payment recorded successfully');
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to record payment';
+        toast.error(errorMessage);
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
+
+  const handleUpdatePaymentRecord = useCallback(
+    async (
+      lessonId: string,
+      paymentId: string,
+      data: PaymentRecordFormData
+    ) => {
+      try {
+        dispatch(setLoading(true));
+
+        const payment: PaymentRecord = {
+          id: paymentId,
+          amount: data.amount,
+          paymentDate: data.paymentDate,
+          method: data.method,
+          notes: data.notes,
+          createdAt: new Date().toISOString(), // Will preserve original in reducer if existing
+        };
+
+        dispatch(updatePaymentRecord({ lessonId, payment }));
+        toast.success('Payment updated successfully');
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to update payment';
+        toast.error(errorMessage);
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
+
+  const handleRemovePaymentRecord = useCallback(
+    async (lessonId: string, paymentId: string) => {
+      try {
+        dispatch(setLoading(true));
+        dispatch(removePaymentRecord({ lessonId, paymentId }));
+        toast.success('Payment record removed successfully');
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Failed to remove payment record';
+        toast.error(errorMessage);
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    [dispatch]
+  );
+
+  // Payment calculation helpers
+  const calculatePaymentStatus = useCallback((lesson: PrivateLesson) => {
+    if (!lesson.paymentObligation) {
+      return { status: 'no_obligation', totalPaid: 0, balance: 0 };
+    }
+
+    const totalPaid = (lesson.paymentRecords || []).reduce(
+      (sum, payment) => sum + payment.amount,
+      0
+    );
+    const balance = lesson.paymentObligation.amount - totalPaid;
+
+    return {
+      status: lesson.paymentObligation.status,
+      totalPaid,
+      balance,
+      obligationAmount: lesson.paymentObligation.amount,
+    };
   }, []);
 
+  // Clear all filters
   const clearFilters = useCallback(() => {
     setSearchTerm('');
     setStatusFilter('all');
     setDateFilter('');
+  }, []);
+
+  // Handle closing form
+  const handleCloseForm = useCallback(() => {
+    setIsFormOpen(false);
+    setSelectedLesson(null);
   }, []);
 
   // Check if filters are applied
@@ -265,6 +474,17 @@ export const usePrivateLessonsManagement = () => {
     confirmCancelLesson,
     confirmDeleteLesson,
     confirmCompleteLesson,
+
+    // Payment handlers
+    handleSetPaymentObligation,
+    handleUpdatePaymentObligation,
+    handleRemovePaymentObligation,
+    handleAddPaymentRecord,
+    handleUpdatePaymentRecord,
+    handleRemovePaymentRecord,
+
+    // Helper functions
+    calculatePaymentStatus,
 
     // Computed
     isEditing: !!selectedLesson,
