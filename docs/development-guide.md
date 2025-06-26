@@ -205,6 +205,54 @@ Sidebar navigation styles are defined in `Sidebar.module.scss` following the sam
 }
 ```
 
+#### Card Action Buttons
+
+Action buttons within cards should use **text labels** rather than icons to improve clarity and accessibility. Follow the patterns established in Class Management:
+
+```tsx
+// ✅ Correct: Text-based action buttons in cards
+<div className="flex space-x-2">
+  <Button
+    variant="ghost"
+    size="sm"
+    onClick={() => onEdit(item)}
+    className="text-white/70 hover:text-white hover:bg-white/10"
+  >
+    Edit
+  </Button>
+  <Button
+    variant="ghost"
+    size="sm"
+    onClick={() => onDelete(item)}
+    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+  >
+    Delete
+  </Button>
+  <Button
+    variant="ghost"
+    size="sm"
+    onClick={() => onComplete(item)}
+    className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
+  >
+    Complete
+  </Button>
+</div>
+
+// ❌ Avoid: Icon-only buttons (poor accessibility)
+<Button variant="ghost" size="sm" className="p-2">
+  <Edit className="h-4 w-4" />
+</Button>
+```
+
+**Styling Standards for Card Actions:**
+- Use `variant="ghost"` and `size="sm"`
+- Remove `p-2` padding class to allow proper text spacing
+- Standard color patterns:
+  - Edit: `text-white/70 hover:text-white hover:bg-white/10`
+  - Delete/Cancel: `text-red-400 hover:text-red-300 hover:bg-red-500/10`
+  - Complete/Confirm: `text-green-400 hover:text-green-300 hover:bg-green-500/10`
+- Always provide clear, descriptive text labels
+
 #### Form Elements
 ```tsx
 // Input fields
@@ -299,7 +347,6 @@ Replace manual button implementations:
   submitText="Add Student" 
   onCancel={onCancel} 
 />
-```
 ```
 
 #### Cards and Containers
@@ -1232,7 +1279,7 @@ const selectFilteredStudents = createSelector(
 );
 
 // Memoized component for expensive renders
-const StudentTable = memo(({ students }: { students: Student[] }) => {
+const StudentTable = memo(({ students }: StudentTableProps) => {
   return (
     <Table>
       {students.map(student => (
@@ -1420,7 +1467,6 @@ const StudentCard = ({ student, onEdit, onDelete }: StudentCardProps) => {
           aria-label={`Edit ${student.name}`}
           className="text-white/70 hover:text-white"
         >
-          <Edit aria-hidden="true" />
           Edit
         </Button>
         
@@ -1429,7 +1475,6 @@ const StudentCard = ({ student, onEdit, onDelete }: StudentCardProps) => {
           aria-label={`Delete ${student.name}`}
           className="text-red-400 hover:text-red-300"
         >
-          <Trash2 aria-hidden="true" />
           Delete
         </Button>
       </div>
@@ -1527,5 +1572,84 @@ Before submitting any code, ensure you've checked:
 - [ ] No direct DOM manipulation with user input
 - [ ] API calls use proper error handling
 - [ ] Sensitive data is not logged
+
+## Management Page Implementation Checklist
+
+Before submitting any new management page or CRUD interface, ensure ALL items are checked:
+
+### ✅ Required Components Checklist
+
+#### Demo Notices (MANDATORY)
+- [ ] `StandardDemoNotice` is used as PRIMARY demo notification
+- [ ] `StandardDemoNotice` appears FIRST in the component tree
+- [ ] Title follows pattern: "[Feature Name] Demo"
+- [ ] Message includes: "All data is stored locally and persists between sessions"
+- [ ] If using `DemoManager`, it appears SECOND with `compactMode={true}`
+
+#### Form Sidebar (MANDATORY)
+- [ ] Uses exact `SheetContent` className: `"w-full sm:max-w-md bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"`
+- [ ] Uses `side="right"` prop
+- [ ] `SheetHeader` has className: `"pb-6 border-b border-white/20"`
+- [ ] `SheetTitle` has className: `"text-2xl font-bold text-white"`
+- [ ] Title follows pattern: `{isEditing ? 'Edit [Entity]' : 'Add New [Entity]'}`
+- [ ] Form container has `className="mt-6"`
+
+#### Page Structure (REQUIRED)
+- [ ] Loading state handled with `<LoadingSpinner />`
+- [ ] Page wrapped in `<div className="space-y-6">`
+- [ ] Components appear in this order: Demo notices, Header, Filters, Content, Sidebar, Dialogs
+- [ ] Uses established patterns from existing pages (StudentManagement, ClassroomManagement)
+
+#### Form Integration (REQUIRED)
+- [ ] Uses `FormButtons` component for submit/cancel actions
+- [ ] Form validation with Zod schema
+- [ ] Proper error handling and loading states
+- [ ] Uses standard form field styling (bg-white/10, border-white/20, etc.)
+
+#### State Management (REQUIRED)
+- [ ] Redux slice follows established patterns
+- [ ] LocalStorage persistence implemented
+- [ ] Custom hook for business logic (useEntityManagement pattern)
+- [ ] Proper selectors and actions exported
+
+#### Card Action Buttons (REQUIRED)
+- [ ] Cards use **text-based** action buttons (Edit, Delete, Complete, etc.)
+- [ ] NO icon-only buttons (accessibility issue)
+- [ ] Standard button styling: `variant="ghost" size="sm"`
+- [ ] Standard color patterns for actions
+- [ ] Remove `p-2` padding to allow proper text spacing
+- [ ] Buttons appear in logical order: Complete, Edit, Delete/Cancel
+
+### ❌ Common Mistakes to Avoid
+
+#### Sidebar Styling Mistakes
+- ❌ Using custom background colors instead of standard gradient
+- ❌ Wrong border colors (border-gray-800 instead of border-white/20)
+- ❌ Missing backdrop-blur-xl
+- ❌ Wrong title sizing (text-xl instead of text-2xl)
+- ❌ Missing header border (border-b border-white/20)
+
+#### Demo Notice Mistakes
+- ❌ Using DemoManager as primary notice
+- ❌ Wrong order (DemoManager before StandardDemoNotice)
+- ❌ Missing compactMode when using both components
+- ❌ Inconsistent titles and messages
+
+#### Structure Mistakes
+- ❌ Missing loading states
+- ❌ Inconsistent spacing (not using space-y-6)
+- ❌ Wrong component order
+- ❌ Custom form buttons instead of FormButtons component
+
+#### Card Action Button Mistakes
+- ❌ Using icon-only buttons without text labels
+- ❌ Wrong button sizing (not using size="sm")
+- ❌ Inconsistent color patterns for actions
+- ❌ Using `p-2` padding with text buttons
+- ❌ Missing hover states or wrong hover colors
+
+### 🎯 Example Reference Implementation
+
+Use **StudentManagement** or **ClassroomManagement** pages as reference implementations that follow all these standards correctly.
 
 This guide provides the foundation for understanding and contributing to the Glassy School Nexus project. Follow these patterns and conventions to maintain consistency and code quality across the application.

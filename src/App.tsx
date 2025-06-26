@@ -20,6 +20,7 @@ import Teachers from './pages/Teachers';
 import AttendanceManagement from './pages/AttendanceManagement';
 import GradesManagement from './pages/GradesManagement';
 import FinancialManagement from './pages/FinancialManagement';
+import PrivateLessons from './pages/PrivateLessons';
 import StudentProfilePage from './domains/students/components/profile/StudentProfilePage';
 import NotFound from './pages/NotFound';
 
@@ -34,12 +35,34 @@ const queryClient = new QueryClient({
 });
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated } = useAppSelector((state: RootState) => state.auth);
+  console.log('AppContent rendering...'); // Debug log
+
+  const { isAuthenticated, loading } = useAppSelector((state: RootState) => {
+    console.log('Auth state:', state.auth); // Debug log
+    return state.auth;
+  });
+
+  console.log(
+    'Auth check - isAuthenticated:',
+    isAuthenticated,
+    'loading:',
+    loading
+  ); // Debug log
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
+    console.log('Rendering LoginForm'); // Debug log
     return <LoginForm />;
   }
 
+  console.log('Rendering authenticated app'); // Debug log
   return (
     <AppLayout>
       <Routes>
@@ -54,6 +77,7 @@ const AppContent: React.FC = () => {
         <Route path="/attendance" element={<AttendanceManagement />} />
         <Route path="/grades" element={<GradesManagement />} />
         <Route path="/finance" element={<FinancialManagement />} />
+        <Route path="/private-lessons" element={<PrivateLessons />} />
         <Route path="/settings" element={<Dashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

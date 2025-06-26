@@ -59,3 +59,9 @@ export enum ConflictType {
   Student = 'student',
   Classroom = 'classroom',
 }
+
+export enum PrivateLessonStatus {
+  Scheduled = 'scheduled',
+  Completed = 'completed',
+  Cancelled = 'cancelled',
+}

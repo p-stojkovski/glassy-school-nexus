@@ -57,12 +57,7 @@ const StudentManagement: React.FC = () => {
         title="Student Management Demo"
         message="Manage student information and enrollment. All data is stored locally and persists between sessions."
       />
-      <DemoManager
-        showFullControls={true}
-        title="Advanced Demo Controls"
-        description="Additional demo management features for data import/export and system controls."
-        compactMode={true}
-      />
+
       <StudentHeader onAddStudent={handleAddStudent} />
       <StudentFilters
         searchTerm={searchTerm}
