@@ -29,6 +29,7 @@ const PrivateLessonsManagementPage: React.FC = () => {
     students,
     teachers,
     classrooms,
+    classes,
 
     // Filter state
     searchTerm,
@@ -139,6 +140,7 @@ const PrivateLessonsManagementPage: React.FC = () => {
               students={students}
               teachers={teachers}
               classrooms={classrooms}
+              classes={classes}
               onSubmit={handleSubmitLesson}
               onCancel={handleCloseForm}
               isLoading={loading}

@@ -69,6 +69,7 @@ export const usePrivateLessonsManagement = () => {
   const classrooms = useAppSelector(
     (state: RootState) => state.classrooms.classrooms
   );
+  const classes = useAppSelector((state: RootState) => state.classes.classes);
 
   // Filter and search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -443,6 +444,7 @@ export const usePrivateLessonsManagement = () => {
     students,
     teachers,
     classrooms,
+    classes,
 
     // Filter state
     searchTerm,

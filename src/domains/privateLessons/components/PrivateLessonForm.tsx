@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -26,6 +26,7 @@ import { PrivateLessonFormData } from '../hooks/usePrivateLessonsManagement';
 import { Student } from '@/domains/students/studentsSlice';
 import { Teacher } from '@/domains/teachers/teachersSlice';
 import { Classroom } from '@/domains/classrooms/classroomsSlice';
+import { Class } from '@/domains/classes/classesSlice';
 
 // Validation schema
 const privateLessonSchema = z
@@ -62,6 +63,7 @@ interface PrivateLessonFormProps {
   students: Student[];
   teachers: Teacher[];
   classrooms: Classroom[];
+  classes: Class[];
   onSubmit: (data: PrivateLessonFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -72,11 +74,33 @@ const PrivateLessonForm: React.FC<PrivateLessonFormProps> = ({
   students,
   teachers,
   classrooms,
+  classes,
   onSubmit,
   onCancel,
   isLoading = false,
 }) => {
   const isEditing = !!lesson;
+
+  // State for class-based student filtering
+  const [selectedClassId, setSelectedClassId] =
+    useState<string>('all-students');
+
+  // Filter students by selected class
+  const filteredStudents = useMemo(() => {
+    if (!selectedClassId || selectedClassId === 'all-students') {
+      return students;
+    }
+    return students.filter((student) => student.classId === selectedClassId);
+  }, [students, selectedClassId]);
+
+  // Find the class of the currently selected student (for editing)
+  const currentStudentClassId = useMemo(() => {
+    if (lesson?.studentId) {
+      const student = students.find((s) => s.id === lesson.studentId);
+      return student?.classId || '';
+    }
+    return '';
+  }, [lesson?.studentId, students]);
 
   // Get tomorrow's date in YYYY-MM-DD format
   const getTomorrowDate = () => {
@@ -99,6 +123,20 @@ const PrivateLessonForm: React.FC<PrivateLessonFormProps> = ({
     },
   });
 
+  // Set initial selected class when editing
+  React.useEffect(() => {
+    if (isEditing && currentStudentClassId) {
+      setSelectedClassId(currentStudentClassId);
+    }
+  }, [isEditing, currentStudentClassId]);
+
+  // Reset student selection when class changes
+  const handleClassChange = (classId: string) => {
+    setSelectedClassId(classId);
+    // Clear student selection when class changes
+    form.setValue('studentId', '');
+  };
+
   const handleSubmit = (data: PrivateLessonFormData) => {
     onSubmit(data);
   };
@@ -107,31 +145,87 @@ const PrivateLessonForm: React.FC<PrivateLessonFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="space-y-4">
+          {/* Class Selection for Student Filtering */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white">
+              Class (for student filtering)
+            </label>
+            <Select value={selectedClassId} onValueChange={handleClassChange}>
+              <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                <SelectValue placeholder="Select a class to filter students" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-900 border-white/20">
+                <SelectItem
+                  value="all-students"
+                  className="text-white focus:bg-white/10"
+                >
+                  All Students
+                </SelectItem>
+                {classes.map((classItem) => (
+                  <SelectItem
+                    key={classItem.id}
+                    value={classItem.id}
+                    className="text-white focus:bg-white/10"
+                  >
+                    {classItem.name} ({classItem.students} students)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Student Selection */}
           <FormField
             control={form.control}
             name="studentId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white">Student</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <FormLabel className="text-white">
+                  Student
+                  {selectedClassId && selectedClassId !== 'all-students' && (
+                    <span className="text-sm text-yellow-400 ml-2">
+                      (showing {filteredStudents.length} students from selected
+                      class)
+                    </span>
+                  )}
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                      <SelectValue placeholder="Select a student" />
+                      <SelectValue
+                        placeholder={
+                          selectedClassId && selectedClassId !== 'all-students'
+                            ? `Select from ${filteredStudents.length} students in class`
+                            : `Select from ${filteredStudents.length} students`
+                        }
+                      />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    {students.map((student) => (
-                      <SelectItem key={student.id} value={student.id}>
-                        {student.name}
+                  <SelectContent className="bg-gray-900 border-white/20">
+                    {filteredStudents.length > 0 ? (
+                      filteredStudents.map((student) => (
+                        <SelectItem
+                          key={student.id}
+                          value={student.id}
+                          className="text-white focus:bg-white/10"
+                        >
+                          {student.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem
+                        value="no-students-placeholder"
+                        disabled
+                        className="text-white/50"
+                      >
+                        {selectedClassId && selectedClassId !== 'all-students'
+                          ? 'No students found in selected class'
+                          : 'No students available'}
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-red-400" />
               </FormItem>
             )}
           />
