@@ -150,101 +150,77 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 space-y-4">
-            {/* Subject */}
-            <div className="flex items-center gap-3">
-              <div>
-                <h3 className="text-lg font-semibold text-white">
-                  {lesson.subject}
-                </h3>
-              </div>
-            </div>
+          <div className="flex-1 space-y-3">
+            {/* Subject - Main Title */}
+            <h3 className="text-xl font-semibold text-white mb-4">
+              {lesson.subject}
+            </h3>
 
             {/* Student */}
-            <div className="flex items-center gap-3">
-              <div>
-                <p className="text-sm text-white/70">Student</p>
-                <p className="text-white font-medium">{lesson.studentName}</p>
-              </div>
-            </div>
+            <p className="text-white/70">
+              <span className="text-sm font-medium text-white">Student:</span>{' '}
+              {lesson.studentName}
+            </p>
 
             {/* Teacher */}
-            <div className="flex items-center gap-3">
-              <div>
-                <p className="text-sm text-white/70">Teacher</p>
-                <p className="text-white font-medium">{lesson.teacherName}</p>
-              </div>
-            </div>
+            <p className="text-white/70">
+              <span className="text-sm font-medium text-white">Teacher:</span>{' '}
+              {lesson.teacherName}
+            </p>
 
-            {/* Date and Time */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-3">
-                <div>
-                  <p className="text-sm text-white/70">Date</p>
-                  <p className="text-white font-medium">
-                    {formatDate(lesson.date)}
-                  </p>
-                </div>
-              </div>
+            {/* Room */}
+            <p className="text-white/70">
+              <span className="text-sm font-medium text-white">Room:</span>{' '}
+              {lesson.classroomName}
+            </p>
 
-              <div className="flex items-center gap-3">
-                <div>
-                  <p className="text-sm text-white/70">Time</p>
-                  <p className="text-white font-medium">
-                    {formatTime(lesson.startTime)} -{' '}
-                    {formatTime(lesson.endTime)}
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* Students count - using a placeholder since we don't have this data */}
+            <p className="text-white/70 mb-2">
+              <span className="text-sm font-medium text-white">Students:</span>{' '}
+              1/1
+            </p>
 
-            {/* Classroom */}
-            <div className="flex items-center gap-3">
-              <div>
-                <p className="text-sm text-white/70">Classroom</p>
-                <p className="text-white font-medium">{lesson.classroomName}</p>
-              </div>
+            {/* Schedule */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-white">Schedule:</p>
+              <p className="text-sm text-white/70">
+                {formatDate(lesson.date)}: {formatTime(lesson.startTime)} -{' '}
+                {formatTime(lesson.endTime)}
+              </p>
             </div>
 
             {/* Notes (if any) */}
             {lesson.notes && (
-              <div className="pt-2 border-t border-white/10">
-                <p className="text-sm text-white/70 mb-1">Notes</p>
-                <p className="text-white text-sm">{lesson.notes}</p>
+              <div className="pt-2">
+                <p className="text-sm font-medium text-white mb-1">Notes:</p>
+                <p className="text-sm text-white/70">{lesson.notes}</p>
               </div>
             )}
+          </div>
 
+          {/* Footer with timestamp */}
+          <div className="text-xs text-white/50 border-t border-white/10 pt-3 mt-4">
             {/* Payment Status */}
-            <div className="pt-2 border-t border-white/10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div>
-                    <p className="text-sm text-white/70">Payment Status</p>
-                    {paymentStatus.status === 'no_obligation' ? (
-                      <Badge
-                        className={getPaymentStatusColor(paymentStatus.status)}
-                      >
-                        No Payment Required
-                      </Badge>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-white text-sm">
-                          ${paymentStatus.totalPaid}/$
-                          {paymentStatus.obligationAmount}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+            <div className="pt-2">
+              <p className="text-sm font-medium text-white mb-1">
+                Payment Status:
+              </p>
+              {paymentStatus.status === 'no_obligation' ? (
+                <Badge className={getPaymentStatusColor(paymentStatus.status)}>
+                  No Payment Required
+                </Badge>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-white/70">
+                    ${paymentStatus.totalPaid}/${paymentStatus.obligationAmount}
+                  </span>
+                  {paymentStatus.balance > 0 && (
+                    <span className="text-red-400 font-medium text-sm">
+                      Balance: ${paymentStatus.balance}
+                    </span>
+                  )}
                 </div>
-                {paymentStatus.balance > 0 && (
-                  <div className="text-right">
-                    <p className="text-sm text-white/70">Balance Due</p>
-                    <p className="text-red-400 font-medium">
-                      ${paymentStatus.balance}
-                    </p>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </div>
