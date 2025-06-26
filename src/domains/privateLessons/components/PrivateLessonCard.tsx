@@ -1,7 +1,14 @@
 import React from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, MoreVertical, Edit, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import GlassCard from '@/components/common/GlassCard';
 import { PrivateLesson } from '../privateLessonsSlice';
 import { PrivateLessonStatus } from '@/types/enums';
@@ -86,6 +93,8 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
   onViewDetails,
 }) => {
   const canEdit = lesson.status !== PrivateLessonStatus.Completed;
+  const canCancel = lesson.status === PrivateLessonStatus.Scheduled;
+  const canComplete = lesson.status === PrivateLessonStatus.Scheduled;
 
   const paymentStatus = calculatePaymentStatus(lesson);
 
@@ -101,29 +110,66 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
               {lesson.subject}
             </h3>
 
-            <div className="flex space-x-2">
-              {onViewDetails && (
+            {/* Actions Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onViewDetails(lesson)}
-                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                  className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8 p-0"
                 >
-                  <Eye className="h-4 w-4 mr-1" />
-                  Details
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
-              )}
-              {canEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEdit(lesson)}
-                  className="text-white/70 hover:text-white hover:bg-white/10"
-                >
-                  Edit
-                </Button>
-              )}
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="bg-gray-900/95 border-white/20 text-white"
+              >
+                {onViewDetails && (
+                  <DropdownMenuItem
+                    onClick={() => onViewDetails(lesson)}
+                    className="text-blue-400 focus:text-blue-300 focus:bg-blue-500/10 cursor-pointer"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </DropdownMenuItem>
+                )}
+
+                {canEdit && (
+                  <DropdownMenuItem
+                    onClick={() => onEdit(lesson)}
+                    className="text-white/70 focus:text-white focus:bg-white/10 cursor-pointer"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Lesson
+                  </DropdownMenuItem>
+                )}
+
+                {(canComplete || canCancel) && (
+                  <DropdownMenuSeparator className="bg-white/20" />
+                )}
+
+                {canComplete && (
+                  <DropdownMenuItem
+                    onClick={() => onComplete(lesson)}
+                    className="text-green-400 focus:text-green-300 focus:bg-green-500/10 cursor-pointer"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Complete Lesson
+                  </DropdownMenuItem>
+                )}
+
+                {canCancel && (
+                  <DropdownMenuItem
+                    onClick={() => onCancel(lesson)}
+                    className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Cancel Lesson
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Main Content */}
