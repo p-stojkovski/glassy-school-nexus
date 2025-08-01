@@ -65,3 +65,10 @@ export enum PrivateLessonStatus {
   Completed = 'completed',
   Cancelled = 'cancelled',
 }
+
+export enum DiscountType {
+  Relatives = 'relatives',
+  SocialCase = 'social_case',
+  SingleParent = 'single_parent',
+  FreeOfCharge = 'free_of_charge',
+}

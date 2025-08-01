@@ -1,21 +1,12 @@
 import React from 'react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import StudentHeader from '@/domains/students/components/layout/StudentHeader';
 import StudentFilters from '@/domains/students/components/filters/StudentFilters';
 import StudentTable from '@/domains/students/components/list/StudentTable';
-import StudentForm from '@/domains/students/components/forms/StudentForm';
 import StudentEmptyState from '@/domains/students/components/state/StudentEmptyState';
 import StudentLoading from '@/domains/students/components/state/StudentLoading';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import StandardDemoNotice from '@/components/common/StandardDemoNotice';
-import { DemoManager } from '@/data/components/DemoManager';
-import { useStudentManagement } from '@/domains/students/hooks/useStudentManagement';
-import { useStudentForm } from '@/domains/students/hooks/useStudentForm';
+import { useStudentManagementWithNavigation } from '@/domains/students/hooks/useStudentManagementWithNavigation';
 
 const StudentManagement: React.FC = () => {
   const {
@@ -33,20 +24,13 @@ const StudentManagement: React.FC = () => {
     classes,
     getStudentPaymentStatus,
     handleViewStudent,
-  } = useStudentManagement();
-
-  const {
-    isFormOpen,
-    selectedStudent,
     studentToDelete,
     setStudentToDelete,
     handleAddStudent,
     handleEditStudent,
     handleDeleteStudent,
     confirmDeleteStudent,
-    handleCloseForm,
-    handleSubmit,
-  } = useStudentForm();
+  } = useStudentManagementWithNavigation();
 
   if (loading) {
     return <StudentLoading />;
@@ -81,33 +65,15 @@ const StudentManagement: React.FC = () => {
       ) : (
         <StudentTable
           students={students}
+          classes={classes}
           onEdit={handleEditStudent}
           onDelete={handleDeleteStudent}
           onView={handleViewStudent}
           getPaymentStatus={getStudentPaymentStatus}
+          loading={loading}
         />
       )}
 
-      <Sheet open={isFormOpen} onOpenChange={handleCloseForm}>
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-md bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"
-        >
-          <SheetHeader className="pb-6 border-b border-white/20">
-            <SheetTitle className="text-2xl font-bold text-white">
-              {selectedStudent ? 'Edit Student' : 'Add New Student'}
-            </SheetTitle>
-          </SheetHeader>
-
-          <div className="mt-6">
-            <StudentForm
-              student={selectedStudent}
-              onSubmit={handleSubmit}
-              onCancel={handleCloseForm}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
       <ConfirmDialog
         open={!!studentToDelete}
         onOpenChange={() => setStudentToDelete(null)}

@@ -23,6 +23,7 @@ import FinancialManagement from './pages/FinancialManagement';
 import PrivateLessons from './pages/PrivateLessons';
 import PrivateLessonDetailPage from './domains/privateLessons/components/PrivateLessonDetailPage';
 import StudentProfilePage from './domains/students/components/profile/StudentProfilePage';
+import StudentFormPage from './pages/StudentFormPage';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient({
@@ -70,6 +71,8 @@ const AppContent: React.FC = () => {
         <Route path="/" element={<Dashboard />} />{' '}
         <Route path="/classrooms" element={<ClassroomManagement />} />{' '}
         <Route path="/students" element={<StudentManagement />} />
+        <Route path="/students/new" element={<StudentFormPage />} />
+        <Route path="/students/edit/:studentId" element={<StudentFormPage />} />
         <Route path="/students/:studentId" element={<StudentProfilePage />} />
         <Route path="/classes" element={<ClassManagement />} />
         <Route path="/classes/new" element={<ClassForm />} />

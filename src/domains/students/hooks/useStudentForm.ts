@@ -8,7 +8,7 @@ import {
   selectError,
   Student,
 } from '../studentsSlice';
-import { StudentStatus } from '@/types/enums';
+import { StudentStatus, DiscountType } from '@/types/enums';
 import { toast } from 'sonner';
 
 export const useStudentForm = () => {
@@ -54,6 +54,11 @@ export const useStudentForm = () => {
     phone: string;
     status: StudentStatus;
     parentContact: string;
+    parentEmail?: string;
+    dateOfBirth?: string;
+    placeOfBirth?: string;
+    discountType?: DiscountType;
+    discountAmount?: number;
   };
 
   const handleSubmit = async (data: StudentFormData) => {

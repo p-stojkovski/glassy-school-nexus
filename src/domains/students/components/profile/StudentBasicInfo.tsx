@@ -1,9 +1,10 @@
 import React from 'react';
-import { Mail, Phone, User, Calendar, Users, AlertCircle } from 'lucide-react';
+import { Mail, Phone, User, Calendar, Users, AlertCircle, MapPin, Cake, Percent } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
+import { formatDiscountInfo } from '@/utils/studentClassUtils';
 
 interface StudentBasicInfoProps {
   student: Student;
@@ -42,6 +43,24 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
               <User className="w-4 h-4" />
               <span>{student.parentContact}</span>
             </div>
+            {student.parentEmail && (
+              <div className="flex items-center gap-2 text-white/70">
+                <Mail className="w-4 h-4" />
+                <span>Parent: {student.parentEmail}</span>
+              </div>
+            )}
+            {student.dateOfBirth && (
+              <div className="flex items-center gap-2 text-white/70">
+                <Cake className="w-4 h-4" />
+                <span>Born: {new Date(student.dateOfBirth).toLocaleDateString()}</span>
+              </div>
+            )}
+            {student.placeOfBirth && (
+              <div className="flex items-center gap-2 text-white/70">
+                <MapPin className="w-4 h-4" />
+                <span>Place of Birth: {student.placeOfBirth}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2 text-white/70">
               <Calendar className="w-4 h-4" />
               <span>
@@ -54,6 +73,14 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
                 Class: {studentClass ? studentClass.name : 'Unassigned'}
               </span>
             </div>
+            {student.discountType && (
+              <div className="flex items-center gap-2 text-yellow-400">
+                <Percent className="w-4 h-4" />
+                <span>
+                  Discount: {formatDiscountInfo(student.discountType, student.discountAmount)}
+                </span>
+              </div>
+            )}
             {outstandingBalance > 0 && (
               <div className="flex items-center gap-2 text-red-400">
                 <AlertCircle className="w-4 h-4" />

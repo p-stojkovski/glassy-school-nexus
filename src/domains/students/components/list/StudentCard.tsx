@@ -1,10 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit, Trash2, Eye, Phone, Mail, User } from 'lucide-react';
+import { Edit, Trash2, Eye, Phone, Mail, User, Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
 import { getStudentStatusColor } from '@/utils/statusColors';
+import { formatDiscountInfo } from '@/utils/studentClassUtils';
 
 interface StudentCardProps {
   student: Student;
@@ -56,6 +57,14 @@ const StudentCard: React.FC<StudentCardProps> = ({
                 <User className="w-4 h-4" />
                 <span className="text-sm truncate">
                   {student.parentContact}
+                </span>
+              </div>
+            )}
+            {student.discountType && (
+              <div className="flex items-center gap-2 text-yellow-400">
+                <Percent className="w-4 h-4" />
+                <span className="text-sm">
+                  {formatDiscountInfo(student.discountType, student.discountAmount)}
                 </span>
               </div>
             )}

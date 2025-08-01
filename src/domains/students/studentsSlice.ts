@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { StudentStatus } from '@/types/enums';
+import { StudentStatus, DiscountType } from '@/types/enums';
 import { mockDataService } from '@/data/MockDataService';
 
 export interface Student {
@@ -12,8 +12,15 @@ export interface Student {
   status: StudentStatus;
   joinDate: string;
   parentContact: string;
+  parentEmail?: string; // New field: Parent/Guardian email
+  dateOfBirth?: string; // New field: Student date of birth
+  placeOfBirth?: string; // New field: Place of birth (optional)
   paymentDue?: boolean;
   lastPayment?: string;
+  // Discount information
+  hasDiscount?: boolean; // New field: Enable/disable discount functionality
+  discountType?: DiscountType;
+  discountAmount?: number; // Amount in denars
 }
 
 interface StudentsState {
@@ -116,5 +123,7 @@ export const selectLoading = (state: { students: StudentsState }) =>
   state.students.loading;
 export const selectError = (state: { students: StudentsState }) =>
   state.students.error;
+export const selectStudentById = (state: { students: StudentsState }, studentId: string) =>
+  state.students.students.find(student => student.id === studentId);
 
 export default studentsSlice.reducer;

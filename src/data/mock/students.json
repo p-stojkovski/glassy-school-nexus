@@ -10,6 +10,8 @@
       "status": "active",
       "joinDate": "2024-01-15T00:00:00.000Z",
       "parentContact": "Sarah Johnson - +1-555-0201",
+      "parentEmail": "sarah.johnson@email.com",
+      "placeOfBirth": "Springfield, IL",
       "paymentDue": false,
       "lastPayment": "2024-05-15T00:00:00.000Z",
       "address": "123 Oak Street, Springfield, IL 62701",
@@ -23,7 +25,10 @@
         "level": "Intermediate",
         "gpa": 3.8,
         "enrollmentDate": "2024-01-15"
-      }
+      },
+      "hasDiscount": true,
+      "discountType": "relatives",
+      "discountAmount": 500
     },
     {
       "id": "student-2",
@@ -35,6 +40,8 @@
       "status": "active",
       "joinDate": "2024-01-20T00:00:00.000Z",
       "parentContact": "Wei Chen - +1-555-0202",
+      "parentEmail": "wei.chen@email.com",
+      "placeOfBirth": "Chicago, IL",
       "paymentDue": true,
       "lastPayment": "2024-04-20T00:00:00.000Z",
       "address": "456 Maple Avenue, Springfield, IL 62702",
@@ -48,7 +55,10 @@
         "level": "Beginner",
         "gpa": 3.5,
         "enrollmentDate": "2024-01-20"
-      }
+      },
+      "hasDiscount": true,
+      "discountType": "single_parent",
+      "discountAmount": 750
     },
     {
       "id": "student-3",
@@ -60,6 +70,8 @@
       "status": "active",
       "joinDate": "2024-02-01T00:00:00.000Z",
       "parentContact": "Maria Rodriguez - +1-555-0203",
+      "parentEmail": "maria.rodriguez@email.com",
+      "placeOfBirth": "San Antonio, TX",
       "paymentDue": false,
       "lastPayment": "2024-05-01T00:00:00.000Z",
       "address": "789 Pine Road, Springfield, IL 62703",
@@ -85,6 +97,8 @@
       "status": "active",
       "joinDate": "2024-02-05T00:00:00.000Z",
       "parentContact": "Jennifer Williams - +1-555-0204",
+      "parentEmail": "jennifer.williams@email.com",
+      "placeOfBirth": "Denver, CO",
       "paymentDue": true,
       "lastPayment": "2024-03-05T00:00:00.000Z",
       "address": "321 Elm Street, Springfield, IL 62704",
@@ -98,7 +112,10 @@
         "level": "Intermediate",
         "gpa": 3.7,
         "enrollmentDate": "2024-02-05"
-      }
+      },
+      "hasDiscount": true,
+      "discountType": "social_case",
+      "discountAmount": 1000
     },
     {
       "id": "student-5",
@@ -110,6 +127,8 @@
       "status": "inactive",
       "joinDate": "2024-01-10T00:00:00.000Z",
       "parentContact": "Rachel Davis - +1-555-0205",
+      "parentEmail": "rachel.davis@email.com",
+      "placeOfBirth": "Phoenix, AZ",
       "paymentDue": true,
       "lastPayment": "2024-02-10T00:00:00.000Z",
       "address": "654 Cedar Lane, Springfield, IL 62705",
@@ -123,7 +142,10 @@
         "level": "Beginner",
         "gpa": 3.2,
         "enrollmentDate": "2024-01-10"
-      }
+      },
+      "hasDiscount": true,
+      "discountType": "free_of_charge",
+      "discountAmount": 0
     }
   ]
 }
