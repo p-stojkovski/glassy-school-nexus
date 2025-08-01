@@ -79,12 +79,31 @@ export const useStudentProfile = () => {
         ? (((presentCount + lateCount) / totalSessions) * 100).toFixed(1)
         : '0';
 
+    // Calculate homework completion stats
+    const presentStudentRecords = studentAttendanceRecords.filter(
+      (sr) => sr.status !== AttendanceStatus.Absent
+    );
+    const homeworkCompletedCount = presentStudentRecords.filter(
+      (sr) => sr.homeworkCompleted === true
+    ).length;
+    const homeworkNotCompletedCount = presentStudentRecords.filter(
+      (sr) => sr.homeworkCompleted === false
+    ).length;
+    const homeworkCompletionRate =
+      presentStudentRecords.length > 0
+        ? ((homeworkCompletedCount / presentStudentRecords.length) * 100).toFixed(1)
+        : '0';
+
     return {
       totalSessions,
       presentCount,
       absentCount,
       lateCount,
       attendanceRate,
+      homeworkCompletedCount,
+      homeworkNotCompletedCount,
+      homeworkCompletionRate,
+      homeworkTotalSessions: presentStudentRecords.length,
     };
   }, [attendanceRecords, studentId]);
 

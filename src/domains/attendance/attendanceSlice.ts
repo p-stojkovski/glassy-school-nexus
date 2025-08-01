@@ -8,6 +8,8 @@ export interface StudentAttendance {
   studentName: string; // For easier display without extra lookups
   status: AttendanceStatus;
   notes?: string;
+  homeworkCompleted?: boolean;
+  homeworkNotes?: string;
 }
 
 export interface AttendanceRecord {
@@ -137,9 +139,11 @@ const attendanceSlice = createSlice({
         studentId: string;
         status: AttendanceStatus;
         notes?: string;
+        homeworkCompleted?: boolean;
+        homeworkNotes?: string;
       }>
     ) => {
-      const { recordId, studentId, status, notes } = action.payload;
+      const { recordId, studentId, status, notes, homeworkCompleted, homeworkNotes } = action.payload;
       const recordIndex = state.attendanceRecords.findIndex(
         (record) => record.id === recordId
       );
@@ -158,6 +162,16 @@ const attendanceSlice = createSlice({
               studentIndex
             ].notes = notes;
           }
+          if (homeworkCompleted !== undefined) {
+            state.attendanceRecords[recordIndex].studentRecords[
+              studentIndex
+            ].homeworkCompleted = homeworkCompleted;
+          }
+          if (homeworkNotes !== undefined) {
+            state.attendanceRecords[recordIndex].studentRecords[
+              studentIndex
+            ].homeworkNotes = homeworkNotes;
+          }
 
           // Also update current record if it's the one being edited
           if (state.currentRecord?.id === recordId) {
@@ -171,6 +185,14 @@ const attendanceSlice = createSlice({
               if (notes !== undefined) {
                 state.currentRecord.studentRecords[currentStudentIndex].notes =
                   notes;
+              }
+              if (homeworkCompleted !== undefined) {
+                state.currentRecord.studentRecords[currentStudentIndex].homeworkCompleted =
+                  homeworkCompleted;
+              }
+              if (homeworkNotes !== undefined) {
+                state.currentRecord.studentRecords[currentStudentIndex].homeworkNotes =
+                  homeworkNotes;
               }
             }
           }

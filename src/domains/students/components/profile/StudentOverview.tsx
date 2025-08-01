@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, GraduationCap, DollarSign, Users } from 'lucide-react';
+import { Calendar, GraduationCap, DollarSign, Users, BookOpen } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
 import { Class } from '@/domains/classes/classesSlice';
 import { Payment } from '@/domains/finance/financeSlice';
@@ -10,6 +10,10 @@ interface AttendanceStats {
   absentCount: number;
   lateCount: number;
   attendanceRate: string;
+  homeworkCompletedCount: number;
+  homeworkNotCompletedCount: number;
+  homeworkCompletionRate: string;
+  homeworkTotalSessions: number;
 }
 
 interface StudentOverviewProps {
@@ -28,7 +32,7 @@ const StudentOverview: React.FC<StudentOverviewProps> = ({
   studentClass,
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
       {/* Attendance Summary */}
       <GlassCard className="p-6">
         <div className="flex items-center gap-3 mb-4">
@@ -56,6 +60,33 @@ const StudentOverview: React.FC<StudentOverviewProps> = ({
           <div className="flex justify-between text-yellow-300">
             <span>Late:</span>
             <span>{attendanceStats.lateCount}</span>
+          </div>
+        </div>
+      </GlassCard>
+
+      {/* Homework Completion Summary */}
+      <GlassCard className="p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <BookOpen className="w-8 h-8 text-purple-400" />
+          <div>
+            <h3 className="font-semibold text-white">Homework</h3>
+            <p className="text-2xl font-bold text-white">
+              {attendanceStats.homeworkCompletionRate}%
+            </p>
+          </div>
+        </div>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between text-white/70">
+            <span>Sessions:</span>
+            <span>{attendanceStats.homeworkTotalSessions}</span>
+          </div>
+          <div className="flex justify-between text-green-300">
+            <span>Completed:</span>
+            <span>{attendanceStats.homeworkCompletedCount}</span>
+          </div>
+          <div className="flex justify-between text-red-300">
+            <span>Not Done:</span>
+            <span>{attendanceStats.homeworkNotCompletedCount}</span>
           </div>
         </div>
       </GlassCard>
@@ -118,7 +149,7 @@ const StudentOverview: React.FC<StudentOverviewProps> = ({
       {/* Class Information */}
       <GlassCard className="p-6">
         <div className="flex items-center gap-3 mb-4">
-          <Users className="w-8 h-8 text-purple-400" />
+          <Users className="w-8 h-8 text-orange-400" />
           <div>
             <h3 className="font-semibold text-white">Class</h3>
             <p className="text-lg font-bold text-white">

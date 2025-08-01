@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/table';
 import GlassCard from '@/components/common/GlassCard';
 import { AttendanceStatus } from '@/types/enums';
+import { formatHomeworkStatus } from '@/utils/homeworkStatusUtils';
 
 interface AttendanceRecord {
   id: string;
@@ -20,6 +21,8 @@ interface AttendanceRecord {
     studentId: string;
     status: AttendanceStatus;
     notes?: string;
+    homeworkCompleted?: boolean;
+    homeworkNotes?: string;
   }>;
 }
 
@@ -55,6 +58,7 @@ const StudentAttendanceTab: React.FC<StudentAttendanceTabProps> = ({
                 <TableHead className="text-white/90">Date</TableHead>
                 <TableHead className="text-white/90">Class</TableHead>
                 <TableHead className="text-white/90">Status</TableHead>
+                <TableHead className="text-white/90">Homework</TableHead>
                 <TableHead className="text-white/90">Notes</TableHead>
               </TableRow>
             </TableHeader>
@@ -82,7 +86,24 @@ const StudentAttendanceTab: React.FC<StudentAttendanceTabProps> = ({
                           studentRecord.status.slice(1)}
                       </Badge>
                     </TableCell>
-                    <TableCell>{studentRecord.notes || '-'}</TableCell>
+                    <TableCell>
+                      <Badge
+                        className={`${
+                          studentRecord.status === 'absent'
+                            ? 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                            : studentRecord.homeworkCompleted
+                            ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                            : studentRecord.homeworkCompleted === false
+                            ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                            : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                        } border`}
+                      >
+                        {formatHomeworkStatus(studentRecord.homeworkCompleted, studentRecord.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {studentRecord.notes || (studentRecord.homeworkNotes ? `HW: ${studentRecord.homeworkNotes}` : '-')}
+                    </TableCell>
                   </TableRow>
                 );
               })}

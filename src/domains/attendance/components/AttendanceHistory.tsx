@@ -19,6 +19,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import { Search } from 'lucide-react';
 import { getAttendanceStatusColor } from '@/utils/statusColors';
+import { formatHomeworkStatus } from '@/utils/homeworkStatusUtils';
 
 interface AttendanceHistoryProps {
   classId: string;
@@ -124,6 +125,9 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
                 <TableHead className="text-white/70 w-[150px]">
                   Status
                 </TableHead>
+                <TableHead className="text-white/70 w-[120px]">
+                  Homework
+                </TableHead>
                 <TableHead className="text-white/70">Notes</TableHead>
               </TableRow>
             </TableHeader>
@@ -142,11 +146,45 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
                         student.status.slice(1)}
                     </span>
                   </TableCell>
-                  <TableCell>{student.notes || '-'}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium ${
+                        student.status === 'absent'
+                          ? 'bg-gray-500/20 text-gray-400'
+                          : student.homeworkCompleted
+                          ? 'bg-green-500/20 text-green-300'
+                          : student.homeworkCompleted === false
+                          ? 'bg-red-500/20 text-red-300'
+                          : 'bg-gray-500/20 text-gray-400'
+                      }`}
+                    >
+                      {formatHomeworkStatus(student.homeworkCompleted, student.status)}
+                    </span>
+                  </TableCell>
+                  <TableCell>{student.notes || (student.homeworkNotes ? `HW: ${student.homeworkNotes}` : '-')}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+
+          {/* Homework Completion Summary */}
+          <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+            <div className="flex items-center justify-between">
+              <h4 className="text-white font-medium">Session Summary</h4>
+              <div className="flex items-center space-x-4 text-sm">
+                <div className="text-white/80">
+                  Attendance: {selectedRecord.studentRecords.filter(s => s.status === 'present').length}/{selectedRecord.studentRecords.length} present
+                </div>
+                <div className="text-white/80">
+                  Homework: {(() => {
+                    const presentStudents = selectedRecord.studentRecords.filter(s => s.status !== 'absent');
+                    const completedHomework = presentStudents.filter(s => s.homeworkCompleted === true);
+                    return `${completedHomework.length}/${presentStudents.length} completed`;
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="flex justify-between text-white/70 text-sm">
             <div>
@@ -187,7 +225,10 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
               <TableHead className="text-white/70">Date</TableHead>
               <TableHead className="text-white/70">Teacher</TableHead>
               <TableHead className="text-white/70 text-right">
-                Students
+                Attendance
+              </TableHead>
+              <TableHead className="text-white/70 text-right">
+                Homework
               </TableHead>
               <TableHead className="text-white/70 text-right"></TableHead>
             </TableRow>
@@ -204,6 +245,11 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
                 (s) => s.status === 'late'
               ).length;
               const totalCount = record.studentRecords.length;
+              
+              // Calculate homework completion stats
+              const presentStudents = record.studentRecords.filter(s => s.status !== 'absent');
+              const homeworkCompleted = presentStudents.filter(s => s.homeworkCompleted === true).length;
+              const homeworkNotCompleted = presentStudents.filter(s => s.homeworkCompleted === false).length;
 
               return (
                 <TableRow
@@ -227,6 +273,18 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({
                       <span className="bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded text-xs">
                         {lateCount} late
                       </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end space-x-2">
+                      <span className="bg-green-500/20 text-green-300 px-2 py-0.5 rounded text-xs">
+                        {homeworkCompleted} completed
+                      </span>
+                      {homeworkNotCompleted > 0 && (
+                        <span className="bg-red-500/20 text-red-300 px-2 py-0.5 rounded text-xs">
+                          {homeworkNotCompleted} not done
+                        </span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">

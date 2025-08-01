@@ -36,6 +36,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
+import HomeworkCompletionCell from './HomeworkCompletionCell';
+import { isHomeworkCompletionEnabled, getDefaultHomeworkCompletion } from '@/utils/homeworkStatusUtils';
 
 interface AttendanceMarkerProps {
   classId: string;
@@ -56,7 +58,7 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
     (state: RootState) => state.attendance.attendanceRecords
   );
   const [attendanceData, setAttendanceData] = useState<
-    Record<string, { status: StatusType; notes: string }>
+    Record<string, { status: StatusType; notes: string; homeworkCompleted?: boolean; homeworkNotes?: string }>
   >({});
   const [selectedClass, setSelectedClass] = useState(
     classes.find((c) => c.id === classId)
@@ -81,12 +83,14 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
         // Convert student records to the format our component uses
         const studentData: Record<
           string,
-          { status: StatusType; notes: string }
+          { status: StatusType; notes: string; homeworkCompleted?: boolean; homeworkNotes?: string }
         > = {};
         existingRecord.studentRecords.forEach((record) => {
           studentData[record.studentId] = {
             status: record.status,
             notes: record.notes || '',
+            homeworkCompleted: record.homeworkCompleted,
+            homeworkNotes: record.homeworkNotes || '',
           };
         });
 
@@ -104,10 +108,15 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
 
           const initialData: Record<
             string,
-            { status: StatusType; notes: string }
+            { status: StatusType; notes: string; homeworkCompleted?: boolean; homeworkNotes?: string }
           > = {};
           classStudents.forEach((student) => {
-            initialData[student.id] = { status: 'present', notes: '' };
+            initialData[student.id] = { 
+              status: 'present', 
+              notes: '',
+              homeworkCompleted: getDefaultHomeworkCompletion('present'),
+              homeworkNotes: ''
+            };
           });
 
           setAttendanceData(initialData);
@@ -141,16 +150,43 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
   }
 
   const handleStatusChange = (studentId: string, status: StatusType) => {
-    setAttendanceData((prev) => ({
-      ...prev,
-      [studentId]: { ...prev[studentId], status },
-    }));
+    setAttendanceData((prev) => {
+      const currentData = prev[studentId] || { status: 'present', notes: '', homeworkCompleted: false, homeworkNotes: '' };
+      
+      // Reset homework completion when student becomes absent
+      const newHomeworkCompleted = status === 'absent' ? undefined : currentData.homeworkCompleted;
+      const newHomeworkNotes = status === 'absent' ? undefined : currentData.homeworkNotes;
+      
+      return {
+        ...prev,
+        [studentId]: { 
+          ...currentData, 
+          status,
+          homeworkCompleted: newHomeworkCompleted,
+          homeworkNotes: newHomeworkNotes
+        },
+      };
+    });
   };
 
   const handleNotesChange = (studentId: string, notes: string) => {
     setAttendanceData((prev) => ({
       ...prev,
       [studentId]: { ...prev[studentId], notes },
+    }));
+  };
+
+  const handleHomeworkChange = (studentId: string, completed: boolean) => {
+    setAttendanceData((prev) => ({
+      ...prev,
+      [studentId]: { ...prev[studentId], homeworkCompleted: completed },
+    }));
+  };
+
+  const handleHomeworkNotesChange = (studentId: string, homeworkNotes: string) => {
+    setAttendanceData((prev) => ({
+      ...prev,
+      [studentId]: { ...prev[studentId], homeworkNotes },
     }));
   };
   const handleSubmit = () => {
@@ -171,6 +207,22 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
       return;
     }
 
+    // Check for present students without homework completion marked (optional warning)
+    const presentStudentsWithoutHomework = classStudents.filter((student) => {
+      const studentData = attendanceData[student.id];
+      return studentData && 
+             studentData.status !== 'absent' && 
+             studentData.homeworkCompleted === undefined;
+    });
+
+    if (presentStudentsWithoutHomework.length > 0) {
+      toast({
+        title: 'Homework Status Missing',
+        description: `${presentStudentsWithoutHomework.length} present students don't have homework completion marked. You can still submit, but homework data will be incomplete.`,
+        variant: 'default',
+      });
+    }
+
     setConfirmDialogOpen(true);
   };
 
@@ -187,6 +239,8 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
         studentName: student?.name || 'Unknown Student',
         status: data.status,
         notes: data.notes || undefined,
+        homeworkCompleted: data.homeworkCompleted,
+        homeworkNotes: data.homeworkNotes || undefined,
       };
     });
 
@@ -273,7 +327,10 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
                 <TableHead className="text-white/70 w-[200px]">
                   Status
                 </TableHead>
-                <TableHead className="text-white/70 w-[300px]">Notes</TableHead>
+                <TableHead className="text-white/70 w-[150px]">
+                  Homework
+                </TableHead>
+                <TableHead className="text-white/70 w-[250px]">Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -346,6 +403,15 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
                     </div>
                   </TableCell>
                   <TableCell>
+                    <HomeworkCompletionCell
+                      studentId={student.id}
+                      studentName={student.name}
+                      attendanceStatus={attendanceData[student.id]?.status || 'present'}
+                      homeworkCompleted={attendanceData[student.id]?.homeworkCompleted}
+                      onHomeworkChange={handleHomeworkChange}
+                    />
+                  </TableCell>
+                  <TableCell>
                     <Input
                       value={attendanceData[student.id]?.notes || ''}
                       onChange={(e) =>
@@ -358,7 +424,22 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
                 </TableRow>
               ))}
             </TableBody>
-          </Table>{' '}
+          </Table>
+          
+          {/* Homework Completion Summary */}
+          <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+            <div className="flex items-center justify-between">
+              <h4 className="text-white font-medium">Homework Completion Summary</h4>
+              <div className="text-white/80 text-sm">
+                {(() => {
+                  const presentStudents = Object.values(attendanceData).filter(data => data.status !== 'absent');
+                  const completedHomework = presentStudents.filter(data => data.homeworkCompleted === true);
+                  return `${completedHomework.length}/${presentStudents.length} students completed homework`;
+                })()}
+              </div>
+            </div>
+          </div>
+          
           <div className="flex justify-end">
             <Button
               onClick={handleSubmit}
