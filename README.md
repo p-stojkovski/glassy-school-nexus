@@ -1,180 +1,196 @@
-# Glassy School Nexus - Application Overview
+# Glassy School Nexus
 
-## What is Glassy School Nexus?
+A comprehensive school management system built with modern technologies, featuring a React frontend and .NET Core backend in a monorepo structure.
 
-Glassy School Nexus is a comprehensive, modern school management system designed to digitize and streamline all aspects of educational institution operations. It serves as a centralized platform that brings together student management, academic tracking, financial administration, and institutional resources into one unified, user-friendly interface.
+## 🏗️ Architecture
 
-## Problems It Solves
+This is a monorepo containing:
 
-### 1. **Administrative Inefficiency**
-- **Challenge**: Traditional paper-based processes and manual record-keeping slow down operations
-- **Solution**: Digital workflows automate routine tasks and eliminate paperwork
-- **Impact**: Staff can focus on education rather than administrative burden
+- **Frontend**: React 18 + TypeScript + Vite + shadcn/ui
+- **Backend**: .NET Core API with vertical slice architecture
+- **Database**: PostgreSQL (planned)
+- **Documentation**: Comprehensive guides and specifications
 
-### 2. **Fragmented Information Systems**
-- **Challenge**: Different departments using separate systems creates data silos
-- **Solution**: Unified platform where all school data is interconnected and accessible
-- **Impact**: Complete visibility across all school operations in one place
+## 🚀 Quick Start
 
-### 3. **Financial Tracking Difficulties**
-- **Challenge**: Manual payment tracking leads to errors and missed payments
-- **Solution**: Automated payment obligations, real-time balance tracking, and integrated billing
-- **Impact**: Improved cash flow and reduced outstanding balances
+### Prerequisites
 
-### 4. **Attendance Management Complexities**
-- **Challenge**: Time-consuming manual attendance tracking with poor historical data
-- **Solution**: Quick digital attendance recording with comprehensive analytics
-- **Impact**: Better student engagement insights and reduced administrative time
+- Node.js 18+ and npm 9+
+- .NET 8+ SDK (for backend development)
+- PostgreSQL (for production database)
 
-### 5. **Communication and Transparency Gaps**
-- **Challenge**: Limited visibility into student progress for teachers and parents
-- **Solution**: Centralized student profiles accessible to relevant stakeholders
-- **Impact**: Improved communication and better student outcomes
+### Installation
 
-### 6. **Resource Utilization Issues**
-- **Challenge**: Inefficient scheduling leading to unused classrooms and overburdened teachers
-- **Solution**: Intelligent scheduling system that optimizes resource allocation
-- **Impact**: Better facility utilization and balanced teacher workloads
+```bash
+# Install all dependencies
+npm run install:all
 
-### 7. **Academic Performance Tracking**
-- **Challenge**: Inconsistent grade management and limited progress monitoring
-- **Solution**: Comprehensive assessment system with real-time progress tracking
-- **Impact**: Better academic outcomes through data-driven decisions
+# Or install root dependencies and frontend separately
+npm install
+cd frontend && npm install
+```
 
-## Target Users and Their Needs
+### Development
 
-### **School Administrators**
-- **Primary Role**: Complete system oversight and strategic decision-making
-- **Key Needs**: 
-  - Real-time dashboard with key metrics
-  - Financial reporting and cash flow management
-  - Resource utilization analytics
-  - System-wide monitoring and control
+```bash
+# Start both frontend and backend in development mode
+npm run dev
 
-### **Teachers**
-- **Primary Role**: Direct student instruction and academic management
-- **Key Needs**:
-  - Easy class management and scheduling
-  - Quick attendance tracking
-  - Comprehensive grade recording
-  - Student progress monitoring
+# Or start individually
+npm run dev:frontend
+npm run dev:backend
+```
 
-### **Administrative Staff**
-- **Primary Role**: Daily operations and student services
-- **Key Needs**:
-  - Student enrollment and registration
-  - Payment processing and collection
-  - Schedule management
-  - Parent communication support
+### Building
 
-### **Parents/Guardians** (Future Enhancement)
-- **Primary Role**: Student progress monitoring and payment management
-- **Key Needs**:
-  - Real-time access to student progress
-  - Payment status and history
-  - Communication with teachers and staff
-  - Academic calendar and scheduling information
+```bash
+# Build both frontend and backend
+npm run build
 
-## Key Benefits
+# Or build individually
+npm run build:frontend
+npm run build:backend
+```
 
-### **Operational Efficiency**
-- **Time Savings**: Automated processes reduce manual work by up to 70%
-- **Error Reduction**: Digital workflows minimize human errors in data entry
-- **Streamlined Communication**: Centralized information improves coordination
+## 📁 Project Structure
 
-### **Financial Management**
-- **Improved Cash Flow**: Automated payment tracking reduces outstanding balances
-- **Revenue Insights**: Real-time financial dashboards provide actionable data
-- **Payment Flexibility**: Multiple payment methods and automated processing
+```
+glassy-school-nexus/
+├── frontend/                 # React frontend application
+│   ├── src/
+│   │   ├── domains/         # Domain-driven feature modules
+│   │   ├── components/      # Shared UI components
+│   │   ├── pages/          # Top-level pages
+│   │   └── ...
+│   ├── package.json
+│   └── README.md
+├── backend/                 # .NET Core API
+│   ├── src/
+│   │   ├── Api/
+│   │   │   ├── Features/   # Vertical slice features
+│   │   │   └── Shared/     # Cross-cutting concerns
+│   │   └── ...
+│   └── rules.md            # Backend coding standards
+├── docs/                   # Project documentation
+├── package.json            # Monorepo configuration
+└── README.md              # This file
+```
 
-### **Academic Excellence**
-- **Data-Driven Decisions**: Comprehensive analytics support educational improvements
-- **Student Success**: Better tracking leads to improved student outcomes
-- **Teacher Effectiveness**: Tools that enhance teaching efficiency and student engagement
+## 🔧 Available Scripts
 
-### **Scalability and Growth**
-- **Flexible Architecture**: System grows with your institution
-- **Feature Expansion**: Modular design allows for additional capabilities
-- **Integration Ready**: Built to connect with other educational tools
+### Root Level Commands
 
-## Technology Foundation
+- `npm run dev` - Start both frontend and backend
+- `npm run build` - Build both applications
+- `npm run test` - Run all tests
+- `npm run lint` - Lint all code
+- `npm run clean` - Clean build artifacts
 
-Glassy School Nexus is built on a modern, robust technology stack designed for performance, reliability, and user experience:
+### Frontend Specific
 
-### **Frontend Technologies**
-- **React 18**: Modern, responsive user interface
-- **TypeScript**: Type-safe development for reliability
-- **Tailwind CSS**: Beautiful, consistent design system
-- **Redux Toolkit**: Predictable state management
+- `npm run dev:frontend` - Start frontend dev server
+- `npm run build:frontend` - Build frontend for production
+- `npm run lint:frontend` - Lint frontend code
 
-### **Development Framework**
-- **Vite**: Fast development and build processes
-- **Modern Web Standards**: Progressive web app capabilities
-- **Responsive Design**: Works seamlessly on all devices
+### Backend Specific
 
-### **Data Management**
-- **Local Storage**: Persistent data storage for demo mode
-- **Real-time Updates**: Instant synchronization across all modules
-- **Data Validation**: Robust data integrity checks
+- `npm run dev:backend` - Start backend dev server
+- `npm run build:backend` - Build backend
+- `npm run lint:backend` - Lint backend code
 
-## System Architecture
+## 🏛️ Frontend Architecture
 
-### **Domain-Driven Design**
-The application is organized around business domains, each handling specific aspects of school management:
+The frontend follows a **domain-driven design** pattern with:
 
-- **Student Management**: Complete student lifecycle
-- **Teacher Management**: Faculty administration
-- **Class Management**: Course and scheduling
-- **Financial Management**: Billing and payments
-- **Attendance Management**: Daily tracking
-- **Grades Management**: Academic assessments
-- **Private Lessons**: One-on-one tutoring
-- **Classroom Management**: Facility allocation
+- **Domain Modules**: Each business domain (students, teachers, classes, etc.) is self-contained
+- **Redux Toolkit**: State management with RTK Query for API calls
+- **shadcn/ui**: Modern UI components built on Radix UI
+- **TypeScript**: Full type safety throughout the application
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
 
-### **Integration Architecture**
-All domains work together seamlessly:
-- Student profiles aggregate information from all systems
-- Payment obligations automatically update based on services
-- Attendance and grades contribute to comprehensive student records
-- Real-time status updates across all modules
+### Key Features
 
-## Demo Mode and Getting Started
+- Student management with comprehensive profiles
+- Teacher and staff management
+- Class scheduling and management
+- Attendance tracking with homework completion
+- Grade management and reporting
+- Financial obligations and payment tracking
+- Private lesson scheduling
+- Classroom resource management
 
-Glassy School Nexus includes a comprehensive demo mode that allows you to explore all features with realistic sample data:
+## 🏗️ Backend Architecture
 
-### **Demo Features**
-- **Complete Functionality**: All features available for testing
-- **Realistic Data**: Sample students, teachers, classes, and transactions
-- **Safe Environment**: No risk to actual data
-- **Reset Capability**: Start fresh at any time
+The backend follows **vertical slice architecture** principles:
 
-### **Sample Data Includes**
-- 50+ sample students with complete profiles
-- 6 qualified teachers with specializations
-- 5 active classes with scheduling
-- Financial obligations and payment history
-- Attendance records and grade data
-- Private lesson bookings and payments
+- **Feature-First Organization**: Each feature is self-contained
+- **Domain-Driven Design**: Strategic DDD where complexity warrants
+- **Result Pattern**: Explicit success/failure handling
+- **Dapper + PostgreSQL**: Lightweight, performant data access
+- **Minimal APIs**: Clean, focused endpoint definitions
 
-## Getting Started
+### Core Principles
 
-1. **Access the System**: Navigate to the application URL
-2. **Login**: Use the demo authentication system
-3. **Explore the Dashboard**: Review real-time metrics and quick actions
-4. **Navigate Modules**: Explore each domain through the sidebar navigation
-5. **Try Key Features**: Add students, record attendance, process payments
-6. **Review Reports**: Examine built-in analytics and reporting
+- No shared DTOs between features
+- Explicit validation and error handling
+- Strong typing with value objects
+- Comprehensive documentation and testing
+- Security-first approach
 
-## Future Enhancements
+## 📚 Documentation
 
-The system is designed for continuous improvement with planned enhancements including:
-- Parent portal access
-- Mobile application
-- Advanced reporting and analytics
-- Integration with learning management systems
-- Automated communication features
-- Advanced scheduling algorithms
+- [Frontend Development Guide](./frontend/README.md)
+- [Backend Coding Rules](./backend/rules.md)
+- [API Endpoints Specification](./docs/api-endpoints-specification.md)
+- [Database Schema Design](./docs/database-schema-design.md)
+- [Backend Integration Analysis](./docs/backend-integration-analysis.md)
 
----
+## 🔧 Development Workflow
 
-*Glassy School Nexus represents the future of educational administration - where technology serves education, not the other way around. Experience the difference that integrated, modern school management can make for your institution.*
+1. **Fork and Clone**: Create your own fork and clone the repository
+2. **Install Dependencies**: Run `npm run install:all`
+3. **Create Feature Branch**: `git checkout -b feature/your-feature-name`
+4. **Develop**: Make your changes following the coding standards
+5. **Test**: Ensure all tests pass with `npm run test`
+6. **Lint**: Clean up code with `npm run lint`
+7. **Submit PR**: Create a pull request with detailed description
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 18** - Modern React with hooks and functional components
+- **TypeScript** - Type safety and better developer experience
+- **Vite** - Fast build tool and dev server
+- **Redux Toolkit** - Predictable state management
+- **TanStack Query** - Server state management
+- **shadcn/ui** - High-quality UI components
+- **Tailwind CSS** - Utility-first CSS framework
+- **React Router** - Client-side routing
+
+### Backend (Planned)
+- **.NET 8** - Modern C# and .NET platform
+- **ASP.NET Core** - Web API framework
+- **Dapper** - Lightweight ORM
+- **PostgreSQL** - Robust relational database
+- **FluentValidation** - Input validation
+- **Serilog** - Structured logging
+
+## 📝 Contributing
+
+Please read our contributing guidelines and follow the established coding standards:
+
+- Frontend: Follow the patterns established in the domain modules
+- Backend: Adhere to the rules defined in `backend/rules.md`
+- Tests: Include tests for new features and bug fixes
+- Documentation: Update relevant documentation with your changes
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with modern web technologies and best practices
+- Follows domain-driven design principles
+- Implements vertical slice architecture for maintainability
+- Uses industry-standard tools and frameworks

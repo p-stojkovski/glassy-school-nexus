@@ -1,168 +1,168 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this monorepo.
+
+## Project Structure
+
+This is a monorepo containing both frontend and backend applications:
+
+```
+glassy-school-nexus/
+├── frontend/                 # React + TypeScript frontend
+├── backend/                  # .NET Core API backend
+├── docs/                     # Shared documentation
+├── package.json              # Monorepo workspace configuration
+└── README.md                 # Project overview
+```
 
 ## Development Commands
 
-### Core Commands
-- `npm run dev` - Start development server on port 8080
-- `npm run build` - Build for production
-- `npm run build:dev` - Build for development mode
-- `npm run lint` - Run ESLint
-- `npm run preview` - Preview production build
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
+### Monorepo Commands (run from root)
 
-### Testing
-This project does not have tests configured. When adding testing, check the package.json for test scripts.
+- `npm run dev` - Start both frontend and backend in development mode
+- `npm run build` - Build both applications
+- `npm run test` - Run all tests (frontend and backend)
+- `npm run lint` - Lint all code
+- `npm run clean` - Clean all build artifacts
+- `npm install` - Install root dependencies
+- `npm run install:all` - Install all dependencies (root + frontend)
+
+### Frontend Commands
+
+- `npm run dev:frontend` - Start frontend development server (port 8080)
+- `npm run build:frontend` - Build frontend for production
+- `npm run lint:frontend` - Lint frontend code
+
+### Backend Commands
+
+- `npm run dev:backend` - Start backend development server
+- `npm run build:backend` - Build backend
+- `npm run lint:backend` - Lint backend code (when configured)
 
 ## Architecture Overview
 
-### Tech Stack
-- **Framework**: React 18 with TypeScript
-- **Build Tool**: Vite
-- **State Management**: Redux Toolkit
-- **Data Fetching**: TanStack Query (React Query)
-- **Routing**: React Router DOM
-- **UI Components**: shadcn/ui (Radix UI primitives)
-- **Styling**: Tailwind CSS
-- **Charts**: Recharts
-- **Authentication**: Local state management (demo mode)
+### Frontend (React + TypeScript)
+- **Location**: `/frontend`
+- **Tech Stack**: React 18, TypeScript, Vite, Redux Toolkit, shadcn/ui
+- **Port**: 8080 (development)
+- **Architecture**: Domain-driven design with vertical slices
+- **Documentation**: See `/frontend/README.md`
 
-### Project Structure
+### Backend (.NET Core API)
+- **Location**: `/backend`
+- **Tech Stack**: .NET 8, ASP.NET Core Minimal APIs, Dapper, PostgreSQL
+- **Architecture**: Vertical slice architecture following DDD principles
+- **Documentation**: See `/backend/rules.md`
 
-#### Domain-Driven Architecture
-The project follows a domain-driven design pattern:
+## Development Workflow
 
-```
-src/
-├── domains/           # Business domains
-│   ├── auth/         # Authentication
-│   ├── students/     # Student management
-│   ├── teachers/     # Teacher management
-│   ├── classes/      # Class management
-│   ├── classrooms/   # Classroom management
-│   ├── attendance/   # Attendance tracking
-│   ├── grades/       # Grade management
-│   ├── finance/      # Financial obligations & payments
-│   └── privateLessons/ # Private lesson management
-├── components/       # Shared UI components
-├── pages/           # Top-level page components
-├── data/            # Data layer (mock service)
-├── store/           # Redux store configuration
-└── lib/             # Utility functions
-```
+### Getting Started
 
-#### Domain Structure
-Each domain follows a consistent structure:
-- `components/` - Domain-specific components
-- `hooks/` - Domain-specific hooks
-- `[domain]Slice.ts` - Redux slice for state management
-- Organized by feature (filters, forms, layout, list, etc.)
+1. **Clone and install dependencies**:
+   ```bash
+   git clone <repo-url>
+   cd glassy-school-nexus
+   npm run install:all
+   ```
 
-### Key Architectural Patterns
+2. **Start development servers**:
+   ```bash
+   npm run dev
+   ```
+   This starts both frontend (http://localhost:8080) and backend
 
-#### Data Management
-- **Mock Data Service**: Centralized data management via `MockDataService` singleton
-- **Local Storage**: Data persistence using localStorage with validation
-- **Domain Hooks**: Each domain has custom hooks for data operations (e.g., `useStudentsData`, `useTeachersData`)
-- **Redux Slices**: Each domain has its own Redux slice for state management
+3. **Or start individually**:
+   ```bash
+   npm run dev:frontend  # Frontend only
+   npm run dev:backend   # Backend only
+   ```
 
-#### Component Organization
-- **shadcn/ui**: Core UI components in `src/components/ui/`
-- **Common Components**: Shared components in `src/components/common/`
-- **Domain Components**: Feature-specific components within each domain
-- **Layout Components**: App structure components in `src/components/layout/`
+### Frontend Development
 
-#### State Management
-- **Redux Store**: Configured with domain-specific slices
-- **Typed Hooks**: `useAppSelector` and `useAppDispatch` for type safety
-- **Async Actions**: RTK Query patterns for data fetching
-- **Local State**: React state for UI-only concerns
+- Navigate to `/frontend` for frontend-specific work
+- Follow the domain-driven architecture patterns
+- Use existing UI components from shadcn/ui
+- State management with Redux Toolkit
+- See `/frontend/CLAUDE.md` for detailed frontend guidance
 
-### Key Configuration
+### Backend Development
 
-#### Path Aliases
-- `@/*` maps to `src/*` for clean imports
-- Configured in both `tsconfig.json` and `vite.config.ts`
+- Navigate to `/backend` for backend-specific work
+- Follow vertical slice architecture principles
+- Adhere to the coding rules in `/backend/rules.md`
+- Use Dapper for data access with PostgreSQL
+- Implement features as self-contained slices
 
-#### TypeScript Settings
-- Relaxed settings for rapid development: `noImplicitAny: false`, `strictNullChecks: false`
-- Skip lib checks for faster compilation
+### Testing
 
-#### Development Server
-- Runs on port 8080 with IPv6 support (`host: '::'`)
-- Uses SWC for fast React compilation
+- Frontend: Tests not yet configured (use frontend package.json when added)
+- Backend: Use `dotnet test` commands from backend directory
+- Run all tests: `npm run test` from root
 
-### Data Flow Patterns
+### Code Standards
 
-#### Demo Mode
-- All data is stored in localStorage
-- `MockDataService` provides CRUD operations
-- `DemoManager` component handles data reset functionality
-- Demo notices appear throughout the app
+- **Frontend**: Follow TypeScript and React best practices
+- **Backend**: Strictly follow the rules defined in `/backend/rules.md`
+- **Shared**: Use consistent naming and documentation practices
 
-#### Domain Data Loading
-- Lazy loading: Each domain loads its own data when needed
-- Caching: Data is cached in MockDataService for performance
-- Fallback: Defaults to JSON files if localStorage is empty
-- Validation: Data structure validation before save/load
+## Integration Points
 
-### Important Implementation Details
+### API Communication
+- Frontend communicates with backend via REST API
+- CORS configured for development (localhost:8080)
+- API endpoints follow RESTful conventions
 
-#### Student Selection
-- Single student selection: `SingleStudentSelectionPanel` and `SingleStudentSelectionTrigger`
-- Multi-student selection: `StudentSelectionPanel` and `StudentSelectionTrigger`
-- Used across domains for consistent UX
+### Database
+- PostgreSQL database for backend
+- Connection string in backend appsettings.json
+- Migrations managed via Entity Framework (when configured)
 
-#### Authentication
-- Demo mode authentication (no real auth)
-- Auto-login after initial setup
-- Auth state managed in Redux
+### Development Tools
 
-#### Error Handling
-- `ErrorBoundary` for component error catching
-- `StandardAlertDialog` for user-facing errors
-- Toast notifications via Sonner
+#### VS Code Configuration
+- Workspace settings in `.vscode/settings.json`
+- Tasks configured for common operations
+- Launch configurations for debugging
 
-#### Form Management
-- React Hook Form with Zod validation
-- Standardized form components (`StandardInput`, `FormButtons`)
-- Consistent form patterns across domains
+#### Available Tasks (Ctrl+Shift+P → Tasks: Run Task)
+- Start Frontend
+- Start Backend  
+- Start Both (Dev)
+- Build All
+- Test All
+- Clean All
 
-### Working with This Codebase
+## Important Notes
 
-#### Adding New Features
-1. Identify the appropriate domain or create a new one
-2. Follow the domain structure pattern
-3. Create Redux slice if state management is needed
-4. Implement data hooks following existing patterns
-5. Use existing UI components and patterns
+- **Monorepo Structure**: Each part (frontend/backend) maintains its own dependencies
+- **Development**: Both servers can run simultaneously for full-stack development
+- **Production**: Build both applications separately for deployment
+- **Documentation**: Update relevant README files when making changes
+- **Architecture**: Maintain separation between frontend and backend concerns
 
-#### Data Operations
-- Use `mockDataService` for all data operations
-- Create domain-specific hooks for complex operations
-- Always handle localStorage errors gracefully
-- Use the caching mechanisms for performance
+## Backend Rules
 
-#### UI Development
-- Leverage shadcn/ui components
-- Follow Tailwind CSS patterns
-- Use consistent spacing and color schemes
-- Implement responsive design patterns
+The backend follows strict architectural principles defined in `/backend/rules.md`:
+- Vertical slice architecture
+- Domain-driven design where appropriate
+- Result pattern for error handling
+- Dapper for data access
+- Minimal APIs
+- Strong typing with value objects
 
-#### State Management
-- Create domain-specific Redux slices
-- Use RTK patterns for async operations
-- Keep UI state local when possible
-- Use typed hooks for type safety
+## Frontend Architecture
 
-### Financial Management
-The application includes comprehensive financial management features:
-- Payment obligations assignment and tracking
-- Payment recording against obligations
-- Financial dashboards with metrics and visualizations
-- Data export capabilities
-- All financial data stored in localStorage for demo purposes
+The frontend uses domain-driven design:
+- Domain modules for business logic
+- Redux Toolkit for state management
+- shadcn/ui for consistent UI components
+- TypeScript for type safety
+- Responsive design with Tailwind CSS
 
-Refer to the Financial Management documentation in the `docs/` directory for detailed implementation guidance.
+## Quick Reference
+
+- **Frontend Dev Server**: http://localhost:8080
+- **Backend API**: http://localhost:5000 (when running)
+- **Documentation**: `/docs` directory
+- **Frontend Docs**: `/frontend/README.md`
+- **Backend Rules**: `/backend/rules.md`

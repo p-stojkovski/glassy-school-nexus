@@ -1,0 +1,25 @@
+{
+  "name": "glassy-school-nexus-backend",
+  "version": "1.0.0",
+  "description": ".NET Core API backend for Glassy School Nexus",
+  "private": true,
+  "scripts": {
+    "dev": "dotnet run --project src/GlassySchoolNexus.Api",
+    "build": "dotnet build src/GlassySchoolNexus.Api",
+    "test": "dotnet test",
+    "clean": "dotnet clean && rm -rf src/*/bin src/*/obj",
+    "restore": "dotnet restore",
+    "watch": "dotnet watch --project src/GlassySchoolNexus.Api",
+    "migrations:add": "dotnet ef migrations add",
+    "migrations:update": "dotnet ef database update",
+    "migrations:script": "dotnet ef migrations script"
+  },
+  "keywords": [
+    "dotnet",
+    "api",
+    "school-management",
+    "backend"
+  ],
+  "author": "Petar Stojkovski",
+  "license": "MIT"
+}

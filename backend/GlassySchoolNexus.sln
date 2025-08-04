@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlassySchoolNexus.Api", "GlassySchoolNexus.Api\GlassySchoolNexus.Api.csproj", "{D55B1CE9-BC53-4EBA-89C1-7785340530DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlassySchoolNexus.Core", "GlassySchoolNexus.Core\GlassySchoolNexus.Core.csproj", "{99275F8B-3744-4894-BD45-67304080AB31}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D55B1CE9-BC53-4EBA-89C1-7785340530DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D55B1CE9-BC53-4EBA-89C1-7785340530DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D55B1CE9-BC53-4EBA-89C1-7785340530DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D55B1CE9-BC53-4EBA-89C1-7785340530DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99275F8B-3744-4894-BD45-67304080AB31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99275F8B-3744-4894-BD45-67304080AB31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99275F8B-3744-4894-BD45-67304080AB31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99275F8B-3744-4894-BD45-67304080AB31}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
