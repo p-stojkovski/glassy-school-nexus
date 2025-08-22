@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ThemeProvider } from 'next-themes';
@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { store } from './store';
 import { RootState } from './store';
 import { DataProvider } from '@/app/providers/DataProvider';
+import { getCurrentUserAsync } from '@/domains/auth/authSlice';
 import LoginForm from '@/domains/auth/components/LoginForm';
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
@@ -37,19 +38,22 @@ const queryClient = new QueryClient({
 });
 
 const AppContent: React.FC = () => {
-  console.log('AppContent rendering...'); // Debug log
-
+  const dispatch = useAppDispatch();
   const { isAuthenticated, loading } = useAppSelector((state: RootState) => {
-    console.log('Auth state:', state.auth); // Debug log
     return state.auth;
   });
 
-  console.log(
-    'Auth check - isAuthenticated:',
-    isAuthenticated,
-    'loading:',
-    loading
-  ); // Debug log
+  // Check for existing authentication on app startup
+  useEffect(() => {
+    // Check if we have tokens stored and validate them
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+    
+    if (accessToken && refreshToken && !isAuthenticated) {
+      // Try to get current user to validate the token
+      dispatch(getCurrentUserAsync());
+    }
+  }, [dispatch, isAuthenticated]);
 
   if (loading) {
     return (
@@ -60,11 +64,9 @@ const AppContent: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    console.log('Rendering LoginForm'); // Debug log
     return <LoginForm />;
   }
 
-  console.log('Rendering authenticated app'); // Debug log
   return (
     <AppLayout>
       <Routes>

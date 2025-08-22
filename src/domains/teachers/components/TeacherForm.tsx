@@ -202,7 +202,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({
     <Sheet open={isOpen} onOpenChange={handleClose}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"
+        className="w-full sm:max-w-md bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto glass-scrollbar"
       >
         <SheetHeader className="pb-6 border-b border-white/20">
           <SheetTitle className="text-2xl font-bold text-white">

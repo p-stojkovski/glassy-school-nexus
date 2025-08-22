@@ -5,6 +5,7 @@ import { RootState } from '../../store';
 import Sidebar from './Sidebar';
 import { ToastProvider } from '@/components/common/ToastProvider';
 import { Toaster } from '@/components/ui/sonner';
+import { cn } from '../../lib/utils';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -23,7 +24,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}
           >
             <main
-              className={`flex-1 overflow-auto ${isDashboard ? 'p-6' : 'p-6 pt-6'}`}
+              className={cn(
+                'flex-1 overflow-auto glass-scrollbar',
+                isDashboard ? 'p-6' : 'p-6 pt-6'
+              )}
             >
               {children}
             </main>

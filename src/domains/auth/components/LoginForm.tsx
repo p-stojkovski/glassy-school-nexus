@@ -1,49 +1,57 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { useAppDispatch } from '@/store/hooks';
-import {
-  loginStart,
-  loginSuccess,
-  loginFailure,
-} from '@/domains/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { loginAsync, clearError } from '@/domains/auth/authSlice';
 import { addNotification } from '@/store/slices/uiSlice';
-import authService from '@/services/authService';
 import GlassCard from '@/components/common/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NotificationType } from '@/types/enums';
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState('admin@school.com');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const dispatch = useAppDispatch();
+
+  const { loginLoading, error } = useAppSelector((state) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    dispatch(loginStart());
+    
+    if (error) {
+      dispatch(clearError());
+    }
 
     try {
-      const user = await authService.login({ email, password });
-      dispatch(loginSuccess(user));
-      dispatch(
-        addNotification({
-          type: 'success',
-          message: 'Welcome back! Login successful.',
-        })
-      );
+      const result = await dispatch(loginAsync({ email, password }));
+      
+      if (loginAsync.fulfilled.match(result)) {
+        dispatch(
+          addNotification({
+            type: NotificationType.Success,
+            message: 'Welcome back! Login successful.',
+          })
+        );
+      } else if (loginAsync.rejected.match(result)) {
+        // Error is already stored in Redux state, and will be displayed in the form
+        // Also show notification for additional feedback
+        const errorMessage = result.payload as string || 'Login failed. Please try again.';
+        dispatch(
+          addNotification({
+            type: NotificationType.Error,
+            message: errorMessage,
+          })
+        );
+      }
     } catch (error) {
-      dispatch(loginFailure());
       dispatch(
         addNotification({
-          type: 'error',
-          message: 'Invalid credentials. Please try again.',
+          type: NotificationType.Error,
+          message: 'An unexpected error occurred. Please try again.',
         })
       );
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -73,13 +81,22 @@ const LoginForm: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                <p className="text-red-200 text-sm text-center">{error}</p>
+              </div>
+            )}
+            
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />{' '}
               <Input
                 type="email"
                 placeholder="Email address"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error) dispatch(clearError());
+                }}
                 className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
                 required
               />
@@ -91,7 +108,10 @@ const LoginForm: React.FC = () => {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) dispatch(clearError());
+                }}
                 className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
                 required
               />
@@ -110,17 +130,11 @@ const LoginForm: React.FC = () => {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loginLoading}
               className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 rounded-xl"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loginLoading ? 'Signing in...' : 'Sign In'}
             </Button>
-
-            <div className="text-center">
-              <p className="text-white/70 text-sm">
-                Demo credentials: admin@school.com / password
-              </p>
-            </div>
           </form>
         </GlassCard>
       </motion.div>

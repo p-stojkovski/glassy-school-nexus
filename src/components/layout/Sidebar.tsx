@@ -12,13 +12,12 @@ import {
   DollarSign,
   Settings,
   ChevronLeft,
-  LogOut,
   GraduationCap as Grades,
   UserCheck,
 } from 'lucide-react';
 import { RootState } from '../../store';
 import { toggleSidebar } from '../../store/slices/uiSlice';
-import { logout } from '@/domains/auth/authSlice';
+import LogoutMenu from '@/domains/auth/components/LogoutMenu';
 import GlassCard from '../common/GlassCard';
 import { cn } from '../../lib/utils';
 import styles from './Sidebar.module.scss';
@@ -41,10 +40,6 @@ const Sidebar: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-
-  const handleLogout = () => {
-    dispatch(logout());
-  };
 
   return (
     <motion.div
@@ -88,26 +83,28 @@ const Sidebar: React.FC = () => {
 
           {/* Navigation */}
           <nav className={styles.nav}>
-            {menuItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <motion.button
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className={cn(
-                    styles.menuItem,
-                    isActive ? styles.menuActive : styles.menuInactive
-                  )}
-                  whileHover={{ x: 2 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  {!sidebarCollapsed && (
-                    <span className="font-medium">{item.label}</span>
-                  )}
-                </motion.button>
-              );
-            })}
+            <div className={cn("overflow-y-auto flex-1 space-y-2 glass-scrollbar")}>
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <motion.button
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    className={cn(
+                      styles.menuItem,
+                      isActive ? styles.menuActive : styles.menuInactive
+                    )}
+                    whileHover={{ x: 2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    {!sidebarCollapsed && (
+                      <span className="font-medium">{item.label}</span>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
           </nav>
 
           {/* User Profile */}
@@ -119,17 +116,22 @@ const Sidebar: React.FC = () => {
                 className={styles.profile}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-medium truncate">{user.name}</p>
+                  <p className="text-white font-medium truncate">
+                    {`${user.firstName} ${user.lastName}`.trim()}
+                  </p>
                   <p className="text-white/60 text-sm capitalize">
                     {user.role}
                   </p>
                 </div>
               </motion.div>
             )}
-            <button onClick={handleLogout} className={styles.logoutButton}>
-              <LogOut className="w-5 h-5" />
-              {!sidebarCollapsed && <span>Logout</span>}
-            </button>
+            <div className="w-full">
+              <LogoutMenu
+                collapsed={sidebarCollapsed}
+                size="default"
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
       </GlassCard>
