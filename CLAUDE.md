@@ -71,7 +71,7 @@ Each domain follows a consistent structure:
 
 #### Data Management
 - **API Integration**: Will use actual API endpoints (localStorage/demo mode being phased out)
-- **Domain Hooks**: Each domain has custom hooks for data operations (e.g., `useStudentsData`, `useTeachersData`)
+- **Domain Hooks**: Each domain has custom hooks for data operations and API management (e.g., `useStudentsData`, `useTeacherManagement`)
 - **Redux Slices**: Each domain has its own Redux slice for state management
 - **Error Handling**: Comprehensive error boundaries and user-friendly error messages
 

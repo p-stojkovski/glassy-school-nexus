@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import GlassCard from '@/components/common/GlassCard';
+import { SubjectDto } from '@/types/api/teacher';
 
 interface TeacherFiltersProps {
   searchTerm: string;
@@ -17,18 +18,8 @@ interface TeacherFiltersProps {
   subjectFilter: string;
   setSubjectFilter: (filter: string) => void;
   clearFilters: () => void;
+  subjects: SubjectDto[];
 }
-
-// Available subjects based on TeacherForm options
-const SUBJECT_OPTIONS = [
-  'Grammar & Writing',
-  'Conversation & Speaking',
-  'Reading & Comprehension',
-  'Listening & Pronunciation',
-  'Business English',
-  'IELTS Preparation',
-  'TOEFL Preparation',
-];
 
 const TeacherFilters: React.FC<TeacherFiltersProps> = ({
   searchTerm,
@@ -36,6 +27,7 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
   subjectFilter,
   setSubjectFilter,
   clearFilters,
+  subjects,
 }) => {
   return (
     <GlassCard className="p-6">
@@ -62,9 +54,9 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Subjects</SelectItem>
-              {SUBJECT_OPTIONS.map((subject) => (
-                <SelectItem key={subject} value={subject}>
-                  {subject}
+              {subjects.map((subject) => (
+                <SelectItem key={subject.id} value={subject.id}>
+                  {subject.name}
                 </SelectItem>
               ))}
             </SelectContent>

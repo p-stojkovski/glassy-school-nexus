@@ -4,7 +4,6 @@ import { useLocation } from 'react-router-dom';
 import { RootState } from '../../store';
 import Sidebar from './Sidebar';
 import { ToastProvider } from '@/components/common/ToastProvider';
-import { Toaster } from '@/components/ui/sonner';
 import { cn } from '../../lib/utils';
 
 interface AppLayoutProps {
@@ -33,7 +32,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </main>
           </div>
         </div>
-        <Toaster />
       </div>
     </ToastProvider>
   );

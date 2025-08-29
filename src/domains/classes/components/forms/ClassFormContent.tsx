@@ -25,6 +25,8 @@ import GlassCard from '@/components/common/GlassCard';
 import ScheduleForm from './ScheduleForm';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import StudentSelectionTrigger from '@/components/common/StudentSelectionTrigger';
+import SubjectSelect from '@/components/common/SubjectSelect';
+import { SUBJECTS } from '@/data/subjects';
 
 interface ClassFormContentProps {
   onSubmit: (data: ClassFormData) => void;
@@ -115,15 +117,14 @@ const ClassFormContent: React.FC<ClassFormContentProps> = ({
                 <FormItem>
                   <FormLabel className="text-white">Subject</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                        <SelectValue placeholder="Select subject" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="English">English</SelectItem>
-                        <SelectItem value="German">German</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SubjectSelect
+                      value={(SUBJECTS.find(s => s.name === field.value)?.id) || ''}
+                      onChange={(id) => {
+                        const subj = SUBJECTS.find(s => s.id === id);
+                        field.onChange(subj ? subj.name : '');
+                      }}
+                      placeholder="Select subject"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

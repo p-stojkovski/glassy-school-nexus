@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,50 +9,22 @@ import ClassFormContent, {
 } from '@/domains/classes/components/forms/ClassFormContent';
 import { useClassManagement } from '@/domains/classes/hooks/useClassManagement';
 import { DemoManager } from '@/data/components/DemoManager';
-import { useClassrooms } from '@/domains/classrooms/hooks/useClassrooms';
-import { Classroom } from '@/domains/classrooms/classroomsSlice';
+import { useClassroomsData } from '@/data/hooks/useClassroomsData';
 
 const ClassForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { classes } = useAppSelector((state: RootState) => state.classes);
-  const { classrooms, setClassrooms } = useClassrooms();
+  
+  // Use the proper data loading hook for classrooms
+  const { isLoading: classroomsLoading } = useClassroomsData({
+    autoLoad: true,
+    loadOnMount: true,
+    showErrorToasts: true,
+  });
 
   const editingClass = id ? classes.find((c) => c.id === id) : null;
   const isEditing = !!editingClass;
-  // Initialize demo data on component mount
-  useEffect(() => {
-    // Only initialize if there's no data
-    if (classrooms.length === 0) {
-      const demoClassrooms: Classroom[] = [
-        {
-          id: 'classroom-1',
-          name: 'Room 101',
-          location: 'Building A, 1st Floor',
-          capacity: 25,
-          createdDate: '2023-01-15T10:00:00Z',
-          lastUpdated: '2023-06-01T14:30:00Z',
-        },
-        {
-          id: 'classroom-2',
-          name: 'Room 202',
-          location: 'Building A, 2nd Floor',
-          capacity: 20,
-          createdDate: '2023-01-15T10:30:00Z',
-          lastUpdated: '2023-06-01T14:45:00Z',
-        },
-        {
-          id: 'classroom-3',
-          name: 'Room 305',
-          location: 'Building B, 3rd Floor',
-          capacity: 30,
-          createdDate: '2023-01-16T09:00:00Z',
-          lastUpdated: '2023-06-01T15:00:00Z',
-        },
-      ];
-      setClassrooms(demoClassrooms);
-    }
-  }, [setClassrooms, classrooms.length]);
 
   // Use the management hook for CRUD
   const { handleCreateClass, handleUpdateClass } = useClassManagement({

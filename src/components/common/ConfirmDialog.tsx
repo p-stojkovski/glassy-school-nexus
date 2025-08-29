@@ -21,6 +21,8 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   variant?: 'destructive' | 'default';
   customContent?: React.ReactNode;
+  isLoading?: boolean;
+  disabled?: boolean;
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -33,10 +35,15 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   variant = 'destructive',
   customContent,
+  isLoading = false,
+  disabled = false,
 }) => {
   const handleConfirm = () => {
     onConfirm();
-    onOpenChange(false);
+    // Don't close dialog if loading - let the parent handle it
+    if (!isLoading) {
+      onOpenChange(false);
+    }
   };
 
   return (
@@ -52,11 +59,13 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <div className="pt-4">
           <FormButtons
             onSubmit={handleConfirm}
-            onCancel={() => onOpenChange(false)}
+            onCancel={() => !isLoading && onOpenChange(false)}
             submitText={confirmText}
             cancelText={cancelText}
             submitVariant={variant === 'destructive' ? 'danger' : 'default'}
             variant="compact"
+            isLoading={isLoading}
+            disabled={disabled}
           />
         </div>
       </AlertDialogContent>

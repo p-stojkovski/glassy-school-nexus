@@ -24,11 +24,13 @@ import { Teacher } from '@/domains/teachers/teachersSlice';
 interface TeacherTableProps {
   teachers: Teacher[];
   onEdit: (teacher: Teacher) => void;
+  onDelete: (teacher: Teacher) => void;
+  isDeleting?: boolean;
 }
 
 const ITEMS_PER_PAGE = 10;
 
-const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit }) => {
+const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete, isDeleting = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(teachers.length / ITEMS_PER_PAGE);
@@ -191,12 +193,12 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit }) => {
                   </div>
                 </TableCell>{' '}
                 <TableCell>
-                  <div className="text-sm text-white/80">{teacher.subject}</div>
+                  <div className="text-sm text-white/80">{teacher.subjectName}</div>
                 </TableCell>
                 <TableCell>
                   <div className="text-sm text-white/80">
-                    {teacher.classIds.length} class
-                    {teacher.classIds.length !== 1 ? 'es' : ''}
+                    {teacher.classCount} class
+                    {teacher.classCount !== 1 ? 'es' : ''}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -213,6 +215,15 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit }) => {
                       className="text-white/70 hover:text-white hover:bg-white/10"
                     >
                       Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDelete(teacher)}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'Deleting...' : 'Delete'}
                     </Button>
                   </div>
                 </TableCell>

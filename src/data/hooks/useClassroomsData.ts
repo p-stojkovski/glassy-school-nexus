@@ -7,11 +7,11 @@
 import { useDomainData, type UseDomainDataOptions } from './useDomainData';
 import {
   setClassrooms,
-  setLoading,
+  setAllLoading,
 } from '@/domains/classrooms/classroomsSlice';
 
 export const useClassroomsData = (options: UseDomainDataOptions = {}) => {
-  return useDomainData('classrooms', setClassrooms, setLoading, {
+  return useDomainData('classrooms', setClassrooms, setAllLoading, {
     ...options,
     autoLoad: options.autoLoad ?? true,
     loadOnMount: options.loadOnMount ?? true,

@@ -9,7 +9,6 @@ export { useDomainData } from './useDomainData';
 export { useStudentsData } from './useStudentsData';
 export { useClassroomsData } from './useClassroomsData';
 export { useClassesData } from './useClassesData';
-export { useTeachersData } from './useTeachersData';
 export {
   useFinancialData,
   useFinancialObligationsData,

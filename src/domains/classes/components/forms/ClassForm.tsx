@@ -30,6 +30,8 @@ import { useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import StudentSelectionTrigger from '@/components/common/StudentSelectionTrigger';
+import SubjectSelect from '@/components/common/SubjectSelect';
+import { SUBJECTS } from '@/data/subjects';
 
 interface ClassFormProps {
   open: boolean;
@@ -146,24 +148,18 @@ const ClassForm: React.FC<ClassFormProps> = ({
                   <FormItem>
                     <FormLabel className="text-white">Subject</FormLabel>
                     <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                          <SelectValue placeholder="Select subject" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="English">English</SelectItem>
-                          <SelectItem value="Mathematics">
-                            Mathematics
-                          </SelectItem>
-                          <SelectItem value="Physics">Physics</SelectItem>
-                          <SelectItem value="Chemistry">Chemistry</SelectItem>
-                          <SelectItem value="Biology">Biology</SelectItem>
-                          <SelectItem value="History">History</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      {
+                        // Keep storing subject name (string) in form state for backward compatibility.
+                        // Map selected SubjectId to its name on change; map current name to id for value.
+                      }
+                      <SubjectSelect
+                        value={(SUBJECTS.find(s => s.name === field.value)?.id) || ''}
+                        onChange={(id) => {
+                          const subj = SUBJECTS.find(s => s.id === id);
+                          field.onChange(subj ? subj.name : '');
+                        }}
+                        placeholder="Select subject"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

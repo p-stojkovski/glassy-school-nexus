@@ -5,7 +5,6 @@ import { RootState } from '@/store';
 import { Class, deleteClass } from '../classesSlice';
 import { toast } from '@/hooks/use-toast';
 import { useClassesData } from '@/data/hooks/useClassesData';
-import { useTeachersData } from '@/data/hooks/useTeachersData';
 import { useClassroomsData } from '@/data/hooks/useClassroomsData';
 
 export type SubjectFilter = 'all' | 'English' | 'Mathematics' | 'Physics';
@@ -27,11 +26,6 @@ export const useClassManagementPage = () => {
     showErrorToasts: true,
   });
 
-  const teachersHook = useTeachersData({
-    autoLoad: true,
-    loadOnMount: true,
-    showErrorToasts: true,
-  });
 
   const classroomsHook = useClassroomsData({
     autoLoad: true,

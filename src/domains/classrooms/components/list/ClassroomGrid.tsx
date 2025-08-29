@@ -22,7 +22,10 @@ const ClassroomGrid: React.FC<ClassroomGridProps> = ({
   onDeleteClassroom,
   onViewClassroom,
 }) => {
-  if (classrooms.length === 0) {
+  // Guard against unexpected non-array inputs to keep UI resilient
+  const list = Array.isArray(classrooms) ? classrooms : [];
+
+  if (list.length === 0) {
     return (
       <GlassCard className="p-12 text-center">
         <Building className="w-16 h-16 text-white/40 mx-auto mb-4" />
@@ -49,7 +52,7 @@ const ClassroomGrid: React.FC<ClassroomGridProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {classrooms.map((classroom) => (
+      {list.map((classroom) => (
         <ClassroomCard
           key={classroom.id}
           classroom={classroom}

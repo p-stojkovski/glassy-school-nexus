@@ -12,6 +12,7 @@ import { DataProvider } from '@/app/providers/DataProvider';
 import { getCurrentUserAsync } from '@/domains/auth/authSlice';
 import LoginForm from '@/domains/auth/components/LoginForm';
 import AppLayout from './components/layout/AppLayout';
+import GlobalLoadingOverlay from '@/components/common/GlobalLoadingOverlay';
 import Dashboard from './pages/Dashboard';
 import ClassroomManagement from './pages/ClassroomManagement';
 import StudentManagement from './pages/StudentManagement';
@@ -102,6 +103,7 @@ const App = () => (
         <TooltipProvider>
           <DataProvider>
             <Toaster />
+            <GlobalLoadingOverlay />
             <BrowserRouter>
               <AppContent />
             </BrowserRouter>

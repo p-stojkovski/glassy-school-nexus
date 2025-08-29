@@ -17,7 +17,7 @@ import {
 } from '@/domains/students/studentsSlice';
 import {
   setClassrooms,
-  setLoading as setClassroomsLoading,
+  setAllLoading as setClassroomsLoading,
 } from '@/domains/classrooms/classroomsSlice';
 import { setClasses } from '@/domains/classes/classesSlice';
 import {
