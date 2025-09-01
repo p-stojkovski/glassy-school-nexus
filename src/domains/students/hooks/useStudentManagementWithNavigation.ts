@@ -1,16 +1,11 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '@/store/hooks';
-import { deleteStudent, Student } from '../studentsSlice';
-import { toast } from 'sonner';
+import { Student } from '../studentsSlice';
 import { useStudentManagement } from './useStudentManagement';
 
 export const useStudentManagementWithNavigation = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
-
-  // Use the existing student management hook for filtering and data
+  
+  // Use the API-integrated student management hook
   const studentManagement = useStudentManagement();
 
   const handleAddStudent = () => {
@@ -21,27 +16,15 @@ export const useStudentManagementWithNavigation = () => {
     navigate(`/students/edit/${student.id}`);
   };
 
-  const handleDeleteStudent = (student: Student) => {
-    setStudentToDelete(student);
-  };
-
-  const confirmDeleteStudent = () => {
-    if (studentToDelete) {
-      dispatch(deleteStudent(studentToDelete.id));
-      toast.success('Student Deleted', {
-        description: `${studentToDelete.name} has been successfully deleted.`,
-      });
-      setStudentToDelete(null);
-    }
+  const handleViewStudent = (student: Student) => {
+    navigate(`/students/${student.id}`);
   };
 
   return {
     ...studentManagement,
-    studentToDelete,
-    setStudentToDelete,
+    // Override with navigation versions
     handleAddStudent,
     handleEditStudent,
-    handleDeleteStudent,
-    confirmDeleteStudent,
+    handleViewStudent,
   };
 };

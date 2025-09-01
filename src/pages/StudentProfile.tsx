@@ -28,7 +28,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import GlassCard from '@/components/common/GlassCard';
-import { DemoManager } from '@/data/components/DemoManager';
 import PaymentSidebar from '@/domains/finance/components/payments/PaymentSidebar';
 import {
   selectObligationsByStudentId,
@@ -143,11 +142,6 @@ const StudentProfile: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <DemoManager
-        showFullControls={true}
-        title="Student Profile Demo"
-        description="View and manage student information, grades, and payments. All data is stored locally and persists between sessions."
-      />
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button

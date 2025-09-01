@@ -8,7 +8,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { StudentFormData } from '../TabbedStudentFormContent';
+import { StudentFormData } from '@/types/api/student';
 
 interface ParentGuardianTabProps {
   form: UseFormReturn<StudentFormData>;
@@ -23,7 +23,7 @@ const ParentGuardianTab: React.FC<ParentGuardianTabProps> = ({ form }) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-white font-semibold">
-              Contact
+              Contact *
             </FormLabel>
             <FormControl>
               <Input
@@ -32,7 +32,7 @@ const ParentGuardianTab: React.FC<ParentGuardianTabProps> = ({ form }) => {
                 className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
               />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-red-300" />
           </FormItem>
         )}
       />
@@ -43,7 +43,7 @@ const ParentGuardianTab: React.FC<ParentGuardianTabProps> = ({ form }) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-white font-semibold">
-              Email
+              Email *
             </FormLabel>
             <FormControl>
               <Input
@@ -53,7 +53,7 @@ const ParentGuardianTab: React.FC<ParentGuardianTabProps> = ({ form }) => {
                 className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400"
               />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-red-300" />
           </FormItem>
         )}
       />

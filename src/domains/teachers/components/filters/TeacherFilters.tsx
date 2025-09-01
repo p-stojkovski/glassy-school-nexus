@@ -1,7 +1,6 @@
 import React from 'react';
-import { Search, Filter, BookOpen, X } from 'lucide-react';
+import { Search, Filter, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/select';
 import GlassCard from '@/components/common/GlassCard';
 import { SubjectDto } from '@/types/api/teacher';
+import ClearFiltersButton from '@/components/common/ClearFiltersButton';
 
 interface TeacherFiltersProps {
   searchTerm: string;
@@ -64,14 +64,7 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
         </div>
         {/* Clear Filters Button */}
         <div className="w-full lg:w-auto">
-          <Button
-            onClick={clearFilters}
-            variant="outline"
-            className="w-full lg:w-auto bg-white/5 border-white/10 text-white hover:bg-white/10"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Clear Filters
-          </Button>
+          <ClearFiltersButton onClick={clearFilters} />
         </div>
       </div>
     </GlassCard>

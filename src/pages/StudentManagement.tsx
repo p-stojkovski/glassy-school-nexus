@@ -2,84 +2,129 @@ import React from 'react';
 import StudentHeader from '@/domains/students/components/layout/StudentHeader';
 import StudentFilters from '@/domains/students/components/filters/StudentFilters';
 import StudentTable from '@/domains/students/components/list/StudentTable';
+import StudentCard from '@/domains/students/components/list/StudentCard';
 import StudentEmptyState from '@/domains/students/components/state/StudentEmptyState';
-import StudentLoading from '@/domains/students/components/state/StudentLoading';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import StandardDemoNotice from '@/components/common/StandardDemoNotice';
 import { useStudentManagementWithNavigation } from '@/domains/students/hooks/useStudentManagementWithNavigation';
 
 const StudentManagement: React.FC = () => {
   const {
     students,
+    discountTypes,
+    totalCount,
+    currentPage,
+    pageSize,
+    isSearchMode,
     loading,
+    errors,
     searchTerm,
-    setSearchTerm,
     statusFilter,
-    setStatusFilter,
-    paymentStatusFilter,
-    setPaymentStatusFilter,
-    classFilter,
-    setClassFilter,
-    clearFilters,
-    classes,
-    getStudentPaymentStatus,
-    handleViewStudent,
+    discountStatusFilter,
+    discountTypeFilter,
+    hasActiveFilters,
+    viewMode,
     studentToDelete,
-    setStudentToDelete,
+    isConfirmOpen,
+    setIsConfirmOpen,
+    setSearchTerm,
+    setStatusFilter,
+    setDiscountStatusFilter,
+    setDiscountTypeFilter,
+    clearFilters,
     handleAddStudent,
     handleEditStudent,
     handleDeleteStudent,
+    handleViewStudent,
     confirmDeleteStudent,
+    handlePageChange,
   } = useStudentManagementWithNavigation();
 
-  if (loading) {
-    return <StudentLoading />;
-  }
   return (
     <div className="space-y-6">
-      <StandardDemoNotice
-        title="Student Management Demo"
-        message="Manage student information and enrollment. All data is stored locally and persists between sessions."
-      />
-
       <StudentHeader onAddStudent={handleAddStudent} />
       <StudentFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
-        paymentStatusFilter={paymentStatusFilter}
-        setPaymentStatusFilter={setPaymentStatusFilter}
-        classFilter={classFilter}
-        setClassFilter={setClassFilter}
+        discountStatusFilter={discountStatusFilter}
+        setDiscountStatusFilter={setDiscountStatusFilter}
+        discountTypeFilter={discountTypeFilter}
+        setDiscountTypeFilter={setDiscountTypeFilter}
         clearFilters={clearFilters}
-        classes={classes}
+        discountTypes={discountTypes}
+        hasActiveFilters={hasActiveFilters}
+        isSearchMode={isSearchMode}
+        loading={loading.searching}
       />
+
 
       {students.length === 0 ? (
         <StudentEmptyState
           searchTerm={searchTerm}
           statusFilter={statusFilter}
           onAddStudent={handleAddStudent}
+          hasActiveFilters={hasActiveFilters}
+          isLoading={loading.searching}
         />
-      ) : (
+      ) : viewMode === 'table' ? (
         <StudentTable
           students={students}
-          classes={classes}
+          totalCount={totalCount}
+          currentPage={currentPage}
+          pageSize={pageSize}
           onEdit={handleEditStudent}
           onDelete={handleDeleteStudent}
           onView={handleViewStudent}
-          getPaymentStatus={getStudentPaymentStatus}
-          loading={loading}
+          onPageChange={handlePageChange}
+          loading={loading.searching}
         />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {students.map((student) => (
+              <StudentCard
+                key={student.id}
+                student={student}
+                onEdit={() => handleEditStudent(student)}
+                onDelete={() => handleDeleteStudent(student)}
+                onView={() => handleViewStudent(student)}
+              />
+            ))}
+          </div>
+          
+          {/* Grid pagination - simplified */}
+          {totalCount > pageSize && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <button
+                onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed rounded"
+              >
+                Previous
+              </button>
+              <span className="px-4 py-2 text-white/70">
+                Page {currentPage} of {Math.ceil(totalCount / pageSize)}
+              </span>
+              <button
+                onClick={() => currentPage < Math.ceil(totalCount / pageSize) && handlePageChange(currentPage + 1)}
+                disabled={currentPage >= Math.ceil(totalCount / pageSize)}
+                className="px-4 py-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed rounded"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <ConfirmDialog
-        open={!!studentToDelete}
-        onOpenChange={() => setStudentToDelete(null)}
+        open={isConfirmOpen}
+        onOpenChange={(open) => setIsConfirmOpen(open)}
         title="Delete Student"
-        description={`Are you sure you want to delete ${studentToDelete?.name}? This action cannot be undone.`}
+        description={`Are you sure you want to delete ${studentToDelete?.fullName}? This action cannot be undone.`}
         onConfirm={confirmDeleteStudent}
+        loading={loading.deleting}
       />
     </div>
   );

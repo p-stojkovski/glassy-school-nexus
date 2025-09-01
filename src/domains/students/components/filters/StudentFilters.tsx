@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, CreditCard, GraduationCap, X } from 'lucide-react';
+import { Search, Filter, Percent, Grid, List, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,21 +10,26 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import GlassCard from '@/components/common/GlassCard';
-import { Class } from '@/domains/classes/classesSlice';
+import { DiscountTypeDto } from '@/types/api/student';
+import { StudentViewMode } from '@/domains/students/hooks/useStudentManagement';
+import ClearFiltersButton from '@/components/common/ClearFiltersButton';
 
 interface StudentFiltersProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   statusFilter: 'all' | 'active' | 'inactive';
   setStatusFilter: (filter: 'all' | 'active' | 'inactive') => void;
-  paymentStatusFilter: 'all' | 'pending' | 'partial' | 'paid' | 'overdue';
-  setPaymentStatusFilter: (
-    filter: 'all' | 'pending' | 'partial' | 'paid' | 'overdue'
-  ) => void;
-  classFilter: 'all' | 'unassigned' | string;
-  setClassFilter: (filter: 'all' | 'unassigned' | string) => void;
+  discountStatusFilter: 'all' | 'with-discount' | 'no-discount';
+  setDiscountStatusFilter: (filter: 'all' | 'with-discount' | 'no-discount') => void;
+  discountTypeFilter: 'all' | string;
+  setDiscountTypeFilter: (filter: 'all' | string) => void;
   clearFilters: () => void;
-  classes: Class[];
+  discountTypes: DiscountTypeDto[];
+  hasActiveFilters?: boolean;
+  viewMode?: StudentViewMode;
+  setViewMode?: (mode: StudentViewMode) => void;
+  isSearchMode?: boolean;
+  loading?: boolean;
 }
 
 const StudentFilters: React.FC<StudentFiltersProps> = ({
@@ -32,97 +37,134 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
   setSearchTerm,
   statusFilter,
   setStatusFilter,
-  paymentStatusFilter,
-  setPaymentStatusFilter,
-  classFilter,
-  setClassFilter,
+  discountStatusFilter,
+  setDiscountStatusFilter,
+  discountTypeFilter,
+  setDiscountTypeFilter,
   clearFilters,
-  classes,
+  discountTypes,
+  hasActiveFilters = false,
+  viewMode = 'grid',
+  setViewMode,
+  isSearchMode = false,
+  loading = false,
 }) => {
   return (
-    <GlassCard className="p-6">
-      <div className="flex flex-col lg:flex-row gap-4">
-        {/* Search Input */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-          <Input
-            placeholder="Search students by name or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
-          />
+    <GlassCard className="p-6">     
+      <div className="flex flex-col lg:flex-row gap-4 items-start">
+        <div className="flex-1 flex flex-col lg:flex-row gap-4">
+          {/* Search Input */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+            <Input
+              placeholder="Search students by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+              disabled={loading}
+            />
+          </div>
+          {/* Status Filter */}
+          <div className="w-full lg:w-48">
+            <Select
+              value={statusFilter}
+              onValueChange={(value: 'all' | 'active' | 'inactive') =>
+                setStatusFilter(value)
+              }
+              disabled={loading}
+            >
+              <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {/* Discount Status Filter */}
+          <div className="w-full lg:w-48">
+            <Select
+              value={discountStatusFilter}
+              onValueChange={(value: 'all' | 'with-discount' | 'no-discount') =>
+                setDiscountStatusFilter(value)
+              }
+              disabled={loading}
+            >
+              <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                <Percent className="w-4 h-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Discounts</SelectItem>
+                <SelectItem value="with-discount">With Discount</SelectItem>
+                <SelectItem value="no-discount">No Discount</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {/* Discount Type Filter */}
+          <div className="w-full lg:w-48">
+            <Select
+              value={discountTypeFilter}
+              onValueChange={(value: string) => setDiscountTypeFilter(value)}
+              disabled={loading || discountTypes.length === 0}
+            >
+              <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                <Percent className="w-4 h-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                {discountTypes.length > 0 ? (
+                  discountTypes.map((type) => (
+                    <SelectItem key={type.id} value={type.id}>
+                      {type.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="loading" disabled>
+                    Loading discount types...
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        {/* Status Filter */}
-        <div className="w-full lg:w-48">
-          <Select
-            value={statusFilter}
-            onValueChange={(value: 'all' | 'active' | 'inactive') =>
-              setStatusFilter(value)
-            }
-          >
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        {/* Payment Status Filter */}
-        <div className="w-full lg:w-48">
-          <Select
-            value={paymentStatusFilter}
-            onValueChange={(
-              value: 'all' | 'pending' | 'partial' | 'paid' | 'overdue'
-            ) => setPaymentStatusFilter(value)}
-          >
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <CreditCard className="w-4 h-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Payments</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="partial">Partial</SelectItem>
-              <SelectItem value="overdue">Overdue</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>{' '}
-        {/* Class Filter */}
-        <div className="w-full lg:w-48">
-          <Select
-            value={classFilter}
-            onValueChange={(value: string) => setClassFilter(value)}
-          >
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <GraduationCap className="w-4 h-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Classes</SelectItem>
-              <SelectItem value="unassigned">Unassigned</SelectItem>
-              {classes.map((cls) => (
-                <SelectItem key={cls.id} value={cls.id}>
-                  {cls.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>{' '}
-        {/* Clear Filters Button */}
-        <div className="w-full lg:w-auto">
-          <Button
-            onClick={clearFilters}
-            variant="outline"
-            className="w-full lg:w-auto bg-yellow-500/10 border-yellow-400/30 text-white hover:bg-yellow-500/20 hover:border-yellow-400/50 transition-all duration-200 font-medium backdrop-blur-sm hover:text-yellow-100"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Clear Filters
-          </Button>
+        
+        {/* View Mode Toggle and Actions */}
+        <div className="flex gap-2 lg:flex-shrink-0">
+          {/* View Mode Toggle */}
+          {setViewMode && (
+            <div className="flex border border-white/20 rounded-lg overflow-hidden">
+              <Button
+                onClick={() => setViewMode('grid')}
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                className={`px-3 py-2 border-0 rounded-none ${
+                  viewMode === 'grid'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <Grid className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={() => setViewMode('table')}
+                variant={viewMode === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                className={`px-3 py-2 border-0 rounded-none ${
+                  viewMode === 'table'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        <ClearFiltersButton onClick={clearFilters} />
         </div>
       </div>
     </GlassCard>

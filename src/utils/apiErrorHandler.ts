@@ -6,6 +6,7 @@
 import { toast } from 'sonner';
 import { ClassroomHttpStatus } from '@/types/api/classroom';
 import { TeacherHttpStatus } from '@/types/api/teacher';
+import { StudentHttpStatus } from '@/types/api/student';
 
 export interface ApiError extends Error {
   status?: number;
@@ -352,6 +353,78 @@ export const TeacherErrorHandlers = {
   
   fetchSubjects: (error: unknown) => 
     handleApiError(error, { operation: 'fetch subjects' }),
+};
+
+/**
+ * Specific error handlers for common student operations
+ */
+export const StudentErrorHandlers = {
+  fetchAll: (error: unknown) =>
+    handleApiError(error, { operation: 'fetch students' }),
+
+  fetchById: (error: unknown) =>
+    handleApiError(error, { operation: 'fetch student details' }),
+
+  search: (error: unknown) =>
+    handleApiError(error, { operation: 'search students' }),
+
+  create: (error: unknown) => {
+    const apiError = error as ApiError;
+    if (apiError.status === StudentHttpStatus.CONFLICT) {
+      if (apiError.message?.toLowerCase()?.includes('email')) {
+        return handleApiError(error, {
+          customMessage: 'A student with this email address already exists. Please use a different email.',
+          operation: 'create student',
+        });
+      }
+    }
+    if (apiError.status === StudentHttpStatus.BAD_REQUEST) {
+      if (apiError.message?.includes('Discount')) {
+        return handleApiError(error, {
+          customMessage: 'The selected discount type is no longer available. Please choose a different discount type.',
+          operation: 'create student',
+        });
+      }
+    }
+    return handleApiError(error, { operation: 'create student' });
+  },
+
+  update: (error: unknown) => {
+    const apiError = error as ApiError;
+    if (apiError.status === StudentHttpStatus.CONFLICT) {
+      if (apiError.message?.toLowerCase()?.includes('email')) {
+        return handleApiError(error, {
+          customMessage: 'Another student is already using this email address. Please use a different email.',
+          operation: 'update student',
+        });
+      }
+    }
+    if (apiError.status === StudentHttpStatus.BAD_REQUEST) {
+      if (apiError.message?.includes('Discount')) {
+        return handleApiError(error, {
+          customMessage: 'The selected discount type is no longer available. Please choose a different discount type.',
+          operation: 'update student',
+        });
+      }
+    }
+    return handleApiError(error, { operation: 'update student' });
+  },
+
+  delete: (error: unknown) => {
+    const apiError = error as ApiError;
+    if (apiError.status === StudentHttpStatus.CONFLICT) {
+      if (apiError.message?.toLowerCase()?.includes('dependenc')) {
+        return handleApiError(error, {
+          customMessage: apiError.message || 'Cannot delete student because they have existing enrollments or payment records. Please clear related data first.',
+          operation: 'delete student',
+        });
+      }
+    }
+    return handleApiError(error, { operation: 'delete student' });
+  },
+
+  fetchDiscountTypes: (error: unknown) =>
+    handleApiError(error, { operation: 'fetch discount types' }),
 };
 
 export default {

@@ -141,3 +141,224 @@
   scrollbar-width: thin !important;
   scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.02) !important;
 }
+
+/* Calendar and Popover Fixes */
+.calendar-popover {
+  z-index: 9999 !important;
+}
+
+/* Enhanced Form Layout */
+.student-form-container {
+  padding: 24px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.form-field-spacing {
+  margin-bottom: 20px;
+}
+
+/* Enhanced Glass Input */
+.glass-input-enhanced {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Improved Form Background */
+.improved-form-background {
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.95) 0%,
+    rgba(30, 41, 59, 0.92) 50%,
+    rgba(51, 65, 85, 0.9) 100%
+  );
+  backdrop-filter: blur(20px);
+}
+
+/* Form Section Dividers */
+.form-section-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 32px 0;
+  padding-top: 24px;
+}
+
+/* Calendar Complete Styling Overhaul */
+/* Calendar Container */
+.rdp {
+  --rdp-background-color: transparent !important;
+  --rdp-accent-color: rgb(251, 191, 36) !important;
+  --rdp-accent-color-dark: rgb(245, 158, 11) !important;
+  background: transparent !important;
+}
+
+/* Calendar Dropdown Fixes */
+.rdp-dropdown {
+  display: inline-block;
+  position: relative;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  padding: 2px !important;
+}
+
+.rdp-dropdown select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 6px !important;
+  padding: 8px 32px 8px 12px !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  min-width: 100px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.rdp-dropdown:after {
+  content: '▼' !important;
+  position: absolute !important;
+  top: 50% !important;
+  right: 12px !important;
+  transform: translateY(-50%) !important;
+  color: white !important;
+  font-size: 12px !important;
+  pointer-events: none !important;
+}
+
+.rdp-dropdown select:hover {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.rdp-dropdown select:focus {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  outline: none !important;
+  border-color: rgb(251, 191, 36) !important;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2) !important;
+}
+
+.rdp-dropdown select option {
+  background-color: rgb(17, 24, 39) !important;
+  color: white !important;
+  padding: 8px 12px !important;
+}
+
+.rdp-dropdown select option:hover,
+.rdp-dropdown select option:checked {
+  background-color: rgb(55, 65, 81) !important;
+  color: rgb(251, 191, 36) !important;
+}
+
+/* Calendar Header */
+.rdp-caption {
+  padding: 8px !important;
+}
+
+.rdp-caption_label {
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+}
+
+/* Navigation Buttons */
+.rdp-nav button {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.rdp-nav button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.rdp-nav button:disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+}
+
+/* Weekday Headers */
+.rdp-head_cell {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  padding: 8px 0 !important;
+}
+
+/* Day Cells */
+.rdp-cell {
+  padding: 2px !important;
+}
+
+.rdp-day {
+  color: white !important;
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 14px !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid transparent !important;
+}
+
+.rdp-day:hover:not(.rdp-day_selected):not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.rdp-day_selected:not(.rdp-day_outside) {
+  background: rgb(251, 191, 36) !important;
+  color: rgb(17, 24, 39) !important;
+  font-weight: 600 !important;
+  border-color: rgb(251, 191, 36) !important;
+}
+
+.rdp-day_selected:hover:not(.rdp-day_outside) {
+  background: rgb(245, 158, 11) !important;
+  border-color: rgb(245, 158, 11) !important;
+}
+
+.rdp-day_today:not(.rdp-day_selected) {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgb(251, 191, 36) !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+.rdp-day_outside {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.rdp-day_disabled {
+  color: rgba(255, 255, 255, 0.2) !important;
+  cursor: not-allowed !important;
+}
+
+/* Focus States */
+.rdp-day:focus-visible {
+  outline: 2px solid rgb(251, 191, 36) !important;
+  outline-offset: 2px !important;
+}
+
+/* Month Grid */
+.rdp-months {
+  padding: 12px !important;
+}
+
+.rdp-month {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}

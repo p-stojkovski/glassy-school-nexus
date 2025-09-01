@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
-import { formatDiscountInfo } from '@/utils/studentClassUtils';
 
 interface StudentBasicInfoProps {
   student: Student;
@@ -19,14 +18,26 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
   outstandingBalance,
   getStatusColor,
 }) => {
+  const statusText = student.isActive ? 'Active' : 'Inactive';
+  const statusKey = student.isActive ? 'active' : 'inactive';
+
+  // Build discount label from API fields
+  const discountLabel = student.hasDiscount
+    ? `${student.discountTypeName ?? 'Discount'}${
+        student.discountAmount && student.discountAmount > 0
+          ? ` (${student.discountAmount} MKD)`
+          : ''
+      }`
+    : null;
+
   return (
     <GlassCard className="p-6">
       <div className="flex items-start gap-6">
         <div className="flex-1">
           <div className="flex items-center gap-4 mb-4">
-            <h2 className="text-2xl font-bold text-white">{student.name}</h2>
-            <Badge className={`${getStatusColor(student.status)} border`}>
-              {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
+            <h2 className="text-2xl font-bold text-white">{student.fullName}</h2>
+            <Badge className={`${getStatusColor(statusKey)} border`}>
+              {statusText}
             </Badge>
           </div>
 
@@ -37,11 +48,11 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
             </div>
             <div className="flex items-center gap-2 text-white/70">
               <Phone className="w-4 h-4" />
-              <span>{student.phone}</span>
+              <span>{student.phone || '-'}</span>
             </div>
             <div className="flex items-center gap-2 text-white/70">
               <User className="w-4 h-4" />
-              <span>{student.parentContact}</span>
+              <span>{student.parentContact || '-'}</span>
             </div>
             {student.parentEmail && (
               <div className="flex items-center gap-2 text-white/70">
@@ -64,7 +75,7 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
             <div className="flex items-center gap-2 text-white/70">
               <Calendar className="w-4 h-4" />
               <span>
-                Joined: {new Date(student.joinDate).toLocaleDateString()}
+                Joined: {new Date(student.enrollmentDate).toLocaleDateString()}
               </span>
             </div>
             <div className="flex items-center gap-2 text-white/70">
@@ -73,12 +84,10 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
                 Class: {studentClass ? studentClass.name : 'Unassigned'}
               </span>
             </div>
-            {student.discountType && (
+            {discountLabel && (
               <div className="flex items-center gap-2 text-yellow-400">
                 <Percent className="w-4 h-4" />
-                <span>
-                  Discount: {formatDiscountInfo(student.discountType, student.discountAmount)}
-                </span>
+                <span>Discount: {discountLabel}</span>
               </div>
             )}
             {outstandingBalance > 0 && (

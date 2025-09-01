@@ -11,10 +11,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { toast } from '@/hooks/use-toast';
 
 // Import Redux actions
-import {
-  setStudents,
-  setLoading as setStudentsLoading,
-} from '@/domains/students/studentsSlice';
+// Students domain is now API-only; do not import or mutate students via mock data
 import {
   setClassrooms,
   setAllLoading as setClassroomsLoading,
@@ -141,14 +138,12 @@ export const useMockData = (
    */
   const dispatchAllData = useCallback(
     async (data: MockDataState) => {
-      // Set loading states
-      dispatch(setStudentsLoading(true));
+      // Set loading states (exclude students domain)
       dispatch(setClassroomsLoading(true));
       dispatch(setTeachersLoading(true));
 
       try {
-        // Dispatch students
-        dispatch(setStudents(data.students));
+        // Students are managed via API only; skip dispatching mock students
 
         // Dispatch classrooms
         dispatch(setClassrooms(data.classrooms));
@@ -173,7 +168,6 @@ export const useMockData = (
         });
       } finally {
         // Clear loading states
-        dispatch(setStudentsLoading(false));
         dispatch(setClassroomsLoading(false));
         dispatch(setTeachersLoading(false));
       }
@@ -226,8 +220,7 @@ export const useMockData = (
     try {
       await mockDataService.clearAllData();
 
-      // Clear Redux store
-      dispatch(setStudents([]));
+      // Clear Redux store (exclude students domain)
       dispatch(setClassrooms([]));
       dispatch(setClasses([]));
       dispatch(setTeachers([]));
@@ -263,13 +256,9 @@ export const useMockData = (
    * Refresh individual data types
    */
   const refreshStudents = useCallback(async () => {
-    try {
-      const students = await mockDataService.getData('students');
-      dispatch(setStudents(students));
-    } catch (err) {
-      console.error('Failed to refresh students:', err);
-    }
-  }, [dispatch]);
+    // No-op: Students are loaded exclusively from the API now
+    return;
+  }, []);
 
   const refreshClassrooms = useCallback(async () => {
     try {

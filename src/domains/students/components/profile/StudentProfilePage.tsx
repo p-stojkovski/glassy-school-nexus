@@ -1,7 +1,6 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Calendar, GraduationCap, DollarSign } from 'lucide-react';
-import { DemoManager } from '@/data/components/DemoManager';
 import PaymentSidebar from '@/domains/finance/components/payments/PaymentSidebar';
 import StudentProfileHeader from './StudentProfileHeader';
 import StudentBasicInfo from './StudentBasicInfo';
@@ -40,12 +39,6 @@ const StudentProfilePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <DemoManager
-        showFullControls={true}
-        title="Student Profile Demo"
-        description="View detailed student information including grades, attendance, and payments. All data is stored locally and persists between sessions."
-      />
-
       <StudentProfileHeader onBack={handleBack} />
 
       <StudentBasicInfo
@@ -128,7 +121,7 @@ const StudentProfilePage: React.FC = () => {
         isOpen={isPaymentSidebarOpen}
         onClose={handleClosePaymentSidebar}
         obligation={selectedObligation}
-        studentName={student.name}
+        studentName={student.fullName}
       />
     </div>
   );

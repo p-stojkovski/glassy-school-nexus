@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
 import { getStudentStatusColor } from '@/utils/statusColors';
-import { formatDiscountInfo } from '@/utils/studentClassUtils';
+import { formatDate } from '@/utils/dateFormatters';
 
 interface StudentCardProps {
   student: Student;
@@ -28,13 +28,12 @@ const StudentCard: React.FC<StudentCardProps> = ({
           <div className="flex items-start gap-4 mb-4">
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-semibold text-white truncate">
-                {student.name}
+                {student.fullName}
               </h3>
               <div
-                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStudentStatusColor(student.status)}`}
+                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStudentStatusColor(student.isActive ? 'active' : 'inactive')}`}
               >
-                {student.status.charAt(0).toUpperCase() +
-                  student.status.slice(1)}
+                {student.isActive ? 'Active' : 'Inactive'}
               </div>
             </div>
           </div>
@@ -60,19 +59,19 @@ const StudentCard: React.FC<StudentCardProps> = ({
                 </span>
               </div>
             )}
-            {student.discountType && (
+            {student.hasDiscount && student.discountTypeName && (
               <div className="flex items-center gap-2 text-yellow-400">
                 <Percent className="w-4 h-4" />
                 <span className="text-sm">
-                  {formatDiscountInfo(student.discountType, student.discountAmount)}
+                  {student.discountTypeName}{student.discountAmount > 0 ? ` (${student.discountAmount} MKD)` : ''}
                 </span>
               </div>
             )}
           </div>
-          {/* Join Date */}
+          {/* Enrollment Date */}
           <div className="text-xs text-white/50 mb-4">
-            Joined: {new Date(student.joinDate).toLocaleDateString()}
-          </div>{' '}
+            Enrolled: {formatDate(student.enrollmentDate)}
+          </div>
           {/* Action Buttons */}
           <div className="flex gap-2">
             <Button

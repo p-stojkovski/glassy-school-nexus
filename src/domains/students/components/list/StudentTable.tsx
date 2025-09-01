@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  AlertCircle,
   MoreVertical,
   Eye,
   Edit,
   Trash2,
   Percent,
+  Phone,
+  Mail,
+  User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,49 +37,34 @@ import {
 } from '@/components/ui/pagination';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
-import {
-  getStudentStatusColor,
-  getPaymentStatusColor,
-} from '@/utils/statusColors';
-import ClassScheduleCell from './ClassScheduleCell';
-import ClassNameCell from './ClassNameCell';
+import { getStudentStatusColor } from '@/utils/statusColors';
+import { formatDate } from '@/utils/dateFormatters';
 
 interface StudentTableProps {
   students: Student[];
-  classes: any[];
+  totalCount: number;
+  currentPage: number;
+  pageSize: number;
   onEdit: (student: Student) => void;
   onDelete: (student: Student) => void;
   onView: (student: Student) => void;
-  onClassNavigate?: (classId: string) => void;
-  getPaymentStatus?: (
-    studentId: string
-  ) => 'pending' | 'partial' | 'paid' | 'overdue';
+  onPageChange: (page: number) => void;
   loading?: boolean;
 }
 
-const ITEMS_PER_PAGE = 10;
-
 const StudentTable: React.FC<StudentTableProps> = ({
   students,
-  classes,
+  totalCount,
+  currentPage,
+  pageSize,
   onEdit,
   onDelete,
   onView,
-  onClassNavigate,
-  getPaymentStatus,
+  onPageChange,
   loading = false,
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(students.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedStudents = students.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
 
   const renderPaginationItems = () => {
     const items = [];
@@ -87,7 +74,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
         items.push(
           <PaginationItem key={i}>
             <PaginationLink
-              onClick={() => handlePageChange(i)}
+              onClick={() => onPageChange(i)}
               isActive={currentPage === i}
               className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
@@ -101,7 +88,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
       items.push(
         <PaginationItem key={1}>
           <PaginationLink
-            onClick={() => handlePageChange(1)}
+            onClick={() => onPageChange(1)}
             isActive={currentPage === 1}
             className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
           >
@@ -127,7 +114,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
         items.push(
           <PaginationItem key={i}>
             <PaginationLink
-              onClick={() => handlePageChange(i)}
+              onClick={() => onPageChange(i)}
               isActive={currentPage === i}
               className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
@@ -151,7 +138,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
         items.push(
           <PaginationItem key={totalPages}>
             <PaginationLink
-              onClick={() => handlePageChange(totalPages)}
+              onClick={() => onPageChange(totalPages)}
               isActive={currentPage === totalPages}
               className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
@@ -178,13 +165,10 @@ const StudentTable: React.FC<StudentTableProps> = ({
                 Contact
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
-                Class Schedule
+                Enrollment Date
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
-                Class
-              </TableHead>
-              <TableHead className="text-white/90 font-semibold">
-                Payment
+                Discount
               </TableHead>
               <TableHead className="text-white/90 font-semibold text-right">
                 Actions
@@ -192,7 +176,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedStudents.map((student) => (
+            {students.map((student) => (
               <TableRow
                 key={student.id}
                 className="border-white/10 hover:bg-white/5"
@@ -200,8 +184,15 @@ const StudentTable: React.FC<StudentTableProps> = ({
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div>
-                      <div className="font-medium text-white">
-                        {student.name}
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium text-white">
+                          {student.fullName}
+                        </div>
+                        <Badge
+                          className={`${getStudentStatusColor(student.isActive ? 'active' : 'inactive')} border text-xs`}
+                        >
+                          {student.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
                       </div>
                       <div className="text-sm text-white/60">
                         {student.email}
@@ -210,51 +201,53 @@ const StudentTable: React.FC<StudentTableProps> = ({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="text-sm">
-                    <div className="text-white/80">{student.phone}</div>
-                    <div className="text-white/60 truncate max-w-[200px]">
-                      {student.parentContact}
-                    </div>
+                  <div className="text-sm space-y-1">
+                    {student.phone && (
+                      <div className="flex items-center gap-2 text-white/80">
+                        <Phone className="w-3 h-3 text-white/60" />
+                        <span>{student.phone}</span>
+                      </div>
+                    )}
+                    {student.parentContact && (
+                      <div className="flex items-center gap-2 text-white/60">
+                        <User className="w-3 h-3" />
+                        <span className="truncate max-w-[180px]">
+                          {student.parentContact}
+                        </span>
+                      </div>
+                    )}
+                    {student.parentEmail && (
+                      <div className="flex items-center gap-2 text-white/60">
+                        <Mail className="w-3 h-3" />
+                        <span className="truncate max-w-[180px]">
+                          {student.parentEmail}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <ClassScheduleCell
-                    studentId={student.id}
-                    classes={classes}
-                    students={students}
-                    loading={loading}
-                  />
+                  <div className="text-sm text-white/80">
+                    {formatDate(student.enrollmentDate)}
+                  </div>
                 </TableCell>
                 <TableCell>
-                  <ClassNameCell
-                    studentId={student.id}
-                    classes={classes}
-                    students={students}
-                    onNavigate={onClassNavigate}
-                    loading={loading}
-                  />
-                </TableCell>
-                <TableCell>
-                  {getPaymentStatus ? (
-                    <Badge
-                      className={`${getPaymentStatusColor(getPaymentStatus(student.id))} border`}
-                    >
-                      {getPaymentStatus(student.id).charAt(0).toUpperCase() +
-                        getPaymentStatus(student.id).slice(1)}
-                    </Badge>
-                  ) : (
+                  {student.hasDiscount && student.discountTypeName ? (
                     <div className="flex items-center gap-2">
-                      {student.paymentDue ? (
-                        <div className="flex items-center gap-1 text-red-400">
-                          <AlertCircle className="w-4 h-4" />
-                          <span className="text-sm font-medium">Due</span>
+                      <Percent className="w-4 h-4 text-yellow-400" />
+                      <div className="text-sm">
+                        <div className="text-yellow-400 font-medium">
+                          {student.discountTypeName}
                         </div>
-                      ) : (
-                        <div className="text-green-400 text-sm font-medium">
-                          Paid
-                        </div>
-                      )}
+                        {student.discountAmount > 0 && (
+                          <div className="text-yellow-300 text-xs">
+                            {student.discountAmount} MKD
+                          </div>
+                        )}
+                      </div>
                     </div>
+                  ) : (
+                    <span className="text-white/50 text-sm">No discount</span>
                   )}
                 </TableCell>
                 <TableCell>
@@ -316,7 +309,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() =>
-                    currentPage > 1 && handlePageChange(currentPage - 1)
+                    currentPage > 1 && onPageChange(currentPage - 1)
                   }
                   className={`cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10 ${
                     currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
@@ -328,7 +321,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
                 <PaginationNext
                   onClick={() =>
                     currentPage < totalPages &&
-                    handlePageChange(currentPage + 1)
+                    onPageChange(currentPage + 1)
                   }
                   className={`cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10 ${
                     currentPage === totalPages
@@ -344,8 +337,8 @@ const StudentTable: React.FC<StudentTableProps> = ({
 
       <div className="text-center text-white/60 text-sm">
         Showing {startIndex + 1} to{' '}
-        {Math.min(startIndex + ITEMS_PER_PAGE, students.length)} of{' '}
-        {students.length} students
+        {Math.min(startIndex + pageSize, totalCount)} of{' '}
+        {totalCount} students
       </div>
     </div>
   );

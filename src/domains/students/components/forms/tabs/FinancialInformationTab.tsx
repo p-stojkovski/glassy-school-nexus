@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,20 +16,42 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { DiscountType } from '@/types/enums';
-import { StudentFormData } from '../TabbedStudentFormContent';
+import { StudentFormData, DiscountTypeDto } from '@/types/api/student';
 
 interface FinancialInformationTabProps {
   form: UseFormReturn<StudentFormData>;
+  discountTypes?: DiscountTypeDto[];
 }
 
 const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
   form,
+  discountTypes = [],
 }) => {
   // Watch discount checkbox and type to conditionally show/disable fields
   const hasDiscount = form.watch('hasDiscount');
-  const selectedDiscountType = form.watch('discountType');
-  const isAmountDisabled = selectedDiscountType === DiscountType.FreeOfCharge;
+  const selectedDiscountTypeId = form.watch('discountTypeId');
+  
+  // Find the selected discount type to determine if amount is required
+  const selectedDiscountType = discountTypes.find(dt => dt.id === selectedDiscountTypeId);
+  const isAmountDisabled = selectedDiscountType && !selectedDiscountType.requiresAmount;
+  const isAmountRequired = !!(hasDiscount && selectedDiscountType?.requiresAmount);
+
+  const amount = form.watch('discountAmount');
+  useEffect(() => {
+    if (isAmountRequired) {
+      if (!amount || amount <= 0) {
+        form.setError('discountAmount', {
+          type: 'manual',
+          message: 'Discount amount is required for this discount type.',
+        });
+      } else {
+        const err = form.getFieldState('discountAmount').error;
+        if (err && err.type === 'manual') form.clearErrors('discountAmount');
+      }
+    } else {
+      form.clearErrors('discountAmount');
+    }
+  }, [isAmountRequired, amount, form]);
 
   return (
     <div className="space-y-6">
@@ -46,7 +68,7 @@ const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
                   field.onChange(checked);
                   // Clear discount fields when unchecked
                   if (!checked) {
-                    form.setValue('discountType', undefined);
+                    form.setValue('discountTypeId', '');
                     form.setValue('discountAmount', 0);
                   }
                 }}
@@ -70,7 +92,7 @@ const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <FormField
             control={form.control}
-            name="discountType"
+            name="discountTypeId"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-white font-semibold">
@@ -79,8 +101,9 @@ const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
                 <Select
                   onValueChange={(value) => {
                     field.onChange(value);
-                    // Reset discount amount when changing type
-                    if (value === DiscountType.FreeOfCharge) {
+                    // Reset discount amount when changing to a type that doesn't require amount
+                    const discountType = discountTypes.find(dt => dt.id === value);
+                    if (discountType && !discountType.requiresAmount) {
                       form.setValue('discountAmount', 0);
                     }
                   }}
@@ -92,21 +115,20 @@ const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={DiscountType.Relatives}>
-                      Relatives
-                    </SelectItem>
-                    <SelectItem value={DiscountType.SocialCase}>
-                      Social Case
-                    </SelectItem>
-                    <SelectItem value={DiscountType.SingleParent}>
-                      Single Parent
-                    </SelectItem>
-                    <SelectItem value={DiscountType.FreeOfCharge}>
-                      Free of Charge
-                    </SelectItem>
+                    {discountTypes.length > 0 ? (
+                      discountTypes.map((discountType) => (
+                        <SelectItem key={discountType.id} value={discountType.id}>
+                          {discountType.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="loading" disabled>
+                        Loading discount types...
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-red-300" />
               </FormItem>
             )}
           />
@@ -117,10 +139,10 @@ const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-white font-semibold">
-                  Discount Amount (Denars)
+                  Discount Amount {isAmountRequired && <span>*</span>} (MKD)
                   {isAmountDisabled && (
                     <span className="text-white/60 text-sm ml-2">
-                      (Disabled for free of charge)
+                      (Not required for this discount type)
                     </span>
                   )}
                 </FormLabel>
@@ -131,7 +153,7 @@ const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
                     min="0"
                     step="1"
                     placeholder={
-                      isAmountDisabled ? '0' : 'Enter discount amount in denars'
+                      isAmountDisabled ? '0' : 'Enter discount amount in MKD'
                     }
                     disabled={isAmountDisabled}
                     className={`bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-yellow-400 focus:ring-yellow-400 ${
@@ -145,7 +167,7 @@ const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
                     value={field.value || ''}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-red-300" />
               </FormItem>
             )}
           />

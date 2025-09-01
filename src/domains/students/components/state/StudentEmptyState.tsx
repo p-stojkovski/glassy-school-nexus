@@ -6,15 +6,20 @@ import GlassCard from '@/components/common/GlassCard';
 interface StudentEmptyStateProps {
   searchTerm: string;
   statusFilter: 'all' | 'active' | 'inactive';
+  hasActiveFilters?: boolean;
+  isLoading?: boolean;
   onAddStudent: () => void;
 }
 
 const StudentEmptyState: React.FC<StudentEmptyStateProps> = ({
   searchTerm,
   statusFilter,
+  hasActiveFilters = false,
+  isLoading = false,
   onAddStudent,
 }) => {
-  const hasFilters = searchTerm || statusFilter !== 'all';
+  // Use prop if provided, otherwise calculate from basic filters
+  const hasFilters = hasActiveFilters || searchTerm || statusFilter !== 'all';
 
   return (
     <GlassCard className="p-12 text-center">
@@ -23,11 +28,13 @@ const StudentEmptyState: React.FC<StudentEmptyStateProps> = ({
         No Students Found
       </h3>
       <p className="text-white/60 mb-6">
-        {hasFilters
-          ? 'No students match your current search criteria.'
+        {isLoading
+          ? 'Searching for students...'
+          : hasFilters
+          ? 'No students match your current search criteria. Try adjusting your filters or search terms.'
           : 'Start by adding your first student to the system.'}
       </p>
-      {!hasFilters && (
+      {!hasFilters && !isLoading && (
         <Button
           onClick={onAddStudent}
           className="bg-yellow-500 hover:bg-yellow-600 text-black"

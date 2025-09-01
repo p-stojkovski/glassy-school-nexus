@@ -1,105 +1,90 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import {
-  addStudent,
-  updateStudent,
-  selectStudentById,
-  setError,
-  selectError,
-  Student,
-} from '../studentsSlice';
-import { StudentStatus, DiscountType } from '@/types/enums';
-import { toast } from 'sonner';
-import { useStudentsData } from '@/data/hooks/useStudentsData';
-
-type StudentFormData = {
-  name: string;
-  email: string;
-  phone: string;
-  status: StudentStatus;
-  parentContact: string;
-  parentEmail?: string;
-  dateOfBirth?: string;
-  joiningDate: string;
-  placeOfBirth?: string;
-  notes?: string;
-  discountType?: DiscountType;
-  discountAmount?: number;
-};
+import { useStudents } from './useStudents';
+import { useStudentManagement } from './useStudentManagement';
+import { getAllDiscountTypes, studentApiService } from '@/services/studentApiService';
+import { StudentErrorHandlers } from '@/utils/apiErrorHandler';
+import { StudentFormData } from '@/types/api/student';
+import type { Student } from '../studentsSlice';
 
 export const useStudentFormPage = (studentId?: string) => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { data: studentsData, isLoading: studentsLoading } = useStudentsData();
-  
+  const { discountTypes, setDiscountTypes, setError: setDiscountError, clearError } = useStudents();
+
   const [loading, setLoading] = useState(false);
   const [error, setFormError] = useState<string | null>(null);
+  const [discountTypesLoading, setDiscountTypesLoading] = useState(false);
+  const [student, setStudent] = useState<Student | null>(null);
+  const [studentLoading, setStudentLoading] = useState<boolean>(false);
   
-  const student = useAppSelector((state) => 
-    studentId ? selectStudentById(state, studentId) : null
-  );
-  const reduxError = useAppSelector(selectError);
-
-  // Handle loading state - we're loading if students are loading or if we're in edit mode but don't have the student yet
-  const isLoading = studentsLoading || (studentId && !student && !error);
-
-  // Check if student exists when in edit mode
+  // Load student by ID from API in edit mode
   useEffect(() => {
-    if (studentId && !studentsLoading && studentsData && studentsData.length > 0) {
-      const foundStudent = studentsData.find(s => s.id === studentId);
-      if (!foundStudent) {
-        setFormError('Student not found');
-      } else {
-        setFormError(null);
+    const loadStudent = async () => {
+      if (!studentId) return;
+      setStudentLoading(true);
+      setFormError(null);
+      try {
+        const s = await studentApiService.getStudentById(studentId);
+        setStudent(s);
+      } catch (err) {
+        const msg = StudentErrorHandlers.fetchById(err);
+        setFormError(msg);
+      } finally {
+        setStudentLoading(false);
       }
-    }
-  }, [studentId, studentsData, studentsLoading]);
+    };
+    loadStudent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId]);
 
-  // Handle Redux errors
+  // Handle loading state
+  const isLoading = studentLoading || (studentId ? !student && !error : false);
+
+  // No-op: student is loaded via API above
+
+  // Load discount types
+  const loadDiscountTypes = async () => {
+    if (discountTypes.length > 0) return; // Already loaded
+
+    setDiscountTypesLoading(true);
+    clearError('fetchDiscountTypes');
+
+    try {
+      const discountTypesData = await getAllDiscountTypes();
+      setDiscountTypes(discountTypesData);
+    } catch (error) {
+      const errorMessage = StudentErrorHandlers.fetchDiscountTypes(error);
+      setDiscountError('fetchDiscountTypes', errorMessage);
+    } finally {
+      setDiscountTypesLoading(false);
+    }
+  };
+
+  // Load discount types on mount
   useEffect(() => {
-    if (reduxError) {
-      setFormError(reduxError);
-      dispatch(setError(null));
-    }
-  }, [reduxError, dispatch]);
+    loadDiscountTypes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleSubmit = (data: StudentFormData) => {
+  const { createStudent: createStudentApi, updateStudent: updateStudentApi } = useStudentManagement();
+
+  const handleSubmit = async (data: StudentFormData) => {
     setLoading(true);
     setFormError(null);
 
-    if (student) {
-      // Update existing student
-      const { joiningDate, ...restData } = data;
-      const updatedStudent: Student = {
-        ...student,
-        ...restData,
-        joinDate: joiningDate,
-      };
-      dispatch(updateStudent(updatedStudent));
-      toast.success('Student Updated', {
-        description: `${data.name} has been successfully updated.`,
-      });
-    } else {
-      // Add new student
-      const { joiningDate, ...restData } = data;
-      const newStudent: Student = {
-        id: Date.now().toString(),
-        classId: 'unassigned',
-        joinDate: joiningDate,
-        paymentDue: false,
-        lastPayment: new Date().toISOString(),
-        ...restData,
-      };
-      dispatch(addStudent(newStudent));
-      toast.success('Student Added', {
-        description: `${data.name} has been successfully added.`,
-      });
+    try {
+      if (student) {
+        await updateStudentApi(student.id, data);
+      } else {
+        await createStudentApi(data);
+      }
+      navigate('/students');
+    } catch (error) {
+      const msg = student ? StudentErrorHandlers.update(error) : StudentErrorHandlers.create(error);
+      setFormError(msg);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-    // Navigate back to students list
-    navigate('/students');
   };
 
   const handleCancel = () => {
@@ -108,8 +93,9 @@ export const useStudentFormPage = (studentId?: string) => {
 
   return {
     student,
-    loading: isLoading || loading,
-    error: error,
+    discountTypes,
+    loading: isLoading || loading || discountTypesLoading,
+    error,
     handleSubmit,
     handleCancel,
   };

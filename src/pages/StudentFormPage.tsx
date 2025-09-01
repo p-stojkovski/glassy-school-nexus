@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,29 +11,51 @@ import {
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
 import StudentFormContent from '@/domains/students/components/forms/StudentFormContent';
-import { DemoManager } from '@/data/components/DemoManager';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import { useStudentFormPage } from '@/domains/students/hooks/useStudentFormPage';
 import { useUnsavedChangesWarning } from '@/domains/students/hooks/useUnsavedChangesWarning';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { StudentFormData } from '@/types/api/student';
+import { StudentFormRef } from '@/domains/students/components/forms/StudentFormContent';
 
 const StudentFormPage: React.FC = () => {
   const { studentId } = useParams<{ studentId: string }>();
   const navigate = useNavigate();
   const isEditMode = Boolean(studentId);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [formData, setFormData] = useState<StudentFormData | null>(null);
+  const formRef = useRef<StudentFormRef>(null);
 
   const {
     student,
+    discountTypes,
     loading,
     error,
     handleSubmit,
     handleCancel,
   } = useStudentFormPage(studentId);
 
-  const { navigateWithWarning } = useUnsavedChangesWarning(
+  const [isSaving, setIsSaving] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    if (formRef.current) {
+      setIsSaving(true);
+      formRef.current.submitForm();
+    }
+  };
+
+  const {
+    navigateWithWarning,
+    dialogState,
+    closeDialog,
+    handleConfirm,
+    handleSave: handleDialogSave,
+  } = useUnsavedChangesWarning(
     hasUnsavedChanges,
-    'You have unsaved changes. Are you sure you want to leave?'
+    'You have unsaved changes that will be lost if you leave this page.',
+    handleSave
   );
 
   // Handle navigation for non-existent student
@@ -118,9 +140,14 @@ const StudentFormPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back to Students
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-2">
               {isEditMode ? 'Edit Student' : 'Add New Student'}
+              {hasUnsavedChanges && (
+                <span className="text-amber-400 text-sm font-normal px-2 py-1 bg-amber-500/20 rounded-md border border-amber-500/30">
+                  Unsaved Changes
+                </span>
+              )}
             </h1>
             <p className="text-white/70">
               {isEditMode && student
@@ -131,23 +158,38 @@ const StudentFormPage: React.FC = () => {
         </div>
       </div>
 
-      <DemoManager
-        showFullControls={true}
-        title={`${isEditMode ? 'Edit' : 'Add'} Student Demo`}
-        description="Student information is stored locally and persists between sessions."
-      />
-
       <div className="w-full">
         <StudentFormContent
+          ref={formRef}
           student={student}
+          discountTypes={discountTypes}
           onSubmit={(data) => {
+            setFormData(data);
             setHasUnsavedChanges(false);
             handleSubmit(data);
           }}
           onCancel={() => navigateWithWarning('/students')}
-          onFormChange={() => setHasUnsavedChanges(true)}
+          onFormChange={(data) => {
+            setFormData(data);
+            setHasUnsavedChanges(true);
+          }}
         />
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={dialogState.isOpen}
+        onClose={closeDialog}
+        onConfirm={handleConfirm}
+        onSave={dialogState.showSaveOption ? handleDialogSave : undefined}
+        title={dialogState.title}
+        description={dialogState.description}
+        confirmText={dialogState.confirmText}
+        cancelText={dialogState.cancelText}
+        saveText={dialogState.saveText}
+        variant={dialogState.variant}
+        showSaveOption={dialogState.showSaveOption}
+      />
     </div>
   );
 };

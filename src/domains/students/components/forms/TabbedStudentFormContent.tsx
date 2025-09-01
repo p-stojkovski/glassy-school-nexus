@@ -1,121 +1,66 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { User, Phone, DollarSign, Circle } from 'lucide-react';
-import { StudentStatus, DiscountType } from '@/types/enums';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Form } from '@/components/ui/form';
 import FormButtons from '@/components/common/FormButtons';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
-import { cn } from '@/lib/utils';
+import { DiscountTypeDto, StudentFormData, StudentHttpStatus, ProblemDetails } from '@/types/api/student';
+import { createStudentSchema } from '@/utils/validation/studentValidators';
 import StudentInformationTab from './tabs/StudentInformationTab';
 import ParentGuardianTab from './tabs/ParentGuardianTab';
 import FinancialInformationTab from './tabs/FinancialInformationTab';
+import { useDebounce } from '@/hooks/useDebounce';
+import { checkStudentEmailAvailable } from '@/services/studentApiService';
 
-const studentSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email format').optional().or(z.literal('')),
-  phone: z.string().optional(),
-  status: z.enum([StudentStatus.Active, StudentStatus.Inactive]),
-  parentContact: z.string().optional(),
-  parentEmail: z
-    .string()
-    .email('Invalid email format')
-    .optional()
-    .or(z.literal('')),
-  dateOfBirth: z
-    .string()
-    .min(1, 'Date of birth is required')
-    .refine((date) => {
-      const birthDate = new Date(date);
-      const today = new Date();
-      return birthDate <= today;
-    }, 'Date of birth cannot be in the future'),
-  joiningDate: z
-    .string()
-    .min(1, 'Joining date is required')
-    .refine((date) => {
-      const joinDate = new Date(date);
-      const today = new Date();
-      return joinDate <= today;
-    }, 'Joining date cannot be in the future'),
-  placeOfBirth: z.string().optional(),
-  notes: z.string().optional(),
-  // Discount fields
-  hasDiscount: z.boolean().optional(),
-  discountType: z.enum([
-    DiscountType.Relatives,
-    DiscountType.SocialCase,
-    DiscountType.SingleParent,
-    DiscountType.FreeOfCharge,
-  ]).optional(),
-  discountAmount: z
-    .number()
-    .min(0, 'Discount amount must be positive')
-    .optional()
-    .or(z.literal(0)),
-}).refine(
-  (data) => {
-    // Only validate discount fields if hasDiscount is true
-    if (!data.hasDiscount) {
-      return true;
-    }
-    
-    // If discount is enabled but no type is selected, that's invalid
-    if (data.hasDiscount && !data.discountType) {
-      return false;
-    }
-    
-    // If discount type is selected but not "free_of_charge", amount should be provided
-    if (data.discountType && data.discountType !== DiscountType.FreeOfCharge) {
-      return data.discountAmount !== undefined && data.discountAmount > 0;
-    }
-    // If discount type is "free_of_charge", amount should be 0 or undefined
-    if (data.discountType === DiscountType.FreeOfCharge) {
-      return data.discountAmount === 0 || data.discountAmount === undefined;
-    }
-    return true;
-  },
-  {
-    message: 'When discount is enabled, discount type must be selected and amount must be provided (except for free of charge)',
-    path: ['discountType'],
-  }
-);
-
-export type StudentFormData = z.infer<typeof studentSchema>;
+// Use the API-compatible schema from validation utilities
+const studentSchema = createStudentSchema;
 
 interface TabbedStudentFormContentProps {
   student?: Student | null;
   onSubmit: (data: StudentFormData) => void;
   onCancel: () => void;
-  onFormChange?: () => void;
+  onFormChange?: (data: StudentFormData) => void;
+  discountTypes?: DiscountTypeDto[];
 }
 
-const TabbedStudentFormContent: React.FC<TabbedStudentFormContentProps> = ({
-  student,
-  onSubmit,
-  onCancel,
-  onFormChange,
-}) => {
+export interface StudentFormRef {
+  submitForm: () => void;
+  getFormData: () => StudentFormData;
+}
+
+const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentFormContentProps>((
+  {
+    student,
+    onSubmit,
+    onCancel,
+    onFormChange,
+    discountTypes = [],
+  },
+  ref
+) => {
   const [activeTab, setActiveTab] = useState('student-info');
 
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
-      name: student?.name || '',
+      firstName: student?.firstName || '',
+      lastName: student?.lastName || '',
       email: student?.email || '',
       phone: student?.phone || '',
-      status: student?.status || StudentStatus.Active,
+      dateOfBirth: student?.dateOfBirth || '',
+      enrollmentDate: student?.enrollmentDate || new Date().toISOString().split('T')[0],
+      isActive: student?.isActive ?? true,
       parentContact: student?.parentContact || '',
       parentEmail: student?.parentEmail || '',
-      dateOfBirth: student?.dateOfBirth || '',
-      joiningDate: student?.joinDate || '',
       placeOfBirth: student?.placeOfBirth || '',
-      notes: '',
-      hasDiscount: student?.hasDiscount || (student?.discountType ? true : false) || false,
-      discountType: student?.discountType,
+      notes: student?.notes || '',
+      hasDiscount: student?.hasDiscount || false,
+      discountTypeId: student?.discountTypeId || '',
       discountAmount: student?.discountAmount || 0,
     },
   });
@@ -124,13 +69,96 @@ const TabbedStudentFormContent: React.FC<TabbedStudentFormContentProps> = ({
     formState: { errors },
   } = form;
 
+  // Email availability checking state (mirrors Teachers form UX)
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+  const [emailCheckError, setEmailCheckError] = useState<string | null>(null);
+  const [shouldCheckAvailability, setShouldCheckAvailability] = useState(false);
+
+  const emailValue = form.watch('email');
+  const debouncedEmail = useDebounce(emailValue, 300);
+
+  useEffect(() => {
+    if (emailValue && emailValue !== (student?.email || '')) {
+      setShouldCheckAvailability(true);
+    } else {
+      setShouldCheckAvailability(false);
+    }
+  }, [emailValue, student?.email]);
+
+  const lastCheckedKeyRef = React.useRef<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    setEmailAvailable(null);
+    setEmailCheckError(null);
+
+    const trimmed = (debouncedEmail || '').trim().toLowerCase();
+
+    if (!trimmed) {
+      setIsCheckingEmail(false);
+      return;
+    }
+
+    if (student && trimmed === (student.email || '').trim().toLowerCase()) {
+      setIsCheckingEmail(false);
+      setEmailAvailable(true);
+      const currentErr = form.getFieldState('email').error;
+      if (currentErr && /already exists|already in use/i.test(currentErr.message || '')) {
+        form.clearErrors('email');
+      }
+      return;
+    }
+
+    if (!shouldCheckAvailability) {
+      return;
+    }
+
+    const hasLocalError = !!form.getFieldState('email').error;
+    if (hasLocalError) {
+      setIsCheckingEmail(false);
+      return;
+    }
+
+    const checkKey = `${trimmed}-${student?.id || 'new'}`;
+    if (lastCheckedKeyRef.current === checkKey) {
+      return;
+    }
+
+    (async () => {
+      try {
+        setIsCheckingEmail(true);
+        const available = await checkStudentEmailAvailable(trimmed, student?.id);
+        if (!isMounted) return;
+        setEmailAvailable(available);
+        setIsCheckingEmail(false);
+        if (available) {
+          const currentErr = form.getFieldState('email').error;
+          if (currentErr && /already exists|already in use/i.test(currentErr.message || '')) {
+            form.clearErrors('email');
+          }
+        }
+        lastCheckedKeyRef.current = checkKey;
+      } catch (err: any) {
+        if (!isMounted) return;
+        setIsCheckingEmail(false);
+        setEmailCheckError(err?.message || 'Failed to check availability');
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [debouncedEmail, student?.id, student?.email, shouldCheckAvailability, form, form.formState.errors.email]);
+
   // Watch form values for data indicators
   const watchedValues = form.watch();
 
   // Track form changes for unsaved changes warning
   useEffect(() => {
-    const subscription = form.watch(() => {
-      onFormChange?.();
+    const subscription = form.watch((data) => {
+      onFormChange?.(data as StudentFormData);
     });
     return () => subscription.unsubscribe();
   }, [form, onFormChange]);
@@ -138,12 +166,12 @@ const TabbedStudentFormContent: React.FC<TabbedStudentFormContentProps> = ({
   // Determine which tabs have errors for auto-navigation
   const studentTabErrors = useMemo(() => {
     return !!(
-      errors.name ||
+      errors.firstName ||
+      errors.lastName ||
       errors.email ||
       errors.phone ||
-      errors.status ||
       errors.dateOfBirth ||
-      errors.joiningDate ||
+      errors.enrollmentDate ||
       errors.placeOfBirth ||
       errors.notes
     );
@@ -154,26 +182,28 @@ const TabbedStudentFormContent: React.FC<TabbedStudentFormContentProps> = ({
   }, [errors]);
 
   const financialTabErrors = useMemo(() => {
-    return !!(errors.discountType || errors.discountAmount);
+    return !!(errors.discountTypeId || errors.discountAmount);
   }, [errors]);
 
   // Determine which tabs have data for visual indicators
   const studentTabHasData = useMemo(() => {
     return !!(
-      watchedValues.name ||
+      watchedValues.firstName ||
+      watchedValues.lastName ||
       watchedValues.email ||
       watchedValues.phone ||
       watchedValues.dateOfBirth ||
-      watchedValues.joiningDate ||
+      watchedValues.enrollmentDate ||
       watchedValues.placeOfBirth ||
       watchedValues.notes
     );
   }, [
-    watchedValues.name,
+    watchedValues.firstName,
+    watchedValues.lastName,
     watchedValues.email,
     watchedValues.phone,
     watchedValues.dateOfBirth,
-    watchedValues.joiningDate,
+    watchedValues.enrollmentDate,
     watchedValues.placeOfBirth,
     watchedValues.notes,
   ]);
@@ -183,15 +213,39 @@ const TabbedStudentFormContent: React.FC<TabbedStudentFormContentProps> = ({
   }, [watchedValues.parentContact, watchedValues.parentEmail]);
 
   const financialTabHasData = useMemo(() => {
-    return !!(watchedValues.discountType || (watchedValues.discountAmount && watchedValues.discountAmount > 0));
-  }, [watchedValues.discountType, watchedValues.discountAmount]);
+    return !!(watchedValues.discountTypeId || (watchedValues.discountAmount && watchedValues.discountAmount > 0));
+  }, [watchedValues.discountTypeId, watchedValues.discountAmount]);
 
-  // Auto-navigate to tab with errors on form submission
+  // Discount amount requirement depending on selected type
+  const hasDiscount = form.watch('hasDiscount');
+  const selectedDiscountTypeId = form.watch('discountTypeId');
+  const discountAmount = form.watch('discountAmount');
+  const selectedDiscountType = useMemo(() => {
+    return discountTypes.find((dt) => dt.id === selectedDiscountTypeId);
+  }, [discountTypes, selectedDiscountTypeId]);
+  const isAmountRequired = !!(hasDiscount && selectedDiscountType?.requiresAmount);
+
+  useEffect(() => {
+    if (isAmountRequired) {
+      if (!discountAmount || discountAmount <= 0) {
+        form.setError('discountAmount', {
+          type: 'manual',
+          message: 'Discount amount is required for this discount type.',
+        });
+      } else {
+        const err = form.getFieldState('discountAmount').error;
+        if (err && err.type === 'manual') form.clearErrors('discountAmount');
+      }
+    } else {
+      form.clearErrors('discountAmount');
+    }
+  }, [isAmountRequired, discountAmount, form]);
+
+// Auto-navigate to tab with errors on form submission
   const handleSubmit = async (data: StudentFormData) => {
     const isValid = await form.trigger();
-    
+
     if (!isValid) {
-      // Navigate to the first tab with errors
       if (studentTabErrors) {
         setActiveTab('student-info');
       } else if (parentTabErrors) {
@@ -201,8 +255,108 @@ const TabbedStudentFormContent: React.FC<TabbedStudentFormContentProps> = ({
       }
       return;
     }
-    
-    onSubmit(data);
+
+    // Extra guard: enforce amount required for selected type
+    if (isAmountRequired && (!data.discountAmount || data.discountAmount <= 0)) {
+      setActiveTab('financial-info');
+      form.setError('discountAmount', {
+        type: 'manual',
+        message: 'Discount amount is required for this discount type.',
+      });
+      form.setFocus('discountAmount' as any);
+      return;
+    }
+
+    try {
+      await onSubmit(data);
+    } catch (error: any) {
+      const status: number | undefined = error?.status;
+      const message: string = error?.message || '';
+
+      if (status === StudentHttpStatus.CONFLICT && /email/i.test(message)) {
+        form.setError('email', {
+          type: 'server',
+          message: 'A student with this email address already exists. Please use a different email.',
+        });
+        setActiveTab('student-info');
+        form.setFocus('email');
+        return;
+      }
+
+      const details = error?.details as ProblemDetails | undefined;
+      if (status === StudentHttpStatus.BAD_REQUEST && details && typeof details.errors === 'object') {
+        const fieldMap: Record<string, keyof StudentFormData> = {
+          FirstName: 'firstName',
+          LastName: 'lastName',
+          Email: 'email',
+          Phone: 'phone',
+          DateOfBirth: 'dateOfBirth',
+          EnrollmentDate: 'enrollmentDate',
+          ParentContact: 'parentContact',
+          ParentEmail: 'parentEmail',
+          PlaceOfBirth: 'placeOfBirth',
+          DiscountTypeId: 'discountTypeId',
+          DiscountAmount: 'discountAmount',
+          Notes: 'notes',
+          firstName: 'firstName',
+          lastName: 'lastName',
+          email: 'email',
+          phone: 'phone',
+          dateOfBirth: 'dateOfBirth',
+          enrollmentDate: 'enrollmentDate',
+          parentContact: 'parentContact',
+          parentEmail: 'parentEmail',
+          placeOfBirth: 'placeOfBirth',
+          discountTypeId: 'discountTypeId',
+          discountAmount: 'discountAmount',
+          notes: 'notes',
+        };
+
+        let firstField: keyof StudentFormData | null = null;
+        for (const [key, msgs] of Object.entries(details.errors)) {
+          const direct = fieldMap[key as keyof typeof fieldMap];
+          const byCase = fieldMap[key.charAt(0).toUpperCase() + key.slice(1) as keyof typeof fieldMap];
+          let field: keyof StudentFormData | undefined = direct || byCase;
+
+          if (!field) {
+            const kl = key.toLowerCase();
+            if (kl.includes('email')) field = 'email';
+            else if (kl.includes('firstname') || kl.includes('first_name')) field = 'firstName';
+            else if (kl.includes('lastname') || kl.includes('last_name')) field = 'lastName';
+            else if (kl.includes('phone')) field = 'phone';
+            else if (kl.includes('discount')) {
+              if (kl.includes('type')) field = 'discountTypeId';
+              else if (kl.includes('amount')) field = 'discountAmount';
+            }
+          }
+
+          if (field) {
+            const msgText = Array.isArray(msgs) ? msgs.join(' ') : String(msgs);
+            form.setError(field, { type: 'server', message: msgText });
+            if (!firstField) firstField = field;
+          }
+        }
+
+        if (firstField) {
+          const firstIsFinancial = firstField === 'discountTypeId' || firstField === 'discountAmount';
+          setActiveTab(firstIsFinancial ? 'financial-info' : (firstField === 'parentContact' || firstField === 'parentEmail') ? 'parent-info' : 'student-info');
+          form.setFocus(firstField as any);
+        }
+        return;
+      }
+
+      if (status === StudentHttpStatus.BAD_REQUEST && /email/i.test(message)) {
+        form.setError('email', {
+          type: 'server',
+          message,
+        });
+        setActiveTab('student-info');
+        form.setFocus('email');
+        return;
+      }
+
+      console.error('Form submission error:', error);
+    }
   };
 
   const TabIndicator: React.FC<{ hasErrors: boolean; hasData: boolean }> = ({ hasErrors, hasData }) => (
@@ -211,6 +365,16 @@ const TabbedStudentFormContent: React.FC<TabbedStudentFormContentProps> = ({
       {!hasErrors && hasData && <Circle className="h-2 w-2 fill-yellow-400 text-yellow-400" />}
     </div>
   );
+
+  // Expose form methods via ref - placed after handleSubmit is defined
+  React.useImperativeHandle(ref, () => ({
+    submitForm: () => {
+      form.handleSubmit(handleSubmit)();
+    },
+    getFormData: () => {
+      return form.getValues();
+    },
+  }), [form, handleSubmit]);
 
   return (
     <GlassCard className="p-8">
@@ -249,7 +413,17 @@ const TabbedStudentFormContent: React.FC<TabbedStudentFormContentProps> = ({
             </TabsList>
 
             <TabsContent value="student-info">
-              <StudentInformationTab form={form} />
+              <StudentInformationTab 
+                form={form}
+                emailAvailability={{
+                  shouldCheckAvailability,
+                  debouncedEmail,
+                  isCheckingEmail,
+                  emailAvailable,
+                  emailCheckError,
+                  originalEmail: student?.email || ''
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="parent-info">
@@ -257,7 +431,7 @@ const TabbedStudentFormContent: React.FC<TabbedStudentFormContentProps> = ({
             </TabsContent>
 
             <TabsContent value="financial-info">
-              <FinancialInformationTab form={form} />
+              <FinancialInformationTab form={form} discountTypes={discountTypes} />
             </TabsContent>
           </Tabs>
 
@@ -265,12 +439,19 @@ const TabbedStudentFormContent: React.FC<TabbedStudentFormContentProps> = ({
             <FormButtons
               submitText={student ? 'Update Student' : 'Add Student'}
               onCancel={onCancel}
+              disabled={
+                !form.formState.isValid ||
+                (shouldCheckAvailability && debouncedEmail && debouncedEmail.trim() && debouncedEmail !== (student?.email || '') && (
+                  isCheckingEmail || emailAvailable === false
+                )) ||
+                (isAmountRequired && (!discountAmount || discountAmount <= 0))
+              }
             />
           </div>
         </form>
       </Form>
     </GlassCard>
   );
-};
+});
 
 export default TabbedStudentFormContent;
