@@ -4,6 +4,7 @@ import StudentFilters from '@/domains/students/components/filters/StudentFilters
 import StudentTable from '@/domains/students/components/list/StudentTable';
 import StudentCard from '@/domains/students/components/list/StudentCard';
 import StudentEmptyState from '@/domains/students/components/state/StudentEmptyState';
+import StudentLoading from '@/domains/students/components/state/StudentLoading';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { useStudentManagementWithNavigation } from '@/domains/students/hooks/useStudentManagementWithNavigation';
 
@@ -25,6 +26,7 @@ const StudentManagement: React.FC = () => {
     viewMode,
     studentToDelete,
     isConfirmOpen,
+    isInitialized,
     setIsConfirmOpen,
     setSearchTerm,
     setStatusFilter,
@@ -38,6 +40,11 @@ const StudentManagement: React.FC = () => {
     confirmDeleteStudent,
     handlePageChange,
   } = useStudentManagementWithNavigation();
+
+  // Show loading spinner while data is being initialized
+  if (!isInitialized) {
+    return <StudentLoading />;
+  }
 
   return (
     <div className="space-y-6">

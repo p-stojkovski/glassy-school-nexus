@@ -2,6 +2,7 @@ import React from 'react';
 import ClassHeader from './ClassHeader';
 import ClassFilters from '../filters/ClassFilters';
 import ClassCard from '../list/ClassCard';
+import ClassTable from '../list/ClassTable';
 import ClassEmptyState from '../state/ClassEmptyState';
 import ClassLoading from '../state/ClassLoading';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
@@ -18,6 +19,9 @@ const ClassManagementPage: React.FC = () => {
     setSearchTerm,
     subjectFilter,
     showOnlyWithAvailableSlots,
+    clearFilters,
+    viewMode,
+    setViewMode,
 
     // UI state
     showDeleteDialog,
@@ -48,11 +52,22 @@ const ClassManagementPage: React.FC = () => {
         subjectFilter={subjectFilter}
         showOnlyWithAvailableSlots={showOnlyWithAvailableSlots}
         onFilterChange={handleFilterChange}
+        clearFilters={clearFilters}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
       {filteredClasses.length === 0 ? (
         <ClassEmptyState
           onCreateClass={handleAddClass}
           hasFilters={hasFilters}
+        />
+      ) : viewMode === 'table' ? (
+        <ClassTable
+          classes={filteredClasses}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onView={handleView}
+          loading={loading}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

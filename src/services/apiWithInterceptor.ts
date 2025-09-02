@@ -20,7 +20,7 @@ interface RequestOptions {
 }
 
 class ApiServiceWithInterceptor {
-  private baseURL = 'https://localhost:65383';
+  private baseURL = 'https://localhost:5001';
   private refreshPromise: Promise<void> | null = null;
   
   // Track request start times for minimum duration

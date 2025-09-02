@@ -25,7 +25,7 @@ const ScheduleForm: React.FC = () => {
     const currentSchedule = form.getValues('schedule');
     form.setValue('schedule', [
       ...currentSchedule,
-      { day: 'Monday', startTime: '09:00', endTime: '10:30' },
+      { dayOfWeek: 'Monday', startTime: '09:00', endTime: '10:30' },
     ]);
   };
 
@@ -47,7 +47,7 @@ const ScheduleForm: React.FC = () => {
         >
           <FormField
             control={form.control}
-            name={`schedule.${index}.day`}
+            name={`schedule.${index}.dayOfWeek`}
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-white/70">Day</FormLabel>

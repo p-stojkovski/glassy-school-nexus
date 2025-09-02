@@ -21,6 +21,10 @@ export const useStudentFormPage = (studentId?: string) => {
   useEffect(() => {
     const loadStudent = async () => {
       if (!studentId) return;
+      
+      // Disable global loading to use page-specific spinner
+      studentApiService.disableGlobalLoading();
+      
       setStudentLoading(true);
       setFormError(null);
       try {
@@ -31,6 +35,8 @@ export const useStudentFormPage = (studentId?: string) => {
         setFormError(msg);
       } finally {
         setStudentLoading(false);
+        // Keep global loading disabled to maintain consistency with main students page
+        // studentApiService.enableGlobalLoading();
       }
     };
     loadStudent();

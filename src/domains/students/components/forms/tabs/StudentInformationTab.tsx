@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { StudentFormData } from '@/types/api/student';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react';
 
 interface StudentInformationTabProps {
   form: UseFormReturn<StudentFormData>;

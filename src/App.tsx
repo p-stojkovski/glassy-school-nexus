@@ -16,8 +16,9 @@ import GlobalLoadingOverlay from '@/components/common/GlobalLoadingOverlay';
 import Dashboard from './pages/Dashboard';
 import ClassroomManagement from './pages/ClassroomManagement';
 import StudentManagement from './pages/StudentManagement';
-import ClassManagement from './pages/ClassManagement';
-import ClassForm from './pages/ClassForm';
+import ClassesPage from './pages/Classes';
+import ClassFormPage from './pages/ClassFormPage';
+import ClassDetail from './pages/ClassDetail';
 import Teachers from './pages/Teachers';
 import AttendanceManagement from './pages/AttendanceManagement';
 import GradesManagement from './pages/GradesManagement';
@@ -77,9 +78,10 @@ const AppContent: React.FC = () => {
         <Route path="/students/new" element={<StudentFormPage />} />
         <Route path="/students/edit/:studentId" element={<StudentFormPage />} />
         <Route path="/students/:studentId" element={<StudentProfilePage />} />
-        <Route path="/classes" element={<ClassManagement />} />
-        <Route path="/classes/new" element={<ClassForm />} />
-        <Route path="/classes/edit/:id" element={<ClassForm />} />
+        <Route path="/classes" element={<ClassesPage />} />
+        <Route path="/classes/new" element={<ClassFormPage />} />
+        <Route path="/classes/edit/:classId" element={<ClassFormPage />} />
+        <Route path="/classes/:id" element={<ClassDetail />} />
         <Route path="/teachers" element={<Teachers />} />{' '}
         <Route path="/attendance" element={<AttendanceManagement />} />
         <Route path="/grades" element={<GradesManagement />} />

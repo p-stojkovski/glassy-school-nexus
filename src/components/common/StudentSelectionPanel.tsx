@@ -128,13 +128,13 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
       const lowercasedQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (student) =>
-          student.name.toLowerCase().includes(lowercasedQuery) ||
-          student.email.toLowerCase().includes(lowercasedQuery) ||
+          student.name?.toLowerCase().includes(lowercasedQuery) ||
+          student.email?.toLowerCase().includes(lowercasedQuery) ||
           student.phone?.toLowerCase().includes(lowercasedQuery)
       );
     }
     // Create a copy before sorting to avoid mutating the original array
-    return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+    return [...filtered].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   }, [students, searchQuery, statusFilter, gradeFilter, classes]);
 
   // Get selected students info

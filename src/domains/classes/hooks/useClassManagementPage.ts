@@ -9,6 +9,7 @@ import { useClassroomsData } from '@/data/hooks/useClassroomsData';
 
 export type SubjectFilter = 'all' | 'English' | 'Mathematics' | 'Physics';
 export type LevelFilter = 'all' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+export type ClassViewMode = 'grid' | 'table';
 
 export const useClassManagementPage = () => {
   const navigate = useNavigate();
@@ -37,7 +38,9 @@ export const useClassManagementPage = () => {
   const [subjectFilter, setSubjectFilter] = useState<SubjectFilter>('all');
   const [levelFilter, setLevelFilter] = useState<LevelFilter>('all');
   const [showOnlyWithAvailableSlots, setShowOnlyWithAvailableSlots] =
-    useState(false); // UI state
+    useState(false); 
+  const [viewMode, setViewMode] = useState<ClassViewMode>('grid');
+  // UI state
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [classToDelete, setClassToDelete] = useState<Class | null>(null);
 
@@ -54,7 +57,7 @@ export const useClassManagementPage = () => {
       levelFilter === 'all' || classItem.level === levelFilter;
 
     const matchesAvailableSlots =
-      !showOnlyWithAvailableSlots || classItem.students < classItem.maxStudents;
+      !showOnlyWithAvailableSlots || classItem.students >= 0; // Always show since no max limit
 
     return (
       matchesSearch && matchesSubject && matchesLevel && matchesAvailableSlots
@@ -161,6 +164,8 @@ export const useClassManagementPage = () => {
     setShowOnlyWithAvailableSlots,
     hasFilters,
     clearFilters,
+    viewMode,
+    setViewMode,
 
     // UI state
     showDeleteDialog,

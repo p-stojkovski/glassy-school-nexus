@@ -1,16 +1,9 @@
 import React from 'react';
-import { Search, Filter, BookOpen } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import GlassCard from '@/components/common/GlassCard';
-import { SubjectDto } from '@/types/api/teacher';
 import ClearFiltersButton from '@/components/common/ClearFiltersButton';
+import SubjectsDropdown from '@/components/common/SubjectsDropdown';
 
 interface TeacherFiltersProps {
   searchTerm: string;
@@ -18,7 +11,6 @@ interface TeacherFiltersProps {
   subjectFilter: string;
   setSubjectFilter: (filter: string) => void;
   clearFilters: () => void;
-  subjects: SubjectDto[];
 }
 
 const TeacherFilters: React.FC<TeacherFiltersProps> = ({
@@ -27,7 +19,6 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
   subjectFilter,
   setSubjectFilter,
   clearFilters,
-  subjects,
 }) => {
   return (
     <GlassCard className="p-6">
@@ -44,23 +35,12 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
         </div>{' '}
         {/* Subject Filter */}
         <div className="w-full lg:w-56">
-          <Select
+          <SubjectsDropdown
             value={subjectFilter}
-            onValueChange={(value: string) => setSubjectFilter(value)}
-          >
-            <SelectTrigger className="bg-white/5 border-white/10 text-white">
-              <BookOpen className="w-4 h-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Subjects</SelectItem>
-              {subjects.map((subject) => (
-                <SelectItem key={subject.id} value={subject.id}>
-                  {subject.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onValueChange={setSubjectFilter}
+            includeAllOption={true}
+            allOptionLabel="All Subjects"
+          />
         </div>
         {/* Clear Filters Button */}
         <div className="w-full lg:w-auto">

@@ -427,6 +427,35 @@ export const StudentErrorHandlers = {
     handleApiError(error, { operation: 'fetch discount types' }),
 };
 
+export const ClassErrorHandlers = {
+  fetchAll: (error: unknown) => handleApiError(error, { operation: 'fetch classes' }),
+  fetchById: (error: unknown) => handleApiError(error, { operation: 'fetch class details' }),
+  search: (error: unknown) => handleApiError(error, { operation: 'search classes' }),
+  create: (error: unknown) => {
+    const apiError = error as ApiError;
+    if (apiError.status === 409) { // Conflict
+      return handleApiError(error, {
+        customMessage: apiError.details?.detail || apiError.message || 'Conflict occurred while creating class.',
+        operation: 'create class',
+        showToast: true
+      });
+    }
+    return handleApiError(error, { operation: 'create class' });
+  },
+  update: (error: unknown) => {
+    const apiError = error as ApiError;
+    if (apiError.status === 409) { // Conflict
+      return handleApiError(error, {
+        customMessage: apiError.details?.detail || apiError.message || 'Conflict occurred while updating class.',
+        operation: 'update class',
+        showToast: true
+      });
+    }
+    return handleApiError(error, { operation: 'update class' });
+  },
+  delete: (error: unknown) => handleApiError(error, { operation: 'delete class' }),
+};
+
 export default {
   handleApiError,
   showSuccessMessage,

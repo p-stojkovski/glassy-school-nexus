@@ -7,7 +7,7 @@ interface ApiError {
 }
 
 class ApiService {
-  private baseURL = 'https://localhost:65383';
+  private baseURL = 'https://localhost:5001';
   private refreshPromise: Promise<void> | null = null;
 
   private getAuthHeaders(): Record<string, string> {

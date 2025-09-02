@@ -356,10 +356,6 @@ const StudentProfile: React.FC = () => {
                     <span>Subject:</span>
                     <span>{studentClass.subject}</span>
                   </div>
-                  <div className="flex justify-between text-white/70">
-                    <span>Level:</span>
-                    <span>{studentClass.level}</span>
-                  </div>
                 </div>
               )}
             </GlassCard>

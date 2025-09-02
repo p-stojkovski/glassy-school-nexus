@@ -21,7 +21,14 @@ const StudentCard: React.FC<StudentCardProps> = ({
   onView,
 }) => {
   return (
-    <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
+    <motion.div 
+      layout 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      exit={{ opacity: 0, y: -20 }}
+      whileHover={{ y: -2 }} 
+      transition={{ duration: 0.2 }}
+    >
       <GlassCard className="p-6 h-full">
         <div className="flex flex-col h-full">
           {/* Header with Basic Info */}

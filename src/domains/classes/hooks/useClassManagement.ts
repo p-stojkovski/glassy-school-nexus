@@ -15,14 +15,12 @@ import { useMockData } from '@/data/hooks/useMockData';
 interface UseClassManagementProps {
   searchTerm: string;
   subjectFilter: 'all' | 'English' | 'Mathematics' | 'Physics';
-  levelFilter: 'all' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
   showOnlyWithAvailableSlots: boolean;
 }
 
 export const useClassManagement = ({
   searchTerm,
   subjectFilter,
-  levelFilter,
   showOnlyWithAvailableSlots,
 }: UseClassManagementProps) => {
   const dispatch = useAppDispatch();
@@ -39,7 +37,8 @@ export const useClassManagement = ({
       // Trigger refresh to ensure data is loaded from MockDataService
       refreshClasses();
     }
-  }, [classes.length, dataLoading, refreshClasses]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classes.length, dataLoading]);
 
   // Filter classes based on criteria
   const filteredClasses = classes.filter((classItem) => {
@@ -48,13 +47,11 @@ export const useClassManagement = ({
       classItem.teacher.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSubject =
       subjectFilter === 'all' || classItem.subject === subjectFilter;
-    const matchesLevel =
-      levelFilter === 'all' || classItem.level === levelFilter;
     const matchesAvailableSlots =
-      !showOnlyWithAvailableSlots || classItem.students < classItem.maxStudents;
+      !showOnlyWithAvailableSlots || classItem.students >= 0; // Always show since no max limit
 
     return (
-      matchesSearch && matchesSubject && matchesLevel && matchesAvailableSlots
+      matchesSearch && matchesSubject && matchesAvailableSlots
     );
   });
   const handleCreateClass = async (data: ClassFormData) => {
@@ -75,22 +72,17 @@ export const useClassManagement = ({
             }
           : { id: '', name: '', subject: '' },
         students: data.studentIds ? data.studentIds.length : 0, // Set student count based on selected students
-        maxStudents: 20,
         studentIds: data.studentIds || [], // Include selected student IDs
         room: selectedClassroom?.name || '',
         roomId: data.classroomId, // Store classroom ID reference
         schedule: data.schedule,
         subject: data.subject,
-        level: 'A1',
-        price: 75,
-        duration: 90,
         description: '',
         requirements: '',
         objectives: [],
         materials: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        color: '#3B82F6',
       };
 
       dispatch(addClass(newClass));

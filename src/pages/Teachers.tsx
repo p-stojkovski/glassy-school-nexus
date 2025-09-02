@@ -8,6 +8,7 @@ import TeacherCard from '@/domains/teachers/components/TeacherCard';
 import TeacherForm from '@/domains/teachers/components/TeacherForm';
 import TeacherFilters from '@/domains/teachers/components/filters/TeacherFilters';
 import TeacherTable from '@/domains/teachers/components/list/TeacherTable';
+import TeacherLoading from '@/domains/teachers/components/state/TeacherLoading';
 import { Teacher } from '@/domains/teachers/teachersSlice';
 import { useTeacherManagement } from '@/domains/teachers/hooks/useTeacherManagement';
 
@@ -23,6 +24,7 @@ const Teachers: React.FC = () => {
     // Loading states
     loading,
     isLoading,
+    isInitialized,
     
     // Error states
     errors,
@@ -66,8 +68,10 @@ const Teachers: React.FC = () => {
     }
   }, [isFormOpen]);
 
-  // Global loading interceptor now handles initial page loading automatically
-  // Only specific loading states (delete, form submission) are handled locally
+  // Show loading spinner while data is being initialized
+  if (!isInitialized) {
+    return <TeacherLoading />;
+  }
 
   return (
     <div className="space-y-6">
@@ -108,7 +112,6 @@ const Teachers: React.FC = () => {
         subjectFilter={subjectFilter}
         setSubjectFilter={setSubjectFilter}
         clearFilters={clearFilters}
-        subjects={subjects}
       />
       
       {/* Teachers Display */}

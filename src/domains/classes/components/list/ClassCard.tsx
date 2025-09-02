@@ -1,7 +1,8 @@
+import React from 'react';
+import { motion } from 'framer-motion';
 import GlassCard from '@/components/common/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Class } from '@/domains/classes/classesSlice';
-import React from 'react';
 
 interface ClassCardProps {
   classItem: Class;
@@ -17,7 +18,14 @@ const ClassCard: React.FC<ClassCardProps> = ({
   onDelete,
 }) => {
   return (
-    <GlassCard className="p-6">
+    <motion.div 
+      layout 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      <GlassCard className="p-6 hover:bg-white/5 transition-all duration-300">
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-xl font-semibold text-white">{classItem.name}</h3>
         <div className="flex space-x-2">
@@ -49,7 +57,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
       </p>
       <p className="text-white/70 mb-2">
         <span className="text-sm font-medium text-white">Students: </span>{' '}
-        {classItem.students}/{classItem.maxStudents}
+        {classItem.students}
       </p>
 
       <div className="space-y-2">
@@ -64,7 +72,8 @@ const ClassCard: React.FC<ClassCardProps> = ({
       <div className="text-xs text-white/50 border-t border-white/10 pt-3 mt-4">
         Last updated: {new Date(classItem.updatedAt).toLocaleDateString()}
       </div>
-    </GlassCard>
+      </GlassCard>
+    </motion.div>
   );
 };
 

@@ -1,23 +1,5 @@
 import React from 'react';
-import {
-  MoreVertical,
-  Eye,
-  Edit,
-  Trash2,
-  Percent,
-  Phone,
-  Mail,
-  User,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { motion } from 'framer-motion';
 import {
   Table,
   TableBody,
@@ -35,8 +17,27 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
+import GlassCard from '@/components/common/GlassCard';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  MoreVertical,
+  Edit,
+  Trash2,
+  Eye,
+  Phone,
+  Mail,
+  User,
+  Percent,
+} from 'lucide-react';
 import { getStudentStatusColor } from '@/utils/statusColors';
 import { formatDate } from '@/utils/dateFormatters';
 
@@ -153,7 +154,14 @@ const StudentTable: React.FC<StudentTableProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <motion.div 
+      layout 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-4"
+    >
       <GlassCard className="overflow-hidden">
         <Table>
           <TableHeader>
@@ -340,7 +348,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
         {Math.min(startIndex + pageSize, totalCount)} of{' '}
         {totalCount} students
       </div>
-    </div>
+    </motion.div>
   );
 };
 

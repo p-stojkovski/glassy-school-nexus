@@ -19,19 +19,14 @@ export interface Class {
     endTime: string;
   }[];
   students: number;
-  maxStudents: number;
   studentIds: string[]; // Store assigned student IDs
   subject: string;
-  level: string;
-  price: number;
-  duration: number;
   description: string;
   requirements: string;
   objectives: string[];
   materials: string[];
   createdAt: string;
   updatedAt: string;
-  color: string;
 }
 
 interface ClassesState {

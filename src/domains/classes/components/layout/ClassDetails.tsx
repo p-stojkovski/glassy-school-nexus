@@ -37,7 +37,6 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
       <DialogContent className="bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${classItem.color}`}></div>
             {classItem.name}
           </DialogTitle>
         </DialogHeader>

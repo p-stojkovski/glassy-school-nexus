@@ -67,6 +67,7 @@ export const useTeacherManagement = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [teacherToDelete, setTeacherToDelete] = useState<Teacher | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Filtered teachers for local search
   const filteredTeachers = useMemo(() => {
@@ -303,8 +304,33 @@ export const useTeacherManagement = () => {
 
   // Auto-load teachers and subjects from API on mount
   useEffect(() => {
-    loadTeachers();
-    loadSubjects();
+    let mounted = true;
+    
+    const initializeTeachers = async () => {
+      console.log('🚀 TeacherManagement hook mounted, initializing data...');
+      
+      // Disable global loading for all teacher operations to use page-specific loading states
+      const { teacherApiService } = await import('@/services/teacherApiService');
+      teacherApiService.disableGlobalLoading();
+      
+      try {
+        await Promise.all([loadTeachers(), loadSubjects()]);
+        if (mounted) {
+          setIsInitialized(true);
+        }
+      } catch (error) {
+        console.error('Failed to initialize teachers:', error);
+        if (mounted) {
+          setIsInitialized(true); // Still mark as initialized to show error state
+        }
+      }
+    };
+
+    initializeTeachers();
+
+    return () => {
+      mounted = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -322,6 +348,7 @@ export const useTeacherManagement = () => {
     // Loading states (only form-related, global loading handled by interceptor)
     loading,
     isLoading: loading.creating || loading.updating || loading.deleting,
+    isInitialized,
     
     // Error states
     errors,

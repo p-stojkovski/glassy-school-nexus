@@ -167,10 +167,6 @@ const StudentOverview: React.FC<StudentOverviewProps> = ({
               <span>Subject:</span>
               <span>{studentClass.subject}</span>
             </div>
-            <div className="flex justify-between text-white/70">
-              <span>Level:</span>
-              <span>{studentClass.level}</span>
-            </div>
           </div>
         )}
       </GlassCard>

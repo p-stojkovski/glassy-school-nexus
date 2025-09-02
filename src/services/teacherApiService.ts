@@ -320,7 +320,22 @@ export const updateTeacher = (id: string, request: UpdateTeacherRequest) =>
 
 export const deleteTeacher = (id: string) => teacherApiService.deleteTeacher(id);
 
-export const getAllSubjects = () => teacherApiService.getAllSubjects();
+export const getAllSubjects = () => {
+  // Temporarily disable global loading for subjects dropdown
+  const originalInterceptor = teacherApiService['useInterceptor'];
+  teacherApiService.disableGlobalLoading();
+  
+  const promise = teacherApiService.getAllSubjects();
+  
+  // Restore original interceptor setting after the call
+  promise.finally(() => {
+    if (originalInterceptor) {
+      teacherApiService.enableGlobalLoading();
+    }
+  });
+  
+  return promise;
+};
 
 export const checkTeacherEmailAvailable = (email: string, excludeId?: string) =>
   teacherApiService.checkEmailAvailable(email, excludeId);

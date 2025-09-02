@@ -1,15 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import FormButtons from '@/components/common/FormButtons';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Circle, BookOpen, Calendar, FileText } from 'lucide-react';
+import { z } from 'zod';
 import {
   Form,
   FormControl,
@@ -18,243 +11,262 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Class } from '@/domains/classes/classesSlice';
-import { useAppSelector } from '@/store/hooks';
-import { RootState } from '@/store';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import GlassCard from '@/components/common/GlassCard';
-import ScheduleForm from './ScheduleForm';
-import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
-import StudentSelectionTrigger from '@/components/common/StudentSelectionTrigger';
-import SubjectSelect from '@/components/common/SubjectSelect';
-import { SUBJECTS } from '@/data/subjects';
+import FormButtons from '@/components/common/FormButtons';
+import BasicClassInfoTab from './tabs/BasicClassInfoTab';
+import ScheduleEnrollmentTab from './tabs/ScheduleEnrollmentTab';
+import AdditionalDetailsTab from './tabs/AdditionalDetailsTab';
+import { ClassFormData } from '@/types/api/class';
+import { ClassResponse } from '@/types/api/class';
+
+// Form validation schema
+const classSchema = z.object({
+  name: z.string().min(1, 'Class name is required'),
+  subjectId: z.string().min(1, 'Subject is required'),
+  teacherId: z.string().min(1, 'Teacher is required'),
+  classroomId: z.string().min(1, 'Classroom is required'),
+  description: z.string().optional(),
+  requirements: z.string().optional(),
+  objectives: z.string().optional(),
+  materials: z.string().optional(),
+  schedule: z.array(z.object({
+    dayOfWeek: z.string(),
+    startTime: z.string(),
+    endTime: z.string(),
+  })).optional(),
+  studentIds: z.array(z.string()).optional(),
+});
+
+export interface ClassFormRef {
+  submitForm: () => void;
+  getFormData: () => ClassFormData;
+}
 
 interface ClassFormContentProps {
-  onSubmit: (data: ClassFormData) => void;
+  classItem?: ClassResponse | null;
+  teachers: any[];
+  classrooms: any[];
+  onSubmit: (data: ClassFormData) => Promise<void>;
   onCancel: () => void;
-  editingClass?: Class | null;
+  onFormChange?: (data: ClassFormData) => void;
 }
 
-export interface ClassFormData {
-  name: string;
-  subject: string;
-  teacherId: string;
-  classroomId: string;
-  schedule: {
-    day: string;
-    startTime: string;
-    endTime: string;
-  }[];
-  studentIds: string[];
-  status: 'active' | 'inactive' | 'pending';
-}
-
-const ClassFormContent: React.FC<ClassFormContentProps> = ({
-  onSubmit,
-  onCancel,
-  editingClass,
-}) => {
-  const { teachers } = useAppSelector((state: RootState) => state.teachers);
-  const { classrooms } = useAppSelector((state: RootState) => state.classrooms);
-  const { students } = useAppSelector((state: RootState) => state.students);
-  const { classes } = useAppSelector((state: RootState) => state.classes);
-  const [isStudentPanelOpen, setIsStudentPanelOpen] = useState(false);
+const TabbedClassFormContent = React.forwardRef<ClassFormRef, ClassFormContentProps>((
+  {
+    classItem,
+    teachers,
+    classrooms,
+    onSubmit,
+    onCancel,
+    onFormChange,
+  },
+  ref
+) => {
+  const [activeTab, setActiveTab] = useState('basic-info');
 
   const form = useForm<ClassFormData>({
-    defaultValues: editingClass
-      ? {
-          name: editingClass.name,
-          subject: editingClass.teacher.subject,
-          teacherId: editingClass.teacher.id,
-          classroomId: editingClass.roomId || '',
-          schedule: editingClass.schedule,
-          studentIds: editingClass.studentIds || [],
-          status: editingClass.status,
-        }
-      : {
-          name: '',
-          subject: '',
-          teacherId: '',
-          classroomId: '',
-          schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:30' }],
-          studentIds: [],
-          status: 'active',
-        },
+    resolver: zodResolver(classSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+    defaultValues: {
+      name: classItem?.name || '',
+      subjectId: classItem?.subjectId || '',
+      teacherId: classItem?.teacherId || '',
+      classroomId: classItem?.classroomId || '',
+      description: classItem?.description || '',
+      requirements: classItem?.requirements || '',
+      objectives: classItem?.objectives || '',
+      materials: classItem?.materials || '',
+      schedule: classItem?.schedule || [{ dayOfWeek: 'Monday', startTime: '09:00', endTime: '10:00' }],
+      studentIds: classItem?.studentIds || [],
+    },
   });
 
-  const handleSubmit = (data: ClassFormData) => {
-    onSubmit(data);
+  const {
+    formState: { errors },
+  } = form;
+
+  // Watch form values for data indicators
+  const watchedValues = form.watch();
+
+  // Track form changes
+  useEffect(() => {
+    const subscription = form.watch((data) => {
+      onFormChange?.(data as ClassFormData);
+    });
+    return () => subscription.unsubscribe();
+  }, [form, onFormChange]);
+
+  // Determine which tabs have errors for auto-navigation
+  const basicTabErrors = useMemo(() => {
+    return !!(
+      errors.name ||
+      errors.subjectId ||
+      errors.teacherId ||
+      errors.classroomId ||
+      errors.description
+    );
+  }, [errors]);
+
+  const scheduleTabErrors = useMemo(() => {
+    return !!(errors.schedule || errors.studentIds);
+  }, [errors]);
+
+  const detailsTabErrors = useMemo(() => {
+    return !!(
+      errors.requirements ||
+      errors.objectives ||
+      errors.materials
+    );
+  }, [errors]);
+
+  // Determine which tabs have data for visual indicators
+  const basicTabHasData = useMemo(() => {
+    return !!(
+      watchedValues.name ||
+      watchedValues.subjectId ||
+      watchedValues.teacherId ||
+      watchedValues.classroomId ||
+      watchedValues.description
+    );
+  }, [
+    watchedValues.name,
+    watchedValues.subjectId,
+    watchedValues.teacherId,
+    watchedValues.classroomId,
+    watchedValues.description,
+  ]);
+
+  const scheduleTabHasData = useMemo(() => {
+    return !!(
+      (watchedValues.schedule && watchedValues.schedule.length > 0) ||
+      (watchedValues.studentIds && watchedValues.studentIds.length > 0)
+    );
+  }, [watchedValues.schedule, watchedValues.studentIds]);
+
+  const detailsTabHasData = useMemo(() => {
+    return !!(
+      watchedValues.requirements ||
+      watchedValues.objectives ||
+      watchedValues.materials
+    );
+  }, [
+    watchedValues.requirements,
+    watchedValues.objectives,
+    watchedValues.materials,
+  ]);
+
+  // Auto-navigate to tab with errors on form submission
+  const handleSubmit = async (data: ClassFormData) => {
+    const isValid = await form.trigger();
+
+    if (!isValid) {
+      if (basicTabErrors) {
+        setActiveTab('basic-info');
+      } else if (scheduleTabErrors) {
+        setActiveTab('schedule-enrollment');
+      } else if (detailsTabErrors) {
+        setActiveTab('additional-details');
+      }
+      return;
+    }
+
+    try {
+      await onSubmit(data);
+    } catch (error: any) {
+      console.error('Form submission error:', error);
+    }
   };
+
+  const TabIndicator: React.FC<{ hasErrors: boolean; hasData: boolean }> = ({ hasErrors, hasData }) => (
+    <div className="flex items-center gap-1 ml-2">
+      {hasErrors && <Circle className="h-2 w-2 fill-red-400 text-red-400" />}
+      {!hasErrors && hasData && <Circle className="h-2 w-2 fill-yellow-400 text-yellow-400" />}
+    </div>
+  );
+
+  // Expose form methods via ref
+  React.useImperativeHandle(ref, () => ({
+    submitForm: () => {
+      form.handleSubmit(handleSubmit)();
+    },
+    getFormData: () => {
+      return form.getValues();
+    },
+  }), [form, handleSubmit]);
 
   return (
     <GlassCard className="p-8">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <FormField
-              control={form.control}
-              name="name"
-              rules={{ required: 'Class name is required' }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Class Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Enter class name"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-6"
+          >
+            <TabsList className="bg-white/10 border-white/20">
+              <TabsTrigger
+                value="basic-info"
+                className="data-[state=active]:bg-white/20 text-white"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Basic Information
+                <TabIndicator hasErrors={basicTabErrors} hasData={basicTabHasData} />
+              </TabsTrigger>
+              <TabsTrigger
+                value="schedule-enrollment"
+                className="data-[state=active]:bg-white/20 text-white"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Schedule & Enrollment
+                <TabIndicator hasErrors={scheduleTabErrors} hasData={scheduleTabHasData} />
+              </TabsTrigger>
+              <TabsTrigger
+                value="additional-details"
+                className="data-[state=active]:bg-white/20 text-white"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Additional Details
+                <TabIndicator hasErrors={detailsTabErrors} hasData={detailsTabHasData} />
+              </TabsTrigger>
+            </TabsList>
 
-            <FormField
-              control={form.control}
-              name="subject"
-              rules={{ required: 'Subject is required' }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Subject</FormLabel>
-                  <FormControl>
-                    <SubjectSelect
-                      value={(SUBJECTS.find(s => s.name === field.value)?.id) || ''}
-                      onChange={(id) => {
-                        const subj = SUBJECTS.find(s => s.id === id);
-                        field.onChange(subj ? subj.name : '');
-                      }}
-                      placeholder="Select subject"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+            <TabsContent value="basic-info">
+              <BasicClassInfoTab 
+                form={form}
+                teachers={teachers}
+                classrooms={classrooms}
+              />
+            </TabsContent>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {' '}
-            <FormField
-              control={form.control}
-              name="teacherId"
-              rules={{ required: 'Teacher is required' }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Assigned Teacher</FormLabel>
-                  <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                        <SelectValue placeholder="Select teacher" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {teachers.length > 0 ? (
-                          teachers.map((teacher) => (
-                            <SelectItem key={teacher.id} value={teacher.id}>
-                              {teacher.name}{' '}
-                              <span className="text-sm text-white/60">
-                                ({teacher.subject})
-                              </span>
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="no-teachers" disabled>
-                            No teachers available
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="classroomId"
-              rules={{ required: 'Classroom is required' }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">
-                    Assigned Classroom
-                  </FormLabel>
-                  <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                        <SelectValue placeholder="Select classroom" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {classrooms.length > 0 ? (
-                          classrooms.map((classroom) => (
-                            <SelectItem key={classroom.id} value={classroom.id}>
-                              {classroom.name}{' '}
-                              <span className="text-sm text-white/60">
-                                (Capacity: {classroom.capacity})
-                              </span>
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="no-classrooms" disabled>
-                            No classrooms available
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />{' '}
-          </div>
+            <TabsContent value="schedule-enrollment">
+              <ScheduleEnrollmentTab form={form} />
+            </TabsContent>
 
-          {/* Student Assignment Section */}
-          <div>
-            {' '}
-            <FormField
-              control={form.control}
-              name="studentIds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white mb-4 block">
-                    Assign Students
-                  </FormLabel>
-                  <FormControl>
-                    <StudentSelectionTrigger
-                      students={students}
-                      selectedStudentIds={field.value || []}
-                      onOpenPanel={() => setIsStudentPanelOpen(true)}
-                      placeholder="Select students for this class..."
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <TabsContent value="additional-details">
+              <AdditionalDetailsTab form={form} />
+            </TabsContent>
+          </Tabs>
+
+          <div className="pt-4">
+            <FormButtons
+              submitText={classItem ? 'Update Class' : 'Add Class'}
+              onCancel={onCancel}
+              disabled={!form.formState.isValid}
             />
           </div>
-
-          <ScheduleForm />
-
-          <FormButtons
-            submitText={editingClass ? 'Update Class' : 'Create Class'}
-            onCancel={onCancel}
-          />
         </form>
       </Form>
-
-      {/* Student Selection Panel */}
-      <StudentSelectionPanel
-        students={students}
-        classes={classes}
-        selectedStudentIds={form.watch('studentIds') || []}
-        onSelectionChange={(studentIds) => {
-          form.setValue('studentIds', studentIds);
-        }}
-        isOpen={isStudentPanelOpen}
-        onClose={() => setIsStudentPanelOpen(false)}
-        title="Assign Students to Class"
-        allowMultiple={true}
-      />
     </GlassCard>
   );
-};
+});
 
-export default ClassFormContent;
+TabbedClassFormContent.displayName = 'TabbedClassFormContent';
+
+export default TabbedClassFormContent;

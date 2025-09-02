@@ -83,6 +83,7 @@ export const useStudentManagement = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Filtered students for local search (when not using API search)
   const filteredStudents = useMemo(() => {
@@ -404,9 +405,33 @@ export const useStudentManagement = () => {
 
   // Auto-load students and discount types from API on mount
   useEffect(() => {
-    console.log('🚀 StudentManagement hook mounted, initializing data...');
-    loadStudents();
-    loadDiscountTypes();
+    let mounted = true;
+    
+    const initializeStudents = async () => {
+      console.log('🚀 StudentManagement hook mounted, initializing data...');
+      
+      // Disable global loading for all student operations to use page-specific loading states
+      const { studentApiService } = await import('@/services/studentApiService');
+      studentApiService.disableGlobalLoading();
+      
+      try {
+        await Promise.all([loadStudents(), loadDiscountTypes()]);
+        if (mounted) {
+          setIsInitialized(true);
+        }
+      } catch (error) {
+        console.error('Failed to initialize students:', error);
+        if (mounted) {
+          setIsInitialized(true); // Still mark as initialized to show error state
+        }
+      }
+    };
+
+    initializeStudents();
+
+    return () => {
+      mounted = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -426,6 +451,7 @@ export const useStudentManagement = () => {
     // Loading states (only form-related, global loading handled by interceptor)
     loading,
     isLoading: loading.creating || loading.updating || loading.deleting,
+    isInitialized,
     
     // Error states
     errors,
