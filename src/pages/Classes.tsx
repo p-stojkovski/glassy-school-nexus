@@ -6,7 +6,9 @@ import GlassCard from '@/components/common/GlassCard';
 import ClassTable from '@/domains/classesApi/components/ClassTable';
 import ClassGrid from '@/domains/classesApi/components/ClassGrid';
 import ClassFilters, { ClassViewMode } from '@/domains/classes/components/filters/ClassFilters';
+import ClassLoading from '@/domains/classes/components/state/ClassLoading';
 import { useClassesApi } from '@/domains/classesApi/hooks/useClassesApi';
+import { classApiService } from '@/services/classApiService';
 
 const ClassesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,14 +23,25 @@ const ClassesPage: React.FC = () => {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousFiltersRef = useRef({ searchTerm: '', subjectFilter: 'all', availabilityFilter: 'all' });
 
-  // Load classes only once on mount (global loading handled by interceptor)
+  // Load classes only once on mount with disabled global loading
   useEffect(() => {
     let mounted = true;
     
     const initializeClasses = async () => {
-      await loadClasses();
-      if (mounted) {
-        setIsInitialized(true);
+      try {
+        // Disable global loading for initial page load
+        classApiService.disableGlobalLoading();
+        
+        await loadClasses();
+        
+        if (mounted) {
+          setIsInitialized(true);
+        }
+      } finally {
+        // Re-enable global loading for subsequent operations
+        if (mounted) {
+          classApiService.enableGlobalLoading();
+        }
       }
     };
 
@@ -39,6 +52,8 @@ const ClassesPage: React.FC = () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
+      // Ensure global loading is re-enabled on cleanup
+      classApiService.enableGlobalLoading();
     };
   }, []); // Empty dependency - run only once
 
@@ -140,9 +155,9 @@ const ClassesPage: React.FC = () => {
     }
   }, [isInitialized, hasActiveFilters, isSearchMode, setSearchMode]);
 
-  // Rely on the global loading overlay to avoid duplicate spinners
+  // Show page-specific loading spinner during initialization
   if (!isInitialized) {
-    return null;
+    return <ClassLoading />;
   }
 
   return (

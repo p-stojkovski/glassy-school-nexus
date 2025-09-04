@@ -178,9 +178,6 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
                       <div className="font-medium text-white">
                         {teacher.name}
                       </div>
-                      <div className="text-sm text-white/60">
-                        ID: {teacher.id}
-                      </div>
                     </div>
                   </div>
                 </TableCell>

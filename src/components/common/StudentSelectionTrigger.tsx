@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,9 +24,12 @@ const StudentSelectionTrigger: React.FC<StudentSelectionTriggerProps> = ({
   className,
   showCount = true,
 }) => {
-  const selectedStudents = students.filter((student) =>
-    selectedStudentIds.includes(student.id)
-  );
+  // Filter selected students efficiently
+  const selectedStudents = React.useMemo(() => {
+    return students.filter((student) =>
+      selectedStudentIds.includes(student.id)
+    );
+  }, [students, selectedStudentIds]);
 
   return (
     <div className={cn('space-y-3', className)}>
@@ -60,7 +63,7 @@ const StudentSelectionTrigger: React.FC<StudentSelectionTriggerProps> = ({
                 variant="secondary"
                 className="bg-blue-500/20 text-white border border-blue-400/30 text-xs px-2 py-1"
               >
-                {student.name}
+                {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email}
               </Badge>
             ))}
             {selectedStudents.length > 6 && (

@@ -28,7 +28,7 @@ export function formatSchedule(schedule: ScheduleItem[]): string {
   // Format each time slot
   const formattedSlots = Array.from(timeSlots.entries()).map(([timeSlot, days]) => {
     const sortedDays = sortDayAbbreviations(days);
-    return `${sortedDays.join(', ')} ${formatTimeSlot(timeSlot)}`;
+    return `${sortedDays.join(', ')} - ${formatTimeSlot(timeSlot)}`;
   });
 
   return formattedSlots.join(' | ');

@@ -29,7 +29,6 @@ const StudentFormPage: React.FC = () => {
 
   const {
     student,
-    discountTypes,
     loading,
     error,
     handleSubmit,
@@ -159,7 +158,6 @@ const StudentFormPage: React.FC = () => {
         <StudentFormContent
           ref={formRef}
           student={student}
-          discountTypes={discountTypes}
           onSubmit={(data) => {
             setFormData(data);
             setHasUnsavedChanges(false);

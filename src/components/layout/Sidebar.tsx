@@ -24,7 +24,6 @@ import styles from './Sidebar.module.scss';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/' },
-  { icon: Building, label: 'Classroom', path: '/classrooms' },
   { icon: Users, label: 'Students', path: '/students' },
   { icon: BookOpen, label: 'Classes', path: '/classes' },
   { icon: GraduationCap, label: 'Teachers', path: '/teachers' },
@@ -32,6 +31,7 @@ const menuItems = [
   { icon: Calendar, label: 'Attendance', path: '/attendance' },
   { icon: Grades, label: 'Grades', path: '/grades' },
   { icon: DollarSign, label: 'Finance', path: '/finance' },
+  { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
 const Sidebar: React.FC = () => {

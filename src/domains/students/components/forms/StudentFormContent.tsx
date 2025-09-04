@@ -1,7 +1,7 @@
 import React from 'react';
 import TabbedStudentFormContent, { StudentFormRef } from './TabbedStudentFormContent';
 import { Student } from '@/domains/students/studentsSlice';
-import { DiscountTypeDto, StudentFormData } from '@/types/api/student';
+import { StudentFormData } from '@/types/api/student';
 
 // Re-export the StudentFormData type from TabbedStudentFormContent
 export type { StudentFormData } from './TabbedStudentFormContent';
@@ -9,7 +9,6 @@ export type { StudentFormRef } from './TabbedStudentFormContent';
 
 interface StudentFormContentProps {
   student?: Student | null;
-  discountTypes?: DiscountTypeDto[];
   onSubmit: (data: StudentFormData) => void;
   onCancel: () => void;
   onFormChange?: (data: StudentFormData) => void;

@@ -4,13 +4,6 @@ import { GraduationCap, BookOpen, User, MapPin, Calendar, Hash } from 'lucide-re
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   FormControl,
   FormField,
   FormItem,
@@ -19,17 +12,16 @@ import {
 } from '@/components/ui/form';
 import { ClassFormData } from '@/types/api/class';
 import SubjectsDropdown from '@/components/common/SubjectsDropdown';
+import TeachersDropdown from '@/components/common/TeachersDropdown';
+import ClassroomsDropdown from '@/components/common/ClassroomsDropdown';
 
 interface BasicClassInfoTabProps {
   form: UseFormReturn<ClassFormData>;
-  teachers: any[];
-  classrooms: any[];
+  // Remove teachers and classrooms props - components handle data themselves
 }
 
 const BasicClassInfoTab: React.FC<BasicClassInfoTabProps> = ({
   form,
-  teachers,
-  classrooms,
 }) => {
   return (
     <div className="space-y-6">
@@ -92,29 +84,13 @@ const BasicClassInfoTab: React.FC<BasicClassInfoTabProps> = ({
                 Assigned Teacher *
               </FormLabel>
               <FormControl>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                    <SelectValue placeholder="Select teacher" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {teachers.length > 0 ? (
-                      teachers.map((teacher) => (
-                        <SelectItem key={teacher.id} value={teacher.id}>
-                          {teacher.name}
-                          {teacher.subjectName && (
-                            <span className="text-sm text-white/60 ml-2">
-                              ({teacher.subjectName})
-                            </span>
-                          )}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="no-teachers" disabled>
-                        No teachers available
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
+                <TeachersDropdown
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                  placeholder="Select teacher"
+                  className="bg-white/10 border-white/20"
+                  includeSubjectInfo={true}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -132,29 +108,14 @@ const BasicClassInfoTab: React.FC<BasicClassInfoTabProps> = ({
                 Assigned Classroom *
               </FormLabel>
               <FormControl>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                    <SelectValue placeholder="Select classroom" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classrooms.length > 0 ? (
-                      classrooms.map((classroom) => (
-                        <SelectItem key={classroom.id} value={classroom.id}>
-                          {classroom.name}
-                          {classroom.capacity && (
-                            <span className="text-sm text-white/60 ml-2">
-                              (Capacity: {classroom.capacity})
-                            </span>
-                          )}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="no-classrooms" disabled>
-                        No classrooms available
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
+                <ClassroomsDropdown
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                  placeholder="Select classroom"
+                  className="bg-white/10 border-white/20"
+                  includeCapacityInfo={true}
+                  includeLocationInfo={false}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

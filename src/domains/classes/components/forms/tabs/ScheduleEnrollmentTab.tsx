@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Clock, Plus, Trash2, Users, Calendar } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Clock, Plus, Trash2, Users, Calendar, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/form';
 import StudentSelectionTrigger from '@/components/common/StudentSelectionTrigger';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
+import { FriendlyTimePicker } from '@/components/common';
 import { ClassFormData } from '@/types/api/class';
 
 interface ScheduleEnrollmentTabProps {
@@ -33,6 +33,22 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
   classes = [],
 }) => {
   const [isStudentPanelOpen, setIsStudentPanelOpen] = useState(false);
+
+  // Function to check for schedule conflicts
+  const hasScheduleConflict = (currentIndex: number, schedule: any[]) => {
+    if (!schedule || schedule.length <= 1) return false;
+    
+    const currentSlot = schedule[currentIndex];
+    if (!currentSlot?.dayOfWeek || !currentSlot?.startTime || !currentSlot?.endTime) return false;
+    
+    return schedule.some((slot, index) => {
+      if (index === currentIndex) return false;
+      if (slot.dayOfWeek !== currentSlot.dayOfWeek) return false;
+      
+      // Check for time overlap
+      return currentSlot.startTime < slot.endTime && slot.startTime < currentSlot.endTime;
+    });
+  };
 
   const addScheduleSlot = () => {
     const currentSchedule = form.getValues('schedule') || [];
@@ -73,19 +89,31 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
           </Button>
         </div>
 
+        {/* Schedule validation error */}
+        {form.formState.errors.schedule?.message && (
+          <div className="text-red-400 text-sm p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            {form.formState.errors.schedule.message}
+          </div>
+        )}
+
         <div className="space-y-3">
-          {schedule.map((_, index) => (
+          {schedule.map((_, index) => {
+            const hasConflict = hasScheduleConflict(index, schedule);
+            return (
             <div
               key={index}
-              className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-white/5 rounded-lg border border-white/10"
+              className={`grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-lg border ${
+                hasConflict 
+                  ? 'bg-red-500/10 border-red-500/30' 
+                  : 'bg-white/5 border-white/10'
+              }`}
             >
               <FormField
                 control={form.control}
                 name={`schedule.${index}.dayOfWeek`}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/70 flex items-center gap-2">
-                      <Calendar className="w-3 h-3" />
+                    <FormLabel className="text-white/70">
                       Day
                     </FormLabel>
                     <FormControl>
@@ -114,14 +142,14 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
                 name={`schedule.${index}.startTime`}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/70">Start Time</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="time"
-                        className="bg-white/10 border-white/20 text-white"
-                      />
-                    </FormControl>
+                    <FriendlyTimePicker
+                      label="Start Time"
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select start time"
+                      minuteStep={15}
+                      format="24h"
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -132,20 +160,21 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
                 name={`schedule.${index}.endTime`}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/70">End Time</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="time"
-                        className="bg-white/10 border-white/20 text-white"
-                      />
-                    </FormControl>
+                    <FriendlyTimePicker
+                      label="End Time"
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select end time"
+                      minuteStep={15}
+                      format="24h"
+                      minTime={form.watch(`schedule.${index}.startTime`)}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <div className="flex items-end">
+              <div style={{paddingTop: "32px"}}>
                 <Button
                   type="button"
                   variant="ghost"
@@ -157,8 +186,17 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
                   Remove
                 </Button>
               </div>
+              
+              {/* Conflict warning */}
+              {hasConflict && (
+                <div className="col-span-full mt-2 text-red-400 text-sm flex items-center gap-2">
+                  <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                  This schedule conflicts with another slot on the same day
+                </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {schedule.length === 0 && (
@@ -184,10 +222,7 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
           <h3 className="text-lg font-semibold text-white flex items-center gap-2">
             <Users className="w-5 h-5" />
             Student Enrollment
-          </h3>
-          <div className="text-sm text-white/70">
-            {selectedStudentIds.length} students selected
-          </div>
+          </h3> 
         </div>
 
         <FormField
@@ -216,7 +251,11 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
         classes={classes}
         selectedStudentIds={form.watch('studentIds') || []}
         onSelectionChange={(studentIds) => {
-          form.setValue('studentIds', studentIds);
+          form.setValue('studentIds', studentIds, { 
+            shouldDirty: true, 
+            shouldTouch: true,
+            shouldValidate: true 
+          });
         }}
         isOpen={isStudentPanelOpen}
         onClose={() => setIsStudentPanelOpen(false)}

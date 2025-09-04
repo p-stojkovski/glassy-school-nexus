@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClassesApi } from '@/domains/classesApi/hooks/useClassesApi';
-import { teacherApiService } from '@/services/teacherApiService';
-import classroomApiService from '@/services/classroomApiService';
+import { classApiService } from '@/services/classApiService';
 import { ClassFormData } from '@/types/api/class';
 import { ClassResponse } from '@/types/api/class';
 
@@ -13,16 +12,7 @@ export const useClassFormPage = (classId?: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setFormError] = useState<string | null>(null);
   const [classItem, setClassItem] = useState<ClassResponse | null>(null);
-  const [teachers, setTeachers] = useState<any[]>([]);
-  const [classrooms, setClassrooms] = useState<any[]>([]);
-  const [subjects] = useState([
-    { id: 'english', name: 'English' },
-    { id: 'math', name: 'Mathematics' },
-    { id: 'science', name: 'Science' },
-    { id: 'history', name: 'History' },
-    { id: 'geography', name: 'Geography' },
-    { id: 'art', name: 'Art' },
-  ]);
+  // Removed teachers, classrooms, and subjects state - dropdown components handle data themselves
 
   // Load class by ID in edit mode
   useEffect(() => {
@@ -31,49 +21,26 @@ export const useClassFormPage = (classId?: string) => {
       setLoading(true);
       setFormError(null);
       try {
-        await loadClasses();
-        const foundClass = classes.find(c => c.id === classId);
-        if (foundClass) {
-          setClassItem(foundClass);
-        } else {
-          setFormError('Class not found');
-        }
+        // Call the individual endpoint directly to get full class details (skip global loading)
+        classApiService.disableGlobalLoading();
+        const classData = await classApiService.getClassById(classId);
+        classApiService.enableGlobalLoading();
+        setClassItem(classData);
       } catch (err: any) {
-        setFormError(err?.message || 'Failed to load class');
+        if (err?.status === 404) {
+          setFormError('Class not found');
+        } else {
+          setFormError(err?.message || 'Failed to load class');
+        }
       } finally {
+        classApiService.enableGlobalLoading();
         setLoading(false);
       }
     };
     loadClass();
-  }, [classId, loadClasses, classes]);
+  }, [classId]);
 
-  // Load teachers (global loading handled by interceptor)
-  useEffect(() => {
-    const loadTeachers = async () => {
-      try {
-        const teachersData = await teacherApiService.getAllTeachers();
-        setTeachers(teachersData);
-      } catch (err: any) {
-        console.error('Failed to load teachers:', err);
-        setTeachers([]);
-      }
-    };
-    loadTeachers();
-  }, []);
-
-  // Load classrooms (global loading handled by interceptor)
-  useEffect(() => {
-    const loadClassrooms = async () => {
-      try {
-        const classroomsData = await classroomApiService.getAllClassrooms();
-        setClassrooms(classroomsData);
-      } catch (err: any) {
-        console.error('Failed to load classrooms:', err);
-        setClassrooms([]);
-      }
-    };
-    loadClassrooms();
-  }, []);
+  // Removed teachers and classrooms loading - dropdown components handle this themselves
 
   // Handle loading state
   const isLoading = loading || (classId ? !classItem && !error : false);
@@ -110,9 +77,7 @@ export const useClassFormPage = (classId?: string) => {
 
   return {
     classItem,
-    teachers,
-    classrooms,
-    subjects,
+    // Removed teachers, classrooms, subjects - dropdown components handle data themselves
     loading: isLoading,
     error,
     handleSubmit,

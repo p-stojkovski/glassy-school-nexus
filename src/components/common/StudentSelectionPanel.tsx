@@ -4,22 +4,15 @@ import {
   Search,
   Users,
   Check,
-  Filter,
-  BookOpen,
   UserCheck,
   UserX,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import FormButtons from '@/components/common/FormButtons';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sheet,
@@ -30,9 +23,10 @@ import {
 import { Student } from '@/domains/students/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
 import { cn } from '@/lib/utils';
+import { studentApiService } from '@/services/studentApiService';
 
 interface StudentSelectionPanelProps {
-  students: Student[];
+  students?: Student[]; // Made optional since we'll load them independently
   classes: Class[];
   selectedStudentIds: string[];
   onSelectionChange: (studentIds: string[]) => void;
@@ -45,7 +39,7 @@ interface StudentSelectionPanelProps {
 }
 
 const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
-  students,
+  students: propStudents = [],
   classes,
   selectedStudentIds,
   onSelectionChange,
@@ -57,11 +51,46 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   className,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [gradeFilter, setGradeFilter] = useState<string>('all');
-  const UNASSIGNED_FILTER = 'unassigned';
   const [tempSelectedIds, setTempSelectedIds] =
     useState<string[]>(selectedStudentIds);
+  
+  // Independent student loading state
+  const [loadedStudents, setLoadedStudents] = useState<Student[]>(propStudents);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [studentsError, setStudentsError] = useState<string | null>(null);
+  
+  // Use prop students if provided, otherwise use loaded students
+  const students = propStudents.length > 0 ? propStudents : loadedStudents;
+
+  // Load students when panel opens (if not provided via props)
+  useEffect(() => {
+    const loadStudents = async () => {
+      if (isOpen && propStudents.length === 0 && loadedStudents.length === 0 && !isLoadingStudents && !studentsError) {
+        console.log('🔄 Loading students for sidebar...');
+        setIsLoadingStudents(true);
+        setStudentsError(null);
+        
+        try {
+          // Disable global loading for this specific call
+          studentApiService.disableGlobalLoading();
+          
+          const studentsData = await studentApiService.getAllStudents();
+          console.log('✅ Students loaded for sidebar:', studentsData?.length || 0);
+          setLoadedStudents(studentsData);
+        } catch (error: any) {
+          console.error('❌ Failed to load students for sidebar:', error);
+          setStudentsError(error?.message || 'Failed to load students');
+        } finally {
+          setIsLoadingStudents(false);
+          
+          // Re-enable global loading for other components
+          studentApiService.enableGlobalLoading();
+        }
+      }
+    };
+
+    loadStudents();
+  }, [isOpen, propStudents.length]); // ✅ Removed isLoadingStudents and studentsError from deps
 
   // Reset temp selection when panel opens
   useEffect(() => {
@@ -69,6 +98,13 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
       setTempSelectedIds(selectedStudentIds);
     }
   }, [isOpen, selectedStudentIds]);
+
+  // Reset error state when panel closes (but keep loaded students)
+  useEffect(() => {
+    if (!isOpen && studentsError) {
+      setStudentsError(null);
+    }
+  }, [isOpen, studentsError]);
 
   // Handle escape key
   useEffect(() => {
@@ -86,56 +122,32 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
       document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [isOpen, onClose]);
-  // Get available classes for filter, using actual class data
-  const availableClasses = useMemo(() => {
-    // Get unique classIds from students that have assigned classes
-    const uniqueClassIds = students
-      .map((student) => student.classId)
-      .filter(Boolean)
-      .filter((classId, index, array) => array.indexOf(classId) === index);
-
-    // Filter to only include classes that exist in the store
-    const validClasses = uniqueClassIds
-      .filter((classId) => classes.some((cls) => cls.id === classId))
-      .map((classId) => {
-        const classData = classes.find((cls) => cls.id === classId);
-        return {
-          id: classId,
-          name: classData ? classData.name : classId,
-        };
-      });
-
-    return validClasses;
-  }, [students, classes]);
-  // Filter students based on search query, status, and grade
+  // Filter students based on search query only
   const filteredStudents = useMemo(() => {
     let filtered = students;
-    // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter((student) => student.status === statusFilter);
-    }
-    // Apply class filter (using classId as proxy for grade)
-    if (gradeFilter === UNASSIGNED_FILTER) {
-      filtered = filtered.filter(
-        (student) =>
-          !student.classId || !classes.find((cls) => cls.id === student.classId)
-      );
-    } else if (gradeFilter !== 'all') {
-      filtered = filtered.filter((student) => student.classId === gradeFilter);
-    }
     // Apply search query filter
     if (searchQuery) {
       const lowercasedQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (student) =>
-          student.name?.toLowerCase().includes(lowercasedQuery) ||
-          student.email?.toLowerCase().includes(lowercasedQuery) ||
-          student.phone?.toLowerCase().includes(lowercasedQuery)
+        (student) => {
+          const fullName = student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim();
+          return (
+            fullName.toLowerCase().includes(lowercasedQuery) ||
+            student.firstName?.toLowerCase().includes(lowercasedQuery) ||
+            student.lastName?.toLowerCase().includes(lowercasedQuery) ||
+            student.email?.toLowerCase().includes(lowercasedQuery) ||
+            student.phone?.toLowerCase().includes(lowercasedQuery)
+          );
+        }
       );
     }
     // Create a copy before sorting to avoid mutating the original array
-    return [...filtered].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-  }, [students, searchQuery, statusFilter, gradeFilter, classes]);
+    return [...filtered].sort((a, b) => {
+      const nameA = a.fullName || `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.email || '';
+      const nameB = b.fullName || `${b.firstName || ''} ${b.lastName || ''}`.trim() || b.email || '';
+      return nameA.localeCompare(nameB);
+    });
+  }, [students, searchQuery]);
 
   // Get selected students info
   const selectedStudents = useMemo(() => {
@@ -198,10 +210,8 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
     onClose();
   };
 
-  const clearFilters = () => {
+  const clearSearch = () => {
     setSearchQuery('');
-    setStatusFilter('all');
-    setGradeFilter('all');
   };
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -211,14 +221,14 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <SheetHeader className="flex items-center justify-between p-6 border-b border-white/20">
+          <SheetHeader className="flex items-center justify-between px-6 py-4 border-b border-white/20">
             <SheetTitle className="flex items-center gap-3 text-white text-2xl font-bold">
               <Users className="w-5 h-5" />
               {title}
             </SheetTitle>
           </SheetHeader>
-          {/* Search and Filters */}
-          <div className="p-6 space-y-4 border-b border-white/20">
+          {/* Search */}
+          <div className="p-4 space-y-3 border-b border-white/20">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
               <Input
@@ -229,50 +239,21 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="bg-white/5 border-white/10 text-white text-sm">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 text-white border border-white/20">
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>{' '}
-              <Select value={gradeFilter} onValueChange={setGradeFilter}>
-                <SelectTrigger className="bg-white/5 border-white/10 text-white text-sm">
-                  <SelectValue placeholder="Class" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 text-white border border-white/20">
-                  <SelectItem value="all">All Classes</SelectItem>
-                  <SelectItem value={UNASSIGNED_FILTER}>Unassigned</SelectItem>
-                  {availableClasses.map((classItem) => (
-                    <SelectItem key={classItem.id} value={classItem.id}>
-                      {classItem.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {(searchQuery ||
-              statusFilter !== 'all' ||
-              gradeFilter !== 'all') && (
+            {searchQuery && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={clearFilters}
+                onClick={clearSearch}
                 className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10"
               >
-                <Filter className="w-3 h-3 mr-2" />
-                Clear Filters
+                <X className="w-3 h-3 mr-2" />
+                Clear Search
               </Button>
             )}
           </div>
           {/* Selection Summary */}
           {tempSelectedIds.length > 0 && (
-            <div className="p-4 bg-white/5 border-b border-white/20">
+            <div className="px-4 py-3 bg-white/5 border-b border-white/20">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-white">
                   Selected ({tempSelectedIds.length})
@@ -294,12 +275,13 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                   <Badge
                     key={student.id}
                     variant="secondary"
-                    className="bg-blue-500/20 text-white border border-blue-400/30 text-xs"
+                    className="bg-blue-500/20 text-white border border-blue-400/30 text-xs font-medium"
                   >
-                    {student.name}
+                    {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email || 'Unknown'}
                     <button
                       onClick={() => handleSelect(student)}
-                      className="ml-1 hover:bg-white/20 rounded-full p-0.5"
+                      className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
+                      title="Remove student"
                     >
                       <X className="w-2 h-2" />
                     </button>
@@ -314,8 +296,8 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
             </div>
           )}
           {/* Bulk Actions */}
-          {allowMultiple && filteredStudents.length > 0 && (
-            <div className="p-4 border-b border-white/20">
+          {allowMultiple && filteredStudents.length > 0 && !isLoadingStudents && !studentsError && (
+            <div className="px-4 py-3 border-b border-white/20">
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -342,13 +324,56 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
             </div>
           )}
           {/* Student List */}
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-3">
             <div className="space-y-2">
-              {filteredStudents.length === 0 ? (
+              {/* Loading State */}
+              {isLoadingStudents ? (
+                <div className="flex flex-col items-center justify-center py-12 text-white/60">
+                  <Loader2 className="w-8 h-8 animate-spin mb-3 text-blue-400" />
+                  <p className="font-medium">Loading students...</p>
+                  <p className="text-sm text-white/40">Please wait while we fetch the student list</p>
+                </div>
+              ) : studentsError ? (
+                /* Error State */
+                <div className="flex flex-col items-center justify-center py-12 text-white/60">
+                  <AlertCircle className="w-8 h-8 mb-3 text-red-400" />
+                  <p className="font-medium text-red-300">Failed to load students</p>
+                  <p className="text-sm text-white/40 text-center max-w-xs">{studentsError}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      setStudentsError(null);
+                      setIsLoadingStudents(true);
+                      
+                      try {
+                        // Disable global loading for retry
+                        studentApiService.disableGlobalLoading();
+                        
+                        const studentsData = await studentApiService.getAllStudents();
+                        setLoadedStudents(studentsData);
+                      } catch (error: any) {
+                        setStudentsError(error?.message || 'Failed to load students');
+                      } finally {
+                        setIsLoadingStudents(false);
+                        
+                        // Re-enable global loading
+                        studentApiService.enableGlobalLoading();
+                      }
+                    }}
+                    className="mt-3 bg-white/5 border-white/10 text-white hover:bg-white/10"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              ) : filteredStudents.length === 0 ? (
+                /* Empty State */
                 <div className="text-center py-8 text-white/60">
                   <Users className="w-8 h-8 mx-auto mb-2" />
                   <p>No students found</p>
-                  <p className="text-sm">Try adjusting your filters</p>
+                  {searchQuery && (
+                    <p className="text-sm">Try adjusting your search</p>
+                  )}
                 </div>
               ) : (
                 filteredStudents.map((student) => {
@@ -369,65 +394,46 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                       className={cn(
                         'flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer',
                         isSelected
-                          ? 'bg-blue-500/20 border-blue-400/40 shadow-sm'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10',
+                          ? 'bg-blue-500/20 border-blue-400/50 shadow-sm ring-1 ring-blue-400/30'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20',
                         (isDisabled || isMaxReached) &&
                           'opacity-50 cursor-not-allowed'
                       )}
                     >
                       <div
                         className={cn(
-                          'w-5 h-5 rounded border-2 flex items-center justify-center',
+                          'w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0',
                           isSelected
-                            ? 'bg-blue-500 border-blue-500'
-                            : 'border-white/30'
+                            ? 'bg-blue-500 border-blue-500 shadow-sm'
+                            : 'border-white/30 hover:border-white/50'
                         )}
                       >
-                        {isSelected && <Check className="w-3 h-3 text-white" />}
+                        {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-white truncate">
-                            {student.name}
-                          </p>
-                          <Badge
-                            variant={
-                              student.status === 'active'
-                                ? 'default'
-                                : 'secondary'
-                            }
-                            className={cn(
-                              'text-xs px-1.5 py-0',
-                              student.status === 'active'
-                                ? 'bg-green-500/20 text-green-300 border border-green-400/30'
-                                : 'bg-gray-500/20 text-gray-300 border border-gray-400/30'
-                            )}
-                          >
-                            {student.status}
-                          </Badge>
-                        </div>{' '}
-                        <div className="flex items-center gap-4 mt-1">
-                          <p className="text-sm text-white/70 truncate">
-                            {student.email}
-                          </p>
-                          <div className="flex items-center gap-1 text-xs text-white/60">
-                            <BookOpen className="w-3 h-3" />
-                            {student.classId &&
-                            classes.find(
-                              (cls) => cls.id === student.classId
-                            ) ? (
-                              <span>
-                                {
-                                  classes.find(
-                                    (cls) => cls.id === student.classId
-                                  )?.name
-                                }
-                              </span>
-                            ) : (
-                              <span>Unassigned</span>
-                            )}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-white truncate text-sm leading-tight">
+                              {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email || 'Unknown Student'}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {(student.fullName || student.firstName || student.lastName) && student.email && (
+                                <p className="text-xs text-white/60 truncate">
+                                  {student.email}
+                                </p>
+                              )}
+                              {student.phone && (
+                                <span className="text-white/40">•</span>
+                              )}
+                              {student.phone && (
+                                <p className="text-xs text-white/60 truncate">
+                                  {student.phone}
+                                </p>
+                              )}
+                            </div>
                           </div>
+                          
                         </div>
                       </div>
                     </div>
@@ -437,12 +443,12 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
             </div>
           </ScrollArea>{' '}
           {/* Footer Actions */}
-          <div className="p-6 border-t border-white/20">
+          <div className="px-6 py-4 border-t border-white/20">
             <FormButtons
               onSubmit={handleApply}
               onCancel={handleCancel}
               submitText={`Apply (${tempSelectedIds.length})`}
-              disabled={!allowMultiple && tempSelectedIds.length === 0}
+              disabled={isLoadingStudents || studentsError !== null || (!allowMultiple && tempSelectedIds.length === 0)}
               variant="compact"
             />
           </div>

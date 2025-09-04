@@ -7,13 +7,14 @@ import { Form } from '@/components/ui/form';
 import FormButtons from '@/components/common/FormButtons';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
-import { DiscountTypeDto, StudentFormData, StudentHttpStatus, ProblemDetails } from '@/types/api/student';
+import { StudentFormData, StudentHttpStatus, ProblemDetails } from '@/types/api/student';
 import { createStudentSchema } from '@/utils/validation/studentValidators';
 import StudentInformationTab from './tabs/StudentInformationTab';
 import ParentGuardianTab from './tabs/ParentGuardianTab';
 import FinancialInformationTab from './tabs/FinancialInformationTab';
 import { useDebounce } from '@/hooks/useDebounce';
 import { checkStudentEmailAvailable } from '@/services/studentApiService';
+import { useDiscountTypes } from '@/hooks/useDiscountTypes';
 
 // Use the API-compatible schema from validation utilities
 const studentSchema = createStudentSchema;
@@ -23,7 +24,6 @@ interface TabbedStudentFormContentProps {
   onSubmit: (data: StudentFormData) => void;
   onCancel: () => void;
   onFormChange?: (data: StudentFormData) => void;
-  discountTypes?: DiscountTypeDto[];
 }
 
 export interface StudentFormRef {
@@ -37,11 +37,11 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
     onSubmit,
     onCancel,
     onFormChange,
-    discountTypes = [],
   },
   ref
 ) => {
   const [activeTab, setActiveTab] = useState('student-info');
+  const { discountTypes } = useDiscountTypes();
 
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
@@ -221,7 +221,7 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
   const selectedDiscountTypeId = form.watch('discountTypeId');
   const discountAmount = form.watch('discountAmount');
   const selectedDiscountType = useMemo(() => {
-    return discountTypes.find((dt) => dt.id === selectedDiscountTypeId);
+    return discountTypes.find((dt) => dt.id.toString() === selectedDiscountTypeId);
   }, [discountTypes, selectedDiscountTypeId]);
   const isAmountRequired = !!(hasDiscount && selectedDiscountType?.requiresAmount);
 
@@ -431,7 +431,7 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
             </TabsContent>
 
             <TabsContent value="financial-info">
-              <FinancialInformationTab form={form} discountTypes={discountTypes} />
+              <FinancialInformationTab form={form} />
             </TabsContent>
           </Tabs>
 

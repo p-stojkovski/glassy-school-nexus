@@ -28,8 +28,7 @@ const ClassFormPage: React.FC = () => {
 
   const {
     classItem,
-    teachers,
-    classrooms,
+    // Removed teachers, classrooms - dropdown components handle data themselves
     loading,
     error,
     handleSubmit,
@@ -158,8 +157,6 @@ const ClassFormPage: React.FC = () => {
         <ClassFormContent
           ref={formRef}
           classItem={classItem}
-          teachers={teachers}
-          classrooms={classrooms}
           onSubmit={(data) => {
             setFormData(data);
             setHasUnsavedChanges(false);

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -17,6 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Clock } from 'lucide-react';
 import { ClassFormData } from './ClassFormContent';
+import { FriendlyTimePicker } from '@/components/common';
 
 const ScheduleForm: React.FC = () => {
   const form = useFormContext<ClassFormData>();
@@ -76,14 +76,14 @@ const ScheduleForm: React.FC = () => {
             name={`schedule.${index}.startTime`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white/70">Start Time</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="time"
-                    className="bg-white/10 border-white/20 text-white"
-                  />
-                </FormControl>
+                <FriendlyTimePicker
+                  label="Start Time"
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Select start time"
+                  minuteStep={15}
+                  format="24h"
+                />
               </FormItem>
             )}
           />
@@ -93,14 +93,15 @@ const ScheduleForm: React.FC = () => {
             name={`schedule.${index}.endTime`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white/70">End Time</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="time"
-                    className="bg-white/10 border-white/20 text-white"
-                  />
-                </FormControl>
+                <FriendlyTimePicker
+                  label="End Time"
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Select end time"
+                  minuteStep={15}
+                  format="24h"
+                  minTime={form.watch(`schedule.${index}.startTime`)}
+                />
               </FormItem>
             )}
           />

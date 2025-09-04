@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import GlassCard from '@/components/common/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Class } from '@/domains/classes/classesSlice';
+import { formatSchedule } from '@/utils/scheduleFormatter';
 
 interface ClassCardProps {
   classItem: Class;
@@ -62,11 +63,9 @@ const ClassCard: React.FC<ClassCardProps> = ({
 
       <div className="space-y-2">
         <p className="text-sm font-medium text-white">Schedule:</p>
-        {classItem.schedule.map((schedule, index) => (
-          <p key={index} className="text-sm text-white/70">
-            {schedule.day}: {schedule.startTime} - {schedule.endTime}
-          </p>
-        ))}
+        <p className="text-sm text-white/70">
+          {formatSchedule(classItem.schedule)}
+        </p>
       </div>
 
       <div className="text-xs text-white/50 border-t border-white/10 pt-3 mt-4">

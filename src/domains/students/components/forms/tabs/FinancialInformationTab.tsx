@@ -3,36 +3,30 @@ import { UseFormReturn } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { StudentFormData, DiscountTypeDto } from '@/types/api/student';
+import { StudentFormData } from '@/types/api/student';
+import DiscountTypesDropdown from '@/components/common/DiscountTypesDropdown';
+import { useDiscountTypes } from '@/hooks/useDiscountTypes';
 
 interface FinancialInformationTabProps {
   form: UseFormReturn<StudentFormData>;
-  discountTypes?: DiscountTypeDto[];
 }
 
 const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
   form,
-  discountTypes = [],
 }) => {
+  const { discountTypes } = useDiscountTypes();
   // Watch discount checkbox and type to conditionally show/disable fields
   const hasDiscount = form.watch('hasDiscount');
   const selectedDiscountTypeId = form.watch('discountTypeId');
   
   // Find the selected discount type to determine if amount is required
-  const selectedDiscountType = discountTypes.find(dt => dt.id === selectedDiscountTypeId);
+  const selectedDiscountType = discountTypes.find(dt => dt.id.toString() === selectedDiscountTypeId);
   const isAmountDisabled = selectedDiscountType && !selectedDiscountType.requiresAmount;
   const isAmountRequired = !!(hasDiscount && selectedDiscountType?.requiresAmount);
 
@@ -98,36 +92,21 @@ const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
                 <FormLabel className="text-white font-semibold">
                   Discount Type *
                 </FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    // Reset discount amount when changing to a type that doesn't require amount
-                    const discountType = discountTypes.find(dt => dt.id === value);
-                    if (discountType && !discountType.requiresAmount) {
-                      form.setValue('discountAmount', 0);
-                    }
-                  }}
-                  value={field.value || ''}
-                >
-                  <FormControl>
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-yellow-400 focus:ring-yellow-400">
-                      <SelectValue placeholder="Select discount type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {discountTypes.length > 0 ? (
-                      discountTypes.map((discountType) => (
-                        <SelectItem key={discountType.id} value={discountType.id}>
-                          {discountType.name}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="loading" disabled>
-                        Loading discount types...
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <DiscountTypesDropdown
+                    value={field.value || ''}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Reset discount amount when changing to a type that doesn't require amount
+                      const discountType = discountTypes.find(dt => dt.id.toString() === value);
+                      if (discountType && !discountType.requiresAmount) {
+                        form.setValue('discountAmount', 0);
+                      }
+                    }}
+                    placeholder="Select discount type"
+                    className="focus:border-yellow-400 focus:ring-yellow-400"
+                  />
+                </FormControl>
                 <FormMessage className="text-red-300" />
               </FormItem>
             )}

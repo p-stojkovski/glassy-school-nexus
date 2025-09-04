@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, MapPin, User, Users, Calendar } from 'lucide-react';
 import { Class } from '@/domains/classes/classesSlice';
+import { formatSchedule } from '@/utils/scheduleFormatter';
 
 interface ClassDetailsProps {
   classItem: Class | null;
@@ -86,15 +87,8 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
               <Clock className="w-5 h-5" />
               Schedule
             </h3>
-            <div className="space-y-2">
-              {classItem.schedule.map((schedule, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-white">{schedule.day}</span>
-                  <span className="text-white/70">
-                    {schedule.startTime} - {schedule.endTime}
-                  </span>
-                </div>
-              ))}
+            <div className="text-white">
+              {formatSchedule(classItem.schedule)}
             </div>
           </div>
 

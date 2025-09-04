@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Circle, BookOpen, Calendar, FileText } from 'lucide-react';
 import { z } from 'zod';
+import { useAppSelector } from '@/store/hooks';
+import { RootState } from '@/store';
 import {
   Form,
   FormControl,
@@ -39,7 +41,46 @@ const classSchema = z.object({
     dayOfWeek: z.string(),
     startTime: z.string(),
     endTime: z.string(),
-  })).optional(),
+  })).optional().refine((schedules) => {
+    if (!schedules || schedules.length === 0) return true;
+    
+    // Check for duplicate day/time combinations
+    const scheduleKeys = schedules.map(s => `${s.dayOfWeek}-${s.startTime}-${s.endTime}`);
+    const uniqueKeys = new Set(scheduleKeys);
+    
+    if (scheduleKeys.length !== uniqueKeys.size) {
+      return false;
+    }
+    
+    // Check for overlapping times on the same day
+    const dayGroups = schedules.reduce((acc, schedule) => {
+      if (!acc[schedule.dayOfWeek]) acc[schedule.dayOfWeek] = [];
+      acc[schedule.dayOfWeek].push({
+        start: schedule.startTime,
+        end: schedule.endTime
+      });
+      return acc;
+    }, {} as Record<string, {start: string, end: string}[]>);
+    
+    for (const day in dayGroups) {
+      const daySchedules = dayGroups[day];
+      for (let i = 0; i < daySchedules.length; i++) {
+        for (let j = i + 1; j < daySchedules.length; j++) {
+          const schedule1 = daySchedules[i];
+          const schedule2 = daySchedules[j];
+          
+          // Check for time overlap
+          if (schedule1.start < schedule2.end && schedule2.start < schedule1.end) {
+            return false;
+          }
+        }
+      }
+    }
+    
+    return true;
+  }, {
+    message: "Schedule cannot have duplicate or overlapping time slots on the same day"
+  }),
   studentIds: z.array(z.string()).optional(),
 });
 
@@ -50,8 +91,7 @@ export interface ClassFormRef {
 
 interface ClassFormContentProps {
   classItem?: ClassResponse | null;
-  teachers: any[];
-  classrooms: any[];
+  // Removed teachers and classrooms props - dropdown components handle data themselves
   onSubmit: (data: ClassFormData) => Promise<void>;
   onCancel: () => void;
   onFormChange?: (data: ClassFormData) => void;
@@ -60,8 +100,7 @@ interface ClassFormContentProps {
 const TabbedClassFormContent = React.forwardRef<ClassFormRef, ClassFormContentProps>((
   {
     classItem,
-    teachers,
-    classrooms,
+    // Removed teachers, classrooms - dropdown components handle data themselves
     onSubmit,
     onCancel,
     onFormChange,
@@ -69,6 +108,10 @@ const TabbedClassFormContent = React.forwardRef<ClassFormRef, ClassFormContentPr
   ref
 ) => {
   const [activeTab, setActiveTab] = useState('basic-info');
+  
+  // Load students and classes from Redux store
+  const { students } = useAppSelector((state: RootState) => state.students);
+  const { classes } = useAppSelector((state: RootState) => state.classes);
 
   const form = useForm<ClassFormData>({
     resolver: zodResolver(classSchema),
@@ -240,13 +283,15 @@ const TabbedClassFormContent = React.forwardRef<ClassFormRef, ClassFormContentPr
             <TabsContent value="basic-info">
               <BasicClassInfoTab 
                 form={form}
-                teachers={teachers}
-                classrooms={classrooms}
               />
             </TabsContent>
 
             <TabsContent value="schedule-enrollment">
-              <ScheduleEnrollmentTab form={form} />
+              <ScheduleEnrollmentTab 
+                form={form} 
+                students={students}
+                classes={classes}
+              />
             </TabsContent>
 
             <TabsContent value="additional-details">

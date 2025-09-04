@@ -29,6 +29,7 @@ import {
   Book,
 } from 'lucide-react';
 import { Class } from '../../classesSlice';
+import { formatSchedule } from '@/utils/scheduleFormatter';
 
 interface ClassTableProps {
   classes: Class[];
@@ -77,11 +78,8 @@ const ClassTable: React.FC<ClassTableProps> = ({
           </TableHeader>
           <TableBody>
             {classes.map((classItem, index) => (
-              <motion.tr
+              <TableRow
                 key={classItem.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05, duration: 0.3 }}
                 className="border-white/10 hover:bg-white/5"
               >
                 <TableCell>
@@ -117,8 +115,8 @@ const ClassTable: React.FC<ClassTableProps> = ({
                     <div className="flex items-center gap-2 text-white/80">
                       <Clock className="w-3 h-3" />
                       <span className="text-sm">
-                        {classItem.schedule ? 
-                          `${classItem.schedule.dayOfWeek} ${classItem.schedule.startTime}-${classItem.schedule.endTime}` 
+                        {classItem.schedule.length > 0 ? 
+                          formatSchedule(classItem.schedule)
                           : 'Not scheduled'}
                       </span>
                     </div>
@@ -186,7 +184,7 @@ const ClassTable: React.FC<ClassTableProps> = ({
                     </DropdownMenu>
                   </div>
                 </TableCell>
-              </motion.tr>
+              </TableRow>
             ))}
           </TableBody>
         </Table>

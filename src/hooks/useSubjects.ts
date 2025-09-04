@@ -11,26 +11,26 @@ export interface UseSubjectsResult {
 
 const SUBJECTS_STORAGE_KEY = 'think-english-subjects';
 
-// Helper functions for session storage
+// Helper functions for localStorage
 const getSubjectsFromStorage = (): SubjectDto[] | null => {
   try {
-    const stored = sessionStorage.getItem(SUBJECTS_STORAGE_KEY);
+    const stored = localStorage.getItem(SUBJECTS_STORAGE_KEY);
     if (stored) {
       return JSON.parse(stored) as SubjectDto[];
     }
   } catch (error) {
-    console.warn('Failed to parse subjects from session storage:', error);
+    console.warn('Failed to parse subjects from localStorage:', error);
     // Clear corrupted data
-    sessionStorage.removeItem(SUBJECTS_STORAGE_KEY);
+    localStorage.removeItem(SUBJECTS_STORAGE_KEY);
   }
   return null;
 };
 
 const setSubjectsToStorage = (subjects: SubjectDto[]): void => {
   try {
-    sessionStorage.setItem(SUBJECTS_STORAGE_KEY, JSON.stringify(subjects));
+    localStorage.setItem(SUBJECTS_STORAGE_KEY, JSON.stringify(subjects));
   } catch (error) {
-    console.warn('Failed to store subjects in session storage:', error);
+    console.warn('Failed to store subjects in localStorage:', error);
   }
 };
 

@@ -23,6 +23,7 @@ import {
 import {
   validateAndPrepareClassroomData,
 } from '@/utils/validation/classroomValidators';
+import { clearCache } from '@/utils/cacheManager';
 
 export interface ClassroomFormData {
   name: string;
@@ -169,6 +170,9 @@ export const useClassroomManagement = () => {
       // Fetch the created classroom to get full data
       const createdClassroom = await classroomApiService.getClassroomById(createdResponse.id);
       addClassroom(createdClassroom);
+      
+      // Clear localStorage items that depend on classrooms data
+      localStorage.removeItem('think-english-classrooms');
 
       showSuccessMessage(`Classroom Created`, `${data.name} has been successfully created.`);
       return createdClassroom;
@@ -194,6 +198,12 @@ export const useClassroomManagement = () => {
       const updatedClassroom = await updateClassroom(id, request);
       updateClassroomInStore(updatedClassroom);
       
+      // Clear localStorage items that depend on classrooms data
+      localStorage.removeItem('think-english-classrooms');
+      localStorage.removeItem('think-english-subjects');
+      localStorage.removeItem('think-english-teachers');
+      clearCache('classrooms');
+      
       showSuccessMessage(`Classroom Updated`, `${data.name} has been successfully updated.`);
       return updatedClassroom;
     } catch (error) {
@@ -210,6 +220,13 @@ export const useClassroomManagement = () => {
     try {
       await deleteClassroom(id);
       deleteClassroomFromStore(id);
+      
+      // Clear localStorage items that depend on classrooms data
+      localStorage.removeItem('think-english-classrooms');
+      localStorage.removeItem('think-english-subjects');
+      localStorage.removeItem('think-english-teachers');
+      clearCache('classrooms');
+      
       showSuccessMessage(`Classroom Deleted`, `${name} has been successfully deleted.`);
     } catch (error) {
       const errorMessage = ClassroomErrorHandlers.delete(error);

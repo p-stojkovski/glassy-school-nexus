@@ -22,6 +22,7 @@ import {
 import {
   validateAndPrepareTeacherData,
 } from '@/utils/validation/teacherValidators';
+import { clearCache } from '@/utils/cacheManager';
 
 export type TeacherViewMode = 'grid' | 'table';
 
@@ -62,7 +63,7 @@ export const useTeacherManagement = () => {
   // Local UI state
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<TeacherViewMode>('grid');
+  const [viewMode, setViewMode] = useState<TeacherViewMode>('table');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
@@ -152,6 +153,9 @@ export const useTeacherManagement = () => {
       // Fetch the created teacher to get full data
       const createdTeacher = await teacherApiService.getTeacherById(createdResponse.id);
       addTeacher(createdTeacher);
+      
+      // Clear teachers cache so other components refresh on next mount
+      clearCache('teachers');
 
       showSuccessMessage(`Teacher Created`, `${data.name} has been successfully added to the system.`);
       return createdTeacher;
@@ -180,6 +184,9 @@ export const useTeacherManagement = () => {
       const updatedTeacher = await updateTeacher(id, request);
       updateTeacherInStore(updatedTeacher);
       
+      // Clear teachers cache so other components refresh on next mount
+      clearCache('teachers');
+      
       showSuccessMessage(`Teacher Updated`, `${data.name} has been successfully updated.`);
       return updatedTeacher;
     } catch (error) {
@@ -199,6 +206,10 @@ export const useTeacherManagement = () => {
     try {
       await deleteTeacher(id);
       deleteTeacherFromStore(id);
+      
+      // Clear teachers cache so other components refresh on next mount
+      clearCache('teachers');
+      
       showSuccessMessage(`Teacher Deleted`, `${name} has been successfully removed from the system.`);
     } catch (error) {
       const errorMessage = TeacherErrorHandlers.delete(error);

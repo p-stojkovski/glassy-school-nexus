@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Loader2, AlertCircle } from 'lucide-react';
+import { User, Loader2, AlertCircle } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -7,35 +7,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useSubjects } from '@/hooks/useSubjects';
+import { useTeachers } from '@/hooks/useTeachers';
 
-export interface SubjectsDropdownProps {
+export interface TeachersDropdownProps {
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
   showIcon?: boolean;
-  includeAllOption?: boolean;
-  allOptionLabel?: string;
   className?: string;
   disabled?: boolean;
+  includeSubjectInfo?: boolean;
 }
 
-const SubjectsDropdown: React.FC<SubjectsDropdownProps> = ({
+const TeachersDropdown: React.FC<TeachersDropdownProps> = ({
   value,
   onValueChange,
-  placeholder = 'Select Subject',
+  placeholder = 'Select Teacher',
   showIcon = false,
-  includeAllOption = false,
-  allOptionLabel = 'All Subjects',
   className = '',
   disabled = false,
+  includeSubjectInfo = true,
 }) => {
-  const { subjects, isLoading, error } = useSubjects();
+  const { teachers, isLoading, error } = useTeachers();
 
-  // Sort subjects by sortOrder
-  const sortedSubjects = React.useMemo(
-    () => [...subjects].sort((a, b) => a.sortOrder - b.sortOrder),
-    [subjects]
+  // Sort teachers by name
+  const sortedTeachers = React.useMemo(
+    () => [...teachers].sort((a, b) => a.name.localeCompare(b.name)),
+    [teachers]
   );
 
   const triggerClasses = `bg-white/5 border-white/10 text-white ${className}`;
@@ -47,33 +45,39 @@ const SubjectsDropdown: React.FC<SubjectsDropdownProps> = ({
       disabled={disabled || isLoading}
     >
       <SelectTrigger className={triggerClasses}>
-        {showIcon && <BookOpen className="w-4 h-4 mr-2" />}
+        {showIcon && <User className="w-4 h-4 mr-2" />}
         {isLoading ? (
           <div className="flex items-center">
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            <span>Loading subjects...</span>
+            <span>Loading teachers...</span>
           </div>
         ) : error ? (
           <div className="flex items-center text-red-400">
             <AlertCircle className="w-4 h-4 mr-2" />
-            <span>Error loading subjects</span>
+            <span>Error loading teachers</span>
           </div>
         ) : (
           <SelectValue placeholder={placeholder} />
         )}
       </SelectTrigger>
       <SelectContent>
-        {includeAllOption && (
-          <SelectItem value="all">{allOptionLabel}</SelectItem>
-        )}
         {error ? (
           <SelectItem value="__error__" disabled>
-            Failed to load subjects
+            Failed to load teachers
+          </SelectItem>
+        ) : sortedTeachers.length === 0 ? (
+          <SelectItem value="__empty__" disabled>
+            No teachers available
           </SelectItem>
         ) : (
-          sortedSubjects.map((subject) => (
-            <SelectItem key={subject.id} value={subject.id}>
-              {subject.name}
+          sortedTeachers.map((teacher) => (
+            <SelectItem key={teacher.id} value={teacher.id}>
+              {teacher.name}
+              {includeSubjectInfo && teacher.subjectName && (
+                <span className="text-sm text-white/60 ml-2">
+                  ({teacher.subjectName})
+                </span>
+              )}
             </SelectItem>
           ))
         )}
@@ -82,4 +86,4 @@ const SubjectsDropdown: React.FC<SubjectsDropdownProps> = ({
   );
 };
 
-export default SubjectsDropdown;
+export default TeachersDropdown;

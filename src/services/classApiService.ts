@@ -4,6 +4,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import apiService from './api';
 import apiWithInterceptor from './apiWithInterceptor';
 import {
   ClassResponse,
@@ -45,10 +46,28 @@ function normalizeListResponse<T>(raw: any): T[] {
 }
 
 export class ClassApiService {
+  private useInterceptor = true; // Flag to enable/disable global interceptor
+  
+  // Get the appropriate API service based on configuration
+  private getApiService() {
+    return this.useInterceptor ? apiWithInterceptor : apiService;
+  }
+  
+  // Method to disable global loading for all operations in this service
+  public disableGlobalLoading() {
+    this.useInterceptor = false;
+  }
+  
+  // Method to enable global loading for all operations in this service
+  public enableGlobalLoading() {
+    this.useInterceptor = true;
+  }
+
   /** Get all classes (summary) */
   async getAllClasses(): Promise<ClassResponse[]> {
     try {
-      const raw = await apiWithInterceptor.get<any>(ClassApiPaths.BASE);
+      const api = this.getApiService();
+      const raw = await api.get<any>(ClassApiPaths.BASE);
       return normalizeListResponse<ClassResponse>(raw);
     } catch (error: any) {
       if (error.status === ClassHttpStatus.UNAUTHORIZED) {
@@ -61,7 +80,8 @@ export class ClassApiService {
   /** Get class by ID (full details) */
   async getClassById(id: string): Promise<ClassResponse> {
     try {
-      return await apiWithInterceptor.get<ClassResponse>(ClassApiPaths.BY_ID(id));
+      const api = this.getApiService();
+      return await api.get<ClassResponse>(ClassApiPaths.BY_ID(id));
     } catch (error: any) {
       if (error.status === ClassHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Class not found');
@@ -81,7 +101,8 @@ export class ClassApiService {
       if (params.subjectId) qs.append('subjectId', params.subjectId);
       if (params.onlyWithAvailableSlots !== undefined) qs.append('onlyWithAvailableSlots', String(params.onlyWithAvailableSlots));
       const endpoint = qs.toString() ? `${ClassApiPaths.SEARCH}?${qs.toString()}` : ClassApiPaths.SEARCH;
-      return await apiWithInterceptor.get<ClassResponse[]>(endpoint);
+      const api = this.getApiService();
+      return await api.get<ClassResponse[]>(endpoint);
     } catch (error: any) {
       if (error.status === ClassHttpStatus.BAD_REQUEST) {
         if (error.details?.detail?.toLowerCase()?.includes('subject id')) {
@@ -99,7 +120,8 @@ export class ClassApiService {
   /** Create class */
   async createClass(request: CreateClassRequest): Promise<ClassCreatedResponse> {
     try {
-      return await apiWithInterceptor.post<ClassCreatedResponse>(ClassApiPaths.BASE, request);
+      const api = this.getApiService();
+      return await api.post<ClassCreatedResponse>(ClassApiPaths.BASE, request);
     } catch (error: any) {
       if (error.status === ClassHttpStatus.CONFLICT) {
         // Let the error handler deal with 409 conflicts using backend detail message
@@ -123,7 +145,8 @@ export class ClassApiService {
   /** Update class */
   async updateClass(id: string, request: UpdateClassRequest): Promise<ClassResponse> {
     try {
-      return await apiWithInterceptor.put<ClassResponse>(ClassApiPaths.BY_ID(id), request);
+      const api = this.getApiService();
+      return await api.put<ClassResponse>(ClassApiPaths.BY_ID(id), request);
     } catch (error: any) {
       if (error.status === ClassHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Class not found');
@@ -150,7 +173,8 @@ export class ClassApiService {
   /** Delete class */
   async deleteClass(id: string): Promise<void> {
     try {
-      await apiWithInterceptor.delete<void>(ClassApiPaths.BY_ID(id));
+      const api = this.getApiService();
+      await api.delete<void>(ClassApiPaths.BY_ID(id));
     } catch (error: any) {
       if (error.status === ClassHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Class not found');

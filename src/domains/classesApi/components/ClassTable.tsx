@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import {
   MoreVertical,
   Eye,
@@ -7,6 +8,8 @@ import {
   Users,
   BookOpen,
   User,
+  MapPin,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +28,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import GlassCard from '@/components/common/GlassCard';
-import { ClassResponse } from '@/types/api/class';
+import { ClassResponse, ScheduleSlotDto } from '@/types/api/class';
+import { formatSchedule } from '@/utils/scheduleFormatter';
 
 interface Props {
   classes: ClassResponse[];
@@ -38,8 +42,15 @@ interface Props {
 
 const ClassTable: React.FC<Props> = React.memo(({ classes, onEdit, onDelete, onView }) => {
   return (
-    <div className="space-y-4">
-      <GlassCard className="overflow-hidden" animate={false}>
+    <motion.div 
+      layout 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-4"
+    >
+      <GlassCard className="overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="border-white/20 hover:bg-white/5">
@@ -48,6 +59,12 @@ const ClassTable: React.FC<Props> = React.memo(({ classes, onEdit, onDelete, onV
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
                 Teacher
+              </TableHead>
+              <TableHead className="text-white/90 font-semibold">
+                Classroom
+              </TableHead>
+              <TableHead className="text-white/90 font-semibold">
+                Schedule
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
                 Enrollment
@@ -82,6 +99,27 @@ const ClassTable: React.FC<Props> = React.memo(({ classes, onEdit, onDelete, onV
                   <div className="flex items-center gap-2 text-sm text-white/80">
                     <User className="w-3 h-3 text-white/60" />
                     <span>{classItem.teacherName}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2 text-sm text-white/80">
+                    <MapPin className="w-3 h-3 text-white/60" />
+                    <span>{classItem.classroomName}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2 text-sm text-white/80">
+                    <Clock className="w-3 h-3 text-white/60" />
+                    <span className="text-white/90">
+                      {classItem.schedule?.length > 0 
+                        ? formatSchedule(classItem.schedule.map(slot => ({
+                            day: slot.dayOfWeek,
+                            startTime: slot.startTime,
+                            endTime: slot.endTime
+                          })))
+                        : 'Not scheduled'
+                      }
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -147,7 +185,7 @@ const ClassTable: React.FC<Props> = React.memo(({ classes, onEdit, onDelete, onV
           </TableBody>
         </Table>
       </GlassCard>
-    </div>
+    </motion.div>
   );
 });
 

@@ -8,6 +8,8 @@ import {
   Users,
   BookOpen,
   User,
+  MapPin,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -95,6 +97,31 @@ const ClassGrid: React.FC<Props> = React.memo(({ classes, onEdit, onDelete, onVi
                 <User className="w-4 h-4 text-white/60" />
                 <span className="text-white/60">Teacher:</span>
                 <span>{classItem.teacherName}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-white/80">
+                <MapPin className="w-4 h-4 text-white/60" />
+                <span className="text-white/60">Classroom:</span>
+                <span>{classItem.classroomName}</span>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm text-white/60">
+                  <Clock className="w-4 h-4 text-white/60" />
+                  <span>Schedule:</span>
+                </div>
+                <div className="ml-6 space-y-1">
+                  {classItem.schedule?.length > 0 ? (
+                    classItem.schedule.map((slot, index) => (
+                      <div key={index} className="text-sm">
+                        <div className="text-white/90">{slot.dayOfWeek}</div>
+                        <div className="text-white/60 text-xs">{slot.startTime} - {slot.endTime}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-white/60">Not scheduled</div>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-white/80">

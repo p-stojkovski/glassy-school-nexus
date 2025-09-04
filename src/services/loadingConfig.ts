@@ -17,6 +17,10 @@ const SKIP_LOADING_ENDPOINTS = [
   '/api/students/search',
   '/api/classes/search',
   
+  // Class form page dependencies (use local loading states)
+  '/api/teachers',
+  '/api/classrooms',
+  
   // Background operations
   '/api/analytics',
   '/api/health',

@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ThemeProvider } from 'next-themes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { store } from './store';
 import { RootState } from './store';
 import { DataProvider } from '@/app/providers/DataProvider';
@@ -14,7 +14,6 @@ import LoginForm from '@/domains/auth/components/LoginForm';
 import AppLayout from './components/layout/AppLayout';
 import GlobalLoadingOverlay from '@/components/common/GlobalLoadingOverlay';
 import Dashboard from './pages/Dashboard';
-import ClassroomManagement from './pages/ClassroomManagement';
 import StudentManagement from './pages/StudentManagement';
 import ClassesPage from './pages/Classes';
 import ClassFormPage from './pages/ClassFormPage';
@@ -27,6 +26,7 @@ import PrivateLessons from './pages/PrivateLessons';
 import PrivateLessonDetailPage from './domains/privateLessons/components/PrivateLessonDetailPage';
 import StudentProfilePage from './domains/students/components/profile/StudentProfilePage';
 import StudentFormPage from './pages/StudentFormPage';
+import SettingsPage from './pages/SettingsPage';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient({
@@ -73,7 +73,7 @@ const AppContent: React.FC = () => {
     <AppLayout>
       <Routes>
         <Route path="/" element={<Dashboard />} />{' '}
-        <Route path="/classrooms" element={<ClassroomManagement />} />{' '}
+        <Route path="/classrooms" element={<Navigate to="/settings" replace />} />
         <Route path="/students" element={<StudentManagement />} />
         <Route path="/students/new" element={<StudentFormPage />} />
         <Route path="/students/edit/:studentId" element={<StudentFormPage />} />
@@ -91,7 +91,7 @@ const AppContent: React.FC = () => {
           path="/private-lessons/:lessonId"
           element={<PrivateLessonDetailPage />}
         />
-        <Route path="/settings" element={<Dashboard />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AppLayout>
