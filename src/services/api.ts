@@ -140,6 +140,10 @@ class ApiService {
     return this.makeRequest<T>('DELETE', endpoint);
   }
 
+  async patch<T>(endpoint: string, data?: any): Promise<T> {
+    return this.makeRequest<T>('PATCH', endpoint, data);
+  }
+
   private async makeRequest<T>(
     method: string,
     endpoint: string,

@@ -35,6 +35,7 @@ const ClassManagementPage: React.FC = () => {
     handleFilterChange,
   } = useClassManagementPage();
 
+
   if (loading) {
     return <ClassLoading />;
   }

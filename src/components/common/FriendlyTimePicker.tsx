@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface FriendlyTimePickerProps {
   value?: string;
   onChange: (time: string) => void;
+  onConfirm?: (time: string) => void;  // New callback for when user confirms time
   placeholder?: string;
   className?: string;
   label?: string;
@@ -20,6 +21,7 @@ interface FriendlyTimePickerProps {
 const FriendlyTimePicker: React.FC<FriendlyTimePickerProps> = ({
   value,
   onChange,
+  onConfirm,
   placeholder = 'Select time',
   className,
   label,
@@ -197,7 +199,13 @@ const FriendlyTimePicker: React.FC<FriendlyTimePickerProps> = ({
                             type="button"
                             onClick={() => {
                               setSelectedHour(hour);
-                              if (selectedMinute !== null) {
+                              // Auto-select 00 minutes only if no minutes are selected yet
+                              if (selectedMinute === null) {
+                                const autoMinute = 0;
+                                setSelectedMinute(autoMinute);
+                                handleTimeSelect(hour, autoMinute, selectedPeriod, false);
+                              } else {
+                                // Use already selected minutes
                                 handleTimeSelect(hour, selectedMinute, selectedPeriod, false);
                               }
                             }}
@@ -316,7 +324,12 @@ const FriendlyTimePicker: React.FC<FriendlyTimePickerProps> = ({
                   {selectedHour !== null && selectedMinute !== null && (
                     <button
                       type="button"
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => {
+                        setIsOpen(false);
+                        if (onConfirm && value) {
+                          onConfirm(value);
+                        }
+                      }}
                       className="px-3 py-1 text-sm bg-yellow-400/20 text-yellow-400 hover:bg-yellow-400/30 rounded-md transition-colors"
                     >
                       Confirm

@@ -235,6 +235,15 @@ class ApiServiceWithInterceptor {
     );
   }
 
+  async patch<T>(endpoint: string, data?: any, options?: RequestOptions): Promise<T> {
+    return this.withLoadingInterceptor(
+      () => this.makeRequest<T>('PATCH', endpoint, data, options),
+      options,
+      endpoint,
+      'PATCH'
+    );
+  }
+
   private async makeRequest<T>(
     method: string,
     endpoint: string,

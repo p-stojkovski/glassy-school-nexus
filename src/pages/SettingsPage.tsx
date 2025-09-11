@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, Building, BookOpen, Tag } from 'lucide-react';
+import { Settings as SettingsIcon, Building, BookOpen, Tag, Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Breadcrumb,
@@ -13,8 +13,9 @@ import { Link } from 'react-router-dom';
 import ClassroomSettingsTab from '@/domains/settings/components/tabs/ClassroomSettingsTab';
 import SubjectSettingsTab from '@/domains/settings/components/tabs/SubjectSettingsTab';
 import DiscountTypeSettingsTab from '@/domains/settings/components/tabs/DiscountTypeSettingsTab';
+import LessonStatusSettingsTab from '@/domains/settings/components/tabs/LessonStatusSettingsTab';
 
-type SettingsTabType = 'classrooms' | 'subjects' | 'discount-types';
+type SettingsTabType = 'classrooms' | 'subjects' | 'discount-types' | 'lesson-statuses';
 
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTabType>('classrooms');
@@ -84,6 +85,13 @@ const SettingsPage: React.FC = () => {
               <Tag className="w-4 h-4 mr-2" />
               Discount Types
             </TabsTrigger>
+            <TabsTrigger
+              value="lesson-statuses"
+              className="data-[state=active]:bg-white/20 text-white"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Lesson Statuses
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="classrooms">
@@ -96,6 +104,10 @@ const SettingsPage: React.FC = () => {
 
           <TabsContent value="discount-types">
             <DiscountTypeSettingsTab />
+          </TabsContent>
+
+          <TabsContent value="lesson-statuses">
+            <LessonStatusSettingsTab />
           </TabsContent>
         </Tabs>
       </div>

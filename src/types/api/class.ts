@@ -27,6 +27,15 @@ export interface CreateClassRequest {
 export interface UpdateClassRequest extends CreateClassRequest {}
 
 // Responses
+export interface LessonSummaryDto {
+  totalLessons: number;
+  scheduledLessons: number;
+  conductedLessons: number;
+  cancelledLessons: number;
+  makeupLessons: number;
+  noShowLessons: number;
+}
+
 export interface ClassResponse {
   id: string;                   // GUID
   name: string;
@@ -36,7 +45,9 @@ export interface ClassResponse {
   teacherName: string;
   classroomId: string;
   classroomName: string;
+  classroomCapacity: number;
   enrolledCount: number;
+  availableSlots: number;
   description: string | null;
   requirements: string | null;
   objectives: string[] | null;
@@ -45,6 +56,7 @@ export interface ClassResponse {
   updatedAt: string;
   schedule: ScheduleSlotDto[];  // filled on GetById; empty for list/search
   studentIds: string[];         // filled on GetById; empty for list/search
+  lessonSummary: LessonSummaryDto;
 }
 
 export interface ClassCreatedResponse { id: string; }

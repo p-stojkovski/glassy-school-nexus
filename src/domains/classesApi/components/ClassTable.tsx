@@ -10,6 +10,7 @@ import {
   User,
   MapPin,
   Clock,
+  Calendar,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,9 +39,36 @@ interface Props {
   onView: (c: ClassResponse) => void;
 }
 
+// Component to display lesson summary for a single class
+const ClassLessonSummary: React.FC<{ lessonSummary: ClassResponse['lessonSummary'] }> = ({ lessonSummary }) => {
+  if (!lessonSummary || lessonSummary.totalLessons === 0) {
+    return (
+      <div className="flex items-center gap-2">
+        <Calendar className="w-4 h-4 text-white/40" />
+        <span className="text-white/40 text-sm">No lessons</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Calendar className="w-4 h-4 text-white/60" />
+      <div className="flex flex-col">
+        <div className="font-medium text-white text-sm">
+          {lessonSummary.totalLessons}
+        </div>
+        <div className="text-white/50 text-xs">
+          {lessonSummary.scheduledLessons} scheduled
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 
 const ClassTable: React.FC<Props> = React.memo(({ classes, onEdit, onDelete, onView }) => {
+  
   return (
     <motion.div 
       layout 
@@ -68,6 +96,9 @@ const ClassTable: React.FC<Props> = React.memo(({ classes, onEdit, onDelete, onV
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
                 Enrollment
+              </TableHead>
+              <TableHead className="text-white/90 font-semibold">
+                Lessons
               </TableHead>
               <TableHead className="text-white/90 font-semibold text-right">
                 Actions
@@ -134,6 +165,9 @@ const ClassTable: React.FC<Props> = React.memo(({ classes, onEdit, onDelete, onV
                       </div>
                     </div>
                   </div>
+                </TableCell>
+                <TableCell>
+                  <ClassLessonSummary lessonSummary={classItem.lessonSummary} />
                 </TableCell>
                 <TableCell>
                   <div className="flex justify-end">

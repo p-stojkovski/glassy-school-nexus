@@ -25,13 +25,15 @@ export interface SettingsTableProps {
   description: string;
   columns: SettingsTableColumn[];
   data: any[];
-  onAdd: () => void;
+  onAdd?: () => void;
   onEdit: (item: any) => void;
-  onDelete: (item: any) => void;
+  onDelete?: (item: any) => void;
   addButtonText?: string;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
   isLoading?: boolean;
+  hideAddButton?: boolean;
+  hideDeleteButton?: boolean;
 }
 
 const SettingsTable: React.FC<SettingsTableProps> = ({
@@ -46,6 +48,8 @@ const SettingsTable: React.FC<SettingsTableProps> = ({
   emptyStateTitle = "No Items Found",
   emptyStateDescription = "Start by adding your first item to the system.",
   isLoading = false,
+  hideAddButton = false,
+  hideDeleteButton = false,
 }) => {
   // Loading state
   if (isLoading) {
@@ -56,13 +60,15 @@ const SettingsTable: React.FC<SettingsTableProps> = ({
             <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
             <p className="text-white/70">{description}</p>
           </div>
-          <Button
-            disabled
-            className="bg-yellow-500/50 text-black/50 font-semibold cursor-not-allowed"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {addButtonText}
-          </Button>
+          {!hideAddButton && (
+            <Button
+              disabled
+              className="bg-yellow-500/50 text-black/50 font-semibold cursor-not-allowed"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {addButtonText}
+            </Button>
+          )}
         </div>
 
         <GlassCard className="overflow-hidden">
@@ -85,13 +91,15 @@ const SettingsTable: React.FC<SettingsTableProps> = ({
             <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
             <p className="text-white/70">{description}</p>
           </div>
-          <Button
-            onClick={onAdd}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {addButtonText}
-          </Button>
+          {!hideAddButton && onAdd && (
+            <Button
+              onClick={onAdd}
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {addButtonText}
+            </Button>
+          )}
         </div>
 
         <GlassCard className="p-8 text-center">
@@ -99,13 +107,15 @@ const SettingsTable: React.FC<SettingsTableProps> = ({
             {emptyStateTitle}
           </h3>
           <p className="text-white/60 mb-6">{emptyStateDescription}</p>
-          <Button
-            onClick={onAdd}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add First Item
-          </Button>
+          {!hideAddButton && onAdd && (
+            <Button
+              onClick={onAdd}
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add First Item
+            </Button>
+          )}
         </GlassCard>
       </motion.div>
     );
@@ -125,13 +135,15 @@ const SettingsTable: React.FC<SettingsTableProps> = ({
           <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
           <p className="text-white/70">{description}</p>
         </div>
-        <Button
-          onClick={onAdd}
-          className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          {addButtonText}
-        </Button>
+        {!hideAddButton && onAdd && (
+          <Button
+            onClick={onAdd}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {addButtonText}
+          </Button>
+        )}
       </div>
 
       <GlassCard className="overflow-hidden">
@@ -173,14 +185,16 @@ const SettingsTable: React.FC<SettingsTableProps> = ({
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDelete(row)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2 h-8 w-8"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {!hideDeleteButton && onDelete && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDelete(row)}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2 h-8 w-8"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

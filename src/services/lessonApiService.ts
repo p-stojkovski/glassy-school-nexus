@@ -1,0 +1,410 @@
+/**
+ * Lesson API Service
+ * Implements lessons endpoints for CRUD operations, status management, and lesson generation
+ */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import apiService from './api';
+import apiWithInterceptor from './apiWithInterceptor';
+import {
+  LessonResponse,
+  LessonCreatedResponse,
+  CreateLessonRequest,
+  CancelLessonRequest,
+  MarkLessonConductedRequest,
+  CreateMakeupLessonRequest,
+  GenerateLessonsRequest,
+  LessonSearchParams,
+  LessonSummary,
+  LessonConflict,
+  LessonGenerationResult,
+  LessonApiPaths,
+  LessonHttpStatus,
+  MakeupLessonFormData,
+} from '@/types/api/lesson';
+
+// Preserve status/details when rethrowing with a custom message
+function makeApiError(original: any, message: string): Error & { status?: number; details?: any } {
+  const err: any = new Error(message);
+  if (original) {
+    err.status = original.status;
+    err.details = original.details;
+  }
+  return err as Error & { status?: number; details?: any };
+}
+
+// Normalize API responses that may wrap arrays in different shapes
+function normalizeListResponse<T>(raw: any): T[] {
+  if (Array.isArray(raw)) return raw as T[];
+  if (raw && typeof raw === 'object') {
+    const candidates = [
+      (raw as any).items,
+      (raw as any).results,
+      (raw as any).lessons,
+      (raw as any).data,
+      (raw as any).value,
+    ];
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) return candidate as T[];
+    }
+  }
+  return [] as T[];
+}
+
+export class LessonApiService {
+  private useInterceptor = true; // Flag to enable/disable global interceptor
+  
+  // Get the appropriate API service based on configuration
+  private getApiService() {
+    return this.useInterceptor ? apiWithInterceptor : apiService;
+  }
+  
+  // Method to disable global loading for all operations in this service
+  public disableGlobalLoading() {
+    this.useInterceptor = false;
+  }
+  
+  // Method to enable global loading for all operations in this service
+  public enableGlobalLoading() {
+    this.useInterceptor = true;
+  }
+
+  /** Get lessons with optional filtering */
+  async getLessons(params: LessonSearchParams = {}): Promise<LessonResponse[]> {
+    try {
+      const qs = new URLSearchParams();
+      if (params.classId) qs.append('classId', params.classId);
+      if (params.teacherId) qs.append('teacherId', params.teacherId);
+      if (params.classroomId) qs.append('classroomId', params.classroomId);
+      if (params.statusId) qs.append('statusId', params.statusId);
+      if (params.statusName) qs.append('statusName', params.statusName);
+      if (params.startDate) qs.append('startDate', params.startDate);
+      if (params.endDate) qs.append('endDate', params.endDate);
+      if (params.generationSource) qs.append('generationSource', params.generationSource);
+      if (params.pageSize) qs.append('pageSize', String(params.pageSize));
+      if (params.page) qs.append('page', String(params.page));
+
+      const endpoint = qs.toString() ? `${LessonApiPaths.BASE}?${qs.toString()}` : LessonApiPaths.BASE;
+      const api = this.getApiService();
+      const raw = await api.get<any>(endpoint);
+      return normalizeListResponse<LessonResponse>(raw);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access lessons');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid lesson search parameters');
+      }
+      throw makeApiError(error, `Failed to fetch lessons: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Get lesson by ID */
+  async getLessonById(id: string): Promise<LessonResponse> {
+    try {
+      const api = this.getApiService();
+      return await api.get<LessonResponse>(LessonApiPaths.BY_ID(id));
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Lesson not found');
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access lesson details');
+      }
+      throw makeApiError(error, `Failed to fetch lesson: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Get lessons for a specific class */
+  async getLessonsForClass(classId: string): Promise<LessonResponse[]> {
+    return this.getLessons({ classId });
+  }
+
+
+  /** Create a new lesson */
+  async createLesson(request: CreateLessonRequest): Promise<LessonCreatedResponse> {
+    try {
+      const api = this.getApiService();
+      return await api.post<LessonCreatedResponse>(LessonApiPaths.BASE, request);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'Schedule conflict detected - lesson cannot be created');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        const details = error.details;
+        if (details?.detail?.includes('class not found')) {
+          throw makeApiError(error, 'The selected class does not exist');
+        }
+        if (details?.detail?.includes('invalid date')) {
+          throw makeApiError(error, 'Invalid lesson date provided');
+        }
+        if (details?.detail?.includes('invalid time')) {
+          throw makeApiError(error, 'Invalid lesson time provided');
+        }
+        throw makeApiError(error, `Validation error: ${details?.detail || 'Invalid lesson data'}`);
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to create lessons');
+      }
+      throw makeApiError(error, `Failed to create lesson: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Cancel a lesson */
+  async cancelLesson(id: string, request: CancelLessonRequest): Promise<LessonResponse> {
+    try {
+      const api = this.getApiService();
+      return await api.patch<LessonResponse>(LessonApiPaths.CANCEL(id), request);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Lesson not found');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        const details = error.details;
+        if (details?.detail?.includes('cannot cancel')) {
+          throw makeApiError(error, 'Lesson cannot be cancelled in its current status');
+        }
+        throw makeApiError(error, `Validation error: ${details?.detail || 'Invalid cancellation request'}`);
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to cancel lessons');
+      }
+      throw makeApiError(error, `Failed to cancel lesson: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Mark lesson as conducted */
+  async conductLesson(id: string, request: MarkLessonConductedRequest = {}): Promise<LessonResponse> {
+    try {
+      const api = this.getApiService();
+      return await api.patch<LessonResponse>(LessonApiPaths.CONDUCT(id), request);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Lesson not found');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        const details = error.details;
+        if (details?.detail?.includes('cannot conduct')) {
+          throw makeApiError(error, 'Lesson cannot be conducted in its current status');
+        }
+        throw makeApiError(error, `Validation error: ${details?.detail || 'Invalid conduct request'}`);
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to conduct lessons');
+      }
+      throw makeApiError(error, `Failed to conduct lesson: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Create makeup lesson for a cancelled lesson */
+  async createMakeupLesson(originalLessonId: string, request: CreateMakeupLessonRequest): Promise<LessonCreatedResponse> {
+    try {
+      const api = this.getApiService();
+      return await api.post<LessonCreatedResponse>(LessonApiPaths.MAKEUP(originalLessonId), request);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Original lesson not found');
+      }
+      if (error.status === LessonHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'Schedule conflict detected - makeup lesson cannot be created');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        const details = error.details;
+        if (details?.detail?.includes('not cancelled')) {
+          throw makeApiError(error, 'Only cancelled lessons can have makeup lessons');
+        }
+        if (details?.detail?.includes('already has makeup')) {
+          throw makeApiError(error, 'This lesson already has a makeup lesson');
+        }
+        throw makeApiError(error, `Validation error: ${details?.detail || 'Invalid makeup lesson request'}`);
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to create makeup lessons');
+      }
+      throw makeApiError(error, `Failed to create makeup lesson: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Generate lessons for a class based on schedule pattern */
+  async generateLessons(request: GenerateLessonsRequest): Promise<LessonGenerationResult> {
+    try {
+      const api = this.getApiService();
+      return await api.post<LessonGenerationResult>(LessonApiPaths.GENERATE, request);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found or has no schedule pattern');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        const details = error.details;
+        if (details?.detail?.includes('invalid date range')) {
+          throw makeApiError(error, 'Invalid date range for lesson generation');
+        }
+        if (details?.detail?.includes('no schedule')) {
+          throw makeApiError(error, 'Class has no schedule pattern to generate lessons from');
+        }
+        throw makeApiError(error, `Validation error: ${details?.detail || 'Invalid generation request'}`);
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to generate lessons');
+      }
+      throw makeApiError(error, `Failed to generate lessons: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Check for schedule conflicts */
+  async checkConflicts(
+    classId: string,
+    scheduledDate: string, 
+    startTime: string, 
+    endTime: string, 
+    excludeLessonId?: string
+  ): Promise<LessonConflict[]> {
+    try {
+      const qs = new URLSearchParams();
+      if (classId) qs.append('classId', classId);
+      qs.append('scheduledDate', scheduledDate);
+      qs.append('startTime', startTime);
+      qs.append('endTime', endTime);
+      if (excludeLessonId) qs.append('excludeLessonId', excludeLessonId);
+
+      const endpoint = `${LessonApiPaths.CONFLICTS}?${qs.toString()}`;
+      const api = this.getApiService();
+      return await api.get<LessonConflict[]>(endpoint);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to check conflicts');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid conflict check parameters');
+      }
+      throw makeApiError(error, `Failed to check conflicts: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Get lessons for today */
+  async getTodayLessons(): Promise<LessonResponse[]> {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    return this.getLessons({ 
+      startDate: today, 
+      endDate: today
+    });
+  }
+
+  /** Get upcoming lessons (next 7 days) */
+  async getUpcomingLessons(days: number = 7): Promise<LessonResponse[]> {
+    const today = new Date();
+    const endDate = new Date(today.getTime() + (days * 24 * 60 * 60 * 1000));
+    
+    return this.getLessons({ 
+      startDate: today.toISOString().split('T')[0], 
+      endDate: endDate.toISOString().split('T')[0],
+      statusName: 'Scheduled'
+    });
+  }
+
+  /** Get lessons by teacher */
+  async getLessonsByTeacher(teacherId: string): Promise<LessonResponse[]> {
+    return this.getLessons({ teacherId });
+  }
+
+  /** Get lessons by classroom */
+  async getLessonsByClassroom(classroomId: string): Promise<LessonResponse[]> {
+    return this.getLessons({ classroomId });
+  }
+
+  /** Get lessons by status */
+  async getLessonsByStatus(statusName: string): Promise<LessonResponse[]> {
+    return this.getLessons({ statusName: statusName as any });
+  }
+
+  /** Get lessons in date range */
+  async getLessonsInRange(startDate: string, endDate: string, classId?: string): Promise<LessonResponse[]> {
+    return this.getLessons({ 
+      startDate, 
+      endDate, 
+      classId,
+      includeHistory: true 
+    });
+  }
+
+  /** Quick status change - conduct lesson with current timestamp */
+  async quickConductLesson(id: string, notes?: string): Promise<LessonResponse> {
+    return this.conductLesson(id, { 
+      conductedAt: new Date().toISOString(),
+      notes 
+    });
+  }
+
+  /** Quick cancel with reason and optional makeup lesson */
+  async quickCancelLesson(id: string, reason: string, makeupData?: MakeupLessonFormData): Promise<LessonResponse> {
+    if (makeupData) {
+      // First cancel the lesson
+      const cancelledLesson = await this.cancelLesson(id, { 
+        cancellationReason: reason
+      });
+      
+      // Then create the makeup lesson
+      await this.createMakeupLesson(id, makeupData);
+      
+      // Return the updated lesson with makeup link
+      return await this.getLessonById(id);
+    } else {
+      return this.cancelLesson(id, { 
+        cancellationReason: reason
+      });
+    }
+  }
+
+  /** Batch generate lessons for multiple date ranges */
+  async batchGenerateLessons(classId: string, dateRanges: { start: string; end: string }[]): Promise<LessonGenerationResult[]> {
+    const results: LessonGenerationResult[] = [];
+    
+    for (const range of dateRanges) {
+      try {
+        const result = await this.generateLessons({
+          classId,
+          startDate: range.start,
+          endDate: range.end,
+          skipExistingConflicts: true
+        });
+        results.push(result);
+      } catch (error) {
+        // Continue with other ranges even if one fails
+        console.error(`Failed to generate lessons for range ${range.start} - ${range.end}:`, error);
+        results.push({
+          lessonsCreated: 0,
+          conflictsSkipped: 0,
+          conflicts: [{ 
+            date: range.start, 
+            time: '00:00 - 00:00', 
+            reason: 'existing_lesson', 
+            conflictDetails: 'Generation failed' 
+          }]
+        });
+      }
+    }
+    
+    return results;
+  }
+}
+
+export const lessonApiService = new LessonApiService();
+
+// Convenience exports matching project style
+export const getLessons = (params?: LessonSearchParams) => lessonApiService.getLessons(params);
+export const getLessonById = (id: string) => lessonApiService.getLessonById(id);
+export const getLessonsForClass = (classId: string, includeHistory?: boolean) => lessonApiService.getLessonsForClass(classId, includeHistory);
+export const createLesson = (request: CreateLessonRequest) => lessonApiService.createLesson(request);
+export const cancelLesson = (id: string, request: CancelLessonRequest) => lessonApiService.cancelLesson(id, request);
+export const conductLesson = (id: string, request?: MarkLessonConductedRequest) => lessonApiService.conductLesson(id, request);
+export const createMakeupLesson = (originalLessonId: string, request: CreateMakeupLessonRequest) => lessonApiService.createMakeupLesson(originalLessonId, request);
+export const generateLessons = (request: GenerateLessonsRequest) => lessonApiService.generateLessons(request);
+export const checkConflicts = (classId: string, date: string, start: string, end: string, exclude?: string) => lessonApiService.checkConflicts(classId, date, start, end, exclude);
+
+// Quick access exports
+export const getTodayLessons = () => lessonApiService.getTodayLessons();
+export const getUpcomingLessons = (days?: number) => lessonApiService.getUpcomingLessons(days);
+export const quickConductLesson = (id: string, notes?: string) => lessonApiService.quickConductLesson(id, notes);
+export const quickCancelLesson = (id: string, reason: string, makeupData?: MakeupLessonFormData) => lessonApiService.quickCancelLesson(id, reason, makeupData);
+
+export default lessonApiService;

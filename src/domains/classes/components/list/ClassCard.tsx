@@ -1,9 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Calendar } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Class } from '@/domains/classes/classesSlice';
 import { formatSchedule } from '@/utils/scheduleFormatter';
+import { LessonStatusSummary } from '@/domains/lessons/components/LessonStatusBadge';
+import { useAppSelector } from '@/store/hooks';
+import { selectLessonSummaryForClass } from '@/domains/lessons/lessonsSlice';
 
 interface ClassCardProps {
   classItem: Class;
@@ -18,6 +22,23 @@ const ClassCard: React.FC<ClassCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const lessonSummary = useAppSelector(selectLessonSummaryForClass(classItem.id));
+  
+  // Calculate lesson counts for display
+  const lessonCounts = lessonSummary ? {
+    scheduled: lessonSummary.scheduledLessons,
+    conducted: lessonSummary.completedLessons,
+    cancelled: lessonSummary.cancelledLessons,
+    makeUp: lessonSummary.makeupLessons,
+    noShow: lessonSummary.noShowLessons,
+  } : {
+    scheduled: 0,
+    conducted: 0,
+    cancelled: 0,
+    makeUp: 0,
+    noShow: 0,
+  };
+
   return (
     <motion.div 
       layout 
@@ -66,6 +87,34 @@ const ClassCard: React.FC<ClassCardProps> = ({
         <p className="text-sm text-white/70">
           {formatSchedule(classItem.schedule)}
         </p>
+      </div>
+
+      {/* Lesson Status Summary */}
+      <div className="border-t border-white/10 pt-3 mt-4">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm font-medium text-white flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            Lessons
+          </p>
+          {lessonSummary?.totalLessons && (
+            <span className="text-sm font-medium text-white">
+              {lessonSummary.totalLessons} total
+            </span>
+          )}
+        </div>
+        
+        {lessonSummary?.totalLessons > 0 ? (
+          <LessonStatusSummary 
+            counts={lessonCounts}
+            size="sm"
+            showZeroCounts={false}
+            className="justify-start"
+          />
+        ) : (
+          <p className="text-xs text-white/50">
+            No lessons yet
+          </p>
+        )}
       </div>
 
       <div className="text-xs text-white/50 border-t border-white/10 pt-3 mt-4">
