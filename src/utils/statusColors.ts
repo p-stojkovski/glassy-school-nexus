@@ -92,3 +92,4 @@ export const getGenericStatusColor = (status: string): string => {
       return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   }
 };
+

@@ -120,7 +120,7 @@ export const useStudentManagement = () => {
     clearError('fetch');
     
     try {
-      console.log('📡 Calling getAllStudents API...');
+      console.log('📡 Calling getAllStudents api...');
       const studentsData = await getAllStudents();
       console.log('✅ Students loaded successfully:', studentsData?.length || 0, 'students');
       setStudents(studentsData);
@@ -137,7 +137,7 @@ export const useStudentManagement = () => {
     clearError('fetchDiscountTypes');
     
     try {
-      console.log('📡 Calling getAllDiscountTypes API...');
+      console.log('📡 Calling getAllDiscountTypes api...');
       const discountTypesData = await getAllDiscountTypes();
       console.log('✅ Discount types loaded successfully:', discountTypesData?.length || 0, 'types');
       setDiscountTypes(discountTypesData);
@@ -412,7 +412,7 @@ export const useStudentManagement = () => {
       
       // Disable global loading for all student operations to use page-specific loading states
       const { studentApiService } = await import('@/services/studentApiService');
-      studentApiService.disableGlobalLoading();
+      studentApiService
       
       try {
         await Promise.all([loadStudents(), loadDiscountTypes()]);
@@ -509,3 +509,4 @@ export const useStudentManagement = () => {
     setIsConfirmOpen,
   };
 };
+

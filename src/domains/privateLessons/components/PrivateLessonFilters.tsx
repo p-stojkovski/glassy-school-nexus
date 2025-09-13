@@ -171,3 +171,4 @@ const PrivateLessonFilters: React.FC<PrivateLessonFiltersProps> = ({
 };
 
 export default PrivateLessonFilters;
+

@@ -72,3 +72,4 @@ export enum DiscountType {
   SingleParent = 'single_parent',
   FreeOfCharge = 'free_of_charge',
 }
+

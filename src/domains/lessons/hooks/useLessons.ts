@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import lessonApiService from '@/services/lessonApiService';
 import {
   fetchLessons,
   fetchLessonById,
@@ -43,13 +44,15 @@ import {
   selectLessonCounts,
   selectIsAnyLessonLoading,
 } from '../lessonsSlice';
-import {
+  import { 
   LessonSearchParams,
   CreateLessonRequest,
   CancelLessonRequest,
   MarkLessonConductedRequest,
   CreateMakeupLessonRequest,
   GenerateLessonsRequest,
+  GenerateLessonsAcademicAwareRequest,
+  AcademicAwareLessonGenerationResult,
   LessonStatusName,
   MakeupLessonFormData,
 } from '@/types/api/lesson';
@@ -131,6 +134,21 @@ export const useLessons = () => {
       return dispatch(generateLessons(request));
     },
     [dispatch]
+  );
+
+  // Academic-aware generation (call service directly for simplicity in this request)
+  const generateLessonsAcademicAware = useCallback(
+    async (classId: string, request: GenerateLessonsAcademicAwareRequest) => {
+      // Disable global loading for this specific operation
+      lessonApiService
+      try {
+        const result = await lessonApiService.generateLessonsAcademicAware(classId, request);
+        return result;
+      } finally {
+                lessonApiService
+      }
+    },
+    []
   );
 
   const loadTodayLessons = useCallback(() => {
@@ -234,6 +252,7 @@ export const useLessons = () => {
     conductLessonById,
     createMakeup,
     generateLessonsForClass,
+    generateLessonsAcademicAware,
     loadTodayLessons,
     loadUpcomingLessons,
     quickConduct,
@@ -309,3 +328,4 @@ export const useUpcomingLessons = (days: number = 7) => {
 };
 
 export default useLessons;
+

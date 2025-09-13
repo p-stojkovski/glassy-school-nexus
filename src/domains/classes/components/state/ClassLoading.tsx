@@ -9,3 +9,4 @@ const ClassLoading: React.FC = () => {
 };
 
 export default ClassLoading;
+

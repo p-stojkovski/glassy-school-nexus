@@ -116,3 +116,4 @@ const StudentCard: React.FC<StudentCardProps> = ({
 };
 
 export default StudentCard;
+

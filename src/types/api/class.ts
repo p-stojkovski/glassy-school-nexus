@@ -134,3 +134,4 @@ export function isClassResponse(obj: any): obj is ClassResponse {
 export function isClassCreatedResponse(obj: any): obj is ClassCreatedResponse {
   return obj && typeof obj === 'object' && typeof obj.id === 'string';
 }
+

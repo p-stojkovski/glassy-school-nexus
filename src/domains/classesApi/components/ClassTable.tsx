@@ -226,3 +226,4 @@ const ClassTable: React.FC<Props> = React.memo(({ classes, onEdit, onDelete, onV
 ClassTable.displayName = 'ClassTable';
 
 export default ClassTable;
+

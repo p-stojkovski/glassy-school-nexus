@@ -157,3 +157,4 @@ const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
 };
 
 export default FinancialInformationTab;
+

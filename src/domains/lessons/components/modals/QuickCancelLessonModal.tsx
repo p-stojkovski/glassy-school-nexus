@@ -12,8 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import FriendlyDatePicker from '@/components/common/FriendlyDatePicker';
-import FriendlyTimePicker from '@/components/common/FriendlyTimePicker';
+import { NativeDateInput, NativeTimeInput } from '@/components/common';
 import { LessonResponse, MakeupLessonFormData } from '@/types/api/lesson';
 import LessonStatusBadge from '../LessonStatusBadge';
 import useConflictPrecheck from '@/domains/lessons/hooks/useConflictPrecheck';
@@ -310,11 +309,11 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
 
                     {/* Makeup Date */}
                     <div>
-                      <FriendlyDatePicker
+                      <NativeDateInput
                         value={makeupData.scheduledDate}
                         onChange={(date) => handleMakeupDataChange('scheduledDate', date)}
-                        minDate={new Date()}
-                        maxDate={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
+                        min={new Date().toISOString().split('T')[0]}
+                        max={new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]}
                         label="Makeup Date"
                         placeholder="Select makeup date"
                         required
@@ -326,7 +325,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                     {/* Time Fields */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                       <div>
-                        <FriendlyTimePicker
+                        <NativeTimeInput
                           value={makeupData.startTime}
                           onChange={(time) => handleMakeupDataChange('startTime', time)}
                           label="Start Time"
@@ -337,12 +336,12 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                         />
                       </div>
                       <div>
-                        <FriendlyTimePicker
+                        <NativeTimeInput
                           value={makeupData.endTime}
                           onChange={(time) => handleMakeupDataChange('endTime', time)}
                           label="End Time"
                           placeholder="Select end time"
-                          minTime={makeupData.startTime}
+                          min={makeupData.startTime}
                           required
                           error={makeupErrors.endTime}
                           className="bg-white/5"
@@ -428,3 +427,4 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
 };
 
 export default QuickCancelLessonModal;
+

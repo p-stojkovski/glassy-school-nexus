@@ -14,8 +14,9 @@ import ClassroomSettingsTab from '@/domains/settings/components/tabs/ClassroomSe
 import SubjectSettingsTab from '@/domains/settings/components/tabs/SubjectSettingsTab';
 import DiscountTypeSettingsTab from '@/domains/settings/components/tabs/DiscountTypeSettingsTab';
 import LessonStatusSettingsTab from '@/domains/settings/components/tabs/LessonStatusSettingsTab';
+import AcademicCalendarSettingsTab from '@/domains/settings/components/tabs/AcademicCalendarSettingsTab';
 
-type SettingsTabType = 'classrooms' | 'subjects' | 'discount-types' | 'lesson-statuses';
+type SettingsTabType = 'classrooms' | 'subjects' | 'academic-calendar' | 'discount-types' | 'lesson-statuses';
 
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTabType>('classrooms');
@@ -42,18 +43,6 @@ const SettingsPage: React.FC = () => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-              <SettingsIcon className="w-8 h-8" />
-              Settings
-            </h1>
-            <p className="text-white/70">
-              Manage system configuration and master data
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Tabbed Content */}
@@ -79,6 +68,13 @@ const SettingsPage: React.FC = () => {
               Subjects
             </TabsTrigger>
             <TabsTrigger
+              value="academic-calendar"
+              className="data-[state=active]:bg-white/20 text-white"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Academic Calendar
+            </TabsTrigger>
+            <TabsTrigger
               value="discount-types"
               className="data-[state=active]:bg-white/20 text-white"
             >
@@ -102,6 +98,10 @@ const SettingsPage: React.FC = () => {
             <SubjectSettingsTab />
           </TabsContent>
 
+          <TabsContent value="academic-calendar">
+            <AcademicCalendarSettingsTab />
+          </TabsContent>
+
           <TabsContent value="discount-types">
             <DiscountTypeSettingsTab />
           </TabsContent>
@@ -116,3 +116,4 @@ const SettingsPage: React.FC = () => {
 };
 
 export default SettingsPage;
+

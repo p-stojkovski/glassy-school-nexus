@@ -383,3 +383,4 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
 };
 
 export default LessonTimeline;
+

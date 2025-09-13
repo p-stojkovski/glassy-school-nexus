@@ -178,3 +178,4 @@ export function isProblemDetails(obj: any): obj is ProblemDetails {
     typeof obj.status === 'number'
   );
 }
+

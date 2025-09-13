@@ -1,4 +1,4 @@
-import apiService from './apiWithInterceptor';
+import apiService from './api';
 
 export interface DiscountType {
   id: number;
@@ -60,3 +60,4 @@ export class DiscountTypeApiService {
 }
 
 export default new DiscountTypeApiService();
+

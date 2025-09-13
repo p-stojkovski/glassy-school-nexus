@@ -37,3 +37,4 @@ const ClassEmptyState: React.FC<ClassEmptyStateProps> = ({
 };
 
 export default ClassEmptyState;
+

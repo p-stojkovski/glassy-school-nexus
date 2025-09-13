@@ -11,7 +11,11 @@ import {
   Repeat,
   Eye,
   Edit,
-  X
+  X,
+  XCircle,
+  Check,
+  Loader2,
+  BookOpen
 } from 'lucide-react';
 import {
   Dialog,
@@ -30,8 +34,7 @@ import {
 } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import FriendlyDatePicker from '@/components/common/FriendlyDatePicker';
-import FriendlyTimePicker from '@/components/common/FriendlyTimePicker';
+import { NativeDateInput, NativeTimeInput } from '@/components/common';
 import { LessonResponse, MakeupLessonFormData } from '@/types/api/lesson';
 import LessonStatusBadge from '../LessonStatusBadge';
 import useConflictPrecheck from '@/domains/lessons/hooks/useConflictPrecheck';
@@ -44,6 +47,9 @@ interface LessonDetailsModalProps {
   onOpenChange: (open: boolean) => void;
   onViewMakeupLesson?: (lessonId: string) => void;
   onCreateMakeupLesson?: (lessonId: string, makeupData: MakeupLessonFormData) => void;
+  onCancelLesson?: (lesson: LessonResponse) => void;
+  onConductLesson?: (lesson: LessonResponse) => void;
+  onLessonUpdated?: (lessonId: string) => void; // New callback for lesson updates
   loading?: boolean;
 }
 
@@ -54,6 +60,9 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
   onOpenChange,
   onViewMakeupLesson,
   onCreateMakeupLesson,
+  onCancelLesson,
+  onConductLesson,
+  onLessonUpdated,
   loading = false,
 }) => {
   const [isCreateMakeupOpen, setIsCreateMakeupOpen] = useState(false);
@@ -64,6 +73,7 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
     notes: '',
   });
   const [makeupErrors, setMakeupErrors] = useState<Record<string, string>>({});
+  const [isRefreshing, setIsRefreshing] = useState(false); // Loading state for lesson updates
 
   // Conflict pre-checking for makeup lesson
   const {
@@ -184,23 +194,74 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
   if (!lesson) return null;
 
   const canCreateMakeup = lesson.statusName === 'Cancelled' && !lesson.makeupLessonId;
+  const canCancelLesson = lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
+  const canConductLesson = lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
+  
+  const handleCancelLesson = async () => {
+    if (lesson && onCancelLesson) {
+      try {
+        setIsRefreshing(true);
+        await onCancelLesson(lesson);
+        // Trigger lesson data refresh after successful action
+        if (onLessonUpdated) {
+          await onLessonUpdated(lesson.id);
+        }
+      } catch (error) {
+        console.error('Failed to cancel lesson:', error);
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
+  };
+  
+  const handleConductLesson = async () => {
+    if (lesson && onConductLesson) {
+      try {
+        setIsRefreshing(true);
+        await onConductLesson(lesson);
+        // Trigger lesson data refresh after successful action
+        if (onLessonUpdated) {
+          await onLessonUpdated(lesson.id);
+        }
+      } catch (error) {
+        console.error('Failed to conduct lesson:', error);
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
+  };
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <Eye className="w-5 h-5 text-blue-400" />
-              Lesson Details
-            </DialogTitle>
-          </DialogHeader>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
+        {/* Override dialog positioning */}
+        <DialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white max-w-2xl max-h-[85vh] overflow-y-auto">
+          {isRefreshing ? (
+            // Loading State - Replace entire content with spinner
+            <div className="flex flex-col items-center justify-center py-16 px-8">
+              <Loader2 className="w-12 h-12 text-white animate-spin mb-4" />
+              <p className="text-white/80 text-lg font-medium mb-2">
+                Updating lesson status...
+              </p>
+              <p className="text-white/60 text-sm text-center">
+                Please wait while we refresh the lesson data
+              </p>
+            </div>
+          ) : (
+            // Normal Content State
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              <DialogHeader className="pb-6 border-b border-white/20">
+                <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                  <BookOpen className="w-6 h-6 text-blue-400" />
+                  Lesson Details
+                </DialogTitle>
+              </DialogHeader>
             {/* Header Info */}
             <div className="bg-white/5 p-4 rounded-lg border border-white/10">
               <div className="flex items-start justify-between mb-3">
@@ -350,7 +411,37 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
                 </div>
               </>
             )}
+            
+            {/* Quick Actions - Bottom Section */}
+            {(canConductLesson || canCancelLesson) && (
+              <>
+                <Separator className="bg-white/10" />
+                <div className="pt-4">
+                  <div className="flex items-center justify-center gap-3">
+                    {canConductLesson && (
+                      <Button
+                        onClick={handleConductLesson}
+                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex-1 max-w-[200px]"
+                      >
+                        <Check className="w-4 h-4 mr-2" />
+                        Mark as Conducted
+                      </Button>
+                    )}
+                    {canCancelLesson && (
+                      <Button
+                        onClick={handleCancelLesson}
+                        className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-6 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex-1 max-w-[200px]"
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Cancel Lesson
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </motion.div>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -397,11 +488,11 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
             <form onSubmit={(e) => { e.preventDefault(); handleCreateMakeup(); }} className="space-y-4">
               {/* Date Field */}
               <div>
-                <FriendlyDatePicker
+                <NativeDateInput
                   value={makeupData.scheduledDate}
                   onChange={(date) => handleMakeupDataChange('scheduledDate', date)}
-                  minDate={new Date()}
-                  maxDate={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
+                  min={new Date().toISOString().split('T')[0]}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]}
                   label="Makeup Date"
                   placeholder="Select makeup date"
                   required
@@ -412,7 +503,7 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
               {/* Time Fields */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <FriendlyTimePicker
+                  <NativeTimeInput
                     value={makeupData.startTime}
                     onChange={(time) => handleMakeupDataChange('startTime', time)}
                     label="Start Time"
@@ -422,12 +513,12 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
                   />
                 </div>
                 <div>
-                  <FriendlyTimePicker
+                  <NativeTimeInput
                     value={makeupData.endTime}
                     onChange={(time) => handleMakeupDataChange('endTime', time)}
                     label="End Time"
                     placeholder="End time"
-                    minTime={makeupData.startTime}
+                    min={makeupData.startTime}
                     required
                     error={makeupErrors.endTime}
                   />
@@ -508,3 +599,4 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
 };
 
 export default LessonDetailsModal;
+

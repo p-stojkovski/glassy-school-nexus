@@ -1,9 +1,8 @@
 import React from 'react';
-import { Search, Filter } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import GlassCard from '@/components/common/GlassCard';
 import ClearFiltersButton from '@/components/common/ClearFiltersButton';
 import SubjectsDropdown from '@/components/common/SubjectsDropdown';
+import SearchInput from '@/components/common/SearchInput';
 
 interface TeacherFiltersProps {
   searchTerm: string;
@@ -24,15 +23,13 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
     <GlassCard className="p-6">
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Search Input */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-          <Input
-            placeholder="Search teachers by name, email, or subject..."
+        <div className="flex-1">
+          <SearchInput
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
+            onChange={setSearchTerm}
+            placeholder="Search teachers by name, email, or subject..."
           />
-        </div>{' '}
+        </div>
         {/* Subject Filter */}
         <div className="w-full lg:w-56">
           <SubjectsDropdown
@@ -52,3 +49,4 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
 };
 
 export default TeacherFilters;
+

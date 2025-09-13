@@ -1,7 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '@/domains/auth/authSlice';
 import uiReducer from './slices/uiSlice';
-import loadingReducer from './slices/loadingSlice';
 import classesReducer from '@/domains/classes/classesSlice';
 import studentsReducer from '@/domains/students/studentsSlice';
 import teachersReducer from '@/domains/teachers/teachersSlice';
@@ -16,7 +15,6 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     ui: uiReducer,
-    loading: loadingReducer,
     classes: classesReducer,
     classesApi: (await import('@/domains/classesApi/classesApiSlice')).default,
     students: studentsReducer,
@@ -32,3 +30,4 @@ export const store = configureStore({
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+

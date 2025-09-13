@@ -22,9 +22,9 @@ export const useClassFormPage = (classId?: string) => {
       setFormError(null);
       try {
         // Call the individual endpoint directly to get full class details (skip global loading)
-        classApiService.disableGlobalLoading();
+        classApiService
         const classData = await classApiService.getClassById(classId);
-        classApiService.enableGlobalLoading();
+        classApiService
         setClassItem(classData);
       } catch (err: any) {
         if (err?.status === 404) {
@@ -33,7 +33,7 @@ export const useClassFormPage = (classId?: string) => {
           setFormError(err?.message || 'Failed to load class');
         }
       } finally {
-        classApiService.enableGlobalLoading();
+        classApiService
         setLoading(false);
       }
     };
@@ -84,3 +84,4 @@ export const useClassFormPage = (classId?: string) => {
     handleCancel,
   };
 };
+

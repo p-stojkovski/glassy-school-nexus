@@ -5,24 +5,26 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import apiService from './api';
-import apiWithInterceptor from './apiWithInterceptor';
-import {
-  LessonResponse,
-  LessonCreatedResponse,
+import { 
+  LessonResponse, 
+  LessonSummary,
+  LessonSearchParams,
   CreateLessonRequest,
   CancelLessonRequest,
   MarkLessonConductedRequest,
   CreateMakeupLessonRequest,
   GenerateLessonsRequest,
-  LessonSearchParams,
-  LessonSummary,
-  LessonConflict,
   LessonGenerationResult,
-  LessonApiPaths,
-  LessonHttpStatus,
+  LessonStatusName,
   MakeupLessonFormData,
+  GenerateLessonsAcademicAwareRequest,
+  AcademicAwareLessonGenerationResult,
+  LessonCreatedResponse,
+  LessonConflict,
+  LessonApiPaths,
+  LessonHttpStatus 
 } from '@/types/api/lesson';
-
+import { EnhancedLessonGenerationResult } from '@/types/api/lesson-generation-enhanced';
 // Preserve status/details when rethrowing with a custom message
 function makeApiError(original: any, message: string): Error & { status?: number; details?: any } {
   const err: any = new Error(message);
@@ -52,22 +54,6 @@ function normalizeListResponse<T>(raw: any): T[] {
 }
 
 export class LessonApiService {
-  private useInterceptor = true; // Flag to enable/disable global interceptor
-  
-  // Get the appropriate API service based on configuration
-  private getApiService() {
-    return this.useInterceptor ? apiWithInterceptor : apiService;
-  }
-  
-  // Method to disable global loading for all operations in this service
-  public disableGlobalLoading() {
-    this.useInterceptor = false;
-  }
-  
-  // Method to enable global loading for all operations in this service
-  public enableGlobalLoading() {
-    this.useInterceptor = true;
-  }
 
   /** Get lessons with optional filtering */
   async getLessons(params: LessonSearchParams = {}): Promise<LessonResponse[]> {
@@ -85,8 +71,7 @@ export class LessonApiService {
       if (params.page) qs.append('page', String(params.page));
 
       const endpoint = qs.toString() ? `${LessonApiPaths.BASE}?${qs.toString()}` : LessonApiPaths.BASE;
-      const api = this.getApiService();
-      const raw = await api.get<any>(endpoint);
+const raw = await apiService.get<any>(endpoint);
       return normalizeListResponse<LessonResponse>(raw);
     } catch (error: any) {
       if (error.status === LessonHttpStatus.UNAUTHORIZED) {
@@ -102,8 +87,7 @@ export class LessonApiService {
   /** Get lesson by ID */
   async getLessonById(id: string): Promise<LessonResponse> {
     try {
-      const api = this.getApiService();
-      return await api.get<LessonResponse>(LessonApiPaths.BY_ID(id));
+return await apiService.get<LessonResponse>(LessonApiPaths.BY_ID(id));
     } catch (error: any) {
       if (error.status === LessonHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Lesson not found');
@@ -124,8 +108,7 @@ export class LessonApiService {
   /** Create a new lesson */
   async createLesson(request: CreateLessonRequest): Promise<LessonCreatedResponse> {
     try {
-      const api = this.getApiService();
-      return await api.post<LessonCreatedResponse>(LessonApiPaths.BASE, request);
+return await apiService.post<LessonCreatedResponse>(LessonApiPaths.BASE, request);
     } catch (error: any) {
       if (error.status === LessonHttpStatus.CONFLICT) {
         throw makeApiError(error, 'Schedule conflict detected - lesson cannot be created');
@@ -153,8 +136,8 @@ export class LessonApiService {
   /** Cancel a lesson */
   async cancelLesson(id: string, request: CancelLessonRequest): Promise<LessonResponse> {
     try {
-      const api = this.getApiService();
-      return await api.patch<LessonResponse>(LessonApiPaths.CANCEL(id), request);
+      
+return await apiService.patch<LessonResponse>(LessonApiPaths.CANCEL(id), request);
     } catch (error: any) {
       if (error.status === LessonHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Lesson not found');
@@ -176,8 +159,8 @@ export class LessonApiService {
   /** Mark lesson as conducted */
   async conductLesson(id: string, request: MarkLessonConductedRequest = {}): Promise<LessonResponse> {
     try {
-      const api = this.getApiService();
-      return await api.patch<LessonResponse>(LessonApiPaths.CONDUCT(id), request);
+      
+return await apiService.patch<LessonResponse>(LessonApiPaths.CONDUCT(id), request);
     } catch (error: any) {
       if (error.status === LessonHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Lesson not found');
@@ -199,8 +182,8 @@ export class LessonApiService {
   /** Create makeup lesson for a cancelled lesson */
   async createMakeupLesson(originalLessonId: string, request: CreateMakeupLessonRequest): Promise<LessonCreatedResponse> {
     try {
-      const api = this.getApiService();
-      return await api.post<LessonCreatedResponse>(LessonApiPaths.MAKEUP(originalLessonId), request);
+      
+return await apiService.post<LessonCreatedResponse>(LessonApiPaths.MAKEUP(originalLessonId), request);
     } catch (error: any) {
       if (error.status === LessonHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Original lesson not found');
@@ -228,8 +211,8 @@ export class LessonApiService {
   /** Generate lessons for a class based on schedule pattern */
   async generateLessons(request: GenerateLessonsRequest): Promise<LessonGenerationResult> {
     try {
-      const api = this.getApiService();
-      return await api.post<LessonGenerationResult>(LessonApiPaths.GENERATE, request);
+      
+return await apiService.post<LessonGenerationResult>(LessonApiPaths.GENERATE, request);
     } catch (error: any) {
       if (error.status === LessonHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Class not found or has no schedule pattern');
@@ -251,6 +234,44 @@ export class LessonApiService {
     }
   }
 
+  /** Generate lessons with academic calendar awareness */
+  async generateLessonsAcademicAware(
+    classId: string, 
+    request: GenerateLessonsAcademicAwareRequest
+  ): Promise<EnhancedLessonGenerationResult> {
+    try {
+      
+return await apiService.post<EnhancedLessonGenerationResult>(
+        LessonApiPaths.GENERATE_ACADEMIC(classId), 
+        request
+      );
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found or has no schedule pattern');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        const details = error.details;
+        if (details?.detail?.includes('invalid date range')) {
+          throw makeApiError(error, 'Invalid date range for lesson generation');
+        }
+        if (details?.detail?.includes('no schedule')) {
+          throw makeApiError(error, 'Class has no schedule pattern to generate lessons from');
+        }
+        if (details?.detail?.includes('academic_year_id is required')) {
+          throw makeApiError(error, 'Academic year is required for this generation mode');
+        }
+        if (details?.detail?.includes('semester_id is required')) {
+          throw makeApiError(error, 'Semester is required for this generation mode');
+        }
+        throw makeApiError(error, `Validation error: ${details?.detail || 'Invalid generation request'}`);
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to generate lessons');
+      }
+      throw makeApiError(error, `Failed to generate lessons with academic awareness: ${error.message || 'Unknown error'}`);
+    }
+  }
+
   /** Check for schedule conflicts */
   async checkConflicts(
     classId: string,
@@ -268,8 +289,8 @@ export class LessonApiService {
       if (excludeLessonId) qs.append('excludeLessonId', excludeLessonId);
 
       const endpoint = `${LessonApiPaths.CONFLICTS}?${qs.toString()}`;
-      const api = this.getApiService();
-      return await api.get<LessonConflict[]>(endpoint);
+      
+return await apiService.get<LessonConflict[]>(endpoint);
     } catch (error: any) {
       if (error.status === LessonHttpStatus.UNAUTHORIZED) {
         throw makeApiError(error, 'Authentication required to check conflicts');
@@ -408,3 +429,4 @@ export const quickConductLesson = (id: string, notes?: string) => lessonApiServi
 export const quickCancelLesson = (id: string, reason: string, makeupData?: MakeupLessonFormData) => lessonApiService.quickCancelLesson(id, reason, makeupData);
 
 export default lessonApiService;
+

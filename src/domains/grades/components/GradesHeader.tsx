@@ -51,3 +51,4 @@ const GradesHeader: React.FC<GradesHeaderProps> = ({
 };
 
 export default GradesHeader;
+

@@ -26,3 +26,4 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   // No need to load all data upfront - domain hooks will load their own data
   return <>{children}</>;
 };
+

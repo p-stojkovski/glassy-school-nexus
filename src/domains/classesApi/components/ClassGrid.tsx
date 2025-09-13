@@ -145,3 +145,4 @@ const ClassGrid: React.FC<Props> = React.memo(({ classes, onEdit, onDelete, onVi
 ClassGrid.displayName = 'ClassGrid';
 
 export default ClassGrid;
+

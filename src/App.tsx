@@ -12,8 +12,8 @@ import { DataProvider } from '@/app/providers/DataProvider';
 import { getCurrentUserAsync } from '@/domains/auth/authSlice';
 import LoginForm from '@/domains/auth/components/LoginForm';
 import AppLayout from './components/layout/AppLayout';
-import GlobalLoadingOverlay from '@/components/common/GlobalLoadingOverlay';
 import Dashboard from './pages/Dashboard';
+import apiService from '@/services/api';
 import StudentManagement from './pages/StudentManagement';
 import ClassesPage from './pages/Classes';
 import ClassFormPage from './pages/ClassFormPage';
@@ -47,11 +47,8 @@ const AppContent: React.FC = () => {
 
   // Check for existing authentication on app startup
   useEffect(() => {
-    // Check if we have tokens stored and validate them
-    const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
-    
-    if (accessToken && refreshToken && !isAuthenticated) {
+    // Use centralized token check that supports sessionStorage and localStorage
+    if (apiService.hasValidToken() && !isAuthenticated) {
       // Try to get current user to validate the token
       dispatch(getCurrentUserAsync());
     }
@@ -105,7 +102,6 @@ const App = () => (
         <TooltipProvider>
           <DataProvider>
             <Toaster />
-            <GlobalLoadingOverlay />
             <BrowserRouter>
               <AppContent />
             </BrowserRouter>
@@ -117,3 +113,4 @@ const App = () => (
 );
 
 export default App;
+

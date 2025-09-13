@@ -87,3 +87,4 @@ export const useDiscountTypes = (): UseDiscountTypesResult => {
     refetch: refetchFromApi,
   };
 };
+

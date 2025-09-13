@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -18,8 +17,16 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import GlassCard from '@/components/common/GlassCard';
 import { Teacher } from '@/domains/teachers/teachersSlice';
+import { MoreVertical, Edit, Trash2 } from 'lucide-react';
 
 interface TeacherTableProps {
   teachers: Teacher[];
@@ -53,7 +60,7 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
   };
 
   const renderPaginationItems = () => {
-    const items = [];
+    const items = [] as JSX.Element[];
     const maxVisiblePages = 5;
 
     if (totalPages <= maxVisiblePages) {
@@ -150,7 +157,7 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
                 Contact
-              </TableHead>{' '}
+              </TableHead>
               <TableHead className="text-white/90 font-semibold">
                 Subject
               </TableHead>
@@ -171,7 +178,6 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
                 key={teacher.id}
                 className="border-white/10 hover:bg-white/5"
               >
-                {' '}
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div>
@@ -188,7 +194,7 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
                       <div className="text-white/60">{teacher.phone}</div>
                     )}
                   </div>
-                </TableCell>{' '}
+                </TableCell>
                 <TableCell>
                   <div className="text-sm text-white/80">{teacher.subjectName}</div>
                 </TableCell>
@@ -204,24 +210,40 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEdit(teacher)}
-                      className="text-white/70 hover:text-white hover:bg-white/10"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDelete(teacher)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      disabled={isDeleting}
-                    >
-                      {isDeleting ? 'Deleting...' : 'Delete'}
-                    </Button>
+                  <div className="flex justify-end">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8 p-0"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="bg-gray-900/95 border-white/20 text-white"
+                      >
+                        <DropdownMenuItem
+                          onClick={() => onEdit(teacher)}
+                          className="text-white/70 focus:text-white focus:bg-white/10 cursor-pointer"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Teacher
+                        </DropdownMenuItem>
+
+                        <DropdownMenuSeparator className="bg-white/20" />
+
+                        <DropdownMenuItem
+                          onClick={() => onDelete(teacher)}
+                          className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          {isDeleting ? 'Deleting...' : 'Delete Teacher'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableCell>
               </TableRow>
@@ -273,3 +295,4 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
 };
 
 export default TeacherTable;
+

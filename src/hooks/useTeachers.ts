@@ -56,7 +56,7 @@ export const useTeachers = (): UseTeachersResult => {
     
     try {
       // Disable global loading for this dropdown component
-      teacherApiService.disableGlobalLoading();
+      teacherApiService
       const teachersData = await teacherApiService.getAllTeachers();
       setTeachers(teachersData);
       // Cache the results
@@ -66,8 +66,7 @@ export const useTeachers = (): UseTeachersResult => {
       setError(errorMessage);
       console.error('Error fetching teachers:', err);
     } finally {
-      // Re-enable global loading
-      teacherApiService.enableGlobalLoading();
+            teacherApiService
       setIsLoading(false);
     }
   }, []);
@@ -88,3 +87,4 @@ export const useTeachers = (): UseTeachersResult => {
     refetch: refetchFromApi,
   };
 };
+

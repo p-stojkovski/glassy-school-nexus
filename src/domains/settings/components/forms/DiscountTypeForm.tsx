@@ -247,3 +247,4 @@ const DiscountTypeForm: React.FC<DiscountTypeFormProps> = ({
 };
 
 export default DiscountTypeForm;
+

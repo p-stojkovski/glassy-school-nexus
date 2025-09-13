@@ -4,7 +4,6 @@
  */
 
 import apiService from './api';
-import apiWithInterceptor from './apiWithInterceptor';
 import {
   StudentResponse,
   StudentCreatedResponse,
@@ -47,22 +46,6 @@ function normalizeListResponse<T>(raw: any): T[] {
 }
 
 export class StudentApiService {
-  private useInterceptor = true; // Flag to enable/disable global interceptor
-  
-  // Get the appropriate API service based on configuration
-  private getApiService() {
-    return this.useInterceptor ? apiWithInterceptor : apiService;
-  }
-  
-  // Method to disable global loading for all operations in this service
-  public disableGlobalLoading() {
-    this.useInterceptor = false;
-  }
-  
-  // Method to enable global loading for all operations in this service
-  public enableGlobalLoading() {
-    this.useInterceptor = true;
-  }
   
   /**
    * Get all students in the system
@@ -70,8 +53,8 @@ export class StudentApiService {
    */
   async getAllStudents(): Promise<StudentResponse[]> {
     try {
-      const api = this.getApiService();
-      const raw = await api.get<any>(StudentApiPaths.BASE);
+      
+const raw = await apiService.get<any>(StudentApiPaths.BASE);
       const students = normalizeListResponse<StudentResponse>(raw);
       return students;
     } catch (error: any) {
@@ -89,8 +72,8 @@ export class StudentApiService {
    */
   async getStudentById(id: string): Promise<StudentResponse> {
     try {
-      const api = this.getApiService();
-      const student = await api.get<StudentResponse>(StudentApiPaths.BY_ID(id));
+      
+const student = await apiService.get<StudentResponse>(StudentApiPaths.BY_ID(id));
       return student;
     } catch (error: any) {
       if (error.status === StudentHttpStatus.NOT_FOUND) {
@@ -139,8 +122,8 @@ export class StudentApiService {
       const queryString = params.toString();
       const endpoint = queryString ? `${StudentApiPaths.SEARCH}?${queryString}` : StudentApiPaths.SEARCH;
       
-      const api = this.getApiService();
-      const response = await api.get<StudentSearchResponse>(endpoint);
+      
+const response = await apiService.get<StudentSearchResponse>(endpoint);
       return response;
     } catch (error: any) {
       if (error.status === StudentHttpStatus.BAD_REQUEST) {
@@ -164,8 +147,8 @@ export class StudentApiService {
    */
   async createStudent(request: CreateStudentRequest): Promise<StudentCreatedResponse> {
     try {
-      const api = this.getApiService();
-      const result = await api.post<StudentCreatedResponse>(
+      
+const result = await apiService.post<StudentCreatedResponse>(
         StudentApiPaths.BASE,
         request
       );
@@ -201,8 +184,8 @@ export class StudentApiService {
    */
   async updateStudent(id: string, request: UpdateStudentRequest): Promise<StudentResponse> {
     try {
-      const api = this.getApiService();
-      const result = await api.put<StudentResponse>(
+      
+const result = await apiService.put<StudentResponse>(
         StudentApiPaths.BY_ID(id),
         request
       );
@@ -240,8 +223,8 @@ export class StudentApiService {
    */
   async deleteStudent(id: string): Promise<void> {
     try {
-      const api = this.getApiService();
-      await api.delete<void>(StudentApiPaths.BY_ID(id));
+      
+await apiService.delete<void>(StudentApiPaths.BY_ID(id));
     } catch (error: any) {
       if (error.status === StudentHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Student not found');
@@ -267,8 +250,8 @@ export class StudentApiService {
    */
   async getAllDiscountTypes(): Promise<DiscountTypeDto[]> {
     try {
-      const api = this.getApiService();
-      const raw = await api.get<any>(StudentApiPaths.DISCOUNT_TYPES);
+      
+const raw = await apiService.get<any>(StudentApiPaths.DISCOUNT_TYPES);
       const discountTypes = normalizeListResponse<DiscountTypeDto>(raw);
       return discountTypes;
     } catch (error: any) {
@@ -286,8 +269,8 @@ export class StudentApiService {
    */
   async getDiscountTypeById(id: string): Promise<DiscountTypeDto> {
     try {
-      const api = this.getApiService();
-      const discountType = await api.get<DiscountTypeDto>(StudentApiPaths.DISCOUNT_TYPE_BY_ID(id));
+      
+const discountType = await apiService.get<DiscountTypeDto>(StudentApiPaths.DISCOUNT_TYPE_BY_ID(id));
       return discountType;
     } catch (error: any) {
       if (error.status === StudentHttpStatus.NOT_FOUND) {
@@ -313,8 +296,8 @@ export class StudentApiService {
       if (excludeId) params.append('excludeId', excludeId);
       const endpoint = `${StudentApiPaths.EMAIL_AVAILABLE}?${params.toString()}`;
 
-      const api = this.getApiService();
-      const raw = await api.get<any>(endpoint);
+      
+      const raw = await apiService.get<any>(endpoint);
 
       // Accept a variety of possible backend response shapes
       if (typeof raw === 'boolean') return raw;
@@ -365,3 +348,4 @@ export const checkStudentEmailAvailable = (email: string, excludeId?: string) =>
 
 // Export the service instance as default
 export default studentApiService;
+

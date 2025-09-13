@@ -226,3 +226,4 @@ export const {
 } = teachersSlice.actions;
 
 export default teachersSlice.reducer;
+

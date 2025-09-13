@@ -4,7 +4,6 @@
  */
 
 import apiService from './api';
-import apiWithInterceptor from './apiWithInterceptor';
 import {
   TeacherResponse,
   TeacherCreatedResponse,
@@ -45,22 +44,6 @@ function normalizeListResponse<T>(raw: any): T[] {
 }
 
 export class TeacherApiService {
-  private useInterceptor = true; // Flag to enable/disable global interceptor
-  
-  // Get the appropriate API service based on configuration
-  private getApiService() {
-    return this.useInterceptor ? apiWithInterceptor : apiService;
-  }
-  
-  // Method to disable global loading for all operations in this service
-  public disableGlobalLoading() {
-    this.useInterceptor = false;
-  }
-  
-  // Method to enable global loading for all operations in this service
-  public enableGlobalLoading() {
-    this.useInterceptor = true;
-  }
   
   /**
    * Get all teachers in the system
@@ -68,8 +51,8 @@ export class TeacherApiService {
    */
   async getAllTeachers(): Promise<TeacherResponse[]> {
     try {
-      const api = this.getApiService();
-      const raw = await api.get<any>(TeacherApiPaths.BASE);
+      
+const raw = await apiService.get<any>(TeacherApiPaths.BASE);
       const teachers = normalizeListResponse<TeacherResponse>(raw);
       return teachers;
     } catch (error: any) {
@@ -87,8 +70,8 @@ export class TeacherApiService {
    */
   async getTeacherById(id: string): Promise<TeacherResponse> {
     try {
-      const api = this.getApiService();
-      const teacher = await api.get<TeacherResponse>(TeacherApiPaths.BY_ID(id));
+      
+const teacher = await apiService.get<TeacherResponse>(TeacherApiPaths.BY_ID(id));
       return teacher;
     } catch (error: any) {
       if (error.status === TeacherHttpStatus.NOT_FOUND) {
@@ -121,8 +104,8 @@ export class TeacherApiService {
       const queryString = params.toString();
       const endpoint = queryString ? `${TeacherApiPaths.SEARCH}?${queryString}` : TeacherApiPaths.SEARCH;
       
-      const api = this.getApiService();
-      const raw = await api.get<any>(endpoint);
+      
+const raw = await apiService.get<any>(endpoint);
       const teachers = normalizeListResponse<TeacherResponse>(raw);
       return teachers;
     } catch (error: any) {
@@ -147,8 +130,8 @@ export class TeacherApiService {
    */
   async createTeacher(request: CreateTeacherRequest): Promise<TeacherCreatedResponse> {
     try {
-      const api = this.getApiService();
-      const result = await api.post<TeacherCreatedResponse>(
+      
+const result = await apiService.post<TeacherCreatedResponse>(
         TeacherApiPaths.BASE,
         request
       );
@@ -184,8 +167,8 @@ export class TeacherApiService {
    */
   async updateTeacher(id: string, request: UpdateTeacherRequest): Promise<TeacherResponse> {
     try {
-      const api = this.getApiService();
-      const result = await api.put<TeacherResponse>(
+      
+const result = await apiService.put<TeacherResponse>(
         TeacherApiPaths.BY_ID(id),
         request
       );
@@ -223,8 +206,8 @@ export class TeacherApiService {
    */
   async deleteTeacher(id: string): Promise<void> {
     try {
-      const api = this.getApiService();
-      await api.delete<void>(TeacherApiPaths.BY_ID(id));
+      
+await apiService.delete<void>(TeacherApiPaths.BY_ID(id));
     } catch (error: any) {
       if (error.status === TeacherHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Teacher not found');
@@ -250,8 +233,8 @@ export class TeacherApiService {
    */
   async getAllSubjects(): Promise<SubjectDto[]> {
     try {
-      const api = this.getApiService();
-      const raw = await api.get<any>(TeacherApiPaths.SUBJECTS);
+      
+const raw = await apiService.get<any>(TeacherApiPaths.SUBJECTS);
       const subjects = normalizeListResponse<SubjectDto>(raw);
       return subjects;
     } catch (error: any) {
@@ -275,8 +258,8 @@ export class TeacherApiService {
       if (excludeId) params.append('excludeId', excludeId);
       const endpoint = `${TeacherApiPaths.EMAIL_AVAILABLE}?${params.toString()}`;
 
-      const api = this.getApiService();
-      const raw = await api.get<any>(endpoint);
+      
+const raw = await apiService.get<any>(endpoint);
 
       // Accept a variety of possible backend response shapes
       if (typeof raw === 'boolean') return raw;
@@ -323,14 +306,14 @@ export const deleteTeacher = (id: string) => teacherApiService.deleteTeacher(id)
 export const getAllSubjects = () => {
   // Temporarily disable global loading for subjects dropdown
   const originalInterceptor = teacherApiService['useInterceptor'];
-  teacherApiService.disableGlobalLoading();
+  teacherApiService
   
   const promise = teacherApiService.getAllSubjects();
   
   // Restore original interceptor setting after the call
   promise.finally(() => {
     if (originalInterceptor) {
-      teacherApiService.enableGlobalLoading();
+      teacherApiService
     }
   });
   
@@ -342,3 +325,4 @@ export const checkTeacherEmailAvailable = (email: string, excludeId?: string) =>
 
 // Export the service instance as default
 export default teacherApiService;
+

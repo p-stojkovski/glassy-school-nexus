@@ -5,3 +5,4 @@ const ClassManagement: React.FC = () => {
   return <ClassManagementPage />;
 };
 export default ClassManagement;
+

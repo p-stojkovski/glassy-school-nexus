@@ -1,4 +1,4 @@
-import apiService from './apiWithInterceptor';
+import apiService from './api';
 
 export interface Subject {
   id: number;
@@ -54,3 +54,4 @@ export class SubjectApiService {
 }
 
 export default new SubjectApiService();
+

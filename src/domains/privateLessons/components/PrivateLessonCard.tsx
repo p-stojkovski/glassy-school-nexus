@@ -248,3 +248,4 @@ const PrivateLessonCard: React.FC<PrivateLessonCardProps> = ({
 };
 
 export default PrivateLessonCard;
+

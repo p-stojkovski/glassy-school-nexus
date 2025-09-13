@@ -61,3 +61,4 @@ const HomeworkCompletionCell: React.FC<HomeworkCompletionCellProps> = ({
 };
 
 export default HomeworkCompletionCell;
+

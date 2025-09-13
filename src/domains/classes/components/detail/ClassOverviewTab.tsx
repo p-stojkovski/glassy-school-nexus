@@ -314,3 +314,4 @@ const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
 };
 
 export default ClassOverviewTab;
+

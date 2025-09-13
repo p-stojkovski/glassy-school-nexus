@@ -9,3 +9,4 @@ const TeacherLoading: React.FC = () => {
 };
 
 export default TeacherLoading;
+

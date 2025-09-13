@@ -1,7 +1,6 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Users, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Student } from '@/domains/students/studentsSlice';
 import { cn } from '@/lib/utils';
 
@@ -24,12 +23,9 @@ const StudentSelectionTrigger: React.FC<StudentSelectionTriggerProps> = ({
   className,
   showCount = true,
 }) => {
-  // Filter selected students efficiently
-  const selectedStudents = React.useMemo(() => {
-    return students.filter((student) =>
-      selectedStudentIds.includes(student.id)
-    );
-  }, [students, selectedStudentIds]);
+  // We intentionally avoid deriving the count from the students array so the
+  // number persists even when students are not yet loaded (e.g., after refresh).
+  const selectedCount = selectedStudentIds?.length ?? 0;
 
   return (
     <div className={cn('space-y-3', className)}>
@@ -44,41 +40,18 @@ const StudentSelectionTrigger: React.FC<StudentSelectionTriggerProps> = ({
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-white/70" />
             <span className="text-white/70">
-              {selectedStudents.length === 0
+              {selectedCount === 0
                 ? placeholder
-                : `${selectedStudents.length} student${selectedStudents.length !== 1 ? 's' : ''} selected`}
+                : `${selectedCount} student${selectedCount !== 1 ? 's' : ''} selected`}
             </span>
           </div>
           <Plus className="w-4 h-4 text-white/70" />
         </div>
       </Button>
-
-      {/* Selected Students Preview */}
-      {selectedStudents.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
-            {selectedStudents.slice(0, 6).map((student) => (
-              <Badge
-                key={student.id}
-                variant="secondary"
-                className="bg-blue-500/20 text-white border border-blue-400/30 text-xs px-2 py-1"
-              >
-                {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email}
-              </Badge>
-            ))}
-            {selectedStudents.length > 6 && (
-              <Badge
-                variant="outline"
-                className="text-white/70 border-white/30 text-xs px-2 py-1"
-              >
-                +{selectedStudents.length - 6} more
-              </Badge>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Name preview removed per requirements: only show numeric count */}
     </div>
   );
 };
 
 export default StudentSelectionTrigger;
+

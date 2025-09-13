@@ -372,3 +372,4 @@ const FinancialDashboard: React.FC = () => {
 };
 
 export default FinancialDashboard;
+

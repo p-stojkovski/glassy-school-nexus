@@ -84,3 +84,4 @@ export const useSubjects = (): UseSubjectsResult => {
     refetch: refetchFromApi,
   };
 };
+

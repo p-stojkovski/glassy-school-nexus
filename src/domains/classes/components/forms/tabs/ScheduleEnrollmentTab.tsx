@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/form';
 import StudentSelectionTrigger from '@/components/common/StudentSelectionTrigger';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
-import { FriendlyTimePicker } from '@/components/common';
+import { NativeTimeInput } from '@/components/common';
 import { ClassFormData } from '@/types/api/class';
 
 interface ScheduleEnrollmentTabProps {
@@ -142,13 +142,11 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
                 name={`schedule.${index}.startTime`}
                 render={({ field }) => (
                   <FormItem>
-                    <FriendlyTimePicker
+                    <NativeTimeInput
                       label="Start Time"
                       value={field.value}
                       onChange={field.onChange}
                       placeholder="Select start time"
-                      minuteStep={15}
-                      format="24h"
                     />
                     <FormMessage />
                   </FormItem>
@@ -160,14 +158,12 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
                 name={`schedule.${index}.endTime`}
                 render={({ field }) => (
                   <FormItem>
-                    <FriendlyTimePicker
+                    <NativeTimeInput
                       label="End Time"
                       value={field.value}
                       onChange={field.onChange}
                       placeholder="Select end time"
-                      minuteStep={15}
-                      format="24h"
-                      minTime={form.watch(`schedule.${index}.startTime`)}
+                      min={form.watch(`schedule.${index}.startTime`)}
                     />
                     <FormMessage />
                   </FormItem>
@@ -267,3 +263,4 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
 };
 
 export default ScheduleEnrollmentTab;
+

@@ -12,6 +12,7 @@ import GlassCard from '@/components/common/GlassCard';
 import { LessonResponse, LessonStatusName } from '@/types/api/lesson';
 import LessonStatusBadge from './LessonStatusBadge';
 import DailyLessonListModal from './modals/DailyLessonListModal';
+import { useAcademicCalendar } from '../hooks/useAcademicCalendar';
 
 interface LessonCalendarProps {
   lessons: LessonResponse[];
@@ -19,6 +20,9 @@ interface LessonCalendarProps {
   selectedDate?: Date;
   onDateSelect?: (date: Date) => void;
   onLessonClick?: (lesson: LessonResponse) => void;
+  onConductLesson?: (lesson: LessonResponse) => void;
+  onCancelLesson?: (lesson: LessonResponse) => void;
+  onLessonsUpdated?: () => void;
   showWeekends?: boolean;
   compact?: boolean;
   emptyMessage?: string;
@@ -31,6 +35,10 @@ interface CalendarDay {
   isToday: boolean;
   isSelected: boolean;
   lessons: LessonResponse[];
+  nonTeachingDay?: {
+    type: 'teaching_break' | 'public_holiday' | 'vacation';
+    name: string;
+  };
 }
 
 const LessonCalendar: React.FC<LessonCalendarProps> = ({
@@ -39,6 +47,9 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
   selectedDate,
   onDateSelect,
   onLessonClick,
+  onConductLesson,
+  onCancelLesson,
+  onLessonsUpdated,
   showWeekends = true,
   compact = false,
   emptyMessage = "No lessons scheduled",
@@ -64,6 +75,29 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
     setCurrentDate(new Date());
   };
 
+  // Get academic calendar data for the current month view
+  // Extend the range to include a few days before and after to catch breaks that span months
+  const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  
+  // Extend range by 7 days before and after to catch cross-month breaks
+  const extendedStart = new Date(monthStart);
+  extendedStart.setDate(extendedStart.getDate() - 7);
+  const extendedEnd = new Date(monthEnd);
+  extendedEnd.setDate(extendedEnd.getDate() + 7);
+  
+  console.log('Calendar month range:', {
+    currentDate: currentDate.toISOString(),
+    monthStart: monthStart.toISOString(),
+    monthEnd: monthEnd.toISOString(),
+    extendedStart: extendedStart.toISOString(),
+    extendedEnd: extendedEnd.toISOString(),
+    monthName: currentDate.toLocaleDateString('en-US', { month: 'long' }),
+    year: currentDate.getFullYear()
+  });
+  
+  const { nonTeachingDays } = useAcademicCalendar(extendedStart, extendedEnd);
+  
   // Calendar calculation
   const { calendarDays, monthName, year } = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -92,6 +126,10 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
         return lessonDate.getTime() === date.getTime();
       });
 
+      // Check if this date is a non-teaching day
+      const dateString = date.toISOString().split('T')[0];
+      const nonTeachingDay = nonTeachingDays.find(ntd => ntd.date === dateString);
+
       calendarDays.push({
         date: new Date(date),
         isCurrentMonth: date.getMonth() === month,
@@ -100,11 +138,15 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
           date.getTime() === new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()).getTime() : 
           false,
         lessons: dayLessons,
+        nonTeachingDay: nonTeachingDay ? {
+          type: nonTeachingDay.type,
+          name: nonTeachingDay.name
+        } : undefined,
       });
     }
     
     return { calendarDays, monthName, year };
-  }, [currentDate, lessons, selectedDate]);
+  }, [currentDate, lessons, selectedDate, nonTeachingDays]);
 
   // Filter calendar days for weekends if needed
   const displayDays = showWeekends ? calendarDays : calendarDays.filter((_, index) => {
@@ -117,7 +159,16 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
     : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
   // Get status color for calendar day
-  const getDayStatusColor = (lessons: LessonResponse[]) => {
+  const getDayStatusColor = (lessons: LessonResponse[], nonTeachingDay?: CalendarDay['nonTeachingDay']) => {
+    // Non-teaching days have priority in background styling
+    if (nonTeachingDay) {
+      if (nonTeachingDay.type === 'public_holiday') {
+        return 'bg-red-500/30 border-2 border-red-500/50 shadow-lg shadow-red-500/20';
+      } else if (nonTeachingDay.type === 'teaching_break') {
+        return 'bg-orange-500/30 border-2 border-orange-500/50 shadow-lg shadow-orange-500/20';
+      }
+    }
+    
     if (lessons.length === 0) return '';
     
     const hasScheduled = lessons.some(l => l.statusName === 'Scheduled');
@@ -139,6 +190,13 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
   // Handle day click
   const handleDayClick = (day: CalendarDay) => {
     onDateSelect?.(day.date);
+    
+    // If it's a non-teaching day, show info about it
+    if (day.nonTeachingDay) {
+      const dayType = day.nonTeachingDay.type === 'public_holiday' ? 'Public Holiday' : 'Teaching Break';
+      alert(`${dayType}: ${day.nonTeachingDay.name}\n\nNo lessons can be scheduled on this day.`);
+      return;
+    }
     
     if (day.lessons.length === 0) {
       return; // No lessons to show
@@ -277,6 +335,14 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
           <div className="w-3 h-3 rounded border-2 border-red-400 bg-red-400/10" />
           <span className="text-white/70">Cancelled</span>
         </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-orange-500/30 border-2 border-orange-500/50 shadow-sm shadow-orange-500/20" />
+          <span className="text-white/70">Teaching Break</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-red-500/30 border-2 border-red-500/50 shadow-sm shadow-red-500/20" />
+          <span className="text-white/70">Public Holiday</span>
+        </div>
       </div>
 
       {/* Calendar Grid */}
@@ -291,7 +357,7 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
           
           {/* Calendar days */}
           {displayDays.map((day, index) => {
-            const statusColor = getDayStatusColor(day.lessons);
+            const statusColor = getDayStatusColor(day.lessons, day.nonTeachingDay);
             const isWeekend = !showWeekends ? false : (index % 7 === 0 || index % 7 === 6);
             
             return (
@@ -328,6 +394,33 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
                   )}
                 </div>
                 
+                {/* Non-teaching day indicator */}
+                {day.nonTeachingDay && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    {day.nonTeachingDay.type === 'public_holiday' || day.nonTeachingDay.type === 'vacation' ? (
+                      <div className="text-red-400 font-bold text-xs opacity-80">
+                        {day.nonTeachingDay.name}
+                      </div>
+                    ) : (
+                      <div className="text-orange-400 font-bold text-xs opacity-80">
+                        {day.nonTeachingDay.name}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Small dot indicator in corner */}
+                {day.nonTeachingDay && (
+                  <div className="absolute top-1 right-1">
+                    <div 
+                      className={`w-2 h-2 rounded-full ${
+                        day.nonTeachingDay.type === 'public_holiday' ? 'bg-red-500' : 'bg-orange-500'
+                      }`}
+                      title={`${day.nonTeachingDay.type === 'public_holiday' ? 'Public Holiday' : 'Teaching Break'}: ${day.nonTeachingDay.name}`}
+                    />
+                  </div>
+                )}
+                
                 {renderLessonIndicators(day.lessons)}
               </motion.div>
             );
@@ -363,9 +456,13 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
         date={dailyLessonModal.date}
         lessons={dailyLessonModal.lessons}
         onLessonClick={handleModalLessonClick}
+        onConductLesson={onConductLesson}
+        onCancelLesson={onCancelLesson}
+        onLessonsUpdated={onLessonsUpdated}
       />
     </div>
   );
 };
 
 export default LessonCalendar;
+

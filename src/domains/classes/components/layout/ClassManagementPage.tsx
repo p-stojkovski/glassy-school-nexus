@@ -95,3 +95,4 @@ const ClassManagementPage: React.FC = () => {
 };
 
 export default ClassManagementPage;
+

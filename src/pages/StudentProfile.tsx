@@ -616,3 +616,4 @@ const StudentProfile: React.FC = () => {
 };
 
 export default StudentProfile;
+

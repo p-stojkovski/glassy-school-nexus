@@ -198,3 +198,4 @@ const ClassTable: React.FC<ClassTableProps> = ({
 };
 
 export default ClassTable;
+

@@ -228,3 +228,4 @@ const DiscountTypeSettingsTab: React.FC = () => {
 };
 
 export default DiscountTypeSettingsTab;
+

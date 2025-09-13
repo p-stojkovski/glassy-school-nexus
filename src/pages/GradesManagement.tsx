@@ -51,3 +51,4 @@ const GradesManagement: React.FC = () => {
 };
 
 export default GradesManagement;
+

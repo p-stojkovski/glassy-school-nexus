@@ -81,3 +81,4 @@ const StudentGradesTab: React.FC<StudentGradesTabProps> = ({
 };
 
 export default StudentGradesTab;
+

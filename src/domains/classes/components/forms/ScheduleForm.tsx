@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Clock } from 'lucide-react';
 import { ClassFormData } from './ClassFormContent';
-import { FriendlyTimePicker } from '@/components/common';
+import { NativeTimeInput } from '@/components/common';
 
 const ScheduleForm: React.FC = () => {
   const form = useFormContext<ClassFormData>();
@@ -76,13 +76,11 @@ const ScheduleForm: React.FC = () => {
             name={`schedule.${index}.startTime`}
             render={({ field }) => (
               <FormItem>
-                <FriendlyTimePicker
+                <NativeTimeInput
                   label="Start Time"
                   value={field.value}
                   onChange={field.onChange}
                   placeholder="Select start time"
-                  minuteStep={15}
-                  format="24h"
                 />
               </FormItem>
             )}
@@ -93,14 +91,12 @@ const ScheduleForm: React.FC = () => {
             name={`schedule.${index}.endTime`}
             render={({ field }) => (
               <FormItem>
-                <FriendlyTimePicker
+                <NativeTimeInput
                   label="End Time"
                   value={field.value}
                   onChange={field.onChange}
                   placeholder="Select end time"
-                  minuteStep={15}
-                  format="24h"
-                  minTime={form.watch(`schedule.${index}.startTime`)}
+                  min={form.watch(`schedule.${index}.startTime`)}
                 />
               </FormItem>
             )}
@@ -134,3 +130,4 @@ const ScheduleForm: React.FC = () => {
 };
 
 export default ScheduleForm;
+

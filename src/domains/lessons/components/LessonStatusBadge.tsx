@@ -182,3 +182,4 @@ export const LessonStatusSummary: React.FC<LessonStatusSummaryProps> = ({
 };
 
 export default LessonStatusBadge;
+

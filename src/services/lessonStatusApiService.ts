@@ -1,4 +1,4 @@
-import apiService from './apiWithInterceptor';
+import apiService from './api';
 import { 
   LessonStatusResponse, 
   UpdateLessonStatusRequest,
@@ -32,3 +32,4 @@ export class LessonStatusApiService {
 }
 
 export default new LessonStatusApiService();
+

@@ -28,3 +28,4 @@ export const useInitializeStudents = () => {
     isInitialized: studentsHook.isInitialized && financialHook.isInitialized,
   };
 };
+

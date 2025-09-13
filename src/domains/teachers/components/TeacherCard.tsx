@@ -99,3 +99,4 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher, onEdit, onDelete, is
 };
 
 export default TeacherCard;
+

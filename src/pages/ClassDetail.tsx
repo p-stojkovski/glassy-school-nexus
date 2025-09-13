@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { classApiService } from '@/services/classApiService';
 import { ClassResponse } from '@/types/api/class';
@@ -124,14 +123,6 @@ const ClassDetail: React.FC = () => {
           >
             <Calendar className="w-4 h-4 mr-2" />
             Lessons
-            {lessonSummary?.totalLessons && (
-              <Badge 
-                variant="secondary" 
-                className="ml-2 bg-white/20 text-white text-xs"
-              >
-                {lessonSummary.totalLessons}
-              </Badge>
-            )}
           </TabsTrigger>
         </TabsList>
 
@@ -157,3 +148,4 @@ const ClassDetail: React.FC = () => {
 };
 
 export default ClassDetail;
+

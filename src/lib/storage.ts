@@ -17,3 +17,4 @@ export function loadFromStorage<T>(key: string): T | null {
     return null;
   }
 }
+

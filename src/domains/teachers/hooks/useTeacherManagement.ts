@@ -322,7 +322,7 @@ export const useTeacherManagement = () => {
       
       // Disable global loading for all teacher operations to use page-specific loading states
       const { teacherApiService } = await import('@/services/teacherApiService');
-      teacherApiService.disableGlobalLoading();
+      teacherApiService
       
       try {
         await Promise.all([loadTeachers(), loadSubjects()]);
@@ -409,3 +409,4 @@ export const useTeacherManagement = () => {
     setIsConfirmOpen,
   };
 };
+

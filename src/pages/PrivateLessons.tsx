@@ -6,3 +6,4 @@ const PrivateLessons: React.FC = () => {
 };
 
 export default PrivateLessons;
+

@@ -71,8 +71,8 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
         setStudentsError(null);
         
         try {
-          // Disable global loading for this specific call
-          studentApiService.disableGlobalLoading();
+          
+          studentApiService
           
           const studentsData = await studentApiService.getAllStudents();
           console.log('✅ Students loaded for sidebar:', studentsData?.length || 0);
@@ -83,8 +83,8 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
         } finally {
           setIsLoadingStudents(false);
           
-          // Re-enable global loading for other components
-          studentApiService.enableGlobalLoading();
+          
+          studentApiService
         }
       }
     };
@@ -347,8 +347,8 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                       setIsLoadingStudents(true);
                       
                       try {
-                        // Disable global loading for retry
-                        studentApiService.disableGlobalLoading();
+                        
+                        studentApiService
                         
                         const studentsData = await studentApiService.getAllStudents();
                         setLoadedStudents(studentsData);
@@ -357,8 +357,8 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                       } finally {
                         setIsLoadingStudents(false);
                         
-                        // Re-enable global loading
-                        studentApiService.enableGlobalLoading();
+                        
+                        studentApiService
                       }
                     }}
                     className="mt-3 bg-white/5 border-white/10 text-white hover:bg-white/10"
@@ -459,3 +459,4 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
 };
 
 export default StudentSelectionPanel;
+

@@ -74,3 +74,4 @@ const DiscountTypeSelect: React.FC<DiscountTypeSelectProps> = ({
 };
 
 export default DiscountTypeSelect;
+

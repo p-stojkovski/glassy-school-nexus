@@ -88,3 +88,4 @@ const DiscountTypesDropdown: React.FC<DiscountTypesDropdownProps> = ({
 };
 
 export default DiscountTypesDropdown;
+

@@ -273,45 +273,6 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
             </GlassCard>
           )}
 
-          {/* Historical Data Snapshots */}
-          {(lesson.teacherNameSnapshot || lesson.subjectNameSnapshot || lesson.classroomNameSnapshot) && (
-            <GlassCard className="p-4">
-              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                <History className="w-5 h-5 text-gray-400" />
-                Historical Data
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {lesson.teacherNameSnapshot && (
-                  <div>
-                    <label className="text-white/60 text-sm block mb-1">Teacher (at creation)</label>
-                    <p className="text-white/80 font-mono text-sm bg-white/5 rounded px-2 py-1">
-                      {lesson.teacherNameSnapshot}
-                    </p>
-                  </div>
-                )}
-                {lesson.subjectNameSnapshot && (
-                  <div>
-                    <label className="text-white/60 text-sm block mb-1">Subject (at creation)</label>
-                    <p className="text-white/80 font-mono text-sm bg-white/5 rounded px-2 py-1">
-                      {lesson.subjectNameSnapshot}
-                    </p>
-                  </div>
-                )}
-                {lesson.classroomNameSnapshot && (
-                  <div>
-                    <label className="text-white/60 text-sm block mb-1">Classroom (at creation)</label>
-                    <p className="text-white/80 font-mono text-sm bg-white/5 rounded px-2 py-1">
-                      {lesson.classroomNameSnapshot}
-                    </p>
-                  </div>
-                )}
-              </div>
-              <p className="text-white/40 text-xs mt-3 italic">
-                This data is preserved from when the lesson was created to maintain historical accuracy.
-              </p>
-            </GlassCard>
-          )}
-
           {/* Metadata */}
           <GlassCard className="p-4">
             <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
@@ -405,3 +366,4 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
 };
 
 export default LessonDetailModal;
+

@@ -10,8 +10,21 @@ class ApiService {
   private baseURL = 'https://localhost:5001';
   private refreshPromise: Promise<void> | null = null;
 
+  private getToken(key: 'accessToken' | 'refreshToken'): string | null {
+    return sessionStorage.getItem(key) || localStorage.getItem(key);
+  }
+
+  private setToken(key: 'accessToken' | 'refreshToken', value: string): void {
+    const inSession = !!sessionStorage.getItem(key);
+    if (inSession) {
+      sessionStorage.setItem(key, value);
+    } else {
+      localStorage.setItem(key, value);
+    }
+  }
+
   private getAuthHeaders(): Record<string, string> {
-    const token = localStorage.getItem('accessToken');
+    const token = this.getToken('accessToken');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
@@ -93,7 +106,7 @@ class ApiService {
   }
 
   private async _refreshToken(): Promise<void> {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = this.getToken('refreshToken');
     
     if (!refreshToken) {
       throw new Error('No refresh token available');
@@ -115,13 +128,15 @@ class ApiService {
 
     const tokenData = await response.json();
     
-    localStorage.setItem('accessToken', tokenData.accessToken);
-    localStorage.setItem('refreshToken', tokenData.refreshToken);
+    this.setToken('accessToken', tokenData.accessToken);
+    this.setToken('refreshToken', tokenData.refreshToken);
   }
 
   private clearTokens(): void {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
   }
 
   async get<T>(endpoint: string): Promise<T> {
@@ -191,7 +206,7 @@ class ApiService {
   }
 
   isTokenExpired(): boolean {
-    const token = localStorage.getItem('accessToken');
+    const token = this.getToken('accessToken');
     if (!token) return true;
 
     try {
@@ -204,8 +219,9 @@ class ApiService {
   }
 
   hasValidToken(): boolean {
-    return !!localStorage.getItem('accessToken') && !this.isTokenExpired();
+    return !!this.getToken('accessToken') && !this.isTokenExpired();
   }
 }
 
 export default new ApiService();
+

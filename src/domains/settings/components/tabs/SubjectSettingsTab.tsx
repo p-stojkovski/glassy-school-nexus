@@ -204,3 +204,4 @@ const SubjectSettingsTab: React.FC = () => {
 };
 
 export default SubjectSettingsTab;
+

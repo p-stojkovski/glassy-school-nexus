@@ -445,3 +445,4 @@ const GradeEntry: React.FC<GradeEntryProps> = ({ classId }) => {
 };
 
 export default GradeEntry;
+

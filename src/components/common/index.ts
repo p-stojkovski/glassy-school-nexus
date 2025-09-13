@@ -6,6 +6,7 @@ export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as ErrorMessage } from './ErrorMessage';
 export { default as FormButtons } from './FormButtons';
 export { default as FormSection } from './FormSection';
-export { default as FriendlyDatePicker } from './FriendlyDatePicker';
-export { default as FriendlyTimePicker } from './FriendlyTimePicker';
+export { default as NativeDateInput } from './NativeDateInput';
+export { default as NativeTimeInput } from './NativeTimeInput';
 export { default as GlassCard } from './GlassCard';
+

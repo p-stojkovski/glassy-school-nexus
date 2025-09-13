@@ -48,6 +48,73 @@ export interface GenerateLessonsRequest {
   skipExistingConflicts?: boolean; // optional, defaults to true
 }
 
+// Generation modes for academic-aware lesson generation
+export type GenerationMode = 'CustomRange' | 'Semester' | 'Month' | 'FullYear';
+
+// Academic-aware generation request
+export interface GenerateLessonsAcademicAwareRequest {
+  startDate: string;            // required, ISO date "YYYY-MM-DD"
+  endDate: string;              // required, ISO date "YYYY-MM-DD"
+  generationMode: GenerationMode;
+  academicYearId?: string | null; // GUID, required for semester/full_year modes
+  semesterId?: string | null;   // GUID, required for semester mode
+  respectBreaks?: boolean;      // optional, defaults to true
+  respectHolidays?: boolean;    // optional, defaults to true
+}
+
+// Academic context information
+export interface AcademicContext {
+  academicYearId: string | null; // GUID
+  academicYearName: string | null;
+  semesterId: string | null;    // GUID
+  semesterName: string | null;
+  teachingBreakDays: number;
+  publicHolidayDays: number;
+  totalNonTeachingDays: number;
+}
+
+// Generated lesson information
+export interface GeneratedLesson {
+  lessonId: string;             // GUID
+  scheduledDate: string;        // ISO date "YYYY-MM-DD"
+  startTime: string;            // "HH:mm"
+  endTime: string;              // "HH:mm"
+  dayOfWeek: string;
+}
+
+// Skipped lesson information
+export interface SkippedLesson {
+  scheduledDate: string;        // ISO date "YYYY-MM-DD"
+  startTime: string;            // "HH:mm"
+  endTime: string;              // "HH:mm"
+  dayOfWeek: string;
+  skipReason: 'teaching_break' | 'public_holiday' | 'scheduling_conflict';
+}
+
+// Lesson generation error
+export interface LessonGenerationError {
+  scheduledDate: string;        // ISO date "YYYY-MM-DD"
+  startTime: string;            // "HH:mm"
+  endTime: string;              // "HH:mm"
+  errorType: string;
+  errorMessage: string;
+}
+
+// Academic-aware lesson generation result
+export interface AcademicAwareLessonGenerationResult {
+  classId: string;              // GUID
+  generationMode: string;
+  academicContext: AcademicContext | null;
+  generatedCount: number;
+  skippedCount: number;
+  conflictCount: number;
+  teachingBreakSkips: number;
+  publicHolidaySkips: number;
+  generatedLessons: GeneratedLesson[];
+  skippedLessons: SkippedLesson[];
+  errors: LessonGenerationError[];
+}
+
 // Responses
 export interface LessonResponse {
   id: string;                   // GUID
@@ -142,6 +209,7 @@ export const LessonApiPaths = {
   CONDUCT: (id: string) => `/api/lessons/${id}/conduct`,
   MAKEUP: (id: string) => `/api/lessons/${id}/makeup`,
   GENERATE: '/api/lessons/generate',
+  GENERATE_ACADEMIC: (id: string) => `/api/lessons/generate-academic/${id}`,
   SEARCH: '/api/lessons/search',
   CONFLICTS: '/api/lessons/conflicts',
   STATUSES: '/api/lesson-statuses',
@@ -298,3 +366,4 @@ export const LessonStatusApiPaths = {
   BY_ID: (id: string) => `/api/lesson-statuses/${id}`,
   SEARCH: '/api/lesson-statuses/search',
 } as const;
+

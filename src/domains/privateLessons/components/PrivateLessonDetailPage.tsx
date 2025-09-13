@@ -632,3 +632,4 @@ const PrivateLessonDetailPage: React.FC = () => {
 };
 
 export default PrivateLessonDetailPage;
+

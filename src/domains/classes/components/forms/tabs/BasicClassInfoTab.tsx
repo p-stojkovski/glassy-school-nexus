@@ -149,3 +149,4 @@ const BasicClassInfoTab: React.FC<BasicClassInfoTabProps> = ({
 };
 
 export default BasicClassInfoTab;
+

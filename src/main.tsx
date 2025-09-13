@@ -4,3 +4,4 @@ import './index.css';
 import './styles/globals.scss';
 
 createRoot(document.getElementById('root')!).render(<App />);
+

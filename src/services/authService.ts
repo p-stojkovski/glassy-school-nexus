@@ -1,9 +1,11 @@
 import apiService from './api';
 import { UserRole } from '@/types/enums';
+import { buildAvatarUrl } from '@/utils/avatar';
 
 export interface LoginCredentials {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface RegistrationData {
@@ -51,9 +53,15 @@ class AuthService {
         credentials.password
       );
 
-      // Store tokens
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
+      // Store tokens based on rememberMe
+      const useLocal = credentials.rememberMe !== false;
+      const storage = useLocal ? localStorage : sessionStorage;
+      storage.setItem('accessToken', response.accessToken);
+      storage.setItem('refreshToken', response.refreshToken);
+      // Clear from the other storage to avoid ambiguity
+      const other = useLocal ? sessionStorage : localStorage;
+      other.removeItem('accessToken');
+      other.removeItem('refreshToken');
 
       // Convert backend response to frontend User format
       const user: User = {
@@ -62,7 +70,7 @@ class AuthService {
         lastName: response.lastName,
         email: response.email,
         role: response.role.toLowerCase() as UserRole,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${response.firstName}`,
+        avatar: buildAvatarUrl(response.userId || response.firstName),
       };
 
       return user;
@@ -85,20 +93,21 @@ class AuthService {
   }
 
   async logout(): Promise<void> {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = sessionStorage.getItem('refreshToken') || localStorage.getItem('refreshToken');
     
     if (refreshToken) {
       try {
         await apiService.logout(refreshToken);
       } catch (error) {
-        // Log error but don't throw - we still want to clear local tokens
         console.warn('Logout API call failed:', error);
       }
     }
 
-    // Always clear local tokens
+    // Always clear tokens from both storages
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
   }
 
   async logoutFromAllDevices(): Promise<void> {
@@ -110,9 +119,11 @@ class AuthService {
       console.warn('Logout from all devices API call failed:', error);
     }
 
-    // Always clear local tokens regardless of API success
+    // Always clear tokens regardless of API success
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
   }
 
   async getCurrentUser(): Promise<User | null> {
@@ -129,7 +140,7 @@ class AuthService {
         lastName: response.lastName,
         email: response.email,
         role: response.role.toLowerCase() as UserRole,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${response.firstName}`,
+        avatar: buildAvatarUrl(response.userId || response.firstName),
       };
 
       return user;
@@ -160,7 +171,7 @@ class AuthService {
         lastName: response.lastName,
         email: response.email,
         role: response.role.toLowerCase() as UserRole,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${response.firstName}`,
+        avatar: buildAvatarUrl(response.userId || response.firstName),
       };
 
       return user;
@@ -192,3 +203,4 @@ class AuthService {
 }
 
 export default new AuthService();
+

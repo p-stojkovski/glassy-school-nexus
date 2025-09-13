@@ -135,7 +135,7 @@ export const useConflictPrecheck = (
 
         // Temporarily disable global loading for conflict checks
         const wasUsingInterceptor = lessonApiService['useInterceptor'];
-        lessonApiService.disableGlobalLoading();
+        lessonApiService
         
         try {
           const conflictResults = await lessonApiService.checkConflicts(
@@ -160,7 +160,7 @@ export const useConflictPrecheck = (
         } finally {
           // Restore original interceptor setting
           if (wasUsingInterceptor) {
-            lessonApiService.enableGlobalLoading();
+            lessonApiService
           }
         }
       } catch (err: any) {
@@ -215,3 +215,4 @@ export const useConflictPrecheck = (
 };
 
 export default useConflictPrecheck;
+

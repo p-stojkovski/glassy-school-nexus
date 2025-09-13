@@ -96,11 +96,11 @@ const ClassCard: React.FC<ClassCardProps> = ({
             <Calendar className="w-4 h-4" />
             Lessons
           </p>
-          {lessonSummary?.totalLessons && (
+          {(lessonSummary?.totalLessons ?? 0) > 0 ? (
             <span className="text-sm font-medium text-white">
-              {lessonSummary.totalLessons} total
+              {lessonSummary?.totalLessons} total
             </span>
-          )}
+          ) : null}
         </div>
         
         {lessonSummary?.totalLessons > 0 ? (
@@ -126,3 +126,4 @@ const ClassCard: React.FC<ClassCardProps> = ({
 };
 
 export default ClassCard;
+

@@ -88,3 +88,4 @@ const ClassNameCell: React.FC<ClassNameCellProps> = ({
 };
 
 export default ClassNameCell;
+

@@ -112,3 +112,4 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   
   console.log('🔧 Cache test utils available at window.cacheTestUtils');
 }
+

@@ -69,3 +69,4 @@ const PrivateLessonEmptyState: React.FC<PrivateLessonEmptyStateProps> = ({
 };
 
 export default PrivateLessonEmptyState;
+

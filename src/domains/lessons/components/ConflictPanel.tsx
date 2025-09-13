@@ -287,3 +287,4 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
 };
 
 export default ConflictPanel;
+

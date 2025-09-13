@@ -55,3 +55,4 @@ const ClassScheduleCell: React.FC<ClassScheduleCellProps> = ({
 };
 
 export default ClassScheduleCell;
+

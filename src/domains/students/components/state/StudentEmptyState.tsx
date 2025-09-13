@@ -48,3 +48,4 @@ const StudentEmptyState: React.FC<StudentEmptyStateProps> = ({
 };
 
 export default StudentEmptyState;
+

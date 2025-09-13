@@ -34,8 +34,8 @@ const ClassesPage: React.FC = () => {
     
     const initializeClasses = async () => {
       try {
-        // Disable global loading for initial page load
-        classApiService.disableGlobalLoading();
+        
+        classApiService
         
         await loadClasses();
         
@@ -43,9 +43,9 @@ const ClassesPage: React.FC = () => {
           setIsInitialized(true);
         }
       } finally {
-        // Re-enable global loading for subsequent operations
+        
         if (mounted) {
-          classApiService.enableGlobalLoading();
+          classApiService
         }
       }
     };
@@ -58,7 +58,7 @@ const ClassesPage: React.FC = () => {
         clearTimeout(searchTimeoutRef.current);
       }
       // Ensure global loading is re-enabled on cleanup
-      classApiService.enableGlobalLoading();
+      classApiService
     };
   }, []); // Empty dependency - run only once
 
@@ -211,6 +211,7 @@ const ClassesPage: React.FC = () => {
         subjectFilter={subjectFilter}
         showOnlyWithAvailableSlots={availabilityFilter === 'available'}
         onFilterChange={handleFilterChange}
+        clearFilters={clearFilters}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         isSearching={isSearching}
@@ -262,3 +263,4 @@ const ClassesPage: React.FC = () => {
 };
 
 export default ClassesPage;
+

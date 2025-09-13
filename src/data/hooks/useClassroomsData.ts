@@ -17,3 +17,4 @@ export const useClassroomsData = (options: UseDomainDataOptions = {}) => {
     loadOnMount: options.loadOnMount ?? true,
   });
 };
+

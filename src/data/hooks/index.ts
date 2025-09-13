@@ -17,3 +17,4 @@ export {
 
 // Keep the original hook for backward compatibility during migration
 export { useMockData } from './useMockData';
+

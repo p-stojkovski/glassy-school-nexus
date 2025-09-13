@@ -96,3 +96,4 @@ const AttendanceFilters: React.FC<AttendanceFiltersProps> = ({
 };
 
 export default AttendanceFilters;
+

@@ -60,3 +60,4 @@ export const SidebarRail = React.forwardRef<
   );
 });
 SidebarRail.displayName = 'SidebarRail';
+

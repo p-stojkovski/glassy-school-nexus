@@ -20,7 +20,7 @@ export const useStudentFormPage = (studentId?: string) => {
       if (!studentId) return;
       
       // Disable global loading to use page-specific spinner
-      studentApiService.disableGlobalLoading();
+      studentApiService
       
       setStudentLoading(true);
       setFormError(null);
@@ -33,7 +33,7 @@ export const useStudentFormPage = (studentId?: string) => {
       } finally {
         setStudentLoading(false);
         // Keep global loading disabled to maintain consistency with main students page
-        // studentApiService.enableGlobalLoading();
+        // studentApiService
       }
     };
     loadStudent();
@@ -76,3 +76,4 @@ export const useStudentFormPage = (studentId?: string) => {
     handleCancel,
   };
 };
+

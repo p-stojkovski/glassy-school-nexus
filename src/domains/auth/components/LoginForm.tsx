@@ -7,15 +7,18 @@ import { addNotification } from '@/store/slices/uiSlice';
 import GlassCard from '@/components/common/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { NotificationType } from '@/types/enums';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const dispatch = useAppDispatch();
 
   const { loginLoading, error } = useAppSelector((state) => state.auth);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +28,7 @@ const LoginForm: React.FC = () => {
     }
 
     try {
-      const result = await dispatch(loginAsync({ email, password }));
+      const result = await dispatch(loginAsync({ email, password, rememberMe }));
       
       if (loginAsync.fulfilled.match(result)) {
         dispatch(
@@ -35,15 +38,8 @@ const LoginForm: React.FC = () => {
           })
         );
       } else if (loginAsync.rejected.match(result)) {
-        // Error is already stored in Redux state, and will be displayed in the form
-        // Also show notification for additional feedback
-        const errorMessage = result.payload as string || 'Login failed. Please try again.';
-        dispatch(
-          addNotification({
-            type: NotificationType.Error,
-            message: errorMessage,
-          })
-        );
+        // Error is already stored in Redux state and rendered inline in the form.
+        // Avoid showing a duplicate error toast here.
       }
     } catch (error) {
       dispatch(
@@ -62,7 +58,7 @@ const LoginForm: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <GlassCard className="w-full max-w-md p-8">
+        <GlassCard className="w-[600px] md:w-[560px] max-w-none p-10">
           <div className="text-center mb-8">
             <motion.div
               initial={{ scale: 0 }}
@@ -98,7 +94,6 @@ const LoginForm: React.FC = () => {
                   if (error) dispatch(clearError());
                 }}
                 className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                required
               />
             </div>
 
@@ -113,12 +108,12 @@ const LoginForm: React.FC = () => {
                   if (error) dispatch(clearError());
                 }}
                 className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />
@@ -128,10 +123,17 @@ const LoginForm: React.FC = () => {
               </button>
             </div>
 
+            <div className="flex items-center justify-between pt-2">
+              <label htmlFor="remember" className="flex items-center gap-2 text-white/80 text-sm select-none">
+                <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v) => setRememberMe(!!v)} />
+                <span>Remember me</span>
+              </label>
+            </div>
+
             <Button
               type="submit"
               disabled={loginLoading}
-              className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 rounded-xl"
+              className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold py-3 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loginLoading ? 'Signing in...' : 'Sign In'}
             </Button>
@@ -143,3 +145,4 @@ const LoginForm: React.FC = () => {
 };
 
 export default LoginForm;
+

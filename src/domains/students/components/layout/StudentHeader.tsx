@@ -27,3 +27,4 @@ const StudentHeader: React.FC<StudentHeaderProps> = ({ onAddStudent }) => {
 };
 
 export default StudentHeader;
+

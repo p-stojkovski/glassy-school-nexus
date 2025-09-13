@@ -207,3 +207,4 @@ const SettingsTable: React.FC<SettingsTableProps> = ({
 };
 
 export default SettingsTable;
+

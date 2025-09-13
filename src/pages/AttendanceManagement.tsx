@@ -56,3 +56,4 @@ const AttendanceManagement: React.FC = () => {
 };
 
 export default AttendanceManagement;
+

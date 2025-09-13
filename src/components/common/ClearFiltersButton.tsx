@@ -24,3 +24,4 @@ const ClearFiltersButton: React.FC<ClearFiltersButtonProps> = ({ onClick, classN
 
 export default ClearFiltersButton;
 
+

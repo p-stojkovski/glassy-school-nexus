@@ -9,3 +9,4 @@ const StudentLoading: React.FC = () => {
 };
 
 export default StudentLoading;
+

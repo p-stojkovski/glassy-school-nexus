@@ -78,3 +78,4 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
 };
 
 export default ClassroomCard;
+

@@ -260,3 +260,4 @@ export function isProblemDetails(obj: any): obj is ProblemDetails {
     typeof obj.traceId === 'string'
   );
 }
+

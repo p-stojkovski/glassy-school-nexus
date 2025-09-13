@@ -456,3 +456,4 @@ const PaymentSidebar: React.FC<PaymentSidebarProps> = ({
 };
 
 export default PaymentSidebar;
+

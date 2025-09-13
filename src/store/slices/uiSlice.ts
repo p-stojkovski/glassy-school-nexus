@@ -52,3 +52,4 @@ const uiSlice = createSlice({
 export const { toggleSidebar, setTheme, addNotification, removeNotification } =
   uiSlice.actions;
 export default uiSlice.reducer;
+

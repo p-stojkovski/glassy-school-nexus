@@ -98,3 +98,4 @@ export const useFinancialData = (options: UseDomainDataOptions = {}) => {
     error: obligationsHook.error || paymentsHook.error,
   };
 };
+

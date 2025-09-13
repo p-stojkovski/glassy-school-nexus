@@ -2,7 +2,7 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import FriendlyDatePicker from '@/components/common/FriendlyDatePicker';
+import { NativeDateInput } from '@/components/common';
 import {
   Select,
   SelectContent,
@@ -180,15 +180,15 @@ const StudentInformationTab: React.FC<StudentInformationTabProps> = ({ form, ema
         render={({ field, fieldState }) => (
           <FormItem className="flex flex-col">
             <FormControl>
-              <FriendlyDatePicker
+              <NativeDateInput
                 value={field.value}
                 onChange={field.onChange}
                 label="Enrollment Date"
                 required
                 placeholder="Select enrollment date"
                 error={fieldState.error?.message}
-                maxDate={new Date()}
-                minDate={new Date('1900-01-01')}
+                max={new Date().toISOString().split('T')[0]}
+                min={new Date('1900-01-01').toISOString().split('T')[0]}
               />
             </FormControl>
           </FormItem>
@@ -201,15 +201,15 @@ const StudentInformationTab: React.FC<StudentInformationTabProps> = ({ form, ema
         render={({ field, fieldState }) => (
           <FormItem className="flex flex-col">
             <FormControl>
-              <FriendlyDatePicker
+              <NativeDateInput
                 value={field.value}
                 onChange={field.onChange}
                 label="Date of Birth"
                 required={false}
                 placeholder="Select date of birth (optional)"
                 error={fieldState.error?.message}
-                maxDate={new Date()}
-                minDate={new Date('1950-01-01')}
+                max={new Date().toISOString().split('T')[0]}
+                min={new Date('1950-01-01').toISOString().split('T')[0]}
               />
             </FormControl>
           </FormItem>
@@ -260,3 +260,4 @@ const StudentInformationTab: React.FC<StudentInformationTabProps> = ({ form, ema
 };
 
 export default StudentInformationTab;
+

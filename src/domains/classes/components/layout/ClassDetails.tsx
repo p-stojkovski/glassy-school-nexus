@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,7 @@ import ClassOverviewTab from '../detail/ClassOverviewTab';
 import ClassLessonsTab from '../detail/ClassLessonsTab';
 import { LessonDetailModal } from '@/domains/lessons/components';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
+import { useLessons } from '@/domains/lessons/hooks/useLessons';
 
 interface ClassDetailsProps {
   classItem: Class | null;
@@ -76,7 +77,7 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
   initialTab = 'overview',
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'lessons'>(initialTab);
-  const [selectedLesson, setSelectedLesson] = useState<LessonResponse | null>(null);
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [lessonDetailOpen, setLessonDetailOpen] = useState(false);
 
   const {
@@ -85,30 +86,38 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
     canCreateMakeup,
   } = useQuickLessonActions();
 
+  const { lessons } = useLessons();
+
+  // Get the current lesson data from Redux store based on selectedLessonId
+  const selectedLesson = useMemo(() => {
+    if (!selectedLessonId) return null;
+    return lessons.find(lesson => lesson.id === selectedLessonId) || null;
+  }, [selectedLessonId, lessons]);
+
   if (!classItem) return null;
 
   // Convert to UI ClassResponse for component compatibility
   const classResponse = convertToClassResponse(classItem);
 
   const handleViewLessonDetail = (lesson: LessonResponse) => {
-    setSelectedLesson(lesson);
+    setSelectedLessonId(lesson.id);
     setLessonDetailOpen(true);
   };
 
   const handleConductFromDetail = (lesson: LessonResponse) => {
-    setLessonDetailOpen(false);
+    // Keep the detail modal open and open the conduct modal
     openConductModal(lesson);
   };
 
   const handleCancelFromDetail = (lesson: LessonResponse) => {
-    setLessonDetailOpen(false);
+    // Keep the detail modal open and open the cancel modal
     openCancelModal(lesson);
   };
 
   const handleCreateMakeup = (lesson: LessonResponse) => {
     // TODO: Implement makeup lesson creation
     console.log('Create makeup for lesson:', lesson.id);
-    setLessonDetailOpen(false);
+    // Keep the detail modal open
   };
 
   return (
@@ -214,3 +223,4 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
 };
 
 export default ClassDetails;
+

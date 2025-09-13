@@ -28,3 +28,4 @@ const StudentProfileHeader: React.FC<StudentProfileHeaderProps> = ({
 };
 
 export default StudentProfileHeader;
+

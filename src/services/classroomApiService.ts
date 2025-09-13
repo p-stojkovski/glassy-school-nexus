@@ -3,7 +3,7 @@
  * Implements all classroom-related API endpoints using the existing API infrastructure
  */
 
-import apiWithInterceptor from './apiWithInterceptor';
+import apiService from './api';
 import {
   ClassroomResponse,
   ClassroomCreatedResponse,
@@ -41,7 +41,7 @@ export class ClassroomApiService {
    */
   async getAllClassrooms(): Promise<ClassroomResponse[]> {
     try {
-      const raw = await apiWithInterceptor.get<any>(ClassroomApiPaths.BASE);
+const raw = await apiService.get<any>(ClassroomApiPaths.BASE);
       const classrooms = normalizeListResponse<ClassroomResponse>(raw);
       return classrooms;
     } catch (error: any) {
@@ -59,7 +59,7 @@ export class ClassroomApiService {
    */
   async getClassroomById(id: string): Promise<ClassroomResponse> {
     try {
-      const classroom = await apiWithInterceptor.get<ClassroomResponse>(ClassroomApiPaths.BY_ID(id));
+const classroom = await apiService.get<ClassroomResponse>(ClassroomApiPaths.BY_ID(id));
       return classroom;
     } catch (error: any) {
       if (error.status === ClassroomHttpStatus.NOT_FOUND) {
@@ -88,7 +88,7 @@ export class ClassroomApiService {
       const queryString = params.toString();
       const endpoint = queryString ? `${ClassroomApiPaths.SEARCH}?${queryString}` : ClassroomApiPaths.SEARCH;
       
-      const raw = await apiWithInterceptor.get<any>(endpoint);
+const raw = await apiService.get<any>(endpoint);
       const classrooms = normalizeListResponse<ClassroomResponse>(raw);
       return classrooms;
     } catch (error: any) {
@@ -115,9 +115,7 @@ export class ClassroomApiService {
       }
 
       const endpoint = `${ClassroomApiPaths.NAME_AVAILABLE}?${urlParams.toString()}`;
-      const result = await apiWithInterceptor.get<NameAvailabilityResponse>(endpoint, {
-        skipGlobalLoading: true
-      });
+const result = await apiService.get<NameAvailabilityResponse>(endpoint);
       
       return result.isAvailable;
     } catch (error: any) {
@@ -138,7 +136,7 @@ export class ClassroomApiService {
    */
   async createClassroom(request: CreateClassroomRequest): Promise<ClassroomCreatedResponse> {
     try {
-      const result = await apiWithInterceptor.post<ClassroomCreatedResponse>(
+const result = await apiService.post<ClassroomCreatedResponse>(
         ClassroomApiPaths.BASE,
         request
       );
@@ -167,7 +165,7 @@ export class ClassroomApiService {
    */
   async updateClassroom(id: string, request: UpdateClassroomRequest): Promise<ClassroomResponse> {
     try {
-      const result = await apiWithInterceptor.put<ClassroomResponse>(
+const result = await apiService.put<ClassroomResponse>(
         ClassroomApiPaths.BY_ID(id),
         request
       );
@@ -198,7 +196,7 @@ export class ClassroomApiService {
    */
   async deleteClassroom(id: string): Promise<void> {
     try {
-      await apiWithInterceptor.delete<void>(ClassroomApiPaths.BY_ID(id));
+await apiService.delete<void>(ClassroomApiPaths.BY_ID(id));
     } catch (error: any) {
       if (error.status === ClassroomHttpStatus.NOT_FOUND) {
         throw new Error('Classroom not found');

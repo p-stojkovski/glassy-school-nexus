@@ -479,3 +479,4 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
 };
 
 export default AttendanceMarker;
+

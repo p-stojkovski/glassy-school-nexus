@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { 
   Plus, 
-  Calendar
+  Calendar,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -22,7 +23,8 @@ import LessonCalendar from '@/domains/lessons/components/LessonCalendar';
 import CreateLessonSidebar from '@/domains/lessons/components/modals/CreateLessonSidebar';
 import QuickConductLessonModal from '@/domains/lessons/components/modals/QuickConductLessonModal';
 import QuickCancelLessonModal from '@/domains/lessons/components/modals/QuickCancelLessonModal';
-import LessonDetailsModal from '@/domains/lessons/components/modals/LessonDetailsModal';
+import LessonDetailModal from '@/domains/lessons/components/modals/LessonDetailModal';
+import AcademicLessonGenerationModal from '@/domains/lessons/components/modals/AcademicLessonGenerationModal';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface ClassLessonsTabProps {
@@ -39,9 +41,16 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   const [statusFilter, setStatusFilter] = useState<LessonFilter>('all');
   const [teacherFilter, setTeacherFilter] = useState<TeacherFilter>('all');
   const [isCreateLessonOpen, setIsCreateLessonOpen] = useState(false);
+  const [isAcademicGenerationOpen, setIsAcademicGenerationOpen] = useState(false);
   const [isLessonDetailsOpen, setIsLessonDetailsOpen] = useState(false);
-  const [selectedLessonForDetails, setSelectedLessonForDetails] = useState<LessonResponse | null>(null);
+  const [selectedLessonIdForDetails, setSelectedLessonIdForDetails] = useState<string | null>(null);
   const [makeupLesson, setMakeupLesson] = useState<LessonResponse | null>(null);
+  
+  // Get the current lesson data from Redux store based on selectedLessonIdForDetails
+  const selectedLessonForDetails = useMemo(() => {
+    if (!selectedLessonIdForDetails) return null;
+    return lessons.find(lesson => lesson.id === selectedLessonIdForDetails) || null;
+  }, [selectedLessonIdForDetails, lessons]);
   
   // Quick actions hook
   const {
@@ -57,7 +66,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   } = useQuickLessonActions();
   
   // Lesson creation from useLessons hook
-  const { addLesson, creatingLesson, createMakeup } = useLessons();
+  const { addLesson, creatingLesson, createMakeup, loadLessonById } = useLessons();
 
   // Load lessons when component mounts
   useEffect(() => {
@@ -80,7 +89,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
 
   // Handle opening lesson details
   const handleLessonDetails = async (lesson: LessonResponse) => {
-    setSelectedLessonForDetails(lesson);
+    setSelectedLessonIdForDetails(lesson.id);
     // Load makeup lesson if exists
     if (lesson.makeupLessonId) {
       try {
@@ -101,7 +110,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   const handleViewMakeupLesson = async (lessonId: string) => {
     const makeupLesson = lessons.find(l => l.id === lessonId);
     if (makeupLesson) {
-      setSelectedLessonForDetails(makeupLesson);
+      setSelectedLessonIdForDetails(makeupLesson.id);
       setMakeupLesson(null); // Clear previous makeup reference
       // Note: This makeup lesson might itself have an original lesson, but we'll keep it simple for now
     }
@@ -117,10 +126,9 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
       await loadLessons();
       
       // Update the current lesson details if it's still selected
-      if (selectedLessonForDetails?.id === originalLessonId) {
+      if (selectedLessonIdForDetails === originalLessonId) {
         const updatedLesson = lessons.find(l => l.id === originalLessonId);
         if (updatedLesson) {
-          setSelectedLessonForDetails(updatedLesson);
           // Load the newly created makeup lesson
           if (updatedLesson.makeupLessonId) {
             const newMakeupLesson = lessons.find(l => l.id === updatedLesson.makeupLessonId);
@@ -141,6 +149,17 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
       console.error('Failed to create makeup lesson:', error);
       toast.error(error?.message || 'Failed to create makeup lesson');
     }
+  };
+
+  // Handle academic lesson generation success
+  const handleAcademicGenerationSuccess = async (result: any) => {
+    // Reload lessons to show the newly generated ones
+    await loadLessons();
+    setIsAcademicGenerationOpen(false);
+    
+    const message = `Generated ${result.generatedCount} lessons`;
+    const details = result.skippedCount > 0 ? ` (${result.skippedCount} skipped)` : '';
+    toast.success(message + details);
   };
 
   // Filter lessons based on status and teacher filters
@@ -247,6 +266,13 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
 
           {/* Action Buttons */}
           <Button
+            onClick={() => setIsAcademicGenerationOpen(true)}
+            className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-semibold"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Smart Generate
+          </Button>
+          <Button
             onClick={() => setIsCreateLessonOpen(true)}
             className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
           >
@@ -286,6 +312,13 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
             {statusFilter === 'all' && teacherFilter === 'all' && (
               <div className="flex gap-3 justify-center">
                 <Button
+                  onClick={() => setIsAcademicGenerationOpen(true)}
+                  className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-semibold"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Smart Generate Lessons
+                </Button>
+                <Button
                   onClick={() => setIsCreateLessonOpen(true)}
                   className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
                 >
@@ -301,6 +334,9 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         <LessonCalendar 
           lessons={filteredLessons}
           onLessonClick={handleLessonDetails}
+          onConductLesson={openConductModal}
+          onCancelLesson={openCancelModal}
+          onLessonsUpdated={loadLessons}
           emptyMessage={statusFilter === 'all' && teacherFilter === 'all' ? 'No Lessons Scheduled' : 'No Lessons Found'}
           emptyDescription={statusFilter === 'all' && teacherFilter === 'all'
             ? 'Create lessons to see them appear on the calendar.'
@@ -335,6 +371,15 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         loading={cancellingLesson}
       />
       
+      {/* Academic Lesson Generation Modal */}
+      <AcademicLessonGenerationModal
+        open={isAcademicGenerationOpen}
+        onOpenChange={setIsAcademicGenerationOpen}
+        classId={classData.id}
+        className={classData.name}
+        onSuccess={handleAcademicGenerationSuccess}
+      />
+      
       {/* Create Lesson Sidebar */}
       <CreateLessonSidebar
         open={isCreateLessonOpen}
@@ -346,16 +391,20 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
       />
       
       {/* Lesson Details Modal */}
-      <LessonDetailsModal
+      <LessonDetailModal
         lesson={selectedLessonForDetails}
-        makeupLesson={makeupLesson}
         open={isLessonDetailsOpen}
         onOpenChange={setIsLessonDetailsOpen}
-        onViewMakeupLesson={handleViewMakeupLesson}
-        onCreateMakeupLesson={handleCreateMakeupFromDetails}
+        onConduct={openConductModal}
+        onCancel={openCancelModal}
+        onCreateMakeup={(lesson) => {
+          // TODO: Implement create makeup
+          console.log('Create makeup for lesson:', lesson.id);
+        }}
       />
     </div>
   );
 };
 
 export default ClassLessonsTab;
+

@@ -104,3 +104,4 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
 };
 
 export default StudentBasicInfo;
+

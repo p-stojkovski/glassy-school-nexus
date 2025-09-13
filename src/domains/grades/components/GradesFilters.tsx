@@ -50,3 +50,4 @@ const GradesFilters: React.FC<GradesFiltersProps> = ({
 };
 
 export default GradesFilters;
+

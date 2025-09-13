@@ -232,3 +232,4 @@ export const selectUserFullName = (state: { auth: AuthState }) => {
 };
 
 export default authSlice.reducer;
+

@@ -264,3 +264,4 @@ const LogoutConfirmationDialog: React.FC<LogoutConfirmationDialogProps> = ({
 };
 
 export default LogoutConfirmationDialog;
+

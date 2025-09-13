@@ -9,8 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import FriendlyDatePicker from '@/components/common/FriendlyDatePicker';
-import FriendlyTimePicker from '@/components/common/FriendlyTimePicker';
+import { NativeDateInput, NativeTimeInput } from '@/components/common';
 import { CreateLessonRequest } from '@/types/api/lesson';
 import useConflictPrecheck from '@/domains/lessons/hooks/useConflictPrecheck';
 import ConflictPanel from '@/domains/lessons/components/ConflictPanel';
@@ -178,6 +177,7 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
 
   // Get minimum date (today)
   const today = new Date().toISOString().split('T')[0];
+  const maxDate = new Date(new Date().setFullYear(new Date().getFullYear() + 2)).toISOString().split('T')[0];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -199,11 +199,11 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Date Field */}
             <div>
-              <FriendlyDatePicker
+              <NativeDateInput
                 value={formData.scheduledDate}
                 onChange={(date) => handleInputChange('scheduledDate', date)}
-                minDate={new Date()}
-                maxDate={new Date(new Date().setFullYear(new Date().getFullYear() + 2))}
+                min={today}
+                max={maxDate}
                 label="Date"
                 placeholder="Select lesson date"
                 required
@@ -215,7 +215,7 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
             <div className="grid grid-cols-2 gap-4">
               {/* Start Time */}
               <div>
-                <FriendlyTimePicker
+                <NativeTimeInput
                   value={formData.startTime}
                   onChange={(time) => handleInputChange('startTime', time)}
                   onConfirm={(time) => {
@@ -237,7 +237,7 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
 
               {/* End Time */}
               <div>
-                <FriendlyTimePicker
+                <NativeTimeInput
                   value={formData.endTime}
                   onChange={(time) => handleInputChange('endTime', time)}
                   onConfirm={(time) => {
@@ -345,3 +345,4 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
 };
 
 export default CreateLessonSidebar;
+

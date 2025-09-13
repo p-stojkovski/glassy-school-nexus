@@ -27,3 +27,4 @@ const ClassHeader: React.FC<ClassHeaderProps> = ({ onAddClass }) => {
 };
 
 export default ClassHeader;
+

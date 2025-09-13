@@ -99,3 +99,4 @@ const FinancialHeader: React.FC = () => {
 };
 
 export default FinancialHeader;
+

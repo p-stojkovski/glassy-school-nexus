@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Users, Grid3x3, Table2 } from 'lucide-react';
+import { Plus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import GlassCard from '@/components/common/GlassCard';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import TeacherCard from '@/domains/teachers/components/TeacherCard';
 import TeacherForm from '@/domains/teachers/components/TeacherForm';
 import TeacherFilters from '@/domains/teachers/components/filters/TeacherFilters';
 import TeacherTable from '@/domains/teachers/components/list/TeacherTable';
 import TeacherLoading from '@/domains/teachers/components/state/TeacherLoading';
-import { Teacher } from '@/domains/teachers/teachersSlice';
 import { useTeacherManagement } from '@/domains/teachers/hooks/useTeacherManagement';
 
 const Teachers: React.FC = () => {
@@ -33,10 +30,6 @@ const Teachers: React.FC = () => {
     searchTerm,
     subjectFilter,
     hasActiveFilters,
-    
-    // View state
-    viewMode,
-    setViewMode,
     
     // UI state
     isFormOpen,
@@ -86,14 +79,6 @@ const Teachers: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'grid' | 'table')}>
-            <ToggleGroupItem value="grid" aria-label="Grid view">
-              <Grid3x3 className="h-4 w-4" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="table" aria-label="Table view">
-              <Table2 className="h-4 w-4" />
-            </ToggleGroupItem>
-          </ToggleGroup>
           <Button
             onClick={handleAddTeacher}
             disabled={isFormOpen && hasFormErrors}
@@ -137,25 +122,13 @@ const Teachers: React.FC = () => {
             </Button>
           )}
         </GlassCard>
-      ) : viewMode === 'table' ? (
+      ) : (
         <TeacherTable 
           teachers={filteredTeachers} 
           onEdit={handleEditTeacher} 
           onDelete={handleDeleteTeacher}
           isDeleting={loading.deleting}
         />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTeachers.map((teacher) => (
-            <TeacherCard
-              key={teacher.id}
-              teacher={teacher}
-              onEdit={() => handleEditTeacher(teacher)}
-              onDelete={() => handleDeleteTeacher(teacher)}
-              isDeleting={loading.deleting}
-            />
-          ))}
-        </div>
       )}
       
       {/* Teacher Form Modal */}
@@ -189,3 +162,4 @@ const Teachers: React.FC = () => {
 };
 
 export default Teachers;
+

@@ -1,6 +1,5 @@
 import React from 'react';
-import { Search, Filter, Percent, Grid, List, Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Filter, Percent, Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -13,6 +12,7 @@ import GlassCard from '@/components/common/GlassCard';
 import { DiscountTypeDto } from '@/types/api/student';
 import { StudentViewMode } from '@/domains/students/hooks/useStudentManagement';
 import ClearFiltersButton from '@/components/common/ClearFiltersButton';
+import SearchInput from '@/components/common/SearchInput';
 
 interface StudentFiltersProps {
   searchTerm: string;
@@ -54,13 +54,12 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
       <div className="flex flex-col lg:flex-row gap-4 items-start">
         <div className="flex-1 flex flex-col lg:flex-row gap-4">
           {/* Search Input */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
-            <Input
-              placeholder="Search students by name or email..."
+          <div className="flex-1">
+            <SearchInput
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+              onChange={setSearchTerm}
+              placeholder="Search students by name or email..."
+              isSearching={loading}
               disabled={loading}
             />
           </div>
@@ -172,3 +171,4 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
 };
 
 export default StudentFilters;
+

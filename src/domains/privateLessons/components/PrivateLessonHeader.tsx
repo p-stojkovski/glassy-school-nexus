@@ -30,3 +30,4 @@ const PrivateLessonHeader: React.FC<PrivateLessonHeaderProps> = ({
 };
 
 export default PrivateLessonHeader;
+

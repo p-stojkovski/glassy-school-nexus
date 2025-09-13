@@ -315,3 +315,4 @@ const TabbedClassFormContent = React.forwardRef<ClassFormRef, ClassFormContentPr
 TabbedClassFormContent.displayName = 'TabbedClassFormContent';
 
 export default TabbedClassFormContent;
+

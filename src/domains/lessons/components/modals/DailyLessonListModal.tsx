@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Clock, User, MapPin, X } from 'lucide-react';
+import { Clock, User, MapPin, X, CheckCircle, XCircle, Eye } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,9 @@ interface DailyLessonListModalProps {
   date: Date | null;
   lessons: LessonResponse[];
   onLessonClick: (lesson: LessonResponse) => void;
+  onConductLesson?: (lesson: LessonResponse) => void;
+  onCancelLesson?: (lesson: LessonResponse) => void;
+  onLessonsUpdated?: () => void; // Callback to refresh lessons after actions
 }
 
 const DailyLessonListModal: React.FC<DailyLessonListModalProps> = ({
@@ -26,6 +29,9 @@ const DailyLessonListModal: React.FC<DailyLessonListModalProps> = ({
   date,
   lessons,
   onLessonClick,
+  onConductLesson,
+  onCancelLesson,
+  onLessonsUpdated,
 }) => {
   if (!date) return null;
 
@@ -41,6 +47,37 @@ const DailyLessonListModal: React.FC<DailyLessonListModalProps> = ({
   const handleLessonClick = (lesson: LessonResponse) => {
     onOpenChange(false);
     onLessonClick(lesson);
+  };
+
+  const handleConductLesson = async (e: React.MouseEvent, lesson: LessonResponse) => {
+    e.stopPropagation(); // Prevent triggering the card click
+    if (onConductLesson) {
+      await onConductLesson(lesson);
+      // Refresh the lessons data
+      if (onLessonsUpdated) {
+        onLessonsUpdated();
+      }
+    }
+  };
+
+  const handleCancelLesson = async (e: React.MouseEvent, lesson: LessonResponse) => {
+    e.stopPropagation(); // Prevent triggering the card click
+    if (onCancelLesson) {
+      await onCancelLesson(lesson);
+      // Refresh the lessons data
+      if (onLessonsUpdated) {
+        onLessonsUpdated();
+      }
+    }
+  };
+
+  // Helper functions to check if actions are available
+  const canConductLesson = (lesson: LessonResponse) => {
+    return lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
+  };
+
+  const canCancelLesson = (lesson: LessonResponse) => {
+    return lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
   };
 
   return (
@@ -89,11 +126,10 @@ const DailyLessonListModal: React.FC<DailyLessonListModalProps> = ({
                     transition={{ delay: index * 0.1 }}
                   >
                     <GlassCard 
-                      className="p-4 hover:bg-white/10 transition-all duration-200 cursor-pointer"
-                      onClick={() => handleLessonClick(lesson)}
+                      className="p-4 hover:bg-white/5 transition-all duration-200"
                     >
                       <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-1">
                           <div className="text-center bg-white/10 rounded-lg p-2 min-w-[60px]">
                             <div className="text-lg font-bold text-white">
                               {lesson.startTime}
@@ -129,6 +165,41 @@ const DailyLessonListModal: React.FC<DailyLessonListModalProps> = ({
                             )}
                           </div>
                         </div>
+                        
+                        {/* Quick Action Buttons */}
+                        <div className="flex items-center gap-1 ml-2">
+                          {canConductLesson(lesson) && onConductLesson && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => handleConductLesson(e, lesson)}
+                              className="text-green-400 hover:text-green-300 hover:bg-green-500/20 p-2 h-8 w-8"
+                              title="Mark as conducted"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {canCancelLesson(lesson) && onCancelLesson && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => handleCancelLesson(e, lesson)}
+                              className="text-red-400 hover:text-red-300 hover:bg-red-500/20 p-2 h-8 w-8"
+                              title="Cancel lesson"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleLessonClick(lesson)}
+                            className="text-white/70 hover:text-white hover:bg-white/20 p-2 h-8 w-8"
+                            title="View details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                       
                       {lesson.notes && (
@@ -158,3 +229,4 @@ const DailyLessonListModal: React.FC<DailyLessonListModalProps> = ({
 };
 
 export default DailyLessonListModal;
+
