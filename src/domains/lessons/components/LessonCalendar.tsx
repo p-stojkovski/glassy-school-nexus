@@ -38,6 +38,8 @@ interface CalendarDay {
   nonTeachingDay?: {
     type: 'teaching_break' | 'public_holiday' | 'vacation';
     name: string;
+    // New: underlying break type to distinguish 'holiday' vs other breaks
+    breakType?: 'holiday' | 'vacation' | 'exam_period' | string;
   };
 }
 
@@ -162,9 +164,12 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
   const getDayStatusColor = (lessons: LessonResponse[], nonTeachingDay?: CalendarDay['nonTeachingDay']) => {
     // Non-teaching days have priority in background styling
     if (nonTeachingDay) {
-      if (nonTeachingDay.type === 'public_holiday') {
+      // Prefer breakType when present; fall back to legacy 'type'
+      const isHoliday = nonTeachingDay.breakType === 'holiday' || nonTeachingDay.type === 'public_holiday';
+      if (isHoliday) {
         return 'bg-red-500/30 border-2 border-red-500/50 shadow-lg shadow-red-500/20';
-      } else if (nonTeachingDay.type === 'teaching_break') {
+      }
+      if (nonTeachingDay.type === 'teaching_break') {
         return 'bg-orange-500/30 border-2 border-orange-500/50 shadow-lg shadow-orange-500/20';
       }
     }
@@ -397,7 +402,7 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
                 {/* Non-teaching day indicator */}
                 {day.nonTeachingDay && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    {day.nonTeachingDay.type === 'public_holiday' || day.nonTeachingDay.type === 'vacation' ? (
+                    { (day.nonTeachingDay.breakType === 'holiday' || day.nonTeachingDay.type === 'public_holiday') ? (
                       <div className="text-red-400 font-bold text-xs opacity-80">
                         {day.nonTeachingDay.name}
                       </div>
@@ -414,9 +419,9 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
                   <div className="absolute top-1 right-1">
                     <div 
                       className={`w-2 h-2 rounded-full ${
-                        day.nonTeachingDay.type === 'public_holiday' ? 'bg-red-500' : 'bg-orange-500'
+                        (day.nonTeachingDay.breakType === 'holiday' || day.nonTeachingDay.type === 'public_holiday') ? 'bg-red-500' : 'bg-orange-500'
                       }`}
-                      title={`${day.nonTeachingDay.type === 'public_holiday' ? 'Public Holiday' : 'Teaching Break'}: ${day.nonTeachingDay.name}`}
+                      title={`${(day.nonTeachingDay.breakType === 'holiday' || day.nonTeachingDay.type === 'public_holiday') ? 'Public Holiday' : 'Teaching Break'}: ${day.nonTeachingDay.name}`}
                     />
                   </div>
                 )}

@@ -90,26 +90,7 @@ export interface UpdateTeachingBreakRequest {
   notes?: string;
 }
 
-// Public Holiday interfaces
-export interface PublicHoliday {
-  id: string;
-  academicYearId: string;
-  name: string;
-  date: string; // yyyy-MM-dd format
-  recurringAnnually: boolean;
-}
-
-export interface CreatePublicHolidayRequest {
-  name: string;
-  date: string; // yyyy-MM-dd format
-  recurringAnnually?: boolean;
-}
-
-export interface UpdatePublicHolidayRequest {
-  name: string;
-  date: string;
-  recurringAnnually: boolean;
-}
+// Public Holiday interfaces removed — use TeachingBreak with breakType = 'holiday' instead
 
 // Utility interfaces
 export interface NonTeachingDatesResponse {
@@ -231,23 +212,13 @@ export const teachingBreakFormSchema = z.object({
   }
 );
 
-export const publicHolidayFormSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Name is required')
-    .max(100, 'Name must be ≤100 characters'),
-  date: z
-    .string()
-    .min(1, 'Date is required')
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (yyyy-MM-dd)'),
-  recurringAnnually: z.boolean().default(false),
-});
+// Public holiday form schema removed — use TeachingBreak form with breakType = 'holiday'
 
 // Form data types (inferred from schemas)
 export type AcademicYearFormData = z.infer<typeof academicYearFormSchema>;
 export type SemesterFormData = z.infer<typeof semesterFormSchema>;
 export type TeachingBreakFormData = z.infer<typeof teachingBreakFormSchema>;
-export type PublicHolidayFormData = z.infer<typeof publicHolidayFormSchema>;
+// PublicHolidayFormData removed
 
 // Break type display labels
 export const breakTypeLabels: Record<BreakType, string> = {

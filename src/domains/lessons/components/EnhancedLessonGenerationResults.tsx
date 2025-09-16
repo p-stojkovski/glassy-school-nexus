@@ -70,38 +70,37 @@ const SkippedLessonDetails: React.FC<SkippedLessonDetailsProps> = ({ skippedLess
     }
 
     switch (skipReason) {
-      case 'public_holiday':
-        const holiday = skipDetails?.holidayDetails;
-        if (!holiday) return null;
-        
-        return (
-          <div className="skip-reason holiday bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0">
-                <Gift className="w-6 h-6 text-blue-400" />
-              </div>
-              <div className="flex-grow">
-                <div className="font-semibold text-blue-200 text-lg">{holiday.holidayName}</div>
-                <div className="text-blue-300 text-sm mt-1">{formatDate(holiday.holidayDate)}</div>
-                {holiday.recurringAnnually && (
-                  <Badge variant="outline" className="text-blue-400 border-blue-400/50 mt-2">
-                    Annual Holiday
-                  </Badge>
-                )}
-                {holiday.holidayNotes && (
-                  <div className="text-blue-100/80 text-sm mt-3 italic">
-                    {holiday.holidayNotes}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-        
       case 'teaching_break':
         const breakInfo = skipDetails?.breakDetails;
         if (!breakInfo) return null;
         
+        // If this break is actually a holiday, render using the holiday UI for consistency
+        if (breakInfo.breakType?.toLowerCase() === 'holiday') {
+          return (
+            <div className="skip-reason holiday bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <Gift className="w-6 h-6 text-blue-400" />
+                </div>
+                <div className="flex-grow">
+                  <div className="font-semibold text-blue-200 text-lg">{breakInfo.breakName}</div>
+                  <div className="text-blue-300 text-sm mt-1">
+                    {formatDate(breakInfo.breakStartDate)}{breakInfo.breakStartDate !== breakInfo.breakEndDate ? ` - ${formatDate(breakInfo.breakEndDate)}` : ''}
+                  </div>
+                  <Badge variant="outline" className="text-blue-400 border-blue-400/50 mt-2">
+                    Holiday
+                  </Badge>
+                  {breakInfo.breakNotes && (
+                    <div className="text-blue-100/80 text-sm mt-3 italic">
+                      {breakInfo.breakNotes}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div className="skip-reason break bg-green-500/10 border border-green-500/20 rounded-lg p-4">
             <div className="flex items-start gap-3">

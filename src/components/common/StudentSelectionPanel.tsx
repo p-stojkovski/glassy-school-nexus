@@ -70,21 +70,15 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
         setIsLoadingStudents(true);
         setStudentsError(null);
         
-        try {
-          
-          studentApiService
-          
-          const studentsData = await studentApiService.getAllStudents();
-          console.log('✅ Students loaded for sidebar:', studentsData?.length || 0);
-          setLoadedStudents(studentsData);
+        try {      
+          const { students: activeStudents } = await studentApiService.searchStudents({ isActive: true, skip: 0, take: 1000 });
+          console.log('✅ Students loaded for sidebar:', activeStudents?.length || 0);
+          setLoadedStudents(activeStudents);
         } catch (error: any) {
           console.error('❌ Failed to load students for sidebar:', error);
           setStudentsError(error?.message || 'Failed to load students');
         } finally {
           setIsLoadingStudents(false);
-          
-          
-          studentApiService
         }
       }
     };
@@ -347,18 +341,12 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                       setIsLoadingStudents(true);
                       
                       try {
-                        
-                        studentApiService
-                        
-                        const studentsData = await studentApiService.getAllStudents();
-                        setLoadedStudents(studentsData);
+                        const { students: activeStudents } = await studentApiService.searchStudents({ isActive: true, skip: 0, take: 1000 });
+                        setLoadedStudents(activeStudents);
                       } catch (error: any) {
                         setStudentsError(error?.message || 'Failed to load students');
                       } finally {
                         setIsLoadingStudents(false);
-                        
-                        
-                        studentApiService
                       }
                     }}
                     className="mt-3 bg-white/5 border-white/10 text-white hover:bg-white/10"

@@ -41,9 +41,9 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  // Track time confirmations
-  const [startTimeConfirmed, setStartTimeConfirmed] = useState(false);
-  const [endTimeConfirmed, setEndTimeConfirmed] = useState(false);
+  // Track End Time edit/auto state for UX
+  const [endTimeTouched, setEndTimeTouched] = useState(false);
+  const [endTimeAuto, setEndTimeAuto] = useState(false);
   
   // Conflict pre-checking
   const {
@@ -63,53 +63,104 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
       startTime: suggestion.startTime,
       endTime: suggestion.endTime,
     }));
-    // Reset confirmation flags when suggestion is applied
-    setStartTimeConfirmed(false);
-    setEndTimeConfirmed(false);
   });
 
   const handleInputChange = (field: keyof CreateLessonRequest, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-    
-    // Reset confirmation flags when times change
+    setFormData(prev => {
+      let next: CreateLessonRequest = { ...prev, [field]: value } as CreateLessonRequest;
+
+      if (field === 'startTime') {
+        const newStart = value;
+        const hasEnd = !!prev.endTime && prev.endTime.trim().length > 0;
+        const computedAutoEnd = addOneHourWithCap(newStart);
+
+        // Decide whether to auto-set or adjust end time
+        const shouldAutoSet = !hasEnd || endTimeAuto || !endTimeTouched || (hasEnd && prev.endTime <= newStart);
+        if (shouldAutoSet) {
+          next.endTime = computedAutoEnd;
+          // Update flags below after setFormData returns
+        }
+      }
+
+      if (field === 'endTime') {
+        // Strictly forbid end <= start by not updating state when invalid
+        const start = prev.startTime;
+        if (start && value <= start) {
+          // Keep previous valid endTime; error will be set below outside setState
+          next.endTime = prev.endTime;
+        }
+      }
+
+      return next;
+    });
+
+    // Update flags based on field
     if (field === 'startTime') {
-      setStartTimeConfirmed(false);
+      const newStart = value;
+      const shouldMarkAuto = !formData.endTime || endTimeAuto || !endTimeTouched || (formData.endTime <= newStart);
+      if (shouldMarkAuto) {
+        setEndTimeAuto(true);
+        setEndTimeTouched(false);
+      }
+      // Clear any existing end time error after start change (we auto-adjust end)
+      if (errors.endTime) {
+        setErrors(prev => ({ ...prev, endTime: '' }));
+      }
     }
     if (field === 'endTime') {
-      setEndTimeConfirmed(false);
+      const start = formData.startTime;
+      if (start && value <= start) {
+        // Set error and do not flip flags to auto=false/touched=true if we didn't accept the value
+        setErrors(prev => ({ ...prev, endTime: 'End time must be after start time' }));
+      } else {
+        setEndTimeTouched(true);
+        setEndTimeAuto(false);
+        // Clear error if previously set
+        if (errors.endTime) {
+          setErrors(prev => ({ ...prev, endTime: '' }));
+        }
+      }
     }
-    
-    // Clear conflicts when any field changes (will re-check on confirmation)
-    clearConflicts();
+
+    // Clear field error when user starts typing (except for the special endTime case handled above)
+    if (field !== 'endTime' && errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    // Do NOT clear conflicts here; the effect below manages clearing/checking to avoid flicker
   };
 
-  // Helper function to add 1 hour to a time string
-  const addOneHour = (timeString: string): string => {
+  // Helper function to add 1 hour to a time string with end-of-day cap
+  const addOneHourWithCap = (timeString: string): string => {
     const [hours, minutes] = timeString.split(':').map(Number);
-    const newHour = (hours + 1) % 24; // Handle 23:xx -> 00:xx rollover
+    // If adding one hour would cross midnight, cap at 23:59 to maintain end > start on same day
+    if (hours >= 23) {
+      return '23:59';
+    }
+    const newHour = hours + 1;
     return `${newHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
 
-  // Manual conflict check when both times are confirmed
-  const checkConflictsIfReady = () => {
-    if (formData.scheduledDate && formData.startTime && formData.endTime && startTimeConfirmed && endTimeConfirmed) {
-      runCheck({
-        classId: formData.classId,
-        scheduledDate: formData.scheduledDate,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-      });
-    }
-  };
-
-  // Check conflicts when confirmation states change
+  // Auto-check conflicts whenever date/start/end change and are valid
   useEffect(() => {
-    checkConflictsIfReady();
-  }, [startTimeConfirmed, endTimeConfirmed, formData.scheduledDate]);
+    const { classId: cid, scheduledDate, startTime, endTime } = formData;
+    // Incomplete inputs: clear conflicts and skip
+    if (!cid || !scheduledDate || !startTime || !endTime) {
+      clearConflicts();
+      return;
+    }
+    // Invalid time ordering: clear conflicts and skip
+    if (endTime <= startTime) {
+      clearConflicts();
+      return;
+    }
+    // Trigger debounced conflict check
+    runCheck({
+      classId: cid,
+      scheduledDate,
+      startTime,
+      endTime,
+    });
+  }, [formData.classId, formData.scheduledDate, formData.startTime, formData.endTime, runCheck, clearConflicts]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -165,8 +216,6 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
       notes: '',
     });
     setErrors({});
-    setStartTimeConfirmed(false);
-    setEndTimeConfirmed(false);
     clearConflicts();
   };
 
@@ -218,16 +267,6 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
                 <NativeTimeInput
                   value={formData.startTime}
                   onChange={(time) => handleInputChange('startTime', time)}
-                  onConfirm={(time) => {
-                    setStartTimeConfirmed(true);
-                    // Automatically set end time to 1 hour later if end time is empty
-                    if (!formData.endTime) {
-                      const endTime = addOneHour(time);
-                      setFormData(prev => ({ ...prev, endTime }));
-                      // Also mark end time as confirmed since it was auto-generated
-                      setEndTimeConfirmed(true);
-                    }
-                  }}
                   label="Start Time"
                   placeholder="Select start time"
                   required
@@ -240,13 +279,12 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
                 <NativeTimeInput
                   value={formData.endTime}
                   onChange={(time) => handleInputChange('endTime', time)}
-                  onConfirm={(time) => {
-                    setEndTimeConfirmed(true);
-                  }}
                   label="End Time"
                   placeholder="Select end time"
                   required
                   error={errors.endTime}
+                  disabled={!formData.startTime}
+                  min={formData.startTime || undefined}
                 />
               </div>
             </div>
@@ -288,15 +326,6 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4 border-t border-white/10">
               <Button
-                type="button"
-                variant="ghost"
-                onClick={handleClose}
-                disabled={loading}
-                className="flex-1 text-white hover:bg-white/10"
-              >
-                Cancel
-              </Button>
-              <Button
                 type="submit"
                 disabled={loading || hasConflicts}
                 className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
@@ -319,6 +348,15 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
                     Create Lesson
                   </div>
                 )}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleClose}
+                disabled={loading}
+                className="flex-1 text-white hover:bg-white/10"
+              >
+                Cancel
               </Button>
             </div>
           </form>

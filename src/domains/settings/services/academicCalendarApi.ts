@@ -126,30 +126,7 @@ return apiService.put<TeachingBreak>(`${this.baseEndpoint}/breaks/${id}`, data);
 return apiService.delete<void>(`${this.baseEndpoint}/breaks/${id}`);
   }
 
-  // Public Holidays endpoints
-  async getPublicHolidaysByYear(yearId: string): Promise<PublicHoliday[]> {
-    const safeYearId = normalizeId(yearId);
-    if (!safeYearId || typeof safeYearId !== 'string') {
-      throw new Error('Invalid yearId: must be a non-empty string');
-    }
-return apiService.get<PublicHoliday[]>(`${this.baseEndpoint}/years/${safeYearId}/public-holidays`);
-  }
-
-  async getPublicHolidayById(id: string): Promise<PublicHoliday> {
-return apiService.get<PublicHoliday>(`${this.baseEndpoint}/public-holidays/${id}`);
-  }
-
-  async createPublicHoliday(yearId: string, data: CreatePublicHolidayRequest): Promise<{ id: string }> {
-return apiService.post<{ id: string }>(`${this.baseEndpoint}/years/${yearId}/public-holidays`, data);
-  }
-
-  async updatePublicHoliday(id: string, data: UpdatePublicHolidayRequest): Promise<PublicHoliday> {
-return apiService.put<PublicHoliday>(`${this.baseEndpoint}/public-holidays/${id}`, data);
-  }
-
-  async deletePublicHoliday(id: string): Promise<void> {
-return apiService.delete<void>(`${this.baseEndpoint}/public-holidays/${id}`);
-  }
+  // Public Holidays endpoints removed from client API
 
   // Utility endpoints
   async getNonTeachingDates(

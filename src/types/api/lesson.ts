@@ -59,7 +59,10 @@ export interface GenerateLessonsAcademicAwareRequest {
   academicYearId?: string | null; // GUID, required for semester/full_year modes
   semesterId?: string | null;   // GUID, required for semester mode
   respectBreaks?: boolean;      // optional, defaults to true
-  respectHolidays?: boolean;    // optional, defaults to true
+  /**
+   * @deprecated This flag is ignored server-side. All non-teaching days (including holiday-type) are controlled by respectBreaks.
+   */
+  respectHolidays?: boolean;    // deprecated
 }
 
 // Academic context information

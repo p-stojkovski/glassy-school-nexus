@@ -240,10 +240,11 @@ return await apiService.post<LessonGenerationResult>(LessonApiPaths.GENERATE, re
     request: GenerateLessonsAcademicAwareRequest
   ): Promise<EnhancedLessonGenerationResult> {
     try {
-      
-return await apiService.post<EnhancedLessonGenerationResult>(
+      // Strip deprecated field to avoid confusion; server ignores it anyway
+      const { respectHolidays: _ignored, ...payload } = request as any;
+      return await apiService.post<EnhancedLessonGenerationResult>(
         LessonApiPaths.GENERATE_ACADEMIC(classId), 
-        request
+        payload
       );
     } catch (error: any) {
       if (error.status === LessonHttpStatus.NOT_FOUND) {

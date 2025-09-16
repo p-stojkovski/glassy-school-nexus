@@ -116,17 +116,78 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
 
   const isReasonValid = reason.trim().length >= 5;
 
+  // Helper: add one hour with end-of-day cap to maintain same-day end > start
+  const addOneHourWithCap = (timeString: string): string => {
+    if (!timeString) return '';
+    const [hoursStr, minutesStr] = timeString.split(':');
+    const hours = Number(hoursStr);
+    const minutes = Number(minutesStr);
+    if (isNaN(hours) || isNaN(minutes)) return timeString;
+    if (hours >= 23) return '23:59';
+    const newHour = hours + 1;
+    return `${newHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
   const handleMakeupDataChange = (field: keyof MakeupLessonFormData, value: string) => {
-    setMakeupData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (makeupErrors[field]) {
-      setMakeupErrors(prev => ({ ...prev, [field]: '' }));
+    // Update state with guard: forbid end <= start by rejecting invalid end values
+    setMakeupData(prev => {
+      let next: MakeupLessonFormData = { ...prev, [field]: value } as MakeupLessonFormData;
+
+      if (field === 'endTime') {
+        const start = prev.startTime;
+        if (start && value <= start) {
+          // Reject invalid end; keep previous endTime
+          next = { ...prev };
+        }
+      }
+
+      return next;
+    });
+
+    // Manage errors inline
+    if (field === 'endTime') {
+      const start = makeupData.startTime;
+      if (start && value <= start) {
+        setMakeupErrors(prev => ({ ...prev, endTime: 'End time must be after start time' }));
+      } else {
+        if (makeupErrors.endTime) {
+          setMakeupErrors(prev => ({ ...prev, endTime: '' }));
+        }
+      }
+    } else if (field === 'startTime') {
+      // Auto-fill end time to +1h (with cap) when start is set and end is empty or invalid
+      setMakeupData(prev => {
+        const end = prev.endTime;
+        const needsAuto = !end || end <= value;
+        if (needsAuto) {
+          return { ...prev, startTime: value, endTime: addOneHourWithCap(value) };
+        }
+        return { ...prev, startTime: value };
+      });
+      // Clear any end-time error now that we've auto-adjusted if needed
+      if (makeupErrors.endTime) {
+        setMakeupErrors(prev => ({ ...prev, endTime: '' }));
+      }
+      // Clear startTime error if any
+      if (makeupErrors.startTime) {
+        setMakeupErrors(prev => ({ ...prev, startTime: '' }));
+      }
+    } else {
+      // Clear error when user starts typing for other fields
+      if (makeupErrors[field]) {
+        setMakeupErrors(prev => ({ ...prev, [field]: '' }));
+      }
     }
   };
 
   // Run conflict check when makeup lesson fields change
   useEffect(() => {
     if (createMakeup && makeupData.scheduledDate && makeupData.startTime && makeupData.endTime && lesson?.classId) {
+      // Guard against invalid time range; clear conflicts and skip API call
+      if (makeupData.endTime <= makeupData.startTime) {
+        clearConflicts();
+        return;
+      }
       runCheck({
         classId: lesson.classId,
         scheduledDate: makeupData.scheduledDate,
@@ -336,16 +397,16 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                         />
                       </div>
                       <div>
-                        <NativeTimeInput
-                          value={makeupData.endTime}
-                          onChange={(time) => handleMakeupDataChange('endTime', time)}
-                          label="End Time"
-                          placeholder="Select end time"
-                          min={makeupData.startTime}
-                          required
-                          error={makeupErrors.endTime}
-                          className="bg-white/5"
-                        />
+                  <NativeTimeInput
+                    value={makeupData.endTime}
+                    onChange={(time) => handleMakeupDataChange('endTime', time)}
+                    label="End Time"
+                    placeholder="End time"
+                    min={makeupData.startTime}
+                    required
+                    error={makeupErrors.endTime}
+                    disabled={!makeupData.startTime}
+                  />
                       </div>
                     </div>
 

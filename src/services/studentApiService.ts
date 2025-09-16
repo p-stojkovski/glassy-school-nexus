@@ -53,8 +53,7 @@ export class StudentApiService {
    */
   async getAllStudents(): Promise<StudentResponse[]> {
     try {
-      
-const raw = await apiService.get<any>(StudentApiPaths.BASE);
+      const raw = await apiService.get<any>(StudentApiPaths.BASE);
       const students = normalizeListResponse<StudentResponse>(raw);
       return students;
     } catch (error: any) {
@@ -73,7 +72,7 @@ const raw = await apiService.get<any>(StudentApiPaths.BASE);
   async getStudentById(id: string): Promise<StudentResponse> {
     try {
       
-const student = await apiService.get<StudentResponse>(StudentApiPaths.BY_ID(id));
+      const student = await apiService.get<StudentResponse>(StudentApiPaths.BY_ID(id));
       return student;
     } catch (error: any) {
       if (error.status === StudentHttpStatus.NOT_FOUND) {

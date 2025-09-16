@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import academicCalendarApiService from '@/domains/settings/services/academicCalendarApi';
-import { TeachingBreak, PublicHoliday } from '@/domains/settings/types/academicCalendarTypes';
+import { TeachingBreak } from '@/domains/settings/types/academicCalendarTypes';
 
 interface NonTeachingDayData {
   date: string; // yyyy-mm-dd format
   type: 'teaching_break' | 'public_holiday' | 'vacation';
   name: string;
   isMultiDay?: boolean; // for teaching breaks that span multiple days
+  // New: underlying break type from API (e.g., 'holiday', 'vacation', 'exam_period')
+  breakType?: 'holiday' | 'vacation' | 'exam_period' | string;
 }
 
 interface UseAcademicCalendarResult {
@@ -41,11 +43,8 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
           return;
         }
 
-        // Fetch teaching breaks and public holidays for the relevant year
-        const [teachingBreaks, publicHolidays] = await Promise.all([
-          academicCalendarApiService.getTeachingBreaksByYear(relevantYear.id),
-          academicCalendarApiService.getPublicHolidaysByYear(relevantYear.id)
-        ]);
+        // Fetch teaching breaks for the relevant year (holidays are represented as breakType = 'holiday')
+        const teachingBreaks = await academicCalendarApiService.getTeachingBreaksByYear(relevantYear.id);
 
         const nonTeachingData: NonTeachingDayData[] = [];
         
@@ -53,10 +52,8 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
           startDate: startDate.toISOString().split('T')[0],
           endDate: endDate.toISOString().split('T')[0],
           relevantYear: relevantYear?.name,
-          teachingBreaksCount: teachingBreaks.length,
-          publicHolidaysCount: publicHolidays.length
+          teachingBreaksCount: teachingBreaks.length
         });
-        console.log('Public Holidays:', publicHolidays);
 
         // Process teaching breaks
         teachingBreaks.forEach(breakItem => {
@@ -92,25 +89,33 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
                 date: dateString,
                 type: 'teaching_break',
                 name: breakItem.name,
-                isMultiDay
+                isMultiDay,
+                breakType: (breakItem as any).breakType,
               });
               currentDate.setDate(currentDate.getDate() + 1);
             }
           }
         });
 
-        // Process public holidays
-        publicHolidays.forEach(holiday => {
-          const holidayDate = new Date(holiday.date);
-          
-          // Check if holiday falls within our date range
-          if (holidayDate >= startDate && holidayDate <= endDate) {
-            nonTeachingData.push({
-              date: holidayDate.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
-              type: 'public_holiday',
-              name: holiday.name,
-              isMultiDay: false
-            });
+        // Derive single-day holiday markers from teaching breaks with breakType = 'holiday'
+        teachingBreaks.forEach(breakItem => {
+          if ((breakItem as any).breakType === 'holiday') {
+            const holidayStart = new Date(breakItem.startDate);
+            const holidayEnd = new Date(breakItem.endDate);
+
+            // If it's a single-day holiday within range, add a 'public_holiday' marker for calendar styling parity
+            if (
+              holidayStart.getTime() === holidayEnd.getTime() &&
+              holidayStart >= startDate && holidayStart <= endDate
+            ) {
+              nonTeachingData.push({
+                date: holidayStart.toISOString().split('T')[0],
+                type: 'public_holiday', // legacy label for UI parity
+                name: breakItem.name,
+                isMultiDay: false,
+                breakType: 'holiday',
+              });
+            }
           }
         });
 

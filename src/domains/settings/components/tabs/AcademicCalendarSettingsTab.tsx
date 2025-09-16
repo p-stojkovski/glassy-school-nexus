@@ -4,9 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AcademicYearsManagement from '../academicCalendar/AcademicYearsManagement';
 import SemestersManagement from '../academicCalendar/SemestersManagement';
 import TeachingBreaksManagement from '../academicCalendar/TeachingBreaksManagement';
-import PublicHolidaysManagement from '../academicCalendar/PublicHolidaysManagement';
+// PublicHolidaysManagement removed
 
-type AcademicCalendarTabType = 'academic-years' | 'semesters' | 'teaching-breaks' | 'public-holidays';
+type AcademicCalendarTabType = 'academic-years' | 'semesters' | 'teaching-breaks';
 
 const AcademicCalendarSettingsTab: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AcademicCalendarTabType>('academic-years');
@@ -20,7 +20,7 @@ const AcademicCalendarSettingsTab: React.FC = () => {
           Academic Calendar Management
         </h2>
         <p className="text-white/70">
-          Configure academic years, semesters, teaching breaks, and public holidays to manage your school's calendar
+          Configure academic years, semesters, and teaching breaks to manage your school's calendar
         </p>
       </div>
 
@@ -52,13 +52,7 @@ const AcademicCalendarSettingsTab: React.FC = () => {
             <Coffee className="w-4 h-4 mr-2" />
             Teaching Breaks
           </TabsTrigger>
-          <TabsTrigger
-            value="public-holidays"
-            className="data-[state=active]:bg-white/20 text-white"
-          >
-            <MapPin className="w-4 h-4 mr-2" />
-            Public Holidays
-          </TabsTrigger>
+          {/* Public Holidays tab removed */}
         </TabsList>
 
         <TabsContent value="academic-years">
@@ -73,9 +67,7 @@ const AcademicCalendarSettingsTab: React.FC = () => {
           <TeachingBreaksManagement />
         </TabsContent>
 
-        <TabsContent value="public-holidays">
-          <PublicHolidaysManagement />
-        </TabsContent>
+        {/* Public Holidays content removed */}
       </Tabs>
     </div>
   );
