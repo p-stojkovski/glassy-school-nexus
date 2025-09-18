@@ -82,6 +82,7 @@ return await apiService.get<ClassResponse>(ClassApiPaths.BY_ID(id));
       const qs = new URLSearchParams();
       if (params.searchTerm) qs.append('searchTerm', params.searchTerm);
       if (params.subjectId) qs.append('subjectId', params.subjectId);
+      if (params.teacherId) qs.append('teacherId', params.teacherId);
       if (params.onlyWithAvailableSlots !== undefined) qs.append('onlyWithAvailableSlots', String(params.onlyWithAvailableSlots));
       const endpoint = qs.toString() ? `${ClassApiPaths.SEARCH}?${qs.toString()}` : ClassApiPaths.SEARCH;
       

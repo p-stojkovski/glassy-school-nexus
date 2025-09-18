@@ -10,6 +10,7 @@ import financeReducer from '@/domains/finance/financeSlice';
 import gradesReducer from '@/domains/grades/gradesSlice';
 import privateLessonsReducer from '@/domains/privateLessons/privateLessonsSlice';
 import lessonsReducer from '@/domains/lessons/lessonsSlice';
+import homeworkReducer from './slices/homeworkSlice';
 
 export const store = configureStore({
   reducer: {
@@ -25,6 +26,7 @@ export const store = configureStore({
     grades: gradesReducer,
     privateLessons: privateLessonsReducer,
     lessons: lessonsReducer,
+    homework: homeworkReducer,
   },
 });
 

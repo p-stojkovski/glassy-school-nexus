@@ -79,6 +79,7 @@ export interface ClassFormData {
 export interface ClassSearchParams {
   searchTerm?: string;
   subjectId?: string;           // GUID
+  teacherId?: string;           // GUID
   onlyWithAvailableSlots?: boolean;
 }
 

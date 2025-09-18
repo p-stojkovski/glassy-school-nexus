@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   GraduationCap as Grades,
   UserCheck,
+  Monitor,
 } from 'lucide-react';
 import { RootState } from '../../store';
 import { toggleSidebar } from '../../store/slices/uiSlice';
@@ -24,6 +25,7 @@ import styles from './Sidebar.module.scss';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/' },
+  { icon: Monitor, label: 'Teacher Dashboard', path: '/teacher-dashboard' },
   { icon: Users, label: 'Students', path: '/students' },
   { icon: BookOpen, label: 'Classes', path: '/classes' },
   { icon: GraduationCap, label: 'Teachers', path: '/teachers' },
