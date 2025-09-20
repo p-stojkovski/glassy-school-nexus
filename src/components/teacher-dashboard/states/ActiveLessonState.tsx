@@ -14,13 +14,11 @@ import { formatTimeRange } from '../utils/timeUtils';
 
 interface ActiveLessonStateProps {
   lesson: LessonResponse;
-  currentTime: string;
   onStartLessonManagement?: () => void;
 }
 
 const ActiveLessonState: React.FC<ActiveLessonStateProps> = ({
   lesson,
-  currentTime,
   onStartLessonManagement
 }) => {
   const timeRange = formatTimeRange(lesson.startTime, lesson.endTime);

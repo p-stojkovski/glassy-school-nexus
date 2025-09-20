@@ -27,9 +27,7 @@ export interface UseLessonContextResult {
   lessonState: LessonContextState;
   
   // Additional context data
-  nextLesson: LessonResponse | null;
   completedLessons: LessonResponse[];
-  allTodayLessons: LessonResponse[];
   
   // Enhanced context for new components
   currentDate: string;
@@ -337,9 +335,7 @@ export const useLessonContext = (
     // Lesson context
     currentLesson: lessonContext.currentLesson,
     lessonState: lessonContext.lessonState,
-    nextLesson: lessonContext.nextLesson,
     completedLessons: lessonContext.completedLessons,
-    allTodayLessons,
     
     // Enhanced context for new components
     currentDate,

@@ -2,15 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  User, 
-  BookOpen, 
-  Clock, 
-  Calendar, 
-  Users, 
-  MapPin, 
-  Settings,
-  RefreshCw
+import {
+  User,
+  Clock,
+  Calendar,
+  Users,
+  Settings
 } from 'lucide-react';
 import { TeacherResponse } from '@/types/api/teacher';
 import { ClassResponse } from '@/types/api/class';
@@ -141,7 +138,6 @@ const TeacherDashboardMain: React.FC<TeacherDashboardMainProps> = ({
           />
         ) : (
           <LessonContextCard 
-            teacher={teacher} 
             classItem={classItem}
             lessonContext={lessonContext}
           />

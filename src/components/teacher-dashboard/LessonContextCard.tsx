@@ -5,10 +5,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   BookOpen, 
   AlertCircle,
-  RefreshCw,
-  Calendar
+  RefreshCw
 } from 'lucide-react';
-import { TeacherResponse } from '@/types/api/teacher';
 import { ClassResponse } from '@/types/api/class';
 import { LessonContextType } from './hooks/useLessonContext';
 import ActiveLessonState from './states/ActiveLessonState';
@@ -17,13 +15,11 @@ import CompletedLessonsState from './states/CompletedLessonsState';
 import NoLessonsState from './states/NoLessonsState';
 
 interface LessonContextCardProps {
-  teacher: TeacherResponse;
   classItem: ClassResponse;
   lessonContext: LessonContextType;
 }
 
 const LessonContextCard: React.FC<LessonContextCardProps> = ({
-  teacher,
   classItem,
   lessonContext
 }) => {
@@ -34,7 +30,6 @@ const LessonContextCard: React.FC<LessonContextCardProps> = ({
     error,
     currentTime,
     refreshLessons,
-    allTodayLessons,
     completedLessons,
     currentDate,
     isWeekend,
@@ -140,7 +135,6 @@ const LessonContextCard: React.FC<LessonContextCardProps> = ({
     return (
       <ActiveLessonState
         lesson={currentLesson}
-        currentTime={currentTime}
         onStartLessonManagement={handleStartLessonManagement}
       />
     );
@@ -163,7 +157,6 @@ const LessonContextCard: React.FC<LessonContextCardProps> = ({
     return (
       <CompletedLessonsState
         completedLessons={completedLessons}
-        currentTime={currentTime}
         nextLessonInfo={nextLessonInfo}
         onViewLessonReviews={handleViewLessonReviews}
         onViewSchedule={handleViewSchedule}

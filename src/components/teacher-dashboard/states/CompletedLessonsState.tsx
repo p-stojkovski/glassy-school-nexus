@@ -16,8 +16,6 @@ import { formatTimeRange } from '../utils/timeUtils';
 
 interface CompletedLessonsStateProps {
   completedLessons: LessonResponse[];
-  currentTime: string;
-  nextLessonDate?: string;
   nextLessonInfo?: {
     date: string;
     dayOfWeek: string;
@@ -30,8 +28,6 @@ interface CompletedLessonsStateProps {
 
 const CompletedLessonsState: React.FC<CompletedLessonsStateProps> = ({
   completedLessons,
-  currentTime,
-  nextLessonDate,
   nextLessonInfo,
   onViewLessonReviews,
   onViewSchedule

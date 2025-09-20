@@ -28,7 +28,6 @@ interface UseTeacherClassSelectionResult {
   setSelectedClass: (classItem: ClassResponse | null) => void;
   clearSelection: () => void;
   hasValidSelection: () => boolean;
-  refreshSelection: () => void;
 }
 
 // Helper functions for localStorage
@@ -149,15 +148,6 @@ export const useTeacherClassSelection = (): UseTeacherClassSelectionResult => {
     return selectedTeacher !== null && selectedClass !== null;
   }, [selectedTeacher, selectedClass]);
 
-  // Force refresh of the selection state
-  const refreshSelection = useCallback(() => {
-    // This will cause a re-render and re-evaluation of hasValidSelection
-    const stored = getStoredSelection();
-    if (stored && selectedTeacher && selectedClass) {
-      // Selection exists in localStorage and state, just trigger re-render
-      setSelectedClassState(selectedClass);
-    }
-  }, [selectedTeacher, selectedClass]);
 
   // Restore selection from localStorage on mount
   useEffect(() => {
@@ -210,6 +200,5 @@ export const useTeacherClassSelection = (): UseTeacherClassSelectionResult => {
     setSelectedClass,
     clearSelection,
     hasValidSelection,
-    refreshSelection,
   };
 };
