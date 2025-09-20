@@ -35,7 +35,7 @@ import { ConnectionIndicator, ConnectionStatus } from '@/hooks/useOfflineSync';
 export interface StudentCardData {
   studentId: string;
   studentName: string;
-  attendanceStatus: 'present' | 'absent' | 'late' | 'excused' | null;
+  attendanceStatus: 'present' | 'absent' | 'late' | null;
   homeworkStatus: 'complete' | 'missing' | 'partial' | null;
   comments: string | null;
   attendanceSaveStatus: 'idle' | 'saving' | 'saved' | 'error';
@@ -50,7 +50,7 @@ export interface StudentCardTableProps {
   connectionStatus?: ConnectionStatus;
   queueSize?: number;
   isOffline?: boolean;
-  onAttendanceChange: (studentId: string, status: 'present' | 'absent' | 'late' | 'excused') => Promise<void>;
+  onAttendanceChange: (studentId: string, status: 'present' | 'absent' | 'late') => Promise<void>;
   onHomeworkChange: (studentId: string, status: 'complete' | 'missing' | 'partial') => Promise<void>;
   onCommentsChange: (studentId: string, comments: string) => void;
   onBulkMarkPresent?: () => Promise<void>;
@@ -81,7 +81,6 @@ const StudentCardRow: React.FC<{
       case 'present': return 'border-l-green-500';
       case 'absent': return 'border-l-red-500';
       case 'late': return 'border-l-yellow-500';
-      case 'excused': return 'border-l-blue-500';
       default: return 'border-l-gray-500';
     }
   };
@@ -150,7 +149,6 @@ const StudentCardRow: React.FC<{
               student.attendanceStatus === 'present' ? 'bg-green-500' :
               student.attendanceStatus === 'absent' ? 'bg-red-500' :
               student.attendanceStatus === 'late' ? 'bg-yellow-500' :
-              student.attendanceStatus === 'excused' ? 'bg-blue-500' :
               'bg-gray-500'
             }`} title={`Attendance: ${student.attendanceStatus || 'Not marked'}`} />
             

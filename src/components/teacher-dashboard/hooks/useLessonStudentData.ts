@@ -19,6 +19,7 @@ interface UseLessonStudentDataReturn {
   students: StudentRowState[];
   loading: boolean;
   error: string | null;
+  unifiedSaveStatus: SaveStatus; // New unified save status
   updateAttendance: (studentId: string, status: AttendanceStatus) => Promise<void>;
   updateHomework: (studentId: string, status: HomeworkStatus) => Promise<void>;
   updateComments: (studentId: string, comments: string) => void;
@@ -29,10 +30,77 @@ export const useLessonStudentData = (lessonId: string): UseLessonStudentDataRetu
   const [students, setStudents] = useState<StudentRowState[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [unifiedSaveStatus, setUnifiedSaveStatus] = useState<SaveStatus>('idle');
   
-  // Refs for managing debounced saves
+  // Refs for managing debounced saves and unified status
   const commentTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const unifiedStatusTimeout = useRef<NodeJS.Timeout | null>(null);
   const mounted = useRef(true);
+
+  // Helper to reset unified status after a delay
+  const resetUnifiedStatusAfterDelay = useCallback((status: SaveStatus, delay: number) => {
+    if (unifiedStatusTimeout.current) {
+      clearTimeout(unifiedStatusTimeout.current);
+    }
+    
+    unifiedStatusTimeout.current = setTimeout(() => {
+      if (mounted.current) {
+        // Only reset if no active operations
+        const hasActiveOperations = students.some(student => 
+          student.attendanceSaveStatus === 'saving' ||
+          student.homeworkSaveStatus === 'saving' ||
+          student.commentsSaveStatus === 'saving'
+        );
+        
+        if (!hasActiveOperations) {
+          setUnifiedSaveStatus('idle');
+        }
+      }
+    }, delay);
+  }, [students]);
+
+  // Helper function to check if any student has active save operations
+  const checkForActiveSaveOperations = useCallback(() => {
+    const hasActiveOperations = students.some(student => 
+      student.attendanceSaveStatus === 'saving' ||
+      student.homeworkSaveStatus === 'saving' ||
+      student.commentsSaveStatus === 'saving'
+    );
+
+    if (hasActiveOperations) {
+      setUnifiedSaveStatus('saving');
+    } else {
+      // Check for any recent saves or errors
+      const hasRecentSaves = students.some(student => 
+        student.attendanceSaveStatus === 'saved' ||
+        student.homeworkSaveStatus === 'saved' ||
+        student.commentsSaveStatus === 'saved'
+      );
+
+      const hasErrors = students.some(student => 
+        student.attendanceSaveStatus === 'error' ||
+        student.homeworkSaveStatus === 'error' ||
+        student.commentsSaveStatus === 'error'
+      );
+
+      if (hasErrors) {
+        setUnifiedSaveStatus('error');
+        // Reset error status after delay
+        resetUnifiedStatusAfterDelay('error', 3000);
+      } else if (hasRecentSaves) {
+        setUnifiedSaveStatus('saved');
+        // Reset saved status after delay
+        resetUnifiedStatusAfterDelay('saved', 2000);
+      } else {
+        setUnifiedSaveStatus('idle');
+      }
+    }
+  }, [students, resetUnifiedStatusAfterDelay]);
+
+  // Update unified status whenever students state changes
+  useEffect(() => {
+    checkForActiveSaveOperations();
+  }, [checkForActiveSaveOperations]);
 
   // Cleanup function
   useEffect(() => {
@@ -42,6 +110,10 @@ export const useLessonStudentData = (lessonId: string): UseLessonStudentDataRetu
       // Clear all pending comment timeouts
       commentTimeouts.current.forEach(timeout => clearTimeout(timeout));
       commentTimeouts.current.clear();
+      // Clear unified status timeout
+      if (unifiedStatusTimeout.current) {
+        clearTimeout(unifiedStatusTimeout.current);
+      }
     };
   }, []);
 
@@ -284,6 +356,7 @@ export const useLessonStudentData = (lessonId: string): UseLessonStudentDataRetu
     students,
     loading,
     error,
+    unifiedSaveStatus,
     updateAttendance,
     updateHomework,
     updateComments,

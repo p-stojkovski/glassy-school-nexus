@@ -1,0 +1,164 @@
+/* Custom styles for Lesson Homework Layout responsiveness */
+
+.lesson-homework-layout {
+  /* Ensure proper container behavior */
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+/* All screens: Prevent horizontal overflow */
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure no element exceeds viewport width */
+html, body {
+  overflow-x: hidden;
+}
+
+.lesson-homework-layout,
+.lesson-homework-layout * {
+  max-width: 100%;
+}
+
+.lesson-homework-layout .lesson-student-panel,
+.lesson-homework-layout .homework-sidebar {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Ensure tables are responsive */
+.lesson-homework-layout table {
+  table-layout: fixed;
+  width: 100%;
+  max-width: 100%;
+}
+
+.lesson-homework-layout td,
+.lesson-homework-layout th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 0;
+}
+
+/* Mobile and Tablet: Stack vertically (up to 2XL breakpoint) */
+@media (max-width: 1535px) {
+  /* Homework sidebar comes first for easier access */
+  .homework-sidebar {
+    order: 1;
+    /* Limit height on mobile to prevent scrolling issues */
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+  }
+  
+  .lesson-student-panel {
+    order: 2;
+  }
+}
+
+/* Large Tablet: Better spacing */
+@media (min-width: 768px) and (max-width: 1535px) {
+  .homework-sidebar {
+    max-height: 50vh;
+  }
+}
+
+/* 2XL Desktop: Side by side layout (1536px+) */
+@media (min-width: 1536px) {
+  .lesson-homework-layout .homework-sidebar {
+    order: 2;
+    position: sticky;
+    top: 1rem;
+    height: calc(100vh - 8rem);
+    overflow-y: auto;
+    width: 400px;
+    flex-shrink: 0;
+  }
+  
+  .lesson-homework-layout .lesson-student-panel {
+    order: 1;
+    min-height: 0;
+    min-width: 0;
+    flex: 1;
+  }
+}
+
+/* Smooth transitions for responsive changes */
+.lesson-homework-layout > * {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Ensure homework sidebar scrolls properly */
+.homework-sidebar {
+  /* Custom scrollbar styling for better UX */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.homework-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.homework-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.homework-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.homework-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Focus states for accessibility */
+@media (prefers-reduced-motion: no-preference) {
+  .lesson-homework-layout {
+    scroll-behavior: smooth;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .homework-sidebar {
+    scrollbar-color: white transparent;
+  }
+  
+  .homework-sidebar::-webkit-scrollbar-thumb {
+    background: white;
+  }
+}
+
+/* Final safety net: Prevent any horizontal overflow */
+body {
+  overflow-x: hidden !important;
+}
+
+.lesson-homework-layout {
+  max-width: 100vw !important;
+  box-sizing: border-box;
+}
+
+.lesson-homework-layout > div {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Ensure form elements don't cause overflow */
+input, textarea, select {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Ensure cards don't exceed container width */
+.lesson-homework-layout .card,
+.lesson-homework-layout [class*="card"] {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}

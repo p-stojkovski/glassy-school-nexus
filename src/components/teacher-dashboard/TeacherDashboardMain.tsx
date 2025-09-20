@@ -15,7 +15,7 @@ import {
 import { TeacherResponse } from '@/types/api/teacher';
 import { ClassResponse } from '@/types/api/class';
 import LessonContextCard from './LessonContextCard';
-import { LessonStudentManagementPanel } from './LessonStudentManagementPanel';
+import LessonWithHomeworkSidebar from './LessonWithHomeworkSidebar';
 import { useLessonContext } from './hooks/useLessonContext';
 import { getCurrentTime, getCurrentDateFormatted } from './utils/timeUtils';
 import { toast } from 'sonner';
@@ -131,9 +131,9 @@ const TeacherDashboardMain: React.FC<TeacherDashboardMainProps> = ({
           </CardContent>
         </Card>
 
-        {/* Lesson Context Section - Epic 2, 3 & 3.5: Lesson Detection and Unified Student Management */}
+        {/* Lesson Context Section - Epic 2, 3 & 3.5: Lesson Detection and Side-by-Side Layout */}
         {lessonContext.isLessonStarted ? (
-          <LessonStudentManagementPanel 
+          <LessonWithHomeworkSidebar 
             lesson={lessonContext.currentLesson!}
             currentTime={currentTime}
             onEndLesson={handleEndLesson}

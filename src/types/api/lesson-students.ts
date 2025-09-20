@@ -4,7 +4,7 @@
  */
 
 // Attendance status options
-export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
+export type AttendanceStatus = 'present' | 'absent' | 'late';
 
 // Homework status options  
 export type HomeworkStatus = 'complete' | 'missing' | 'partial';
@@ -54,7 +54,6 @@ export const AttendanceStatusColors = {
   present: 'bg-green-500/20 text-green-300 border-green-500/30',
   absent: 'bg-red-500/20 text-red-300 border-red-500/30',
   late: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-  excused: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
 } as const;
 
 export const HomeworkStatusColors = {
@@ -68,7 +67,6 @@ export const AttendanceStatusLabels = {
   present: 'Present',
   absent: 'Absent',
   late: 'Late',
-  excused: 'Excused',
 } as const;
 
 export const HomeworkStatusLabels = {
@@ -79,7 +77,7 @@ export const HomeworkStatusLabels = {
 
 // Type guards
 export function isValidAttendanceStatus(status: string): status is AttendanceStatus {
-  return ['present', 'absent', 'late', 'excused'].includes(status);
+  return ['present', 'absent', 'late'].includes(status);
 }
 
 export function isValidHomeworkStatus(status: string): status is HomeworkStatus {

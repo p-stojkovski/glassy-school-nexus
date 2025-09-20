@@ -19,39 +19,34 @@ import {
   StickyNote,
   LogOut,
   Loader2,
-  AlertCircle,
-  ClipboardList,
-  FileCheck
+  AlertCircle
 } from 'lucide-react';
 import { LessonResponse } from '@/types/api/lesson';
-import { formatTimeRange } from './utils/timeUtils';
-import { useLessonStudentData } from './hooks/useLessonStudentData';
-import { useLessonNotes } from './hooks/useLessonNotes';
-import { AttendanceCell } from './student-table/AttendanceCell';
-import { HomeworkCell } from './student-table/HomeworkCell';
-import { CommentsCell } from './student-table/CommentsCell';
-import HomeworkModal from './HomeworkModal';
+import { formatTimeRange } from '../utils/timeUtils';
+import { useLessonStudentData } from '../hooks/useLessonStudentData';
+import { useLessonNotes } from '../hooks/useLessonNotes';
+import { AttendanceCell } from '../student-table/AttendanceCell';
+import { HomeworkCell } from '../student-table/HomeworkCell';
+import { CommentsCell } from '../student-table/CommentsCell';
 
-interface LessonStudentManagementPanelProps {
+interface LessonStudentPanelProps {
   lesson: LessonResponse;
   currentTime: string;
   onEndLesson?: () => void;
   isLoading?: boolean;
 }
 
-export const LessonStudentManagementPanel: React.FC<LessonStudentManagementPanelProps> = ({
+const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
   lesson,
   currentTime,
   onEndLesson,
   isLoading = false
 }) => {
-  // Homework modal state
-  const [isHomeworkModalOpen, setIsHomeworkModalOpen] = React.useState(false);
-  const [homeworkModalMode, setHomeworkModalMode] = React.useState<'check' | 'assign'>('check');
   const {
     students,
     loading: studentsLoading,
     error: studentsError,
+    unifiedSaveStatus: studentsSaveStatus,
     updateAttendance,
     updateHomework,
     updateComments,
@@ -66,16 +61,6 @@ export const LessonStudentManagementPanel: React.FC<LessonStudentManagementPanel
 
   const timeRange = formatTimeRange(lesson.startTime, lesson.endTime);
   const roomName = lesson.classroomNameSnapshot || lesson.classroomName || 'Classroom TBD';
-
-  // Homework modal handlers
-  const handleOpenHomeworkModal = (mode: 'check' | 'assign') => {
-    setHomeworkModalMode(mode);
-    setIsHomeworkModalOpen(true);
-  };
-
-  const handleCloseHomeworkModal = () => {
-    setIsHomeworkModalOpen(false);
-  };
 
   const getSaveStatusIndicator = (status: string) => {
     switch (status) {
@@ -139,7 +124,7 @@ export const LessonStudentManagementPanel: React.FC<LessonStudentManagementPanel
   }
 
   return (
-    <Card className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 backdrop-blur-lg border-blue-500/30 shadow-lg w-full">
+    <Card className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 backdrop-blur-lg border-blue-500/30 shadow-lg w-full max-w-full overflow-hidden">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="space-y-2">
@@ -188,22 +173,27 @@ export const LessonStudentManagementPanel: React.FC<LessonStudentManagementPanel
         </div>
 
         {/* Student Management Table */}
-        <div className="bg-white/5 rounded-lg border border-white/10 overflow-hidden">
+        <div className="bg-white/5 rounded-lg border border-white/10 overflow-hidden w-full">
           <div className="p-4 border-b border-white/10">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Student Management
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Student Management
+              </h3>
+              {getSaveStatusIndicator(studentsSaveStatus)}
+            </div>
+            <p className="text-sm text-white/70 mt-1">
+              Click to mark attendance and homework status. Comments auto-save after 2 seconds.
+            </p>
           </div>
-
-          <div className="overflow-x-auto">
-            <Table className="text-white">
-              <TableHeader>
+          
+          <Table className="w-full">
+            <TableHeader>
                 <TableRow className="border-white/20 hover:bg-white/5">
-                  <TableHead className="text-white/90 font-semibold">Student Name</TableHead>
-                  <TableHead className="text-white/90 font-semibold min-w-[200px]">Attendance</TableHead>
-                  <TableHead className="text-white/90 font-semibold min-w-[180px]">Homework</TableHead>
-                  <TableHead className="text-white/90 font-semibold min-w-[250px]">Comments</TableHead>
+                  <TableHead className="text-white/90 font-semibold w-1/6 min-w-[120px]">Student Name</TableHead>
+                  <TableHead className="text-white/90 font-semibold w-1/4 min-w-[160px]">Attendance</TableHead>
+                  <TableHead className="text-white/90 font-semibold w-1/4 min-w-[140px]">Homework</TableHead>
+                  <TableHead className="text-white/90 font-semibold w-1/3 min-w-[180px]">Comments</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -260,8 +250,7 @@ export const LessonStudentManagementPanel: React.FC<LessonStudentManagementPanel
                   ))
                 )}
               </TableBody>
-            </Table>
-          </div>
+          </Table>
         </div>
 
         {/* Lesson Notes Section */}
@@ -296,34 +285,11 @@ export const LessonStudentManagementPanel: React.FC<LessonStudentManagementPanel
         </div>
 
         {/* Action Section */}
-        <div className="flex items-center justify-between pt-4 border-t border-white/10">
-          {/* Homework Management */}
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => handleOpenHomeworkModal('check')}
-              variant="outline"
-              className="bg-blue-500/20 border-blue-500/50 text-blue-300 hover:bg-blue-500/30 hover:border-blue-400/70"
-              disabled={isLoading}
-            >
-              <FileCheck className="w-4 h-4 mr-2" />
-              Check Previous Homework
-            </Button>
-            
-            <Button
-              onClick={() => handleOpenHomeworkModal('assign')}
-              variant="outline"
-              className="bg-purple-500/20 border-purple-500/50 text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/70"
-              disabled={isLoading}
-            >
-              <ClipboardList className="w-4 h-4 mr-2" />
-              Assign Homework
-            </Button>
-          </div>
-
+        <div className="flex items-center justify-center pt-4 border-t border-white/10">
           {/* End Lesson */}
           <Button
             onClick={onEndLesson}
-            className="bg-red-600/80 hover:bg-red-700 text-white font-semibold px-6"
+            className="bg-red-600/80 hover:bg-red-700 text-white font-semibold px-8 py-2"
             disabled={isLoading}
           >
             <LogOut className="w-4 h-4 mr-2" />
@@ -339,14 +305,8 @@ export const LessonStudentManagementPanel: React.FC<LessonStudentManagementPanel
           </div>
         </div>
       </CardContent>
-
-      {/* Homework Modal */}
-      <HomeworkModal
-        isOpen={isHomeworkModalOpen}
-        onClose={handleCloseHomeworkModal}
-        lesson={lesson}
-        initialMode={homeworkModalMode}
-      />
     </Card>
   );
 };
+
+export default LessonStudentPanel;

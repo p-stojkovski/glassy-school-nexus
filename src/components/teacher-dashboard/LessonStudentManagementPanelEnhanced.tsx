@@ -266,9 +266,6 @@ export const LessonStudentManagementPanelEnhanced: React.FC<LessonStudentManagem
               </h3>
               {getSaveStatusIndicator(notesSaveStatus)}
             </div>
-            <p className="text-sm text-white/70 mt-1">
-              Add observations about the lesson. Auto-saves after 1.5 seconds.
-            </p>
           </div>
           
           <div className="p-4">

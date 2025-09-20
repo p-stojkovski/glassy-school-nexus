@@ -95,7 +95,7 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-400 rounded-full" />
-                <span>Present/Absent/Late/Excused status</span>
+                <span>Present/Absent/Late status</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-400 rounded-full" />

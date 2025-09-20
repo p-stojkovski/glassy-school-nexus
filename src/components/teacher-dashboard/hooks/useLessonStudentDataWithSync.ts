@@ -94,7 +94,7 @@ export const useLessonStudentDataWithSync = (lessonId: string): UseLessonStudent
     `lesson_students_${lessonId}`,
     async (items: SyncQueueItem<LessonStudentSyncData>[]) => {
       // Group items by operation type for efficient syncing
-      const attendanceItems = items.filter(item => item.operation === 'update' && 'status' in item.data && typeof item.data.status === 'string' && ['present', 'absent', 'late', 'excused'].includes(item.data.status));
+      const attendanceItems = items.filter(item => item.operation === 'update' && 'status' in item.data && typeof item.data.status === 'string' && ['present', 'absent', 'late'].includes(item.data.status));
       const homeworkItems = items.filter(item => item.operation === 'update' && 'status' in item.data && typeof item.data.status === 'string' && ['complete', 'missing', 'partial'].includes(item.data.status));
       const commentItems = items.filter(item => item.operation === 'update' && 'comments' in item.data);
 
