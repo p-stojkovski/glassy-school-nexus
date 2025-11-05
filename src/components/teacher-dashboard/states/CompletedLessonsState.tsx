@@ -5,17 +5,17 @@ import { Badge } from '@/components/ui/badge';
 import { 
   CheckCircle, 
   Calendar, 
-  Clock, 
   BookOpen,
   Eye,
-  BarChart3,
-  ChevronRight
-} from 'lucide-react';
+  BarChart3} from 'lucide-react';
 import { LessonResponse } from '@/types/api/lesson';
+import { ClassResponse } from '@/types/api/class';
 import { formatTimeRange } from '../utils/timeUtils';
+import RecentLessonsCard from '../RecentLessonsCard';
 
 interface CompletedLessonsStateProps {
   completedLessons: LessonResponse[];
+  classItem: ClassResponse;
   nextLessonInfo?: {
     date: string;
     dayOfWeek: string;
@@ -28,6 +28,7 @@ interface CompletedLessonsStateProps {
 
 const CompletedLessonsState: React.FC<CompletedLessonsStateProps> = ({
   completedLessons,
+  classItem,
   nextLessonInfo,
   onViewLessonReviews,
   onViewSchedule
@@ -41,20 +42,21 @@ const CompletedLessonsState: React.FC<CompletedLessonsStateProps> = ({
     : null;
 
   return (
-    <Card className="bg-gradient-to-r from-slate-500/20 to-gray-500/20 backdrop-blur-lg border-slate-500/30 shadow-lg">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <CardTitle className="text-white text-xl font-bold flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-400" />
-              Day Complete!
-            </CardTitle>
-            <CardDescription className="text-white/80">
-              All scheduled lessons for today have been completed
-            </CardDescription>
+    <div className="space-y-6">
+      <Card className="bg-gradient-to-r from-slate-500/20 to-gray-500/20 backdrop-blur-lg border-slate-500/30 shadow-lg">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <CardTitle className="text-white text-xl font-bold flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-400" />
+                Day Complete!
+              </CardTitle>
+              <CardDescription className="text-white/80">
+                All scheduled lessons for today have been completed
+              </CardDescription>
+            </div>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
       <CardContent className="space-y-4">
         {/* Completion Summary */}
@@ -147,6 +149,12 @@ const CompletedLessonsState: React.FC<CompletedLessonsStateProps> = ({
         </div>
       </CardContent>
     </Card>
+    
+    <RecentLessonsCard
+      classId={classItem.id}
+      className={classItem.name}
+    />
+    </div>
   );
 };
 

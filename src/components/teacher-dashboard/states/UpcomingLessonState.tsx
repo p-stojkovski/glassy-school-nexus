@@ -130,15 +130,6 @@ const UpcomingLessonState: React.FC<UpcomingLessonStateProps> = ({
             <FileText className="w-4 h-4 mr-2" />
             Prepare Lesson
           </Button>
-          
-          <Button
-            onClick={onViewLessonPlan}
-            variant="outline"
-            className="border-white/20 text-white hover:bg-white/10 sm:flex-shrink-0"
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            View Lesson Plan
-          </Button>
         </div>
 
         {/* Preparation Tips */}

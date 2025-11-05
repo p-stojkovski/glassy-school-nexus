@@ -43,30 +43,12 @@ const LessonContextCard: React.FC<LessonContextCardProps> = ({
     startLessonManagement();
   };
 
-  const handlePrepareLessonPlan = () => {
-    // Placeholder for lesson preparation
-    alert('Lesson preparation features coming soon!');
-  };
-
-  const handleViewLessonPlan = () => {
-    // Placeholder for lesson plan viewer
-    alert('Lesson plan viewer coming soon!');
-  };
-
-  const handleViewLessonReviews = () => {
-    // Placeholder for lesson reviews
-    alert('Lesson reviews coming soon!');
-  };
-
-  const handleViewSchedule = () => {
-    // Placeholder for schedule viewer
-    alert('Schedule viewer coming soon!');
-  };
-
-  const handleCreateLesson = () => {
-    // Placeholder for lesson creation
-    alert('Create lesson coming soon!');
-  };
+  // Placeholder handlers - these would normally be passed from parent
+  const handlePrepareLessonPlan = () => {};
+  const handleViewLessonPlan = () => {};
+  const handleViewSchedule = () => {};
+  const handleCreateLesson = () => {};
+  const handleViewLessonReviews = () => {};
 
   // Loading state
   if (isLoading) {
@@ -78,7 +60,7 @@ const LessonContextCard: React.FC<LessonContextCardProps> = ({
             Lesson Status
           </CardTitle>
           <CardDescription className="text-white/70">
-            Loading today's lesson information...
+            {classItem.name} • {classItem.subjectName}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -135,6 +117,7 @@ const LessonContextCard: React.FC<LessonContextCardProps> = ({
     return (
       <ActiveLessonState
         lesson={currentLesson}
+        classItem={classItem}
         onStartLessonManagement={handleStartLessonManagement}
       />
     );
@@ -157,6 +140,7 @@ const LessonContextCard: React.FC<LessonContextCardProps> = ({
     return (
       <CompletedLessonsState
         completedLessons={completedLessons}
+        classItem={classItem}
         nextLessonInfo={nextLessonInfo}
         onViewLessonReviews={handleViewLessonReviews}
         onViewSchedule={handleViewSchedule}

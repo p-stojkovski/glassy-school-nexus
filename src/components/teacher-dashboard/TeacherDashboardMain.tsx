@@ -13,6 +13,7 @@ import { TeacherResponse } from '@/types/api/teacher';
 import { ClassResponse } from '@/types/api/class';
 import LessonContextCard from './LessonContextCard';
 import LessonWithHomeworkSidebar from './LessonWithHomeworkSidebar';
+import RecentLessonActivitySection from './RecentLessonActivitySection';
 import { useLessonContext } from './hooks/useLessonContext';
 import { getCurrentTime, getCurrentDateFormatted } from './utils/timeUtils';
 import { toast } from 'sonner';
@@ -142,6 +143,11 @@ const TeacherDashboardMain: React.FC<TeacherDashboardMainProps> = ({
             lessonContext={lessonContext}
           />
         )}
+
+        {/* Recent Lesson Activity Section - Lazy-loaded collapsible section */}
+        <RecentLessonActivitySection 
+          classId={classItem.id}
+        />
       </div>
     </div>
   );

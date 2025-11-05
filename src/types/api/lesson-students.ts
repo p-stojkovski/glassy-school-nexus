@@ -37,6 +37,24 @@ export interface LessonNotesUpdateRequest {
   notes: string;
 }
 
+// Response model for homework completion statistics
+export interface HomeworkCompletionStats {
+  complete: number;    // Number of students who completed homework
+  partial: number;     // Number of students with partial completion
+  missing: number;     // Number of students who missed homework
+  notChecked: number;  // Number of students not yet checked
+}
+
+// Response model for homework completion summary
+export interface HomeworkCompletionSummaryResponse {
+  lessonId: string;                   // GUID of the lesson
+  totalStudents: number;              // Total number of enrolled students
+  completionStats: HomeworkCompletionStats;  // Breakdown by status
+  completionRate: number;             // Percentage of students who completed (complete + partial)
+  fullCompletionRate: number;         // Percentage of students who fully completed
+  hasHomeworkAssignment: boolean;     // Whether the lesson has a homework assignment
+}
+
 // API endpoint paths
 export const LessonStudentApiPaths = {
   LESSON_STUDENTS: (lessonId: string) => `/api/lessons/${lessonId}/students`,

@@ -3,29 +3,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Clock, 
   BookOpen, 
+  Clock, 
   MapPin, 
-  Play,
-  Users
+  Users, 
+  Play
 } from 'lucide-react';
 import { LessonResponse } from '@/types/api/lesson';
+import { ClassResponse } from '@/types/api/class';
 import { formatTimeRange } from '../utils/timeUtils';
-
+import RecentLessonsCard from '../RecentLessonsCard';
 interface ActiveLessonStateProps {
   lesson: LessonResponse;
+  classItem: ClassResponse;
   onStartLessonManagement?: () => void;
 }
 
 const ActiveLessonState: React.FC<ActiveLessonStateProps> = ({
   lesson,
+  classItem,
   onStartLessonManagement
 }) => {
   const timeRange = formatTimeRange(lesson.startTime, lesson.endTime);
   const roomName = lesson.classroomNameSnapshot || lesson.classroomName || 'Classroom TBD';
 
   return (
-    <Card className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-lg border-green-500/30 shadow-lg">
+    <div className="space-y-6">
+      <Card className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-lg border-green-500/30 shadow-lg">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="space-y-2">
@@ -87,14 +91,6 @@ const ActiveLessonState: React.FC<ActiveLessonStateProps> = ({
             <Play className="w-4 h-4 mr-2" />
             Start Lesson Management
           </Button>
-          
-          <Button
-            variant="outline"
-            className="border-white/20 text-white hover:bg-white/10 sm:flex-shrink-0"
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            View Lesson Plan
-          </Button>
         </div>
 
         {/* Status Indicator */}
@@ -106,6 +102,12 @@ const ActiveLessonState: React.FC<ActiveLessonStateProps> = ({
         </div>
       </CardContent>
     </Card>
+    
+    <RecentLessonsCard
+      classId={classItem.id}
+      className={classItem.name}
+    />
+    </div>
   );
 };
 

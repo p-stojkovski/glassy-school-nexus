@@ -4,35 +4,27 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Calendar, 
-  Clock, 
   BookOpen,
-  Info,
   Coffee,
-  ChevronRight,
-  CalendarDays,
-  MapPin
+  MapPin,
+  Info
 } from 'lucide-react';
 import { ClassResponse } from '@/types/api/class';
 import { getDayOfWeek } from '../utils/timeUtils';
+import RecentLessonsCard from '../RecentLessonsCard';
 
 interface NoLessonsStateProps {
   classItem: ClassResponse;
   currentTime: string;
   currentDate: string;
-  isWeekend?: boolean;
-  isHoliday?: boolean;
+  isWeekend: boolean;
+  isHoliday: boolean;
   holidayName?: string;
   nextLessonInfo?: {
     date: string;
     dayOfWeek: string;
     time: string;
     className: string;
-  };
-  classScheduleInfo?: {
-    regularDays: string[];
-    regularTimes: string[];
-    startDate?: string;
-    endDate?: string;
   };
   onViewFullSchedule?: () => void;
   onCreateLesson?: () => void;
@@ -42,11 +34,10 @@ const NoLessonsState: React.FC<NoLessonsStateProps> = ({
   classItem,
   currentTime,
   currentDate,
-  isWeekend = false,
-  isHoliday = false,
+  isWeekend,
+  isHoliday,
   holidayName,
   nextLessonInfo,
-  classScheduleInfo,
   onViewFullSchedule,
   onCreateLesson
 }) => {
@@ -89,6 +80,7 @@ const NoLessonsState: React.FC<NoLessonsStateProps> = ({
   };
 
   return (
+    <div className="space-y-6">
     <Card className={`${getCardStyling()} backdrop-blur-lg shadow-lg`}>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -140,36 +132,6 @@ const NoLessonsState: React.FC<NoLessonsStateProps> = ({
           </div>
         </div>
 
-        {/* Schedule Information */}
-        {classScheduleInfo && (
-          <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-            <div className="flex items-center gap-2 mb-3">
-              <CalendarDays className="w-4 h-4 text-gray-400" />
-              <span className="text-white font-medium">Regular Schedule</span>
-            </div>
-            
-            <div className="space-y-2">
-              <div>
-                <div className="text-sm text-white/60">Meeting Days</div>
-                <div className="text-white">
-                  {classScheduleInfo.regularDays.length > 0 
-                    ? classScheduleInfo.regularDays.join(', ')
-                    : 'Schedule varies'
-                  }
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-white/60">Meeting Times</div>
-                <div className="text-white">
-                  {classScheduleInfo.regularTimes.length > 0
-                    ? classScheduleInfo.regularTimes.join(', ')
-                    : 'Times vary'
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Next Lesson Information */}
         {nextLessonInfo ? (
@@ -249,6 +211,12 @@ const NoLessonsState: React.FC<NoLessonsStateProps> = ({
         </div>
       </CardContent>
     </Card>
+    
+    <RecentLessonsCard
+      classId={classItem.id}
+      className={classItem.name}
+    />
+    </div>
   );
 };
 

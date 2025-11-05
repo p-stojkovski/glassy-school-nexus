@@ -51,6 +51,30 @@ export const formatTimeRange = (startTime: string, endTime: string): string => {
 };
 
 /**
+ * Calculate duration between two times
+ * @param startTime - Start time in HH:mm format
+ * @param endTime - End time in HH:mm format
+ * @returns Duration string (e.g., "1h 30m")
+ */
+export const calculateDuration = (startTime: string, endTime: string): string => {
+  const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+  
+  const startMinutes = timeToMinutes(startTime);
+  const endMinutes = timeToMinutes(endTime);
+  const diffMinutes = endMinutes - startMinutes;
+  
+  if (diffMinutes >= 60) {
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+  return `${diffMinutes}m`;
+};
+
+/**
  * Get a human-readable current date string
  * @returns Formatted date string (e.g., "Monday, September 16, 2024")
  */
