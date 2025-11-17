@@ -5,8 +5,8 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import apiService from './api';
-import { 
-  LessonResponse, 
+import {
+  LessonResponse,
   LessonSummary,
   LessonSearchParams,
   CreateLessonRequest,
@@ -21,8 +21,9 @@ import {
   AcademicAwareLessonGenerationResult,
   LessonCreatedResponse,
   LessonConflict,
+  LessonNotesResponse,
   LessonApiPaths,
-  LessonHttpStatus 
+  LessonHttpStatus
 } from '@/types/api/lesson';
 import { EnhancedLessonGenerationResult } from '@/types/api/lesson-generation-enhanced';
 // Preserve status/details when rethrowing with a custom message
@@ -55,7 +56,7 @@ function normalizeListResponse<T>(raw: any): T[] {
 
 export class LessonApiService {
 
-  /** Get lessons with optional filtering */
+  /** Get lessons with optional filtering (returns array) */
   async getLessons(params: LessonSearchParams = {}): Promise<LessonResponse[]> {
     try {
       const qs = new URLSearchParams();
@@ -71,7 +72,7 @@ export class LessonApiService {
       if (params.page) qs.append('page', String(params.page));
 
       const endpoint = qs.toString() ? `${LessonApiPaths.BASE}?${qs.toString()}` : LessonApiPaths.BASE;
-const raw = await apiService.get<any>(endpoint);
+      const raw = await apiService.get<any>(endpoint);
       return normalizeListResponse<LessonResponse>(raw);
     } catch (error: any) {
       if (error.status === LessonHttpStatus.UNAUTHORIZED) {
@@ -81,6 +82,67 @@ const raw = await apiService.get<any>(endpoint);
         throw makeApiError(error, 'Invalid lesson search parameters');
       }
       throw makeApiError(error, `Failed to fetch lessons: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Search lessons with pagination (skip/take) */
+  async searchLessons(params: {
+    classId?: string;
+    teacherId?: string;
+    statusId?: string;
+    fromDate?: string;
+    toDate?: string;
+    skip?: number;
+    take?: number;
+  } = {}): Promise<{ lessons: LessonResponse[]; totalCount: number; skip: number; take: number }> {
+    try {
+      const qs = new URLSearchParams();
+      if (params.classId) qs.append('classId', params.classId);
+      if (params.teacherId) qs.append('teacherId', params.teacherId);
+      if (params.statusId) qs.append('statusId', params.statusId);
+      if (params.fromDate) qs.append('fromDate', params.fromDate);
+      if (params.toDate) qs.append('toDate', params.toDate);
+      if (params.skip !== undefined) qs.append('skip', String(params.skip));
+      if (params.take !== undefined) qs.append('take', String(params.take));
+
+      const endpoint = qs.toString() ? `${LessonApiPaths.SEARCH}?${qs.toString()}` : LessonApiPaths.SEARCH;
+      const raw = await apiService.get<any>(endpoint);
+
+      // Handle response that may be array or paginated object
+      if (Array.isArray(raw)) {
+        return {
+          lessons: raw as LessonResponse[],
+          totalCount: raw.length,
+          skip: params.skip || 0,
+          take: params.take || raw.length
+        };
+      }
+
+      // Handle paginated response format
+      if (raw && typeof raw === 'object') {
+        const lessons = raw.lessons || raw.items || raw.results || [];
+        return {
+          lessons: Array.isArray(lessons) ? lessons : [],
+          totalCount: raw.totalCount || lessons.length,
+          skip: raw.skip || params.skip || 0,
+          take: raw.take || params.take || lessons.length
+        };
+      }
+
+      return {
+        lessons: [],
+        totalCount: 0,
+        skip: params.skip || 0,
+        take: params.take || 0
+      };
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to search lessons');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid lesson search parameters');
+      }
+      throw makeApiError(error, `Failed to search lessons: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -159,7 +221,7 @@ return await apiService.patch<LessonResponse>(LessonApiPaths.CANCEL(id), request
   /** Mark lesson as conducted */
   async conductLesson(id: string, request: MarkLessonConductedRequest = {}): Promise<LessonResponse> {
     try {
-      
+
 return await apiService.patch<LessonResponse>(LessonApiPaths.CONDUCT(id), request);
     } catch (error: any) {
       if (error.status === LessonHttpStatus.NOT_FOUND) {
@@ -176,6 +238,40 @@ return await apiService.patch<LessonResponse>(LessonApiPaths.CONDUCT(id), reques
         throw makeApiError(error, 'Authentication required to conduct lessons');
       }
       throw makeApiError(error, `Failed to conduct lesson: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Get lesson notes */
+  async getLessonNotes(id: string): Promise<LessonNotesResponse> {
+    try {
+      return await apiService.get<LessonNotesResponse>(LessonApiPaths.NOTES(id));
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Lesson not found');
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access lesson notes');
+      }
+      throw makeApiError(error, `Failed to fetch lesson notes: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Update lesson notes */
+  async updateLessonNotes(id: string, notes: string | null): Promise<LessonNotesResponse> {
+    try {
+      const request = { notes };
+      return await apiService.put<LessonNotesResponse>(LessonApiPaths.NOTES(id), request);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Lesson not found');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid notes data provided');
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to update lesson notes');
+      }
+      throw makeApiError(error, `Failed to update lesson notes: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -414,11 +510,22 @@ export const lessonApiService = new LessonApiService();
 
 // Convenience exports matching project style
 export const getLessons = (params?: LessonSearchParams) => lessonApiService.getLessons(params);
+export const searchLessons = (params?: {
+  classId?: string;
+  teacherId?: string;
+  statusId?: string;
+  fromDate?: string;
+  toDate?: string;
+  skip?: number;
+  take?: number;
+}) => lessonApiService.searchLessons(params);
 export const getLessonById = (id: string) => lessonApiService.getLessonById(id);
 export const getLessonsForClass = (classId: string, includeHistory?: boolean) => lessonApiService.getLessonsForClass(classId, includeHistory);
 export const createLesson = (request: CreateLessonRequest) => lessonApiService.createLesson(request);
 export const cancelLesson = (id: string, request: CancelLessonRequest) => lessonApiService.cancelLesson(id, request);
 export const conductLesson = (id: string, request?: MarkLessonConductedRequest) => lessonApiService.conductLesson(id, request);
+export const getLessonNotes = (id: string) => lessonApiService.getLessonNotes(id);
+export const updateLessonNotes = (id: string, notes: string | null) => lessonApiService.updateLessonNotes(id, notes);
 export const createMakeupLesson = (originalLessonId: string, request: CreateMakeupLessonRequest) => lessonApiService.createMakeupLesson(originalLessonId, request);
 export const generateLessons = (request: GenerateLessonsRequest) => lessonApiService.generateLessons(request);
 export const checkConflicts = (classId: string, date: string, start: string, end: string, exclude?: string) => lessonApiService.checkConflicts(classId, date, start, end, exclude);

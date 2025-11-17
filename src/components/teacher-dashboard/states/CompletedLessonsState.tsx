@@ -11,7 +11,6 @@ import {
 import { LessonResponse } from '@/types/api/lesson';
 import { ClassResponse } from '@/types/api/class';
 import { formatTimeRange } from '../utils/timeUtils';
-import RecentLessonsCard from '../RecentLessonsCard';
 
 interface CompletedLessonsStateProps {
   completedLessons: LessonResponse[];
@@ -149,11 +148,6 @@ const CompletedLessonsState: React.FC<CompletedLessonsStateProps> = ({
         </div>
       </CardContent>
     </Card>
-    
-    <RecentLessonsCard
-      classId={classItem.id}
-      className={classItem.name}
-    />
     </div>
   );
 };

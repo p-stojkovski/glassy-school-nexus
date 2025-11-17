@@ -154,6 +154,10 @@ export interface LessonCreatedResponse {
   id: string;                   // GUID
 }
 
+export interface LessonNotesResponse {
+  notes?: string | null;        // Teacher notes for the lesson
+}
+
 export interface LessonGenerationResult {
   lessonsCreated: number;
   conflictsSkipped: number;
@@ -211,6 +215,7 @@ export const LessonApiPaths = {
   CANCEL: (id: string) => `/api/lessons/${id}/cancel`,
   CONDUCT: (id: string) => `/api/lessons/${id}/conduct`,
   MAKEUP: (id: string) => `/api/lessons/${id}/makeup`,
+  NOTES: (id: string) => `/api/lessons/${id}/notes`,
   GENERATE: '/api/lessons/generate',
   GENERATE_ACADEMIC: (id: string) => `/api/lessons/generate-academic/${id}`,
   SEARCH: '/api/lessons/search',

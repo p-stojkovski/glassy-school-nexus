@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { ClassResponse } from '@/types/api/class';
 import { getDayOfWeek } from '../utils/timeUtils';
-import RecentLessonsCard from '../RecentLessonsCard';
 
 interface NoLessonsStateProps {
   classItem: ClassResponse;
@@ -211,11 +210,6 @@ const NoLessonsState: React.FC<NoLessonsStateProps> = ({
         </div>
       </CardContent>
     </Card>
-    
-    <RecentLessonsCard
-      classId={classItem.id}
-      className={classItem.name}
-    />
     </div>
   );
 };

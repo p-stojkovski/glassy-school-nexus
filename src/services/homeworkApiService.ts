@@ -251,3 +251,34 @@ export class HomeworkApiService {
 
 // Export singleton instance
 export const homeworkApiService = new HomeworkApiService();
+
+// Convenience exports matching project style
+export const getHomeworkAssignment = (lessonId: string) =>
+  homeworkApiService.getHomeworkAssignment(lessonId);
+
+export const createHomeworkAssignment = (lessonId: string, request: CreateHomeworkAssignmentRequest) =>
+  homeworkApiService.createHomeworkAssignment(lessonId, request);
+
+export const updateHomeworkAssignment = (lessonId: string, request: UpdateHomeworkAssignmentRequest) =>
+  homeworkApiService.updateHomeworkAssignment(lessonId, request);
+
+export const deleteHomeworkAssignment = (lessonId: string) =>
+  homeworkApiService.deleteHomeworkAssignment(lessonId);
+
+export const getPreviousHomework = (lessonId: string) =>
+  homeworkApiService.getPreviousHomework(lessonId);
+
+export const hasHomeworkAssignment = (lessonId: string) =>
+  homeworkApiService.hasHomeworkAssignment(lessonId);
+
+export const getHomeworkCompletionSummary = (lessonId: string) =>
+  homeworkApiService.getHomeworkCompletionSummary(lessonId);
+
+export const getHomeworkWithPrevious = (lessonId: string) =>
+  homeworkApiService.getHomeworkWithPrevious(lessonId);
+
+export const upsertHomeworkAssignment = (lessonId: string, request: CreateHomeworkAssignmentRequest | UpdateHomeworkAssignmentRequest) =>
+  homeworkApiService.upsertHomeworkAssignment(lessonId, request);
+
+// Export default
+export default homeworkApiService;

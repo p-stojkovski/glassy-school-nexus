@@ -12,7 +12,7 @@ import {
 import { LessonResponse } from '@/types/api/lesson';
 import { ClassResponse } from '@/types/api/class';
 import { formatTimeRange } from '../utils/timeUtils';
-import RecentLessonsCard from '../RecentLessonsCard';
+
 interface ActiveLessonStateProps {
   lesson: LessonResponse;
   classItem: ClassResponse;
@@ -102,11 +102,6 @@ const ActiveLessonState: React.FC<ActiveLessonStateProps> = ({
         </div>
       </CardContent>
     </Card>
-    
-    <RecentLessonsCard
-      classId={classItem.id}
-      className={classItem.name}
-    />
     </div>
   );
 };

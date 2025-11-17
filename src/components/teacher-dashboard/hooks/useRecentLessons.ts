@@ -3,7 +3,7 @@ import lessonApiService from '@/services/lessonApiService';
 import lessonStudentApiService from '@/services/lessonStudentApiService';
 import { homeworkApiService } from '@/services/homeworkApiService';
 import { LessonResponse } from '@/types/api/lesson';
-import { HomeworkCompletionSummaryResponse } from '@/types/api/lesson-students';
+import { HomeworkCompletionSummaryResponse } from '@/types/api/homework';
 
 export interface RecentLessonSummary {
   lesson: LessonResponse;
