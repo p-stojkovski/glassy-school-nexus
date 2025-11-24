@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,8 @@ import { useLessonNotes } from '../hooks/useLessonNotes';
 import { AttendanceCell } from '../student-table/AttendanceCell';
 import { HomeworkCell } from '../student-table/HomeworkCell';
 import { CommentsCell } from '../student-table/CommentsCell';
+import LessonHomeworkSection from '../lesson-detail/LessonHomeworkSection';
+import DashboardLoadingState from '../states/DashboardLoadingState';
 
 interface LessonStudentPanelProps {
   lesson: LessonResponse;
@@ -42,6 +45,7 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
   onEndLesson,
   isLoading = false
 }) => {
+  const navigate = useNavigate();
   const {
     students,
     loading: studentsLoading,
@@ -90,15 +94,11 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
 
   if (studentsLoading || notesLoading) {
     return (
-      <Card className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 backdrop-blur-lg border-blue-500/30 shadow-lg">
-        <CardContent className="p-8 text-center">
-          <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">Loading Student Data</h3>
-          <p className="text-white/70">Please wait while we load the lesson information...</p>
-        </CardContent>
-      </Card>
+      <DashboardLoadingState
+        rows={6}
+        className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 backdrop-blur-lg border-blue-500/30 shadow-lg"
+        contentClassName="p-2"
+      />
     );
   }
 
@@ -182,9 +182,6 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
               </h3>
               {getSaveStatusIndicator(studentsSaveStatus)}
             </div>
-            <p className="text-sm text-white/70 mt-1">
-              Click to mark attendance and homework status. Comments auto-save after 2 seconds.
-            </p>
           </div>
           
           <Table className="w-full">
@@ -214,7 +211,12 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
                       className="border-white/10 hover:bg-white/5"
                     >
                       <TableCell className="font-medium">
-                        {student.studentName}
+                        <button
+                          onClick={() => navigate(`/students/${student.studentId}`)}
+                          className="text-blue-300 hover:text-blue-200 hover:underline cursor-pointer transition-colors"
+                        >
+                          {student.studentName}
+                        </button>
                       </TableCell>
                       
                       <TableCell>
@@ -253,35 +255,45 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
           </Table>
         </div>
 
-        {/* Lesson Notes Section */}
-        <div className="bg-white/5 rounded-lg border border-white/10">
-          <div className="p-4 border-b border-white/10">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <StickyNote className="w-5 h-5" />
-                Lesson Notes
-              </h3>
-              {getSaveStatusIndicator(notesSaveStatus)}
+        {/* Lesson Notes and Homework Section (50/50 Layout) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Left Column: Lesson Notes */}
+          <div className="bg-white/5 rounded-lg border border-white/10">
+            <div className="p-4 border-b border-white/10">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <StickyNote className="w-5 h-5 text-yellow-400" />
+                  Lesson Notes
+                </h3>
+                {getSaveStatusIndicator(notesSaveStatus)}
+              </div>
+            </div>
+            
+            <div className="p-4">
+              <Textarea
+                value={notes}
+                onChange={(e) => updateNotes(e.target.value)}
+                placeholder="Add lesson notes, observations, or reminders..."
+                disabled={isLoading}
+                rows={4}
+                className={`
+                  bg-white/10 border-white/20 text-white placeholder:text-white/60 
+                  resize-none
+                  ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                  ${notesSaveStatus === 'saving' ? 'border-blue-500/50' : ''}
+                  ${notesSaveStatus === 'error' ? 'border-red-500/50' : ''}
+                  ${notesSaveStatus === 'saved' ? 'border-green-500/50' : ''}
+                `}
+              />
             </div>
           </div>
-          
-          <div className="p-4">
-            <Textarea
-              value={notes}
-              onChange={(e) => updateNotes(e.target.value)}
-              placeholder="Add lesson notes, observations, or reminders..."
-              disabled={isLoading}
-              rows={4}
-              className={`
-                bg-white/10 border-white/20 text-white placeholder:text-white/60 
-                resize-none
-                ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-                ${notesSaveStatus === 'saving' ? 'border-blue-500/50' : ''}
-                ${notesSaveStatus === 'error' ? 'border-red-500/50' : ''}
-                ${notesSaveStatus === 'saved' ? 'border-green-500/50' : ''}
-              `}
-            />
-          </div>
+
+          {/* Right Column: Homework */}
+          <LessonHomeworkSection
+            lessonId={lesson.id}
+            classId={lesson.classId}
+            isLoading={isLoading}
+          />
         </div>
 
         {/* Action Section */}

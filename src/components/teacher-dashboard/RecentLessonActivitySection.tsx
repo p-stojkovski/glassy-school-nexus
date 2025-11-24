@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import DashboardLoadingState from './states/DashboardLoadingState';
 import {
   Collapsible,
   CollapsibleContent,
@@ -125,14 +126,12 @@ const RecentLessonActivitySection: React.FC<RecentLessonActivitySectionProps> = 
 
   // Render loading state
   const renderLoadingState = () => (
-    <div className="flex items-center justify-center py-8">
-      <div className="text-center">
-        <div className="w-12 h-12 bg-slate-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-          <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
-        </div>
-        <p className="text-white/70 text-sm">Loading recent lessons...</p>
-      </div>
-    </div>
+    <DashboardLoadingState
+      wrapWithCard={false}
+      showHeader={false}
+      rows={3}
+      className="py-4"
+    />
   );
 
   // Render error state

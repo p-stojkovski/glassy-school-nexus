@@ -212,6 +212,8 @@ export interface LessonConflict {
 export const LessonApiPaths = {
   BASE: '/api/lessons',
   BY_ID: (id: string) => `/api/lessons/${id}`,
+  CURRENT: '/api/lessons/current',
+  NEXT: '/api/lessons/next',
   CANCEL: (id: string) => `/api/lessons/${id}/cancel`,
   CONDUCT: (id: string) => `/api/lessons/${id}/conduct`,
   MAKEUP: (id: string) => `/api/lessons/${id}/makeup`,

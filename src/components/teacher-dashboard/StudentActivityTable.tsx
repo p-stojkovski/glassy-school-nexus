@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, AlertTriangle, BookCheck, X, Minus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { LessonStudentResponse } from '@/types/api/lesson-students';
@@ -12,6 +13,8 @@ interface StudentActivityTableProps {
  * Merges all student activity data into one comprehensive view
  */
 const StudentActivityTable: React.FC<StudentActivityTableProps> = ({ students }) => {
+  const navigate = useNavigate();
+
   // Helper functions for status rendering
   const getAttendanceIcon = (status: string) => {
     switch (status.toLowerCase()) {
@@ -143,14 +146,17 @@ const StudentActivityTable: React.FC<StudentActivityTableProps> = ({ students })
               >
                 {/* Student Name */}
                 <td className="p-3">
-                  <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => navigate(`/students/${student.studentId}`)}
+                    className="flex items-center gap-2 hover:opacity-80 cursor-pointer transition-opacity"
+                  >
                     <div className="w-6 h-6 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center text-xs text-white font-medium">
                       {student.studentName?.charAt(0)?.toUpperCase() || '?'}
                     </div>
-                    <span className="text-white text-sm font-medium">
+                    <span className="text-blue-300 hover:text-blue-200 text-sm font-medium">
                       {student.studentName || 'Unknown Student'}
                     </span>
-                  </div>
+                  </button>
                 </td>
 
                 {/* Attendance Status */}

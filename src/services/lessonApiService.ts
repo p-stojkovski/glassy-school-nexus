@@ -166,6 +166,45 @@ return await apiService.get<LessonResponse>(LessonApiPaths.BY_ID(id));
     return this.getLessons({ classId });
   }
 
+  /** Get the current active lesson for a class (authoritative server-side determination) */
+  async getCurrentLesson(classId: string): Promise<LessonResponse> {
+    try {
+      const endpoint = `${LessonApiPaths.BASE}/current?classId=${classId}`;
+      return await apiService.get<LessonResponse>(endpoint);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'No lesson is currently active for this class');
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access current lesson');
+      }
+      throw makeApiError(error, `Failed to fetch current lesson: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Get the next scheduled lesson for a class after a given date */
+  async getNextLesson(classId: string, fromDate?: string, limit?: number): Promise<LessonResponse> {
+    try {
+      const qs = new URLSearchParams();
+      qs.append('classId', classId);
+      if (fromDate) qs.append('fromDate', fromDate);
+      if (limit) qs.append('limit', String(limit));
+
+      const endpoint = `${LessonApiPaths.BASE}/next?${qs.toString()}`;
+      return await apiService.get<LessonResponse>(endpoint);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'No future lessons scheduled for this class');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid parameters for next lesson query');
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access next lesson');
+      }
+      throw makeApiError(error, `Failed to fetch next lesson: ${error.message || 'Unknown error'}`);
+    }
+  }
 
   /** Create a new lesson */
   async createLesson(request: CreateLessonRequest): Promise<LessonCreatedResponse> {
@@ -533,6 +572,7 @@ export const checkConflicts = (classId: string, date: string, start: string, end
 // Quick access exports
 export const getTodayLessons = () => lessonApiService.getTodayLessons();
 export const getUpcomingLessons = (days?: number) => lessonApiService.getUpcomingLessons(days);
+export const getNextLesson = (classId: string, fromDate?: string, limit?: number) => lessonApiService.getNextLesson(classId, fromDate, limit);
 export const quickConductLesson = (id: string, notes?: string) => lessonApiService.quickConductLesson(id, notes);
 export const quickCancelLesson = (id: string, reason: string, makeupData?: MakeupLessonFormData) => lessonApiService.quickCancelLesson(id, reason, makeupData);
 

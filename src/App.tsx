@@ -9,11 +9,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { store } from './store';
 import { RootState } from './store';
 import { DataProvider } from '@/app/providers/DataProvider';
-import { getCurrentUserAsync } from '@/domains/auth/authSlice';
+import { getCurrentUserAsync, logout } from '@/domains/auth/authSlice';
+import apiService from '@/services/api';
 import LoginForm from '@/domains/auth/components/LoginForm';
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
-import apiService from '@/services/api';
 import StudentManagement from './pages/StudentManagement';
 import ClassesPage from './pages/Classes';
 import ClassFormPage from './pages/ClassFormPage';
@@ -53,6 +53,17 @@ const AppContent: React.FC = () => {
       // Try to get current user to validate the token
       dispatch(getCurrentUserAsync());
     }
+  }, [dispatch, isAuthenticated]);
+
+  // Listen for auth state changes from API (e.g., token refresh failures)
+  useEffect(() => {
+    const unsubscribe = apiService.onAuthStateChange((authenticated: boolean) => {
+      if (!authenticated && isAuthenticated) {
+        // Auth failed, log user out
+        dispatch(logout());
+      }
+    });
+    return unsubscribe;
   }, [dispatch, isAuthenticated]);
 
   if (loading) {

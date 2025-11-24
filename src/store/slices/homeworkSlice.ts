@@ -4,8 +4,7 @@ import {
   CreateHomeworkAssignmentRequest,
   UpdateHomeworkAssignmentRequest,
   PreviousHomeworkResponse,
-  HomeworkCompletionSummaryResponse,
-  HomeworkManagementState
+  HomeworkCompletionSummaryResponse
 } from '@/types/api/homework';
 import { homeworkApiService } from '@/services/homeworkApiService';
 import { RootState } from '@/store';
@@ -52,13 +51,9 @@ interface HomeworkState {
   isEditing: boolean;
   hasUnsavedChanges: boolean;
   
-  // Form state for homework assignment form
+  // Form state for homework assignment form (Phase 1: description-only)
   formData: {
-    title: string;
     description: string;
-    dueDate: string;
-    assignmentType: 'reading' | 'writing' | 'vocabulary' | 'grammar' | 'general';
-    instructions: string;
   };
   
   // Cache metadata
@@ -67,11 +62,7 @@ interface HomeworkState {
 }
 
 const initialFormData = {
-  title: '',
   description: '',
-  dueDate: '',
-  assignmentType: 'general' as const,
-  instructions: ''
 };
 
 const initialState: HomeworkState = {
@@ -217,11 +208,7 @@ const homeworkSlice = createSlice({
         const existingAssignment = state.assignmentsByLessonId[action.payload.lessonId];
         if (existingAssignment) {
           state.formData = {
-            title: existingAssignment.title,
             description: existingAssignment.description || '',
-            dueDate: existingAssignment.dueDate || '',
-            assignmentType: existingAssignment.assignmentType,
-            instructions: existingAssignment.instructions || ''
           };
           state.isEditing = true;
         } else {
@@ -252,11 +239,7 @@ const homeworkSlice = createSlice({
         const existingAssignment = state.assignmentsByLessonId[state.currentLessonId];
         if (existingAssignment) {
           state.formData = {
-            title: existingAssignment.title,
             description: existingAssignment.description || '',
-            dueDate: existingAssignment.dueDate || '',
-            assignmentType: existingAssignment.assignmentType,
-            instructions: existingAssignment.instructions || ''
           };
           state.isEditing = true;
         } else {
@@ -372,6 +355,8 @@ const homeworkSlice = createSlice({
         state.loadingStates.fetchingAssignment = false;
         const { lessonId, assignment } = action.payload;
         
+        console.log('[homeworkSlice] fetchHomeworkAssignment.fulfilled:', { lessonId, hasAssignment: !!assignment });
+        
         if (assignment) {
           state.assignmentsByLessonId[lessonId] = assignment;
           if (state.currentLessonId === lessonId) {
@@ -383,12 +368,25 @@ const homeworkSlice = createSlice({
       })
       .addCase(fetchHomeworkAssignment.rejected, (state, action) => {
         state.loadingStates.fetchingAssignment = false;
-        state.error = action.payload as string;
+        // Don't set error for 404 - it just means no homework exists yet
+        const errorMessage = action.payload as string;
+        if (!errorMessage?.includes('404') && !errorMessage?.includes('not found')) {
+          state.error = errorMessage;
+        }
+        
+        // Clear both current and lesson-specific cache since no homework exists
+        const lessonId = action.meta.arg; // Get lessonId from thunk argument
+        console.log('[homeworkSlice] fetchHomeworkAssignment.rejected - clearing cache:', { lessonId, error: errorMessage });
+        delete state.assignmentsByLessonId[lessonId];
+        if (state.currentLessonId === lessonId) {
+          state.currentAssignment = null;
+        }
       });
 
     // Create homework assignment
     builder
-      .addCase(createHomeworkAssignment.pending, (state) => {
+      .addCase(createHomeworkAssignment.pending, (state, action) => {
+        console.log('[homeworkSlice] createHomeworkAssignment.pending:', { lessonId: action.meta.arg.lessonId });
         state.loadingStates.creatingAssignment = true;
         state.error = null;
       })
@@ -412,7 +410,8 @@ const homeworkSlice = createSlice({
 
     // Update homework assignment
     builder
-      .addCase(updateHomeworkAssignment.pending, (state) => {
+      .addCase(updateHomeworkAssignment.pending, (state, action) => {
+        console.log('[homeworkSlice] updateHomeworkAssignment.pending:', { lessonId: action.meta.arg.lessonId });
         state.loadingStates.updatingAssignment = true;
         state.error = null;
       })

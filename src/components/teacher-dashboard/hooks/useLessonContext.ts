@@ -73,6 +73,7 @@ export const useLessonContext = (
   classItem: ClassResponse | null
 ): UseLessonContextResult => {
   const [allTodayLessons, setAllTodayLessons] = useState<LessonResponse[]>([]);
+  const [nextLesson, setNextLesson] = useState<LessonResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(getCurrentTime());
@@ -80,80 +81,34 @@ export const useLessonContext = (
   const [isLessonManagementActive, setIsLessonManagementActive] = useState(false);
 
   /**
-   * Get lesson management state key for current teacher/class
-   */
-  const getLessonManagementKey = useCallback(() => {
-    if (!teacher || !classItem) return null;
-    return `${LESSON_MANAGEMENT_KEY}-${teacher.id}-${classItem.id}`;
-  }, [teacher, classItem]);
-
-  /**
-   * Load lesson management state from localStorage
-   */
-  const loadLessonManagementState = useCallback(() => {
-    const key = getLessonManagementKey();
-    if (!key) return false;
-    
-    try {
-      const saved = localStorage.getItem(key);
-      if (!saved) return false;
-      
-      const data = JSON.parse(saved);
-      const now = Date.now();
-      
-      // Check if state is expired (older than 24 hours)
-      if (now - data.timestamp > 24 * 60 * 60 * 1000) {
-        localStorage.removeItem(key);
-        return false;
-      }
-      
-      // Verify the lesson is still valid and active
-      if (data.lessonId && data.isActive) {
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('Error loading lesson management state:', error);
-      return false;
-    }
-  }, [getLessonManagementKey]);
-
-  /**
-   * Save lesson management state to localStorage
+   * Lesson management state is no longer persisted to localStorage.
+   * The server is the authoritative source for determining current lessons,
+   * so we don't need client-side caching that can become stale.
+   * State is now transient - cleared when the component unmounts or user navigates away.
    */
   const saveLessonManagementState = useCallback((lessonId: string, isActive: boolean) => {
-    const key = getLessonManagementKey();
-    if (!key) return;
-    
-    try {
-      const data = {
-        lessonId,
-        isActive,
-        timestamp: Date.now()
-      };
-      localStorage.setItem(key, JSON.stringify(data));
-    } catch (error) {
-      console.error('Error saving lesson management state:', error);
-    }
-  }, [getLessonManagementKey]);
+    // Intentionally simplified - no localStorage persistence
+    console.debug('Lesson management state: lesson=%s, active=%s', lessonId, isActive);
+  }, []);
 
-  /**
-   * Clear lesson management state from localStorage
-   */
   const clearLessonManagementState = useCallback(() => {
-    const key = getLessonManagementKey();
-    if (key) {
-      localStorage.removeItem(key);
-    }
-  }, [getLessonManagementKey]);
+    // No state to clear
+  }, []);
+
+  const loadLessonManagementState = useCallback(() => {
+    // Always start fresh - server is the source of truth
+    return false;
+  }, []);
 
   /**
-   * Fetch today's lessons for the selected teacher and class
+   * Fetch the current active lesson and next scheduled lesson for the class
+   * This uses server-side determination to avoid client clock skew and stale cached data
+   * Both queries run in parallel for efficiency
    */
   const fetchTodayLessons = useCallback(async () => {
-    if (!teacher || !classItem) {
+    if (!classItem) {
       setAllTodayLessons([]);
+      setNextLesson(null);
       return;
     }
 
@@ -161,31 +116,98 @@ export const useLessonContext = (
     setError(null);
 
     try {
-      const today = getCurrentDate();
-      
-      // Fetch lessons for today using the existing API service
-      const lessons = await lessonApiService.getLessons({
-        teacherId: teacher.id,
-        classId: classItem.id,
-        startDate: today,
-        endDate: today,
-        statusName: 'Scheduled' // Focus on scheduled lessons
-      });
+      // Call both endpoints in parallel for efficiency
+      // 1. Get current active lesson (authoritative server-side determination)
+      // 2. Get next scheduled lesson (for dashboard display when no active lesson)
+      const [currentLessonResult, nextLessonResult] = await Promise.allSettled([
+        lessonApiService.getCurrentLesson(classItem.id),
+        lessonApiService.getNextLesson(classItem.id)
+      ]);
 
-      setAllTodayLessons(lessons);
+      // Handle current lesson result
+      let currentLesson: LessonResponse | null = null;
+      if (currentLessonResult.status === 'fulfilled') {
+        currentLesson = currentLessonResult.value;
+        setAllTodayLessons([currentLesson]);
+      } else {
+        // No active lesson or error - check if it's a 404 (expected) or actual error
+        const err = currentLessonResult.reason;
+        const errorMessage = err?.message || '';
+        const isNoActiveLessonError = 
+          err?.status === 404 || 
+          err?.status === 400 || 
+          errorMessage.includes('not currently active') ||
+          errorMessage.includes('No lesson is currently active');
+
+        if (isNoActiveLessonError) {
+          // No active lesson is not an error - it's a valid state
+          setAllTodayLessons([]);
+        } else {
+          // Actual error (auth, server, etc)
+          setError(errorMessage);
+          console.error('Error fetching current lesson:', err);
+        }
+      }
+
+      // Handle next lesson result
+      if (nextLessonResult.status === 'fulfilled') {
+        const nextLessonData = nextLessonResult.value;
+        
+        // Safety net: filter out lessons that have already ended today
+        // This is a defensive measure in case the backend doesn't fully exclude them
+        const today = getCurrentDate();
+        const now = getCurrentTime();
+        
+        const isLessonEndedToday = 
+          nextLessonData.scheduledDate.startsWith(today) && 
+          nextLessonData.endTime <= now;
+        
+        if (isLessonEndedToday) {
+          console.warn(
+            'Next lesson has already ended today. Lesson ID: %s, End time: %s, Current time: %s',
+            nextLessonData.id,
+            nextLessonData.endTime,
+            now
+          );
+          setNextLesson(null);
+        } else {
+          setNextLesson(nextLessonData);
+        }
+      } else {
+        // No next lesson or error - 404 is expected and normal
+        const err = nextLessonResult.reason;
+        const errorMessage = err?.message || '';
+        const isNoFutureLessonError = 
+          err?.status === 404 || 
+          errorMessage.includes('No future lessons');
+
+        if (isNoFutureLessonError) {
+          // No future lessons is not an error - it's a valid state
+          setNextLesson(null);
+        } else {
+          // Log other errors but don't fail the entire fetch
+          console.error('Error fetching next lesson:', err);
+          setNextLesson(null);
+        }
+      }
     } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to load today\'s lessons';
+      // Fallback error handling (shouldn't be reached with allSettled)
+      const errorMessage = err?.message || 'Failed to fetch lesson information';
       setError(errorMessage);
-      console.error('Error fetching today\'s lessons:', err);
+      console.error('Error in fetchTodayLessons:', err);
+      setAllTodayLessons([]);
+      setNextLesson(null);
     } finally {
       setIsLoading(false);
     }
-  }, [teacher, classItem]);
+  }, [classItem]);
 
   /**
-   * Determine the current lesson context based on time and lessons
+   * Determine the current lesson context.
+   * Since the server already determined that there is a current active lesson,
+   * we can simply mark it as active. No client-side time matching needed.
    */
-  const determineLessonContext = useCallback((lessons: LessonResponse[], currentTimeStr: string) => {
+  const determineLessonContext = useCallback((lessons: LessonResponse[]) => {
     if (lessons.length === 0) {
       return {
         currentLesson: null,
@@ -195,47 +217,14 @@ export const useLessonContext = (
       };
     }
 
-    // Sort lessons by start time
-    const sortedLessons = [...lessons].sort((a, b) => 
-      a.startTime.localeCompare(b.startTime)
-    );
-
-    // Find active lesson (current time is within lesson period)
-    const activeLesson = sortedLessons.find(lesson => 
-      isTimeInRange(currentTimeStr, lesson.startTime, lesson.endTime)
-    );
-
-    if (activeLesson) {
-      return {
-        currentLesson: activeLesson,
-        lessonState: 'active' as LessonContextState,
-        nextLesson: null,
-        completedLessons: sortedLessons.filter(l => l.endTime < currentTimeStr)
-      };
-    }
-
-    // Find upcoming lesson (next lesson after current time)
-    const upcomingLesson = sortedLessons.find(lesson => 
-      lesson.startTime > currentTimeStr
-    );
-
-    if (upcomingLesson) {
-      return {
-        currentLesson: upcomingLesson,
-        lessonState: 'upcoming' as LessonContextState,
-        nextLesson: upcomingLesson,
-        completedLessons: sortedLessons.filter(l => l.endTime < currentTimeStr)
-      };
-    }
-
-    // All lessons are in the past
-    const completedLessons = sortedLessons.filter(l => l.endTime < currentTimeStr);
+    // Server already determined this is the current active lesson
+    const currentLesson = lessons[0];
     
     return {
-      currentLesson: null,
-      lessonState: completedLessons.length > 0 ? 'completed' as LessonContextState : 'none' as LessonContextState,
+      currentLesson,
+      lessonState: 'active' as LessonContextState,
       nextLesson: null,
-      completedLessons
+      completedLessons: []
     };
   }, []);
 
@@ -243,18 +232,18 @@ export const useLessonContext = (
    * Start lesson management
    */
   const startLessonManagement = useCallback(() => {
-    const lessonContext = determineLessonContext(allTodayLessons, currentTime);
+    const lessonContext = determineLessonContext(allTodayLessons);
     if (lessonContext.currentLesson && lessonContext.lessonState === 'active') {
       setIsLessonManagementActive(true);
       saveLessonManagementState(lessonContext.currentLesson.id, true);
     }
-  }, [allTodayLessons, currentTime, determineLessonContext, saveLessonManagementState]);
+  }, [allTodayLessons, determineLessonContext, saveLessonManagementState]);
 
   /**
    * End lesson management and conduct the lesson
    */
   const endLessonManagement = useCallback(async () => {
-    const lessonContext = determineLessonContext(allTodayLessons, currentTime);
+    const lessonContext = determineLessonContext(allTodayLessons);
     if (lessonContext.currentLesson && isLessonManagementActive) {
       try {
         setIsLoading(true);
@@ -280,13 +269,12 @@ export const useLessonContext = (
         setIsLoading(false);
       }
     }
-  }, [allTodayLessons, currentTime, determineLessonContext, isLessonManagementActive, clearLessonManagementState, fetchTodayLessons]);
+  }, [allTodayLessons, determineLessonContext, isLessonManagementActive, clearLessonManagementState, fetchTodayLessons]);
 
   /**
    * Manual refresh function
    */
   const refreshLessons = useCallback(() => {
-    setCurrentTime(getCurrentTime());
     setCurrentDate(getCurrentDate());
     fetchTodayLessons();
   }, [fetchTodayLessons]);
@@ -302,30 +290,20 @@ export const useLessonContext = (
     setIsLessonManagementActive(isActive);
   }, [loadLessonManagementState]);
 
-  // Real-time updates every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(getCurrentTime());
-      setCurrentDate(getCurrentDate());
-    }, 60000); // Update every 60 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
   // Calculate lesson context based on current data
-  const lessonContext = determineLessonContext(allTodayLessons, currentTime);
+  const lessonContext = determineLessonContext(allTodayLessons);
 
   // Enhanced context data for new components
   const weekendStatus = isWeekend(currentDate);
   const holidayInfo = checkHoliday(currentDate);
-  const nextLessonDate = findNextLessonDate(currentDate);
   
-  // Create next lesson info (placeholder - in real app would query actual lessons)
-  const nextLessonInfo = nextLessonDate ? {
-    date: formatDateForDisplay(nextLessonDate.date),
-    dayOfWeek: nextLessonDate.dayOfWeek,
-    time: '10:00 - 11:30', // Placeholder time
-    className: classItem?.name || 'Class'
+  // Create next lesson info from actual API data
+  // If we have a next lesson from the API, format it for display
+  const nextLessonInfo = nextLesson ? {
+    date: formatDateForDisplay(nextLesson.scheduledDate),
+    dayOfWeek: nextLesson.scheduledDate.split('T')[0], // Will be formatted by getDayOfWeek in UI
+    time: `${nextLesson.startTime} - ${nextLesson.endTime}`,
+    className: nextLesson.className
   } : undefined;
 
   // Determine if lesson is started (management is active and lesson is currently active)

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
-  User,
   Clock,
   Calendar,
-  Users,
-  Settings
+  Settings,
+  ChevronRight,
+  Badge,
+  User,
+  Users
 } from 'lucide-react';
 import { TeacherResponse } from '@/types/api/teacher';
 import { ClassResponse } from '@/types/api/class';
@@ -17,6 +18,7 @@ import RecentLessonActivitySection from './RecentLessonActivitySection';
 import { useLessonContext } from './hooks/useLessonContext';
 import { getCurrentTime, getCurrentDateFormatted } from './utils/timeUtils';
 import { toast } from 'sonner';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
 
 interface TeacherDashboardMainProps {
   teacher: TeacherResponse;
@@ -29,6 +31,7 @@ const TeacherDashboardMain: React.FC<TeacherDashboardMainProps> = ({
   classItem,
   onChangeSelection,
 }) => {
+  const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(getCurrentTime());
   const [currentDate, setCurrentDate] = useState(getCurrentDateFormatted());
   
@@ -86,18 +89,8 @@ const TeacherDashboardMain: React.FC<TeacherDashboardMainProps> = ({
             Change Selection
           </Button>
         </div>
-
         {/* Current Selection Info */}
-        <Card className="bg-white/10 backdrop-blur-lg border-white/20">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <User className="w-5 h-5" />
-              {teacher.name} - {classItem.name}
-            </CardTitle>
-            <CardDescription className="text-white/70">
-              {classItem.subjectName} • Room {classItem.classroomName}
-            </CardDescription>
-          </CardHeader>
+        <Card className="bg-white/10 backdrop-blur-lg border-white/20 " style={{paddingTop: "15px"}} >
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
@@ -108,7 +101,7 @@ const TeacherDashboardMain: React.FC<TeacherDashboardMainProps> = ({
               <div className="space-y-1">
                 <div className="text-sm text-white/60">Class</div>
                 <div className="text-white">{classItem.name}</div>
-                <div className="text-sm text-white/60">{classItem.subjectName}</div>
+                <div className="text-sm text-white/60">{classItem.subjectName} • Room {classItem.classroomName}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-white/60">Enrollment</div>
@@ -118,16 +111,11 @@ const TeacherDashboardMain: React.FC<TeacherDashboardMainProps> = ({
                     {classItem.enrolledCount}/{classItem.classroomCapacity} students
                   </span>
                 </div>
-                <Badge 
-                  variant={classItem.availableSlots > 0 ? "secondary" : "destructive"}
-                  className="text-xs"
-                >
-                  {classItem.availableSlots} slots available
-                </Badge>
               </div>
             </div>
           </CardContent>
         </Card>
+
 
         {/* Lesson Context Section - Epic 2, 3 & 3.5: Lesson Detection and Side-by-Side Layout */}
         {lessonContext.isLessonStarted ? (

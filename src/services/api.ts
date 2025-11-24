@@ -6,9 +6,26 @@ interface ApiError {
   details?: any;
 }
 
+type AuthStateChangeCallback = (authenticated: boolean) => void;
+
 class ApiService {
   private baseURL = 'https://localhost:5001';
   private refreshPromise: Promise<void> | null = null;
+  private authStateCallbacks: Set<AuthStateChangeCallback> = new Set();
+
+  /**
+   * Register a callback to be invoked when auth state changes
+   * Used to notify Redux when authentication fails
+   */
+  onAuthStateChange(callback: AuthStateChangeCallback): () => void {
+    this.authStateCallbacks.add(callback);
+    // Return unsubscribe function
+    return () => this.authStateCallbacks.delete(callback);
+  }
+
+  private notifyAuthStateChange(authenticated: boolean): void {
+    this.authStateCallbacks.forEach(callback => callback(authenticated));
+  }
 
   private getToken(key: 'accessToken' | 'refreshToken'): string | null {
     return sessionStorage.getItem(key) || localStorage.getItem(key);
@@ -67,9 +84,10 @@ class ApiService {
             // Don't throw here, let the caller retry
             return Promise.reject({ shouldRetry: true, error: apiError });
           } catch {
-            // Refresh failed, clear tokens and force login
+            // Refresh failed, clear tokens and notify Redux
             this.clearTokens();
-            window.location.reload();
+            // Notify listeners that authentication has failed
+            this.notifyAuthStateChange(false);
           }
         }
       }

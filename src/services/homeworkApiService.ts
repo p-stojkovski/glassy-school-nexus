@@ -29,7 +29,15 @@ export class HomeworkApiService {
    */
   async getHomeworkAssignment(lessonId: string): Promise<HomeworkAssignmentResponse | null> {
     try {
-      return await apiService.get<HomeworkAssignmentResponse>(HomeworkApiPaths.GET_ASSIGNMENT(lessonId));
+      const response = await apiService.get<HomeworkAssignmentResponse>(HomeworkApiPaths.GET_ASSIGNMENT(lessonId));
+
+      // Phase 1: the API returns a payload with hasHomework=false when no assignment exists.
+      // Normalize that to null for consumers that only care about existence.
+      if (!response.hasHomework) {
+        return null;
+      }
+
+      return response;
     } catch (error: any) {
       if (error.status === HomeworkHttpStatus.NOT_FOUND) {
         // Return null for 404 - no homework assignment exists for this lesson
@@ -63,19 +71,16 @@ export class HomeworkApiService {
       }
       if (error.status === HomeworkHttpStatus.BAD_REQUEST) {
         const details = error.details;
-        if (details?.detail?.includes('title')) {
-          throw makeApiError(error, 'Assignment title is required and cannot be empty');
+        const detailText: string = details?.detail ?? '';
+
+        if (detailText.toLowerCase().includes('description')) {
+          throw makeApiError(
+            error,
+            'Homework description is required and must be within the allowed length.'
+          );
         }
-        if (details?.detail?.includes('due date')) {
-          throw makeApiError(error, 'Due date must be in YYYY-MM-DD format and cannot be in the past');
-        }
-        if (details?.detail?.includes('assignment type')) {
-          throw makeApiError(error, 'Assignment type must be one of: reading, writing, vocabulary, grammar, general');
-        }
-        if (details?.detail?.includes('teacher')) {
-          throw makeApiError(error, 'Current user is not associated with a teacher record');
-        }
-        throw makeApiError(error, `Validation error: ${details?.detail || 'Invalid homework assignment data'}`);
+
+        throw makeApiError(error, `Validation error: ${detailText || 'Invalid homework assignment data'}`);
       }
       if (error.status === HomeworkHttpStatus.UNAUTHORIZED) {
         throw makeApiError(error, 'Authentication required to create homework assignments');
@@ -99,16 +104,16 @@ export class HomeworkApiService {
       }
       if (error.status === HomeworkHttpStatus.BAD_REQUEST) {
         const details = error.details;
-        if (details?.detail?.includes('title')) {
-          throw makeApiError(error, 'Assignment title is required and cannot be empty');
+        const detailText: string = details?.detail ?? '';
+
+        if (detailText.toLowerCase().includes('description')) {
+          throw makeApiError(
+            error,
+            'Homework description is required and must be within the allowed length.'
+          );
         }
-        if (details?.detail?.includes('due date')) {
-          throw makeApiError(error, 'Due date must be in YYYY-MM-DD format');
-        }
-        if (details?.detail?.includes('assignment type')) {
-          throw makeApiError(error, 'Assignment type must be one of: reading, writing, vocabulary, grammar, general');
-        }
-        throw makeApiError(error, `Validation error: ${details?.detail || 'Invalid homework assignment data'}`);
+
+        throw makeApiError(error, `Validation error: ${detailText || 'Invalid homework assignment data'}`);
       }
       if (error.status === HomeworkHttpStatus.UNAUTHORIZED) {
         throw makeApiError(error, 'Authentication required to update homework assignments');
