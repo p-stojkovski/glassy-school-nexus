@@ -14,6 +14,8 @@ import {
   ClassApiPaths,
   ClassHttpStatus,
   ProblemDetails,
+  StudentLessonSummary,
+  StudentLessonDetail,
 } from '@/types/api/class';
 
 // Preserve status/details when rethrowing with a custom message
@@ -169,6 +171,43 @@ await apiService.delete<void>(ClassApiPaths.BY_ID(id));
       throw makeApiError(error, `Failed to delete class: ${error.message || 'Unknown error'}`);
     }
   }
+
+  /** Get aggregated student summaries for a class */
+  async getClassStudentsSummary(classId: string): Promise<StudentLessonSummary[]> {
+    try {
+      const endpoint = `/api/classes/${classId}/students/summary`;
+      const raw = await apiService.get<any>(endpoint);
+      return normalizeListResponse<StudentLessonSummary>(raw);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to view student summaries');
+      }
+      throw makeApiError(error, `Failed to fetch student summaries: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Get per-lesson details for a student in a class */
+  async getClassStudentLessons(classId: string, studentId: string): Promise<StudentLessonDetail[]> {
+    try {
+      const endpoint = `/api/classes/${classId}/students/${studentId}/lessons`;
+      const raw = await apiService.get<any>(endpoint);
+      return normalizeListResponse<StudentLessonDetail>(raw);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class or student not found');
+      }
+      if (error.status === ClassHttpStatus.FORBIDDEN) {
+        throw makeApiError(error, 'Student is not enrolled in this class');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to view lesson details');
+      }
+      throw makeApiError(error, `Failed to fetch student lesson details: ${error.message || 'Unknown error'}`);
+    }
+  }
 }
 
 export const classApiService = new ClassApiService();
@@ -180,4 +219,6 @@ export const searchClasses = (params?: ClassSearchParams) => classApiService.sea
 export const createClass = (request: CreateClassRequest) => classApiService.createClass(request);
 export const updateClass = (id: string, request: UpdateClassRequest) => classApiService.updateClass(id, request);
 export const deleteClass = (id: string) => classApiService.deleteClass(id);
+export const getClassStudentsSummary = (classId: string) => classApiService.getClassStudentsSummary(classId);
+export const getClassStudentLessons = (classId: string, studentId: string) => classApiService.getClassStudentLessons(classId, studentId);
 

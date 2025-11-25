@@ -1,19 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { 
-  Plus, 
-  Calendar,
-  Sparkles
-} from 'lucide-react';
+import { Calendar, Sparkles, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import GlassCard from '@/components/common/GlassCard';
 import { ClassResponse } from '@/types/api/class';
 import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData } from '@/types/api/lesson';
@@ -26,6 +15,8 @@ import QuickCancelLessonModal from '@/domains/lessons/components/modals/QuickCan
 import LessonDetailModal from '@/domains/lessons/components/modals/LessonDetailModal';
 import AcademicLessonGenerationModal from '@/domains/lessons/components/modals/AcademicLessonGenerationModal';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import LessonFiltersBar from '@/domains/lessons/components/LessonFiltersBar';
+import LessonActionButtons from '@/domains/lessons/components/LessonActionButtons';
 
 interface ClassLessonsTabProps {
   classData: ClassResponse;
@@ -169,25 +160,15 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     return statusMatch && teacherMatch;
   });
   
-  // Get unique teachers from lessons for filter dropdown
-  const uniqueTeachers = lessons.reduce((acc, lesson) => {
-    if (!acc.find(t => t.id === lesson.teacherId)) {
-      acc.push({ id: lesson.teacherId, name: lesson.teacherName });
-    }
-    return acc;
-  }, [] as { id: string; name: string }[]);
-  
-  // Debug logging for teacher data
-  React.useEffect(() => {
-    console.log('ClassLessonsTab - Debug Info:');
-    console.log('Total lessons:', lessons.length);
-    console.log('Unique teachers:', uniqueTeachers);
-    console.log('Sample lesson teacher data:', lessons.slice(0, 3).map(l => ({
-      id: l.id,
-      teacherId: l.teacherId,
-      teacherName: l.teacherName
-    })));
-  }, [lessons, uniqueTeachers]);
+  // Memoize unique teachers computation
+  const uniqueTeachers = useMemo(() => {
+    return lessons.reduce((acc, lesson) => {
+      if (!acc.find(t => t.id === lesson.teacherId)) {
+        acc.push({ id: lesson.teacherId, name: lesson.teacherName });
+      }
+      return acc;
+    }, [] as { id: string; name: string }[]);
+  }, [lessons]);
 
   if (loading && lessons.length === 0) {
     return (
@@ -204,81 +185,27 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
           <div>
             <h3 className="text-2xl font-bold text-white mb-1">Class Lessons</h3>
             <p className="text-white/60">
-              {lessons.length} lessons • {filteredLessons.length} showing
+              {lessons.length} lessons | {filteredLessons.length} showing
               {teacherFilter !== 'all' && (
                 <span className="ml-2">
-                  • filtered by {uniqueTeachers.find(t => t.id === teacherFilter)?.name || 'teacher'}
+                  | filtered by {uniqueTeachers.find(t => t.id === teacherFilter)?.name || 'teacher'}
                 </span>
               )}
             </p>
           </div>
 
-        <div className="flex flex-wrap gap-3">
-          {/* Status Filter */}
-          <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as LessonFilter)}>
-            <SelectTrigger className="w-[180px] bg-white/10 border-white/20 text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-900/95 border-white/20">
-              <SelectItem value="all" className="text-white focus:bg-white/10">
-                All Lessons
-              </SelectItem>
-              <SelectItem value="Scheduled" className="text-white focus:bg-white/10">
-                Scheduled
-              </SelectItem>
-              <SelectItem value="Conducted" className="text-white focus:bg-white/10">
-                Conducted
-              </SelectItem>
-              <SelectItem value="Cancelled" className="text-white focus:bg-white/10">
-                Cancelled
-              </SelectItem>
-              <SelectItem value="Make Up" className="text-white focus:bg-white/10">
-                Make Up
-              </SelectItem>
-              <SelectItem value="No Show" className="text-white focus:bg-white/10">
-                No Show
-              </SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Teacher Filter */}
-          <Select value={teacherFilter} onValueChange={setTeacherFilter}>
-            <SelectTrigger className="w-[180px] bg-white/10 border-white/20 text-white">
-              <SelectValue placeholder="Teacher Filter" />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-900/95 border-white/20">
-              <SelectItem value="all" className="text-white focus:bg-white/10">
-                All Teachers
-              </SelectItem>
-              {uniqueTeachers.length > 0 ? (
-                uniqueTeachers.map((teacher) => (
-                  <SelectItem key={teacher.id} value={teacher.id} className="text-white focus:bg-white/10">
-                    {teacher.name}
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem value="no-teachers" disabled className="text-white/40">
-                  No teachers found
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-
-          {/* Action Buttons */}
-          <Button
-            onClick={() => setIsAcademicGenerationOpen(true)}
-            className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-semibold"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Smart Generate
-          </Button>
-          <Button
-            onClick={() => setIsCreateLessonOpen(true)}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Lesson
-          </Button>
+        <div className="flex flex-wrap gap-4">
+          <LessonFiltersBar
+            lessons={lessons}
+            statusFilter={statusFilter}
+            teacherFilter={teacherFilter}
+            onStatusChange={setStatusFilter}
+            onTeacherChange={setTeacherFilter}
+          />
+          <LessonActionButtons
+            onCreateLesson={() => setIsCreateLessonOpen(true)}
+            onGenerateLessons={() => setIsAcademicGenerationOpen(true)}
+          />
         </div>
       </div>
 
@@ -397,10 +324,6 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         onOpenChange={setIsLessonDetailsOpen}
         onConduct={openConductModal}
         onCancel={openCancelModal}
-        onCreateMakeup={(lesson) => {
-          // TODO: Implement create makeup
-          console.log('Create makeup for lesson:', lesson.id);
-        }}
       />
     </div>
   );

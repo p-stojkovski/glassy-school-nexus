@@ -60,7 +60,8 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   const [studentsError, setStudentsError] = useState<string | null>(null);
   
   // Use prop students if provided, otherwise use loaded students
-  const students = propStudents.length > 0 ? propStudents : loadedStudents;
+  // Ensure students is always an array
+  const students = Array.isArray(propStudents) && propStudents.length > 0 ? propStudents : (Array.isArray(loadedStudents) ? loadedStudents : []);
 
   // Load students when panel opens (if not provided via props)
   useEffect(() => {
@@ -73,7 +74,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
         try {      
           const { students: activeStudents } = await studentApiService.searchStudents({ isActive: true, skip: 0, take: 1000 });
           console.log('✅ Students loaded for sidebar:', activeStudents?.length || 0);
-          setLoadedStudents(activeStudents);
+          setLoadedStudents(Array.isArray(activeStudents) ? activeStudents : []);
         } catch (error: any) {
           console.error('❌ Failed to load students for sidebar:', error);
           setStudentsError(error?.message || 'Failed to load students');
@@ -118,7 +119,10 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   }, [isOpen, onClose]);
   // Filter students based on search query only
   const filteredStudents = useMemo(() => {
-    let filtered = students;
+    // Ensure students is an array before filtering
+    const studentArray = Array.isArray(students) ? students : [];
+    
+    let filtered = studentArray;
     // Apply search query filter
     if (searchQuery) {
       const lowercasedQuery = searchQuery.toLowerCase();
@@ -342,7 +346,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                       
                       try {
                         const { students: activeStudents } = await studentApiService.searchStudents({ isActive: true, skip: 0, take: 1000 });
-                        setLoadedStudents(activeStudents);
+                        setLoadedStudents(Array.isArray(activeStudents) ? activeStudents : []);
                       } catch (error: any) {
                         setStudentsError(error?.message || 'Failed to load students');
                       } finally {
@@ -412,7 +416,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                                 </p>
                               )}
                               {student.phone && (
-                                <span className="text-white/40">•</span>
+                                <span className="text-white/40">|</span>
                               )}
                               {student.phone && (
                                 <p className="text-xs text-white/60 truncate">

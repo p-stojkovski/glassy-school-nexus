@@ -61,6 +61,43 @@ export interface ClassResponse {
 
 export interface ClassCreatedResponse { id: string; }
 
+// Student progress summary types
+export interface AttendanceSummary {
+  present: number;
+  absent: number;
+  late: number;
+  excused: number;
+  notMarked: number;
+}
+
+export interface HomeworkSummary {
+  complete: number;
+  partial: number;
+  missing: number;
+  notChecked: number;
+}
+
+export interface StudentLessonSummary {
+  studentId: string;
+  studentName: string;
+  totalLessons: number;
+  attendance: AttendanceSummary;
+  homework: HomeworkSummary;
+  commentsCount: number;
+  mostRecentComment?: string | null;
+  lastUpdated?: string | null;
+}
+
+export interface StudentLessonDetail {
+  lessonId: string;
+  lessonDate: string;  // ISO date string
+  lessonTime: string;  // "HH:MM"
+  attendanceStatus?: string | null;  // 'present' | 'absent' | 'late' | 'excused'
+  homeworkStatus?: string | null;    // 'complete' | 'partial' | 'missing'
+  comments?: string | null;
+  updatedAt?: string | null;
+}
+
 // Form data interface
 export interface ClassFormData {
   name: string;
@@ -69,8 +106,8 @@ export interface ClassFormData {
   classroomId: string;
   description?: string;
   requirements?: string;
-  objectives?: string;
-  materials?: string;
+  objectives?: string[] | null;
+  materials?: string[] | null;
   schedule?: ScheduleSlotDto[];
   studentIds?: string[];
 }

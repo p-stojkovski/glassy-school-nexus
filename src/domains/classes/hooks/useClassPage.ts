@@ -1,0 +1,256 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { classApiService } from '@/services/classApiService';
+import { ClassResponse, ClassFormData } from '@/types/api/class';
+
+type ClassPageMode = 'view' | 'edit';
+type TabId = 'info' | 'schedule' | 'students' | 'lessons';
+
+export interface ClassPageState {
+  mode: ClassPageMode;
+  classData: ClassResponse | null;
+  editData: ClassFormData | null;
+  activeTab: TabId;
+  hasUnsavedChanges: boolean;
+  loading: boolean;
+  error: string | null;
+  tabsWithUnsavedChanges: Set<string>;
+}
+
+// Convert ClassResponse to ClassFormData (stable function)
+const convertToFormData = (classData: ClassResponse): ClassFormData => {
+  return {
+    name: classData.name,
+    subjectId: classData.subjectId,
+    teacherId: classData.teacherId,
+    classroomId: classData.classroomId,
+    description: classData.description || '',
+    requirements: classData.requirements || '',
+    objectives: classData.objectives ?? [],
+    materials: classData.materials ?? [],
+    schedule: classData.schedule || [],
+    studentIds: classData.studentIds || [],
+  };
+};
+
+export const useClassPage = (classId: string) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialMode = searchParams.get('edit') === 'true' ? 'edit' : 'view';
+
+  const [state, setState] = useState<ClassPageState>({
+    mode: initialMode,
+    classData: null,
+    editData: null,
+    activeTab: 'info',
+    hasUnsavedChanges: false,
+    loading: true,
+    error: null,
+    tabsWithUnsavedChanges: new Set(),
+  });
+
+  // Fetch class data on mount
+  useEffect(() => {
+    const loadClassData = async () => {
+      try {
+        setState((prev) => ({ ...prev, loading: true, error: null }));
+        const data = await classApiService.getClassById(classId);
+        
+        setState((prev) => ({
+          ...prev,
+          classData: data,
+          loading: false,
+          // If URL has ?edit=true, populate editData
+          editData: prev.mode === 'edit' ? convertToFormData(data) : null,
+        }));
+      } catch (err: any) {
+        setState((prev) => ({
+          ...prev,
+          error: err?.message || 'Failed to load class',
+          loading: false,
+        }));
+      }
+    };
+
+    if (classId) {
+      loadClassData();
+    }
+  }, [classId]);
+
+  // Enter edit mode
+  const enterEditMode = useCallback(() => {
+    setState((prev) => {
+      if (!prev.classData) return prev;
+      return {
+        ...prev,
+        mode: 'edit',
+        editData: convertToFormData(prev.classData),
+        hasUnsavedChanges: false,
+      };
+    });
+  }, []);
+
+  // Cancel edit mode with warning if unsaved changes
+  const cancelEdit = useCallback(() => {
+    setState((prev) => {
+      if (prev.hasUnsavedChanges) {
+        // Warning will be shown by caller
+        return prev;
+      }
+      return {
+        ...prev,
+        mode: 'view',
+        editData: null,
+        hasUnsavedChanges: false,
+      };
+    });
+  }, []);
+
+  // Exit edit mode without confirmation (after warning confirmation)
+  const cancelEditConfirmed = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      mode: 'view',
+      editData: null,
+      hasUnsavedChanges: false,
+    }));
+  }, []);
+
+  // Update a field in edit data
+  const updateField = useCallback((field: keyof ClassFormData, value: any) => {
+    setState((prev) => {
+      if (!prev.editData) return prev;
+      return {
+        ...prev,
+        editData: {
+          ...prev.editData,
+          [field]: value,
+        },
+        hasUnsavedChanges: true,
+      };
+    });
+  }, []);
+
+  // Update nested fields (e.g., schedule array)
+  const updateNestedField = useCallback((field: keyof ClassFormData, value: any[]) => {
+    setState((prev) => {
+      if (!prev.editData) return prev;
+      return {
+        ...prev,
+        editData: {
+          ...prev.editData,
+          [field]: value,
+        },
+        hasUnsavedChanges: true,
+      };
+    });
+  }, []);
+
+  // Save changes
+  const saveChanges = useCallback(async (formData: ClassFormData) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    
+    try {
+      const updated = await classApiService.updateClass(classId, formData);
+      
+      setState((prev) => ({
+        ...prev,
+        classData: updated,
+        editData: null,
+        mode: 'view',
+        hasUnsavedChanges: false,
+        loading: false,
+      }));
+      
+      toast.success('Class updated successfully');
+      return true;
+    } catch (err: any) {
+      const errorMsg = err?.message || 'Failed to update class';
+      setState((prev) => ({
+        ...prev,
+        error: errorMsg,
+        loading: false,
+      }));
+      toast.error(errorMsg);
+      return false;
+    }
+  }, [classId]);
+
+  // Set active tab
+  const setActiveTab = useCallback((tab: TabId) => {
+    setState((prev) => ({
+      ...prev,
+      activeTab: tab,
+    }));
+  }, []);
+
+  // Set unsaved changes flag (for form integration)
+  const setHasUnsavedChanges = useCallback((hasChanges: boolean) => {
+    setState((prev) => ({
+      ...prev,
+      hasUnsavedChanges: hasChanges,
+    }));
+  }, []);
+
+  // Refetch class data (used for inline add/remove operations)
+  const refetchClassData = useCallback(async () => {
+    try {
+      const data = await classApiService.getClassById(classId);
+      setState((prev) => ({
+        ...prev,
+        classData: data,
+      }));
+    } catch (err: any) {
+      console.error('Error refetching class data:', err);
+      toast.error('Failed to refresh class data');
+    }
+  }, [classId]);
+
+  // Register/unregister tab unsaved changes
+  const registerTabUnsavedChanges = useCallback((tabId: string, hasChanges: boolean) => {
+    setState((prev) => {
+      const newTabs = new Set(prev.tabsWithUnsavedChanges);
+      if (hasChanges) {
+        newTabs.add(tabId);
+      } else {
+        newTabs.delete(tabId);
+      }
+      return {
+        ...prev,
+        tabsWithUnsavedChanges: newTabs,
+      };
+    });
+  }, []);
+
+  // Check if can switch to a tab (no unsaved changes in any tab)
+  const canSwitchTab = useCallback((targetTab: TabId): boolean => {
+    return state.tabsWithUnsavedChanges.size === 0;
+  }, [state.tabsWithUnsavedChanges]);
+
+  // Check if any tab has unsaved changes
+  const hasAnyUnsavedChanges = useCallback((): boolean => {
+    return state.tabsWithUnsavedChanges.size > 0;
+  }, [state.tabsWithUnsavedChanges]);
+
+  return {
+    // State
+    ...state,
+    
+    // Actions
+    enterEditMode,
+    cancelEdit,
+    cancelEditConfirmed,
+    updateField,
+    updateNestedField,
+    saveChanges,
+    setActiveTab,
+    setHasUnsavedChanges,
+    refetchClassData,
+    registerTabUnsavedChanges,
+    canSwitchTab,
+    hasAnyUnsavedChanges,
+  };
+};
+
+export type UseClassPageReturn = ReturnType<typeof useClassPage>;

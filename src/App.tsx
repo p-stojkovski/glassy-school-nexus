@@ -17,6 +17,7 @@ import Dashboard from './pages/Dashboard';
 import StudentManagement from './pages/StudentManagement';
 import ClassesPage from './pages/Classes';
 import ClassFormPage from './pages/ClassFormPage';
+import ClassPage from './pages/ClassPage';
 import ClassDetail from './pages/ClassDetail';
 import Teachers from './pages/Teachers';
 import TeacherDashboard from './pages/TeacherDashboard';
@@ -90,7 +91,7 @@ const AppContent: React.FC = () => {
         <Route path="/classes" element={<ClassesPage />} />
         <Route path="/classes/new" element={<ClassFormPage />} />
         <Route path="/classes/edit/:classId" element={<ClassFormPage />} />
-        <Route path="/classes/:id" element={<ClassDetail />} />
+        <Route path="/classes/:id" element={<ClassPage />} />
         <Route path="/teachers" element={<Teachers />} />{' '}
         <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
         <Route path="/attendance" element={<AttendanceManagement />} />

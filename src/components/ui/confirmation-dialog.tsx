@@ -57,6 +57,13 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
           iconBg: 'bg-blue-500/20 border-blue-500/30',
           confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white',
         };
+      default:
+        // Fallback to warning if unknown variant
+        return {
+          icon: <AlertTriangle className="w-6 h-6 text-amber-400" />,
+          iconBg: 'bg-amber-500/20 border-amber-500/30',
+          confirmButton: 'bg-amber-600 hover:bg-amber-700 text-white',
+        };
     }
   };
 
@@ -100,11 +107,11 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             <Button
               onClick={onSave}
               size="sm"
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white border-0 text-xs px-2 whitespace-nowrap"
-            >
-              <Save className="w-3 h-3 mr-1" />
-              Save & Leave
-            </Button>
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white border-0 text-xs px-2 whitespace-nowrap"
+          >
+            <Save className="w-3 h-3 mr-1" />
+            {saveText}
+          </Button>
           )}
           
           <Button
@@ -112,7 +119,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             size="sm"
             className={cn('flex-1 border-0 text-xs px-2 whitespace-nowrap', styles.confirmButton)}
           >
-            Leave Without Saving
+            {confirmText}
           </Button>
         </div>
       </DialogContent>
