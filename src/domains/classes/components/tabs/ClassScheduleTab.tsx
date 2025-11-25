@@ -118,10 +118,50 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
         studentIds: latestData.studentIds,
       };
 
-      // Update class
-      await classApiService.updateClass(classData.id, merged);
+      // Update class and capture response
+      const response = await classApiService.updateClass(classData.id, merged);
 
-      toast.success('Schedule updated successfully');
+      // Check if lessons were generated for new schedule slots
+      const generationInfo = response.generatedLessonsInfo || [];
+      if (generationInfo.length > 0) {
+        const totalGenerated = generationInfo.reduce(
+          (sum, info) => sum + info.generatedCount,
+          0
+        );
+        const totalConflicts = generationInfo.reduce(
+          (sum, info) => sum + info.skippedConflictCount,
+          0
+        );
+        const totalPast = generationInfo.reduce(
+          (sum, info) => sum + info.skippedPastDateCount,
+          0
+        );
+
+        const extras: string[] = [];
+        if (totalConflicts > 0) {
+          extras.push(`${totalConflicts} date(s) skipped due to conflicts.`);
+        }
+        if (totalPast > 0) {
+          extras.push(`${totalPast} date(s) skipped because they are in the past.`);
+        }
+
+        const message = [`Schedule updated! Generated ${totalGenerated} lesson(s) for new schedule slot(s).`, ...extras].join(' ');
+        toast.success(message, { duration: extras.length ? 6500 : 5000 });
+      } else {
+        toast.success('Schedule updated successfully');
+      }
+
+      const warningMessages = [
+        ...(response.lessonGenerationWarnings || []),
+        ...generationInfo.flatMap((info) => info.warnings || []),
+      ];
+      if (warningMessages.length > 0) {
+        toast.warning(
+          `Some lesson generation warnings: ${warningMessages.join(' ')}`,
+          { duration: 7000 }
+        );
+      }
+
       setMode('view');
       setHasUnsavedChanges(false);
       onUnsavedChangesChange?.(false);

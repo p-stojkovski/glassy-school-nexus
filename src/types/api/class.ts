@@ -36,6 +36,16 @@ export interface LessonSummaryDto {
   noShowLessons: number;
 }
 
+export interface NewScheduleSlotGenerationInfo {
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  generatedCount: number;
+  skippedConflictCount: number;
+  skippedPastDateCount: number;
+  warnings?: string[];
+}
+
 export interface ClassResponse {
   id: string;                   // GUID
   name: string;
@@ -57,6 +67,8 @@ export interface ClassResponse {
   schedule: ScheduleSlotDto[];  // filled on GetById; empty for list/search
   studentIds: string[];         // filled on GetById; empty for list/search
   lessonSummary: LessonSummaryDto;
+  generatedLessonsInfo?: NewScheduleSlotGenerationInfo[];  // only populated during updates with new schedule slots
+  lessonGenerationWarnings?: string[]; // warnings from lesson generation for new schedule slots
 }
 
 export interface ClassCreatedResponse { id: string; }
