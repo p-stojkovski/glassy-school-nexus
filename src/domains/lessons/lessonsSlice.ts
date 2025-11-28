@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { 
   LessonResponse, 
   LessonSummary,
@@ -489,40 +489,53 @@ export const {
 // Selectors
 export const selectLessons = (state: RootState) => state.lessons.lessons;
 export const selectSelectedLesson = (state: RootState) => state.lessons.selectedLesson;
-// Calculated lesson summary selectors
-export const selectLessonSummaryForClass = (classId: string) => (state: RootState) => {
-  const classLessons = state.lessons.lessons.filter(lesson => lesson.classId === classId);
-  
-  const totalLessons = classLessons.length;
-  const completedLessons = classLessons.filter(l => l.statusName === 'Conducted').length;
-  const scheduledLessons = classLessons.filter(l => l.statusName === 'Scheduled').length;
-  const cancelledLessons = classLessons.filter(l => l.statusName === 'Cancelled').length;
-  const makeupLessons = classLessons.filter(l => l.statusName === 'Make Up').length;
-  const noShowLessons = classLessons.filter(l => l.statusName === 'No Show').length;
-  
-  // Calculate upcoming lessons (next 7 days)
-  const today = new Date();
-  const next7Days = new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
-  const upcomingLessons = classLessons.filter(l => {
-    const lessonDate = new Date(l.scheduledDate);
-    return l.statusName === 'Scheduled' && lessonDate >= today && lessonDate <= next7Days;
-  }).length;
-  
-  // Find next lesson date
-  const nextScheduledLesson = classLessons
-    .filter(l => l.statusName === 'Scheduled' && new Date(l.scheduledDate) >= today)
-    .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))[0];
-  
-  return {
-    totalLessons,
-    completedLessons,
-    scheduledLessons,
-    cancelledLessons,
-    makeupLessons,
-    noShowLessons,
-    upcomingLessons,
-    nextLessonDate: nextScheduledLesson?.scheduledDate || null,
-  };
+
+// Memoized selector factories for class-specific data
+// Using a cache to ensure same classId returns same memoized selector
+const lessonSummarySelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
+
+export const selectLessonSummaryForClass = (classId: string) => {
+  if (!lessonSummarySelectorsCache.has(classId)) {
+    const selector = createSelector(
+      [selectLessons],
+      (lessons) => {
+        const classLessons = lessons.filter(lesson => lesson.classId === classId);
+        
+        const totalLessons = classLessons.length;
+        const completedLessons = classLessons.filter(l => l.statusName === 'Conducted').length;
+        const scheduledLessons = classLessons.filter(l => l.statusName === 'Scheduled').length;
+        const cancelledLessons = classLessons.filter(l => l.statusName === 'Cancelled').length;
+        const makeupLessons = classLessons.filter(l => l.statusName === 'Make Up').length;
+        const noShowLessons = classLessons.filter(l => l.statusName === 'No Show').length;
+        
+        // Calculate upcoming lessons (next 7 days)
+        const today = new Date();
+        const next7Days = new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
+        const upcomingLessons = classLessons.filter(l => {
+          const lessonDate = new Date(l.scheduledDate);
+          return l.statusName === 'Scheduled' && lessonDate >= today && lessonDate <= next7Days;
+        }).length;
+        
+        // Find next lesson date
+        const nextScheduledLesson = classLessons
+          .filter(l => l.statusName === 'Scheduled' && new Date(l.scheduledDate) >= today)
+          .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))[0];
+        
+        return {
+          totalLessons,
+          completedLessons,
+          scheduledLessons,
+          cancelledLessons,
+          makeupLessons,
+          noShowLessons,
+          upcomingLessons,
+          nextLessonDate: nextScheduledLesson?.scheduledDate || null,
+        };
+      }
+    );
+    lessonSummarySelectorsCache.set(classId, selector);
+  }
+  return lessonSummarySelectorsCache.get(classId)!;
 };
 
 export const selectLessonsLoading = (state: RootState) => state.lessons.loadingStates.fetchingLessons;
@@ -541,39 +554,92 @@ export const selectTodayLessons = (state: RootState) => state.lessons.todayLesso
 export const selectUpcomingLessons = (state: RootState) => state.lessons.upcomingLessons;
 export const selectLastGenerationResult = (state: RootState) => state.lessons.lastGenerationResult;
 
-// Computed selectors
-export const selectLessonsForClass = (classId: string) => (state: RootState) =>
-  state.lessons.lessons.filter(lesson => lesson.classId === classId);
+// Memoized parameterized selectors with caching
+const lessonsForClassSelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
 
-export const selectLessonsByStatus = (status: LessonStatusName) => (state: RootState) =>
-  state.lessons.lessons.filter(lesson => lesson.statusName === status);
+export const selectLessonsForClass = (classId: string) => {
+  if (!lessonsForClassSelectorsCache.has(classId)) {
+    const selector = createSelector(
+      [selectLessons],
+      (lessons) => lessons.filter(lesson => lesson.classId === classId)
+    );
+    lessonsForClassSelectorsCache.set(classId, selector);
+  }
+  return lessonsForClassSelectorsCache.get(classId)!;
+};
 
-export const selectSelectedLessons = (state: RootState) =>
-  state.lessons.lessons.filter(lesson => lesson.isSelected);
+const lessonsByStatusSelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
 
-export const selectLessonsInDateRange = (startDate: string, endDate: string) => (state: RootState) =>
-  state.lessons.lessons.filter(lesson => 
-    lesson.scheduledDate >= startDate && lesson.scheduledDate <= endDate
-  );
+export const selectLessonsByStatus = (status: LessonStatusName) => {
+  if (!lessonsByStatusSelectorsCache.has(status)) {
+    const selector = createSelector(
+      [selectLessons],
+      (lessons) => lessons.filter(lesson => lesson.statusName === status)
+    );
+    lessonsByStatusSelectorsCache.set(status, selector);
+  }
+  return lessonsByStatusSelectorsCache.get(status)!;
+};
 
-export const selectLessonsByTeacher = (teacherId: string) => (state: RootState) =>
-  state.lessons.lessons.filter(lesson => lesson.teacherId === teacherId);
+export const selectSelectedLessons = createSelector(
+  [selectLessons],
+  (lessons) => lessons.filter(lesson => lesson.isSelected)
+);
 
-export const selectLessonsByClassroom = (classroomId: string) => (state: RootState) =>
-  state.lessons.lessons.filter(lesson => lesson.classroomId === classroomId);
+const lessonsInDateRangeSelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
 
-// Aggregated selectors
-export const selectLessonCounts = (state: RootState) => {
-  const lessons = state.lessons.lessons;
-  return {
+export const selectLessonsInDateRange = (startDate: string, endDate: string) => {
+  const cacheKey = `${startDate}-${endDate}`;
+  if (!lessonsInDateRangeSelectorsCache.has(cacheKey)) {
+    const selector = createSelector(
+      [selectLessons],
+      (lessons) => lessons.filter(lesson => 
+        lesson.scheduledDate >= startDate && lesson.scheduledDate <= endDate
+      )
+    );
+    lessonsInDateRangeSelectorsCache.set(cacheKey, selector);
+  }
+  return lessonsInDateRangeSelectorsCache.get(cacheKey)!;
+};
+
+const lessonsByTeacherSelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
+
+export const selectLessonsByTeacher = (teacherId: string) => {
+  if (!lessonsByTeacherSelectorsCache.has(teacherId)) {
+    const selector = createSelector(
+      [selectLessons],
+      (lessons) => lessons.filter(lesson => lesson.teacherId === teacherId)
+    );
+    lessonsByTeacherSelectorsCache.set(teacherId, selector);
+  }
+  return lessonsByTeacherSelectorsCache.get(teacherId)!;
+};
+
+const lessonsByClassroomSelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
+
+export const selectLessonsByClassroom = (classroomId: string) => {
+  if (!lessonsByClassroomSelectorsCache.has(classroomId)) {
+    const selector = createSelector(
+      [selectLessons],
+      (lessons) => lessons.filter(lesson => lesson.classroomId === classroomId)
+    );
+    lessonsByClassroomSelectorsCache.set(classroomId, selector);
+  }
+  return lessonsByClassroomSelectorsCache.get(classroomId)!;
+};
+
+// Aggregated selectors (memoized to prevent unnecessary rerenders)
+export const selectLessonCounts = createSelector(
+  [selectLessons],
+  (lessons) => ({
     total: lessons.length,
     scheduled: lessons.filter(l => l.statusName === 'Scheduled').length,
     conducted: lessons.filter(l => l.statusName === 'Conducted').length,
     cancelled: lessons.filter(l => l.statusName === 'Cancelled').length,
     makeUp: lessons.filter(l => l.statusName === 'Make Up').length,
     noShow: lessons.filter(l => l.statusName === 'No Show').length,
-  };
-};
+  })
+);
 
 export const selectIsAnyLessonLoading = (state: RootState) => {
   const loading = state.lessons.loadingStates;

@@ -10,6 +10,8 @@ import {
   ClassCreatedResponse,
   CreateClassRequest,
   UpdateClassRequest,
+  UpdateBasicInfoRequest,
+  UpdateAdditionalDetailsRequest,
   ClassSearchParams,
   ClassApiPaths,
   ClassHttpStatus,
@@ -17,6 +19,13 @@ import {
   StudentLessonSummary,
   StudentLessonDetail,
   ArchivedScheduleSlotResponse,
+  ManageEnrollmentsRequest,
+  ManageEnrollmentsResponse,
+  TransferStudentRequest,
+  TransferStudentResponse,
+  ClassBasicInfoResponse,
+  ClassScheduleResponse,
+  ClassAdditionalDetailsResponse,
 } from '@/types/api/class';
 import {
   ScheduleValidationRequest,
@@ -74,11 +83,11 @@ const raw = await apiService.get<any>(ClassApiPaths.BASE);
     }
   }
 
-  /** Get class by ID (full details) */
-  async getClassById(id: string): Promise<ClassResponse> {
+  /** Get class by ID (basic info only - schedule and additional details loaded separately) */
+  async getClassById(id: string): Promise<ClassBasicInfoResponse> {
     try {
       
-return await apiService.get<ClassResponse>(ClassApiPaths.BY_ID(id));
+return await apiService.get<ClassBasicInfoResponse>(ClassApiPaths.BY_ID(id));
     } catch (error: any) {
       if (error.status === ClassHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Class not found');
@@ -165,6 +174,87 @@ return await apiService.put<ClassResponse>(ClassApiPaths.BY_ID(id), request);
         throw makeApiError(error, 'Authentication required to update classes');
       }
       throw makeApiError(error, `Failed to update class: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Update basic class info only (name, subject, teacher, classroom) */
+  async updateBasicInfo(id: string, request: UpdateBasicInfoRequest): Promise<ClassResponse> {
+    try {
+      return await apiService.patch<ClassResponse>(ClassApiPaths.BASIC_INFO(id), request);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.CONFLICT) {
+        // Let the error handler deal with 409 conflicts using backend detail message
+        throw error;
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        const details: ProblemDetails | undefined = error.details;
+        if (details?.type?.includes('invalid_subject')) throw makeApiError(error, 'The selected subject does not exist');
+        if (details?.type?.includes('invalid_teacher')) throw makeApiError(error, 'The selected teacher does not exist');
+        if (details?.type?.includes('invalid_classroom')) throw makeApiError(error, 'The selected classroom does not exist');
+        const validationError = details?.detail || 'Invalid class data provided';
+        throw makeApiError(error, `Validation error: ${validationError}`);
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to update class');
+      }
+      throw makeApiError(error, `Failed to update basic info: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LAZY LOADING ENDPOINTS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Get class schedule (lazy loading - called when Schedule tab is viewed) */
+  async getClassSchedule(id: string): Promise<ClassScheduleResponse> {
+    try {
+      return await apiService.get<ClassScheduleResponse>(ClassApiPaths.SCHEDULE(id));
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to view schedule');
+      }
+      throw makeApiError(error, `Failed to fetch schedule: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Get class additional details (lazy loading - called when Overview tab is viewed) */
+  async getAdditionalDetails(id: string): Promise<ClassAdditionalDetailsResponse> {
+    try {
+      return await apiService.get<ClassAdditionalDetailsResponse>(ClassApiPaths.ADDITIONAL_DETAILS(id));
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to view additional details');
+      }
+      throw makeApiError(error, `Failed to fetch additional details: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Update additional class details only (description, requirements, objectives, materials) */
+  async updateAdditionalDetails(id: string, request: UpdateAdditionalDetailsRequest): Promise<ClassResponse> {
+    try {
+      return await apiService.patch<ClassResponse>(ClassApiPaths.ADDITIONAL_DETAILS(id), request);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        const details: ProblemDetails | undefined = error.details;
+        const validationError = details?.detail || 'Invalid details data provided';
+        throw makeApiError(error, `Validation error: ${validationError}`);
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to update class');
+      }
+      throw makeApiError(error, `Failed to update additional details: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -322,6 +412,89 @@ await apiService.delete<void>(ClassApiPaths.BY_ID(id));
       throw makeApiError(error, `Failed to delete schedule slot: ${error.message || 'Unknown error'}`);
     }
   }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ENROLLMENT MANAGEMENT
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Add students to a class.
+   * Business rule: Students can only be enrolled in one class at a time.
+   */
+  async addStudentsToClass(
+    classId: string,
+    request: AddStudentsRequest
+  ): Promise<EnrollmentResultResponse> {
+    try {
+      const endpoint = ClassApiPaths.ENROLLMENTS(classId);
+      return await apiService.post<EnrollmentResultResponse>(endpoint, request);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, error.message || 'Invalid enrollment request');
+      }
+      if (error.status === ClassHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'One or more students are already enrolled in another class');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to manage enrollments');
+      }
+      throw makeApiError(error, `Failed to add students: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Remove a student from a class.
+   * This marks the enrollment as inactive rather than deleting it.
+   */
+  async removeStudentFromClass(
+    classId: string,
+    studentId: string
+  ): Promise<RemoveStudentResponse> {
+    try {
+      const endpoint = ClassApiPaths.ENROLLMENT_BY_STUDENT(classId, studentId);
+      return await apiService.delete<RemoveStudentResponse>(endpoint);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Enrollment not found');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to remove students');
+      }
+      throw makeApiError(error, `Failed to remove student: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Transfer a student from this class to another class.
+   * Preserves enrollment history in the source class and creates new enrollment in target.
+   */
+  async transferStudent(
+    classId: string,
+    studentId: string,
+    request: TransferStudentRequest
+  ): Promise<TransferStudentResponse> {
+    try {
+      const endpoint = ClassApiPaths.ENROLLMENT_TRANSFER(classId, studentId);
+      return await apiService.post<TransferStudentResponse>(endpoint, request);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class or student enrollment not found');
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, error.message || 'Invalid transfer request');
+      }
+      if (error.status === ClassHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'Student is already enrolled in the target class');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to transfer students');
+      }
+      throw makeApiError(error, `Failed to transfer student: ${error.message || 'Unknown error'}`);
+    }
+  }
 }
 
 export const classApiService = new ClassApiService();
@@ -332,6 +505,8 @@ export const getClassById = (id: string) => classApiService.getClassById(id);
 export const searchClasses = (params?: ClassSearchParams) => classApiService.searchClasses(params);
 export const createClass = (request: CreateClassRequest) => classApiService.createClass(request);
 export const updateClass = (id: string, request: UpdateClassRequest) => classApiService.updateClass(id, request);
+export const updateBasicInfo = (id: string, request: UpdateBasicInfoRequest) => classApiService.updateBasicInfo(id, request);
+export const updateAdditionalDetails = (id: string, request: UpdateAdditionalDetailsRequest) => classApiService.updateAdditionalDetails(id, request);
 export const deleteClass = (id: string) => classApiService.deleteClass(id);
 export const getClassStudentsSummary = (classId: string) => classApiService.getClassStudentsSummary(classId);
 export const getClassStudentLessons = (classId: string, studentId: string) => classApiService.getClassStudentLessons(classId, studentId);
@@ -344,4 +519,12 @@ export const updateScheduleSlot = (classId: string, slotId: string, request: Upd
   classApiService.updateScheduleSlot(classId, slotId, request);
 export const deleteScheduleSlot = (classId: string, slotId: string) =>
   classApiService.deleteScheduleSlot(classId, slotId);
+
+// Enrollment management
+export const addStudentsToClass = (classId: string, request: AddStudentsRequest) =>
+  classApiService.addStudentsToClass(classId, request);
+export const removeStudentFromClass = (classId: string, studentId: string) =>
+  classApiService.removeStudentFromClass(classId, studentId);
+export const transferStudent = (classId: string, studentId: string, request: TransferStudentRequest) =>
+  classApiService.transferStudent(classId, studentId, request);
 

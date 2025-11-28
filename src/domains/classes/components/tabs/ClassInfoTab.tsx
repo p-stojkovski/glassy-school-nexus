@@ -1,9 +1,11 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { FileText, Edit2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import ErrorMessage from '@/components/common/ErrorMessage';
 import {
   Accordion,
   AccordionContent,
@@ -12,12 +14,12 @@ import {
 } from '@/components/ui/accordion';
 import AdditionalDetailsTab from '@/domains/classes/components/forms/tabs/AdditionalDetailsTab';
 import TabEditControls from '@/domains/classes/components/unified/TabEditControls';
-import { ClassResponse } from '@/types/api/class';
+import { ClassBasicInfoResponse, ClassAdditionalDetailsResponse } from '@/types/api/class';
 import { classApiService } from '@/services/classApiService';
 import { toast } from 'sonner';
 
 interface ClassInfoTabProps {
-  classData: ClassResponse;
+  classData: ClassBasicInfoResponse;
   onUpdate: () => void;
   onUnsavedChangesChange?: (hasChanges: boolean) => void;
 }
@@ -35,39 +37,61 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
   onUpdate,
   onUnsavedChangesChange,
 }) => {
+  // Lazy loading state
+  const [additionalDetails, setAdditionalDetails] = useState<ClassAdditionalDetailsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
+
+  // Edit mode state
   const [mode, setMode] = React.useState<'view' | 'edit'>('view');
   const [isSaving, setIsSaving] = React.useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
 
-  // Extract additional details data from classData
+  // Fetch additional details on mount (lazy loading)
+  useEffect(() => {
+    if (!hasFetched && classData?.id) {
+      const fetchDetails = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await classApiService.getAdditionalDetails(classData.id);
+          setAdditionalDetails(response);
+          setHasFetched(true);
+        } catch (err: any) {
+          setError(err?.message || 'Failed to load additional details');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchDetails();
+    }
+  }, [classData?.id, hasFetched]);
+
+  // Extract additional details data for form
   const detailsData: AdditionalDetailsFormData = useMemo(() => ({
-    description: classData?.description || '',
-    requirements: classData?.requirements || '',
-    objectives: Array.isArray(classData?.objectives) ? classData.objectives : [],
-    materials: Array.isArray(classData?.materials) ? classData.materials : [],
-  }), [
-    classData?.description,
-    classData?.requirements,
-    classData?.objectives,
-    classData?.materials,
-  ]);
+    description: additionalDetails?.description || '',
+    requirements: additionalDetails?.requirements || '',
+    objectives: Array.isArray(additionalDetails?.objectives) ? additionalDetails.objectives : [],
+    materials: Array.isArray(additionalDetails?.materials) ? additionalDetails.materials : [],
+  }), [additionalDetails]);
 
   // Initialize form
   const form = useForm<AdditionalDetailsFormData>({
     defaultValues: detailsData,
   });
 
-  // Keep form in sync when class data changes
+  // Keep form in sync when additional details change
   React.useEffect(() => {
-    if (!classData || mode === 'edit') return;
+    if (!additionalDetails || mode === 'edit') return;
     form.reset(detailsData);
     setHasUnsavedChanges(false);
     onUnsavedChangesChange?.(false);
-  }, [classData?.id, detailsData, form, mode, onUnsavedChangesChange]);
+  }, [additionalDetails, detailsData, form, mode, onUnsavedChangesChange]);
 
   // Track unsaved changes
   React.useEffect(() => {
-    if (!classData) return;
+    if (!additionalDetails) return;
     if (mode !== 'edit') {
       setHasUnsavedChanges(false);
       onUnsavedChangesChange?.(false);
@@ -75,21 +99,21 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
     }
 
     const subscription = form.watch((formData) => {
-      if (!formData || !classData) return;
+      if (!formData || !additionalDetails) return;
       
       // Compare with original data (only additional details)
       const hasChanges =
-        (formData.description || '') !== (classData.description || '') ||
-        (formData.requirements || '') !== (classData.requirements || '') ||
-        JSON.stringify(formData.objectives || []) !== JSON.stringify(Array.isArray(classData.objectives) ? classData.objectives : []) ||
-        JSON.stringify(formData.materials || []) !== JSON.stringify(Array.isArray(classData.materials) ? classData.materials : []);
+        (formData.description || '') !== (additionalDetails.description || '') ||
+        (formData.requirements || '') !== (additionalDetails.requirements || '') ||
+        JSON.stringify(formData.objectives || []) !== JSON.stringify(Array.isArray(additionalDetails.objectives) ? additionalDetails.objectives : []) ||
+        JSON.stringify(formData.materials || []) !== JSON.stringify(Array.isArray(additionalDetails.materials) ? additionalDetails.materials : []);
 
       setHasUnsavedChanges(hasChanges);
       onUnsavedChangesChange?.(hasChanges);
     });
 
     return () => subscription.unsubscribe();
-  }, [form, mode, classData, onUnsavedChangesChange]);
+  }, [form, mode, additionalDetails, onUnsavedChangesChange]);
 
   const handleEdit = useCallback(() => {
     setMode('edit');
@@ -115,29 +139,22 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
     try {
       const formData = form.getValues();
 
-      // Fetch latest class data to preserve basic info
-      const latestData = await classApiService.getClassById(classData.id);
-
-      // Merge - preserve basic info, update additional details
-      const merged = {
-        name: latestData.name,
-        subjectId: latestData.subjectId,
-        teacherId: latestData.teacherId,
-        classroomId: latestData.classroomId,
+      // Use the dedicated additional details endpoint
+      await classApiService.updateAdditionalDetails(classData.id, {
         description: formData.description || null,
         requirements: formData.requirements || null,
         objectives: formData.objectives || null,
         materials: formData.materials || null,
-        schedule: latestData.schedule,
-        studentIds: latestData.studentIds,
-      };
-
-      await classApiService.updateClass(classData.id, merged);
+      });
 
       toast.success('Additional details updated successfully');
       setMode('view');
       setHasUnsavedChanges(false);
       onUnsavedChangesChange?.(false);
+
+      // Refetch additional details to get latest data
+      const response = await classApiService.getAdditionalDetails(classData.id);
+      setAdditionalDetails(response);
 
       await onUpdate();
     } catch (error: any) {
@@ -145,18 +162,42 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
     } finally {
       setIsSaving(false);
     }
-  }, [form, classData, onUpdate, onUnsavedChangesChange]);
+  }, [form, classData.id, onUpdate, onUnsavedChangesChange]);
 
-  if (!classData) {
+  // Loading state
+  if (loading && !hasFetched) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <ErrorMessage
+        title="Error Loading Details"
+        message={error}
+        onRetry={() => {
+          setHasFetched(false);
+          setError(null);
+        }}
+        showRetry
+      />
+    );
+  }
+
+  if (!additionalDetails) {
     return null;
   }
 
   if (mode === 'view') {
     // Check if there's any content to show
-    const hasDescription = !!classData.description;
-    const hasObjectives = classData.objectives && Array.isArray(classData.objectives) && classData.objectives.length > 0;
-    const hasRequirements = !!classData.requirements;
-    const hasMaterials = classData.materials && Array.isArray(classData.materials) && classData.materials.length > 0;
+    const hasDescription = !!additionalDetails.description;
+    const hasObjectives = additionalDetails.objectives && Array.isArray(additionalDetails.objectives) && additionalDetails.objectives.length > 0;
+    const hasRequirements = !!additionalDetails.requirements;
+    const hasMaterials = additionalDetails.materials && Array.isArray(additionalDetails.materials) && additionalDetails.materials.length > 0;
     const hasAnyContent = hasDescription || hasObjectives || hasRequirements || hasMaterials;
 
     // Determine which sections to open by default (ones with content)
@@ -213,7 +254,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-4">
                 {hasDescription ? (
-                  <p className="text-white/80 leading-relaxed">{classData.description}</p>
+                  <p className="text-white/80 leading-relaxed">{additionalDetails.description}</p>
                 ) : (
                   <p className="text-white/40 text-sm italic">No description provided.</p>
                 )}
@@ -227,7 +268,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
                   <span>Learning Objectives</span>
                   {hasObjectives && (
                     <Badge variant="secondary" className="ml-2 bg-white/10 text-white/70 text-xs">
-                      {classData.objectives!.length}
+                      {additionalDetails.objectives!.length}
                     </Badge>
                   )}
                   {!hasObjectives && (
@@ -238,7 +279,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
               <AccordionContent className="px-4 pb-4">
                 {hasObjectives ? (
                   <div className="space-y-2">
-                    {classData.objectives!.map((objective, index) => (
+                    {additionalDetails.objectives!.map((objective, index) => (
                       <div key={index} className="flex items-start gap-3">
                         <div className="w-2 h-2 bg-purple-400 rounded-full mt-1.5 flex-shrink-0" />
                         <span className="text-white/80">{objective}</span>
@@ -263,7 +304,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-4">
                 {hasRequirements ? (
-                  <p className="text-white/80 leading-relaxed">{classData.requirements}</p>
+                  <p className="text-white/80 leading-relaxed">{additionalDetails.requirements}</p>
                 ) : (
                   <p className="text-white/40 text-sm italic">No requirements specified.</p>
                 )}
@@ -277,7 +318,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
                   <span>Materials</span>
                   {hasMaterials && (
                     <Badge variant="secondary" className="ml-2 bg-white/10 text-white/70 text-xs">
-                      {classData.materials!.length}
+                      {additionalDetails.materials!.length}
                     </Badge>
                   )}
                   {!hasMaterials && (
@@ -288,7 +329,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
               <AccordionContent className="px-4 pb-4">
                 {hasMaterials ? (
                   <div className="flex flex-wrap gap-2">
-                    {classData.materials!.map((material, index) => (
+                    {additionalDetails.materials!.map((material, index) => (
                       <Badge
                         key={index}
                         variant="outline"

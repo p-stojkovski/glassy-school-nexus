@@ -17,6 +17,7 @@ const ClassesPage: React.FC = () => {
   const { classes, loadClasses, search, setSearchQuery, setSearchMode, isSearchMode, remove } = useClassesApi();
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | string>('all');
+  const [teacherFilter, setTeacherFilter] = useState<'all' | string>('all');
   const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'available' | 'full'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [viewMode, setViewMode] = useState<ClassViewMode>('table');
@@ -25,7 +26,7 @@ const ClassesPage: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [classToDelete, setClassToDelete] = useState<ClassResponse | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const previousFiltersRef = useRef({ searchTerm: '', subjectFilter: 'all', availabilityFilter: 'all' });
+  const previousFiltersRef = useRef({ searchTerm: '', subjectFilter: 'all', teacherFilter: 'all', availabilityFilter: 'all' });
 
 
   // Load classes only once on mount with disabled global loading
@@ -64,6 +65,7 @@ const ClassesPage: React.FC = () => {
 
   const hasActiveFilters = searchTerm.trim() !== '' || 
     subjectFilter !== 'all' || 
+    teacherFilter !== 'all' ||
     availabilityFilter !== 'all' || 
     statusFilter !== 'all';
 
@@ -73,17 +75,19 @@ const ClassesPage: React.FC = () => {
       await search({
         searchTerm: searchTerm.trim() || undefined,
         subjectId: subjectFilter !== 'all' ? subjectFilter : undefined,
+        teacherId: teacherFilter !== 'all' ? teacherFilter : undefined,
         onlyWithAvailableSlots: availabilityFilter === 'available' || undefined
       });
     } else {
       // Exit search mode when no filters are active
       setSearchMode(false);
     }
-  }, [hasActiveFilters, searchTerm, subjectFilter, availabilityFilter, search, setSearchMode]);
+  }, [hasActiveFilters, searchTerm, subjectFilter, teacherFilter, availabilityFilter, search, setSearchMode]);
 
   const clearFilters = () => {
     setSearchTerm('');
     setSubjectFilter('all');
+    setTeacherFilter('all');
     setAvailabilityFilter('all');
     setStatusFilter('all');
     setSearchQuery('');
@@ -95,6 +99,8 @@ const ClassesPage: React.FC = () => {
   const handleFilterChange = useCallback((type: string, value: string) => {
     if (type === 'subject') {
       setSubjectFilter(value as 'all' | string);
+    } else if (type === 'teacher') {
+      setTeacherFilter(value as 'all' | string);
     } else if (type === 'availableSlots') {
       setAvailabilityFilter(value === 'true' ? 'available' : 'all');
     }
@@ -106,7 +112,7 @@ const ClassesPage: React.FC = () => {
     if (!isInitialized) return;
     
     // Check if filters actually changed
-    const currentFilters = { searchTerm, subjectFilter, availabilityFilter };
+    const currentFilters = { searchTerm, subjectFilter, teacherFilter, availabilityFilter };
     const filtersChanged = JSON.stringify(currentFilters) !== JSON.stringify(previousFiltersRef.current);
     
     if (!filtersChanged) return;
@@ -128,6 +134,7 @@ const ClassesPage: React.FC = () => {
           await search({
             searchTerm: searchTerm.trim() || undefined,
             subjectId: subjectFilter !== 'all' ? subjectFilter : undefined,
+            teacherId: teacherFilter !== 'all' ? teacherFilter : undefined,
             onlyWithAvailableSlots: availabilityFilter === 'available' || undefined
           });
           
@@ -151,7 +158,7 @@ const ClassesPage: React.FC = () => {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchTerm, subjectFilter, availabilityFilter, isInitialized, hasActiveFilters, search, setSearchMode]);
+  }, [searchTerm, subjectFilter, teacherFilter, availabilityFilter, isInitialized, hasActiveFilters, search, setSearchMode]);
 
   // Immediately exit search mode when no filters are active
   useEffect(() => {
@@ -209,6 +216,7 @@ const ClassesPage: React.FC = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         subjectFilter={subjectFilter}
+        teacherFilter={teacherFilter}
         showOnlyWithAvailableSlots={availabilityFilter === 'available'}
         onFilterChange={handleFilterChange}
         clearFilters={clearFilters}

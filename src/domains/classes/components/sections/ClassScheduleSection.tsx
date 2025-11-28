@@ -2,12 +2,15 @@ import React, { useMemo } from 'react';
 import { Calendar, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
-import { ClassResponse, ScheduleSlotDto } from '@/types/api/class';
+import { ClassBasicInfoResponse, ScheduleSlotDto } from '@/types/api/class';
 import WeeklyScheduleGrid from '@/domains/classes/components/schedule/WeeklyScheduleGrid';
 import { sortSchedulesByDay } from '@/domains/classes/utils/scheduleUtils';
 
+// Extended type that includes schedule data
+type ClassDataWithSchedule = ClassBasicInfoResponse & { schedule: ScheduleSlotDto[] };
+
 interface ClassScheduleSectionProps {
-  classData: ClassResponse;
+  classData: ClassDataWithSchedule;
   onEdit?: (slot: ScheduleSlotDto) => void;
   onDelete?: (slot: ScheduleSlotDto) => void;
   onAddSchedule?: () => void;

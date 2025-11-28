@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, BookOpen, User, MapPin, Users, Home, GraduationCap, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ClassResponse } from '@/types/api/class';
+import { ClassBasicInfoResponse } from '@/types/api/class';
 import { EditClassInfoDialog } from '@/domains/classes/components/dialogs/EditClassInfoDialog';
 
 interface ClassPageHeaderProps {
-  classData: ClassResponse | null;
+  classData: ClassBasicInfoResponse | null;
   onBack: () => void;
   onUpdate?: () => void;
 }

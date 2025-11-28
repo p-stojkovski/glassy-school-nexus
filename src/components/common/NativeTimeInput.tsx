@@ -41,7 +41,7 @@ const NativeTimeInput: React.FC<NativeTimeInputProps> = ({
   return (
     <div className="relative">
       {label && (
-        <label className="block text-white font-semibold mb-2">
+        <label className="block text-white text-sm font-medium mb-2">
           {label} {required && '*'}
         </label>
       )}

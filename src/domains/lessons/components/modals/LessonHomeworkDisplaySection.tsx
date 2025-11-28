@@ -28,7 +28,7 @@ const LessonHomeworkDisplaySection: React.FC<LessonHomeworkDisplaySectionProps> 
     <GlassCard className="p-3">
       <div className="flex items-center gap-2 mb-2">
         <BookOpen className="w-4 h-4 text-blue-400 flex-shrink-0" />
-        <h3 className="text-base font-semibold text-white">Homework Assignment</h3>
+        <h3 className="text-sm font-medium text-white">Homework Assignment</h3>
       </div>
       {homework?.hasHomework ? (
         <div className="space-y-1">

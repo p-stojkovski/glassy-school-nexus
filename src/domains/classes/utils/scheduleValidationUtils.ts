@@ -1,41 +1,58 @@
-import { ClassResponse, ScheduleSlotDto } from '@/types/api/class';
+import { ClassResponse, ClassBasicInfoResponse, ScheduleSlotDto } from '@/types/api/class';
+
+// Type that may or may not have schedule
+type ClassDataWithOptionalSchedule = ClassResponse | ClassBasicInfoResponse | (ClassBasicInfoResponse & { schedule?: ScheduleSlotDto[] }) | null | undefined;
 
 /**
  * Checks if a class has at least one active (non-archived) schedule
+ * Works with both full ClassResponse and ClassBasicInfoResponse (with optional schedule)
  */
-export const hasActiveSchedules = (classData?: ClassResponse | null): boolean => {
-  if (!classData?.schedule || classData.schedule.length === 0) {
+export const hasActiveSchedules = (classData?: ClassDataWithOptionalSchedule): boolean => {
+  if (!classData) return false;
+  const schedule = 'schedule' in classData ? classData.schedule : undefined;
+  if (!schedule || schedule.length === 0) {
     return false;
   }
-  return classData.schedule.some(slot => !slot.isObsolete);
+  return schedule.some(slot => !slot.isObsolete);
 };
 
 /**
  * Gets active schedule slots only (filtering out archived ones)
  */
-export const getActiveSchedules = (classData?: ClassResponse | null): ScheduleSlotDto[] => {
-  if (!classData?.schedule) return [];
-  return classData.schedule.filter(slot => !slot.isObsolete);
+export const getActiveSchedules = (classData?: ClassDataWithOptionalSchedule): ScheduleSlotDto[] => {
+  if (!classData) return [];
+  const schedule = 'schedule' in classData ? classData.schedule : undefined;
+  if (!schedule) return [];
+  return schedule.filter(slot => !slot.isObsolete);
 };
 
 /**
  * Counts how many schedules are archived
  */
-export const getArchivedScheduleCount = (classData?: ClassResponse | null): number => {
-  if (!classData?.schedule) return 0;
-  return classData.schedule.filter(slot => slot.isObsolete).length;
+export const getArchivedScheduleCount = (classData?: ClassDataWithOptionalSchedule): number => {
+  if (!classData) return 0;
+  const schedule = 'schedule' in classData ? classData.schedule : undefined;
+  if (!schedule) return 0;
+  return schedule.filter(slot => slot.isObsolete).length;
 };
 
 /**
  * Returns a user-friendly warning message explaining why lesson creation is blocked
  * Returns null if schedules are available
  */
-export const getScheduleWarningMessage = (classData?: ClassResponse | null): string | null => {
-  if (!classData?.schedule) {
+export const getScheduleWarningMessage = (classData?: ClassDataWithOptionalSchedule): string | null => {
+  if (!classData) {
     return 'No schedule defined. Please add a schedule in the Schedule tab before creating lessons.';
   }
+  
+  const schedule = 'schedule' in classData ? classData.schedule : undefined;
+  
+  if (!schedule) {
+    // If schedule is not loaded yet (lazy loading), don't show warning
+    return null;
+  }
 
-  if (classData.schedule.length === 0) {
+  if (schedule.length === 0) {
     return 'No schedule defined. Please add a schedule in the Schedule tab before creating lessons.';
   }
 
@@ -55,8 +72,11 @@ export const getScheduleWarningMessage = (classData?: ClassResponse | null): str
 /**
  * Gets a summary string for tooltips describing schedule status
  */
-export const getScheduleSummary = (classData?: ClassResponse | null): string => {
-  if (!classData?.schedule || classData.schedule.length === 0) {
+export const getScheduleSummary = (classData?: ClassDataWithOptionalSchedule): string => {
+  if (!classData) return 'No schedules created yet';
+  
+  const schedule = 'schedule' in classData ? classData.schedule : undefined;
+  if (!schedule || schedule.length === 0) {
     return 'No schedules created yet';
   }
 

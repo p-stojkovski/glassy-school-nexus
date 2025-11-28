@@ -173,6 +173,8 @@ export const useClassroomManagement = () => {
       
       // Clear localStorage items that depend on classrooms data
       localStorage.removeItem('think-english-classrooms');
+      // Dispatch custom event to notify other components about cache clear
+      window.dispatchEvent(new Event('classrooms-cache-cleared'));
 
       showSuccessMessage(`Classroom Created`, `${data.name} has been successfully created.`);
       return createdClassroom;
@@ -203,6 +205,8 @@ export const useClassroomManagement = () => {
       localStorage.removeItem('think-english-subjects');
       localStorage.removeItem('think-english-teachers');
       clearCache('classrooms');
+      // Dispatch custom event to notify other components about cache clear
+      window.dispatchEvent(new Event('classrooms-cache-cleared'));
       
       showSuccessMessage(`Classroom Updated`, `${data.name} has been successfully updated.`);
       return updatedClassroom;
@@ -226,6 +230,8 @@ export const useClassroomManagement = () => {
       localStorage.removeItem('think-english-subjects');
       localStorage.removeItem('think-english-teachers');
       clearCache('classrooms');
+      // Dispatch custom event to notify other components about cache clear
+      window.dispatchEvent(new Event('classrooms-cache-cleared'));
       
       showSuccessMessage(`Classroom Deleted`, `${name} has been successfully deleted.`);
     } catch (error) {

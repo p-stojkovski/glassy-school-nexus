@@ -25,6 +25,7 @@ import {
   Eye,
   Edit,
   ChevronDown,
+  X,
 } from 'lucide-react';
 import { LessonResponse } from '@/types/api/lesson';
 import LessonStatusBadge from '../LessonStatusBadge';
@@ -81,29 +82,39 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
         <SheetOverlay className="bg-black/20" />
         <SheetContent
           side="right"
-          className="w-full sm:w-[600px] sm:max-w-[600px] lg:w-[800px] lg:max-w-[800px] bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white shadow-2xl p-0"
+          hideCloseButton
+          className="w-full sm:w-[600px] sm:max-w-[600px] lg:w-[700px] lg:max-w-[700px] bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/10 text-white shadow-2xl p-0"
         >
         <div className="h-full flex flex-col overflow-hidden">
           {/* Header - Fixed */}
-          <SheetHeader className="p-4 sm:p-6 border-b border-white/10 flex-shrink-0">
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-3">
-                <Eye className="w-5 h-5 text-blue-400" />
-                <SheetTitle className="text-lg sm:text-xl text-white">
+          <SheetHeader className="px-4 py-4 border-b border-white/10 flex-shrink-0">
+            <div className="flex items-center justify-between w-full gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <Eye className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                <SheetTitle className="text-lg font-semibold text-white truncate">
                   Lesson Details
                 </SheetTitle>
               </div>
-              <LessonStatusBadge status={lesson.statusName} />
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <LessonStatusBadge status={lesson.statusName} />
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </SheetHeader>
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto">
-            <div className="space-y-4 p-4 sm:p-6">
+            <div className="space-y-4 p-4">
               {/* Class Information - Compact */}
               <GlassCard className="p-3">
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-green-400" />
+                <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-green-400" />
                   Lesson Information
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -207,7 +218,7 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
               {/* Status Information - For non-conducted lessons */}
               {!isConducted && (
                 <GlassCard className="p-3">
-                  <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-purple-400" />
                     Status Information
                   </h3>
@@ -277,7 +288,7 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
               {/* Related Lessons */}
               {(lesson.makeupLessonId || lesson.originalLessonId) && (
                 <GlassCard className="p-3">
-                  <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
                     <RotateCcw className="w-4 h-4 text-purple-400" />
                     Related Lessons
                   </h3>
@@ -352,7 +363,7 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
 
               {showMetadata && (
                 <GlassCard className="p-3">
-                  <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-gray-400" />
                     Metadata
                   </h3>
@@ -399,12 +410,12 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
           </div>
 
           {/* Action Buttons - Fixed at bottom */}
-          <div className="border-t border-white/10 bg-gradient-to-t from-gray-900/50 p-4 sm:p-6 flex-shrink-0">
-            <div className="flex flex-wrap justify-end gap-2">
+          <div className="border-t border-white/10 bg-white/5 p-4 flex-shrink-0">
+            <div className="flex flex-wrap justify-end gap-3">
               <Button
                 variant="ghost"
                 onClick={() => onOpenChange(false)}
-                className="text-white/70 hover:bg-white/10 text-sm"
+                className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
               >
                 Close
               </Button>

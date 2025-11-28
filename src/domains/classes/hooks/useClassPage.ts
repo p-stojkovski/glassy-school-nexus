@@ -2,14 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { classApiService } from '@/services/classApiService';
-import { ClassResponse, ClassFormData, ArchivedScheduleSlotResponse } from '@/types/api/class';
+import { ClassBasicInfoResponse, ClassFormData, ArchivedScheduleSlotResponse } from '@/types/api/class';
 
 type ClassPageMode = 'view' | 'edit';
 type TabId = 'info' | 'schedule' | 'students' | 'lessons';
 
 export interface ClassPageState {
   mode: ClassPageMode;
-  classData: ClassResponse | null;
+  classData: ClassBasicInfoResponse | null;
   editData: ClassFormData | null;
   activeTab: TabId;
   hasUnsavedChanges: boolean;
@@ -22,19 +22,20 @@ export interface ClassPageState {
   archivedSchedulesExpanded: boolean;
 }
 
-// Convert ClassResponse to ClassFormData (stable function)
-const convertToFormData = (classData: ClassResponse): ClassFormData => {
+// Convert ClassBasicInfoResponse to ClassFormData (stable function)
+// Note: schedule and additional details are not included in basic info response
+const convertToFormData = (classData: ClassBasicInfoResponse): ClassFormData => {
   return {
     name: classData.name,
     subjectId: classData.subjectId,
     teacherId: classData.teacherId,
     classroomId: classData.classroomId,
-    description: classData.description || '',
-    requirements: classData.requirements || '',
-    objectives: classData.objectives ?? [],
-    materials: classData.materials ?? [],
-    schedule: classData.schedule || [],
-    studentIds: classData.studentIds || [],
+    description: '',
+    requirements: '',
+    objectives: [],
+    materials: [],
+    schedule: [],
+    studentIds: [],
   };
 };
 

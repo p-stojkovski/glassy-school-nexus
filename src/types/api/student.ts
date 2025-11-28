@@ -89,6 +89,7 @@ export interface StudentSearchParams {
   isActive?: boolean;       // Filter by active status
   hasDiscount?: boolean;    // Filter by discount status
   discountTypeId?: string;  // Filter by specific discount type (GUID format)
+  notEnrolledInAnyClass?: boolean; // Filter to students not enrolled in any active class
   skip?: number;            // Pagination offset (default: 0)
   take?: number;            // Number of results to return (default: 50)
 }

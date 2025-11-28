@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { NativeTimeInput } from '@/components/common';
+import { TimeCombobox } from '@/components/common';
 import { classApiService } from '@/services/classApiService';
 import { CreateScheduleSlotRequest } from '@/types/api/scheduleSlot';
 import { toast } from 'sonner';
@@ -159,11 +159,14 @@ export function AddScheduleSlotDialog({ open, onOpenChange, classId, onSuccess }
                 name="startTime"
                 render={({ field }) => (
                   <FormItem>
-                    <NativeTimeInput
+                    <TimeCombobox
                       label="Start Time"
                       value={field.value}
                       onChange={field.onChange}
-                      placeholder="09:00"
+                      placeholder="9:00 AM"
+                      startHour={7}
+                      endHour={21}
+                      intervalMinutes={30}
                     />
                     <FormMessage />
                   </FormItem>
@@ -175,12 +178,15 @@ export function AddScheduleSlotDialog({ open, onOpenChange, classId, onSuccess }
                 name="endTime"
                 render={({ field }) => (
                   <FormItem>
-                    <NativeTimeInput
+                    <TimeCombobox
                       label="End Time"
                       value={field.value}
                       onChange={field.onChange}
-                      placeholder="10:00"
+                      placeholder="10:00 AM"
                       min={form.watch('startTime')}
+                      startHour={7}
+                      endHour={21}
+                      intervalMinutes={30}
                     />
                     <FormMessage />
                   </FormItem>

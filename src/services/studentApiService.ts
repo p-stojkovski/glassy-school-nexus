@@ -110,6 +110,10 @@ export class StudentApiService {
         params.append('discountTypeId', searchParams.discountTypeId);
       }
 
+      if (searchParams.notEnrolledInAnyClass !== undefined) {
+        params.append('notEnrolledInAnyClass', searchParams.notEnrolledInAnyClass.toString());
+      }
+
       if (searchParams.skip !== undefined) {
         params.append('skip', searchParams.skip.toString());
       }

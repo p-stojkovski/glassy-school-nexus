@@ -114,16 +114,6 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
   const extendedEnd = new Date(monthEnd);
   extendedEnd.setDate(extendedEnd.getDate() + 7);
   
-  console.log('Calendar month range:', {
-    currentDate: currentDate.toISOString(),
-    monthStart: monthStart.toISOString(),
-    monthEnd: monthEnd.toISOString(),
-    extendedStart: extendedStart.toISOString(),
-    extendedEnd: extendedEnd.toISOString(),
-    monthName: currentDate.toLocaleDateString('en-US', { month: 'long' }),
-    year: currentDate.getFullYear()
-  });
-  
   const { nonTeachingDays } = useAcademicCalendar(extendedStart, extendedEnd);
   
   // Calendar calculation

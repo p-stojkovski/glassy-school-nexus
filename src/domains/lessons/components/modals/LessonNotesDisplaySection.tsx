@@ -28,7 +28,7 @@ const LessonNotesDisplaySection: React.FC<LessonNotesDisplaySectionProps> = ({ l
     <GlassCard className="p-3">
       <div className="flex items-center gap-2 mb-2">
         <StickyNote className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-        <h3 className="text-base font-semibold text-white">Teacher Notes</h3>
+        <h3 className="text-sm font-medium text-white">Teacher Notes</h3>
       </div>
       {notes && notes.trim() !== '' ? (
         <p className="text-white/80 whitespace-pre-wrap break-words text-sm line-clamp-6">{notes}</p>

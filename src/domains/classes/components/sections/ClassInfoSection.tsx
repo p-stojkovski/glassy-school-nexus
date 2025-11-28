@@ -2,10 +2,10 @@ import React from 'react';
 import { BookOpen, User, MapPin, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
-import { ClassResponse } from '@/types/api/class';
+import { ClassBasicInfoResponse } from '@/types/api/class';
 
 interface ClassInfoSectionProps {
-  classData: ClassResponse;
+  classData: ClassBasicInfoResponse;
   mode?: 'view' | 'edit';
   onEdit?: () => void;
   onSave?: () => void;

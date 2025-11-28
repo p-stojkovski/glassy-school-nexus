@@ -1,104 +1,59 @@
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import InfoTooltip from '@/components/common/InfoTooltip';
 import { HomeworkSummary } from '@/types/api/class';
-import { CheckCircle2, AlertTriangle, XCircle, Circle } from 'lucide-react';
-import TrendIndicator from './TrendIndicator';
-import { calculateHomeworkTrend } from './trendUtils';
+import { CheckCircle2, AlertTriangle, XCircle, Circle, BookOpen } from 'lucide-react';
 
 interface HomeworkSummaryBadgesProps {
   homework: HomeworkSummary;
   className?: string;
-  showTrend?: boolean;
 }
 
+/**
+ * Homework summary indicator with tooltip.
+ * Shows a single icon that reveals detailed breakdown on hover.
+ */
 const HomeworkSummaryBadges: React.FC<HomeworkSummaryBadgesProps> = ({ 
   homework, 
   className = '',
-  showTrend = true,
 }) => {
-  const badges = [
-    {
-      count: homework.complete,
-      label: 'Complete',
-      icon: CheckCircle2,
-      color: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30 hover:bg-emerald-500/30',
-      show: homework.complete > 0,
-    },
-    {
-      count: homework.partial,
-      label: 'Partial',
-      icon: AlertTriangle,
-      color: 'bg-amber-500/20 text-amber-300 border-amber-400/30 hover:bg-amber-500/30',
-      show: homework.partial > 0,
-    },
-    {
-      count: homework.missing,
-      label: 'Missing',
-      icon: XCircle,
-      color: 'bg-red-500/20 text-red-300 border-red-400/30 hover:bg-red-500/30',
-      show: homework.missing > 0,
-    },
-    {
-      count: homework.notChecked,
-      label: 'Not Checked',
-      icon: Circle,
-      color: 'bg-gray-500/20 text-gray-300 border-gray-400/30 hover:bg-gray-500/30',
-      show: homework.notChecked > 0,
-    },
-  ];
-
-  const visibleBadges = badges.filter((b) => b.show);
-
-  if (visibleBadges.length === 0) {
-    return <span className="text-white/40 text-sm">No data</span>;
-  }
-
   const totalChecked = homework.complete + homework.partial + homework.missing;
   const totalLessons = totalChecked + homework.notChecked;
-  const completionRate = totalLessons > 0 ? Math.round(((homework.complete + homework.partial * 0.5) / totalLessons) * 100) : 0;
-  const tooltipText = `Homework: ${homework.complete} Complete, ${homework.partial} Partial, ${homework.missing} Missing${homework.notChecked > 0 ? `, ${homework.notChecked} Not Checked` : ''} (${completionRate}% completion rate)`;
 
-  // Calculate trend based on missing homework rate
-  const trend = showTrend && totalLessons >= 4
-    ? calculateHomeworkTrend(homework.complete, homework.missing, totalLessons)
-    : null;
+  if (totalLessons === 0) {
+    return (
+      <div className={`flex justify-center ${className}`}>
+        <span className="text-white/30 text-sm">—</span>
+      </div>
+    );
+  }
+
+  const completionRate = totalLessons > 0 ? Math.round(((homework.complete + homework.partial * 0.5) / totalLessons) * 100) : 0;
+
+  // Build tooltip items
+  const tooltipItems = [
+    { label: 'Complete', value: homework.complete, icon: CheckCircle2, iconColor: 'text-emerald-400' },
+    { label: 'Partial', value: homework.partial, icon: AlertTriangle, iconColor: 'text-amber-400' },
+    { label: 'Missing', value: homework.missing, icon: XCircle, iconColor: 'text-red-400' },
+    ...(homework.notChecked > 0 ? [{ label: 'Not Checked', value: homework.notChecked, icon: Circle, iconColor: 'text-gray-400' }] : []),
+  ];
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className={`flex flex-wrap items-center gap-1.5 ${className}`} role="group" aria-label="Homework summary">
-            {visibleBadges.map(({ count, label, icon: Icon, color }) => (
-              <Badge
-                key={label}
-                variant="outline"
-                className={`${color} transition-colors cursor-default text-xs px-2 py-0.5 flex items-center gap-1`}
-                aria-label={`${count} ${label}`}
-              >
-                <Icon className="w-3 h-3" aria-hidden="true" />
-                <span className="font-semibold">{count}</span>
-              </Badge>
-            ))}
-            {trend && (
-              <TrendIndicator 
-                direction={trend.direction} 
-                tooltipText={trend.tooltip}
-                size="sm"
-              />
-            )}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" className="bg-gray-900 border-gray-700">
-          <p className="text-sm">{tooltipText}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <InfoTooltip
+      title="Homework Summary"
+      titleIcon={BookOpen}
+      titleColor="text-purple-300"
+      items={tooltipItems}
+      summary={`${completionRate}% completion rate (${totalLessons} lessons)`}
+    >
+      <button
+        className={`group flex items-center justify-center gap-1.5 p-1.5 rounded-lg border
+          bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20 hover:border-purple-500/50
+          transition-all duration-200 cursor-pointer ${className}`}
+        aria-label="View homework details"
+      >
+        <BookOpen className="w-4 h-4 text-purple-400" />
+      </button>
+    </InfoTooltip>
   );
 };
 

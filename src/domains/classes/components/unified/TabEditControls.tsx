@@ -130,7 +130,7 @@ const TabEditControls: React.FC<TabEditControlsProps> = ({
           onClick={onCancel}
           disabled={isSaving || isValidating}
           variant="outline"
-          className="border-white/20 text-white hover:bg-white/5 disabled:opacity-50 w-full sm:w-auto"
+          className="bg-white/10 hover:bg-white/20 text-white border border-white/20 disabled:opacity-50 w-full sm:w-auto"
         >
           Cancel
         </Button>
@@ -139,7 +139,7 @@ const TabEditControls: React.FC<TabEditControlsProps> = ({
         <Button
           onClick={onSave}
           disabled={isSaving || isValidating || errorCount > 0}
-          className="bg-green-500 hover:bg-green-600 text-white font-semibold disabled:opacity-50 w-full sm:w-auto"
+          className="bg-emerald-500/80 hover:bg-emerald-500 text-white font-semibold disabled:opacity-50 w-full sm:w-auto"
         >
           {isValidating ? (
             <>

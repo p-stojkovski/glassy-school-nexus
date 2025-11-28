@@ -5,10 +5,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { StudentLessonSummary, StudentLessonDetail } from '@/types/api/class';
 import { classApiService } from '@/services/classApiService';
-import { ChevronDown, ChevronRight, User, AlertCircle, Loader2, MessageSquare, TrendingUp, Trash2, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, User, AlertCircle, Loader2, MessageSquare, TrendingUp, Trash2, Plus, ArrowRightLeft } from 'lucide-react';
 import AttendanceSummaryBadges from './AttendanceSummaryBadges';
 import HomeworkSummaryBadges from './HomeworkSummaryBadges';
 import StudentLessonDetailsRow from './StudentLessonDetailsRow';
+import { DiscountIndicator, PaymentObligationIndicator } from './PrivacyIndicator';
 import { toast } from 'sonner';
 
 interface StudentProgressTableProps {
@@ -17,6 +18,7 @@ interface StudentProgressTableProps {
   isAddingStudents?: boolean;
   onAddStudents?: () => void;
   onRemoveStudent?: (studentId: string, studentName: string, hasAttendance: boolean) => void;
+  onTransferStudent?: (studentId: string, studentName: string) => void;
 }
 
 const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
@@ -25,6 +27,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
   isAddingStudents = false,
   onAddStudents,
   onRemoveStudent,
+  onTransferStudent,
 }) => {
   const navigate = useNavigate();
   const [summaries, setSummaries] = useState<StudentLessonSummary[]>([]);
@@ -180,25 +183,27 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
             </p>
           </div>
         </div>
-        {mode === 'view' && onAddStudents && (
-          <Button
-            onClick={onAddStudents}
-            disabled={isAddingStudents}
-            className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
-          >
-            {isAddingStudents ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Adding...
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4" />
-                Add Students
-              </>
-            )}
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          {mode === 'view' && onAddStudents && (
+            <Button
+              onClick={onAddStudents}
+              disabled={isAddingStudents}
+              className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
+            >
+              {isAddingStudents ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Add Students
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Table */}
@@ -208,12 +213,14 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
             <TableRow className="border-white/20 hover:bg-transparent">
               <TableHead className="text-white/90 font-semibold w-8"></TableHead>
               <TableHead className="text-white/90 font-semibold min-w-[180px]">Student</TableHead>
-              <TableHead className="text-white/90 font-semibold text-center w-24">Lessons</TableHead>
-              <TableHead className="text-white/90 font-semibold min-w-[220px]">Attendance</TableHead>
-              <TableHead className="text-white/90 font-semibold min-w-[220px]">Homework</TableHead>
-              <TableHead className="text-white/90 font-semibold text-center w-28">Comments</TableHead>
-              {mode === 'view' && onRemoveStudent && (
-                <TableHead className="text-white/90 font-semibold text-center w-20">Actions</TableHead>
+              <TableHead className="text-white/90 font-semibold text-center w-20">Lessons</TableHead>
+              <TableHead className="text-white/90 font-semibold text-center w-24">Attendance</TableHead>
+              <TableHead className="text-white/90 font-semibold text-center w-24">Homework</TableHead>
+              <TableHead className="text-white/90 font-semibold text-center w-24">Comments</TableHead>
+              <TableHead className="text-white/90 font-semibold text-center w-24">Discounts</TableHead>
+              <TableHead className="text-white/90 font-semibold text-center w-24">Payments</TableHead>
+              {mode === 'view' && (onRemoveStudent || onTransferStudent) && (
+                <TableHead className="text-white/90 font-semibold text-center w-24">Actions</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -271,13 +278,17 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
                     </TableCell>
 
                     {/* Attendance badges */}
-                    <TableCell className="py-3">
-                      <AttendanceSummaryBadges attendance={summary.attendance} />
+                    <TableCell className="text-center py-3">
+                      <div className="flex justify-center">
+                        <AttendanceSummaryBadges attendance={summary.attendance} />
+                      </div>
                     </TableCell>
 
                     {/* Homework badges */}
-                    <TableCell className="py-3">
-                      <HomeworkSummaryBadges homework={summary.homework} />
+                    <TableCell className="text-center py-3">
+                      <div className="flex justify-center">
+                        <HomeworkSummaryBadges homework={summary.homework} />
+                      </div>
                     </TableCell>
 
                     {/* Comments count */}
@@ -292,33 +303,62 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
                       )}
                     </TableCell>
 
-                    {/* Remove button */}
-                    {mode === 'view' && onRemoveStudent && (
+                    {/* Discount indicator (privacy-protected) */}
+                    <TableCell className="text-center py-3">
+                      <DiscountIndicator discount={summary.discount} />
+                    </TableCell>
+
+                    {/* Payment obligations indicator (privacy-protected) */}
+                    <TableCell className="text-center py-3">
+                      <PaymentObligationIndicator paymentObligation={summary.paymentObligation} />
+                    </TableCell>
+
+                    {/* Actions: Transfer and Remove */}
+                    {mode === 'view' && (onRemoveStudent || onTransferStudent) && (
                       <TableCell className="text-center py-3">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            onRemoveStudent(
-                              summary.studentId,
-                              summary.studentName,
-                              hasAttendance
-                            )
-                          }
-                          disabled={hasAttendance}
-                          className={`h-8 w-8 p-0 ${
-                            hasAttendance
-                              ? 'opacity-50 cursor-not-allowed hover:bg-transparent'
-                              : 'hover:bg-red-500/20 text-red-400 hover:text-red-300'
-                          }`}
-                          title={
-                            hasAttendance
-                              ? 'Cannot remove student with lesson attendance'
-                              : 'Remove student from class'
-                          }
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-center gap-1">
+                          {/* Transfer button */}
+                          {onTransferStudent && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                onTransferStudent(summary.studentId, summary.studentName)
+                              }
+                              className="h-8 w-8 p-0 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300"
+                              title="Transfer student to another class"
+                            >
+                              <ArrowRightLeft className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {/* Remove button */}
+                          {onRemoveStudent && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                onRemoveStudent(
+                                  summary.studentId,
+                                  summary.studentName,
+                                  hasAttendance
+                                )
+                              }
+                              disabled={hasAttendance}
+                              className={`h-8 w-8 p-0 ${
+                                hasAttendance
+                                  ? 'opacity-50 cursor-not-allowed hover:bg-transparent'
+                                  : 'hover:bg-red-500/20 text-red-400 hover:text-red-300'
+                              }`}
+                              title={
+                                hasAttendance
+                                  ? 'Cannot remove student with lesson attendance'
+                                  : 'Remove student from class'
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     )}
                   </TableRow>
@@ -327,7 +367,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
                   {isExpanded && (
                     <TableRow className="border-white/10">
                       <TableCell
-                        colSpan={mode === 'view' && onRemoveStudent ? 7 : 6}
+                        colSpan={mode === 'view' && (onRemoveStudent || onTransferStudent) ? 9 : 8}
                         className="p-0 bg-white/5"
                       >
                         <StudentLessonDetailsRow

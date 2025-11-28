@@ -5,7 +5,7 @@ import { Calendar, Sparkles, Plus, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import GlassCard from '@/components/common/GlassCard';
-import { ClassResponse } from '@/types/api/class';
+import { ClassBasicInfoResponse } from '@/types/api/class';
 import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData } from '@/types/api/lesson';
 import { useLessonsForClass, useLessons } from '@/domains/lessons/hooks/useLessons';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
@@ -21,7 +21,7 @@ import LessonActionButtons from '@/domains/lessons/components/LessonActionButton
 import { hasActiveSchedules, getScheduleWarningMessage } from '@/domains/classes/utils/scheduleValidationUtils';
 
 interface ClassLessonsTabProps {
-  classData: ClassResponse;
+  classData: ClassBasicInfoResponse;
   onScheduleTabClick?: () => void;
 }
 
@@ -221,7 +221,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         <LessonActionButtons
           onCreateLesson={() => setIsCreateLessonOpen(true)}
           onGenerateLessons={() => setIsAcademicGenerationOpen(true)}
-          disabled={!scheduleAvailable}
+          generateDisabled={!scheduleAvailable}
           disabledTooltip={scheduleWarning || undefined}
           hasLessons={lessons.length > 0}
         />
@@ -239,10 +239,10 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
               <>
                 <AlertCircle className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
                 <h3 className="text-lg font-semibold text-white mb-2">
-                  Set Up Your Schedule First
+                  No Schedule Defined
                 </h3>
                 <p className="text-white/60 mb-4 max-w-md mx-auto">
-                  {scheduleWarning}
+                  {scheduleWarning} You can still add individual lessons manually.
                 </p>
               </>
             ) : (
@@ -269,15 +269,25 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
               </>
             )}
             {statusFilter === 'all' && teacherFilter === 'all' && (
-              <div className="flex gap-3 justify-center">
+              <div className="flex gap-3 justify-center flex-wrap">
                 {!scheduleAvailable ? (
-                  <Button
-                    onClick={onScheduleTabClick}
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-semibold"
-                  >
-                    <Clock className="w-4 h-4 mr-2" />
-                    Go to Schedule Tab
-                  </Button>
+                  <>
+                    <Button
+                      onClick={onScheduleTabClick}
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      Set Up Schedule
+                    </Button>
+                    <Button
+                      onClick={() => setIsCreateLessonOpen(true)}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Lesson Manually
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <Button

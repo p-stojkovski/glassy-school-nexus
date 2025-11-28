@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Plus, Loader2, Users, UserPlus } from 'lucide-react';
+import { Users, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { toast } from 'sonner';
@@ -8,14 +8,13 @@ import GlassCard from '@/components/common/GlassCard';
 import ScheduleEnrollmentTab from '@/domains/classes/components/forms/tabs/ScheduleEnrollmentTab';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import StudentProgressTable from '@/domains/classes/components/sections/StudentProgressTable';
-import { ClassResponse, ClassFormData } from '@/types/api/class';
-import { classApiService } from '@/services/classApiService';
-import { studentApiService } from '@/services/studentApiService';
-import { Student } from '@/domains/students/studentsSlice';
+import { TransferStudentDialog } from '@/domains/classes/components/dialogs/TransferStudentDialog';
+import { ClassBasicInfoResponse, ClassFormData } from '@/types/api/class';
+import { addStudentsToClass, removeStudentFromClass } from '@/services/classApiService';
 
 interface ClassStudentsTabProps {
   mode: 'view' | 'edit';
-  classData: ClassResponse | null;
+  classData: ClassBasicInfoResponse | null;
   form?: UseFormReturn<ClassFormData>;
   onRefetchClassData?: () => Promise<void>;
 }
@@ -26,6 +25,11 @@ interface StudentToRemove {
   hasAttendance: boolean;
 }
 
+interface StudentToTransfer {
+  id: string;
+  name: string;
+}
+
 const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
   mode,
   classData,
@@ -33,68 +37,35 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
   onRefetchClassData,
 }) => {
   const [isAddPanelOpen, setIsAddPanelOpen] = useState(false);
-  const [allStudents, setAllStudents] = useState<Student[]>([]);
-  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [studentToRemove, setStudentToRemove] = useState<StudentToRemove | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [studentToTransfer, setStudentToTransfer] = useState<StudentToTransfer | null>(null);
 
-  // Load active students on mount for the add panel
-  useEffect(() => {
-    const loadAllStudents = async () => {
-      setIsLoadingStudents(true);
-      try {
-        const { students: activeStudents } = await studentApiService.searchStudents({
-          isActive: true,
-          skip: 0,
-          take: 1000,
-        });
-        setAllStudents(Array.isArray(activeStudents) ? activeStudents : []);
-      } catch (error: any) {
-        console.error('Error loading students:', error);
-        toast.error('Failed to load students');
-      } finally {
-        setIsLoadingStudents(false);
-      }
-    };
-
-    if (mode === 'view') {
-      loadAllStudents();
-    }
-  }, [mode]);
-
-  // Handle adding new students
+  // Handle adding new students using the enrollment endpoint
   const handleAddStudents = async (selectedStudentIds: string[]) => {
     if (!classData) return;
 
     setIsAdding(true);
     try {
-      // Get the IDs to add (newly selected, not already enrolled)
-      const newStudentIds = selectedStudentIds.filter(
-        (id) => !classData.studentIds.includes(id)
-      );
-
-      if (newStudentIds.length === 0) {
+      // Use the selected students directly - the panel already filters to available students
+      if (selectedStudentIds.length === 0) {
         toast.info('No new students to add');
         setIsAddPanelOpen(false);
         return;
       }
 
-      // Merge with existing
-      const merged = [...new Set([...classData.studentIds, ...newStudentIds])];
-
-      // Update class with new student list
-      await classApiService.updateClass(classData.id, {
-        ...classData,
-        studentIds: merged,
-      });
+      // Use the dedicated enrollment endpoint
+      const result = await addStudentsToClass(classData.id, { studentIds: selectedStudentIds });
 
       // Refetch class data
       if (onRefetchClassData) {
         await onRefetchClassData();
       }
 
-      toast.success(`${newStudentIds.length} student${newStudentIds.length !== 1 ? 's' : ''} added successfully`);
+      // Show success with details from response
+      const successCount = result.enrolledCount ?? selectedStudentIds.length;
+      toast.success(`${successCount} student${successCount !== 1 ? 's' : ''} added successfully`);
       setIsAddPanelOpen(false);
     } catch (error: any) {
       const errorMsg = error?.message || 'Failed to add students';
@@ -105,7 +76,7 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
     }
   };
 
-  // Handle removing a student
+  // Handle removing a student using the enrollment endpoint
   const handleRemoveStudent = async () => {
     if (!classData || !studentToRemove) return;
 
@@ -118,14 +89,8 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
 
     setIsRemoving(true);
     try {
-      // Filter out the removed student
-      const filtered = classData.studentIds.filter((id) => id !== studentToRemove.id);
-
-      // Update class with new student list
-      await classApiService.updateClass(classData.id, {
-        ...classData,
-        studentIds: filtered,
-      });
+      // Use the dedicated enrollment endpoint
+      await removeStudentFromClass(classData.id, studentToRemove.id);
 
       // Refetch class data
       if (onRefetchClassData) {
@@ -162,20 +127,11 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Button
                   onClick={() => setIsAddPanelOpen(true)}
-                  disabled={isAdding || isLoadingStudents}
+                  disabled={isAdding}
                   className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
                 >
-                  {isLoadingStudents ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4" />
-                      Add Students
-                    </>
-                  )}
+                  <UserPlus className="w-4 h-4" />
+                  Add Students
                 </Button>
               </div>
               {classData.availableSlots > 0 && (
@@ -194,6 +150,9 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
             onRemoveStudent={(studentId, studentName, hasAttendance) => {
               setStudentToRemove({ id: studentId, name: studentName, hasAttendance });
             }}
+            onTransferStudent={(studentId, studentName) => {
+              setStudentToTransfer({ id: studentId, name: studentName });
+            }}
           />
         )}
 
@@ -201,10 +160,9 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
         <StudentSelectionPanel
           isOpen={isAddPanelOpen}
           onClose={() => setIsAddPanelOpen(false)}
-          students={allStudents}
           classes={[]}
           selectedStudentIds={[]}  // Start with empty selection for adding new students
-          excludeStudentIds={classData.studentIds}  // Hide already enrolled students
+          availableForEnrollment={true}  // Only fetch students not enrolled in any class
           onSelectionChange={handleAddStudents}
           title="Add Students to Class"
           allowMultiple={true}
@@ -214,14 +172,31 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
         <ConfirmationDialog
           isOpen={studentToRemove !== null}
           title="Remove Student"
-          message={`Remove ${studentToRemove?.name || 'this student'} from this class?\n\nThey have not attended any lessons yet and can be safely removed.`}
+          description={`Remove ${studentToRemove?.name || 'this student'} from this class?\n\nThey have not attended any lessons yet and can be safely removed.`}
           confirmText="Remove Student"
           cancelText="Cancel"
-          isDangerous={true}
-          isLoading={isRemoving}
+          variant="danger"
           onConfirm={handleRemoveStudent}
-          onCancel={() => setStudentToRemove(null)}
+          onClose={() => setStudentToRemove(null)}
         />
+
+        {/* Transfer Student Dialog */}
+        {studentToTransfer && (
+          <TransferStudentDialog
+            open={studentToTransfer !== null}
+            onOpenChange={(open) => {
+              if (!open) setStudentToTransfer(null);
+            }}
+            sourceClass={classData}
+            studentId={studentToTransfer.id}
+            studentName={studentToTransfer.name}
+            onSuccess={async () => {
+              if (onRefetchClassData) {
+                await onRefetchClassData();
+              }
+            }}
+          />
+        )}
       </div>
     );
   }

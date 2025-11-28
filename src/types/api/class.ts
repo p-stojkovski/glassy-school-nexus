@@ -75,6 +75,41 @@ export interface ClassResponse {
   lessonGenerationWarnings?: string[]; // warnings from lesson generation for new schedule slots
 }
 
+// ============================================================================
+// Lazy Loading Response Types
+// ============================================================================
+
+/** Slimmed down response for class basic info (lazy loading - initial page load) */
+export interface ClassBasicInfoResponse {
+  id: string;
+  name: string;
+  subjectId: string;
+  subjectName: string;
+  teacherId: string;
+  teacherName: string;
+  classroomId: string;
+  classroomName: string;
+  classroomCapacity: number;
+  enrolledCount: number;
+  availableSlots: number;
+  createdAt: string;
+  updatedAt: string;
+  lessonSummary: LessonSummaryDto;
+}
+
+/** Response for class schedule data (lazy loading - loaded when Schedule tab is viewed) */
+export interface ClassScheduleResponse {
+  schedule: ScheduleSlotDto[];
+}
+
+/** Response for class additional details (lazy loading - loaded when Overview tab is viewed) */
+export interface ClassAdditionalDetailsResponse {
+  description: string | null;
+  requirements: string | null;
+  objectives: string[] | null;
+  materials: string[] | null;
+}
+
 export interface ClassCreatedResponse { id: string; }
 
 export interface ArchivedScheduleSlotResponse {
@@ -102,6 +137,21 @@ export interface HomeworkSummary {
   notChecked: number;
 }
 
+// Student discount information for privacy-respecting display
+export interface StudentDiscountInfo {
+  hasDiscount: boolean;
+  discountTypeName?: string | null;
+  discountAmount?: number | null;
+}
+
+// Student payment obligation summary for privacy-respecting display
+// Payment obligations feature is in progress - using placeholder data
+export interface StudentPaymentObligationInfo {
+  hasPendingObligations: boolean;
+  pendingCount: number;
+  totalPendingAmount: number;
+}
+
 export interface StudentLessonSummary {
   studentId: string;
   studentName: string;
@@ -111,6 +161,8 @@ export interface StudentLessonSummary {
   commentsCount: number;
   mostRecentComment?: string | null;
   lastUpdated?: string | null;
+  discount?: StudentDiscountInfo | null;
+  paymentObligation?: StudentPaymentObligationInfo | null;
 }
 
 export interface StudentLessonDetail {
@@ -174,7 +226,69 @@ export const ClassApiPaths = {
   BY_ID: (id: string) => `/api/classes/${id}`,
   SEARCH: '/api/classes/search',
   ARCHIVED_SCHEDULES: (id: string) => `/api/classes/${id}/schedules/archived`,
+  ENROLLMENTS: (classId: string) => `/api/classes/${classId}/enrollments`,
+  ENROLLMENT_BY_STUDENT: (classId: string, studentId: string) => `/api/classes/${classId}/enrollments/${studentId}`,
+  ENROLLMENT_TRANSFER: (classId: string, studentId: string) => `/api/classes/${classId}/enrollments/${studentId}/transfer`,
+  BASIC_INFO: (id: string) => `/api/classes/${id}/basic-info`,
+  ADDITIONAL_DETAILS: (id: string) => `/api/classes/${id}/additional-details`,
+  SCHEDULE: (id: string) => `/api/classes/${id}/schedule`,
 } as const;
+
+// ============================================================================
+// Partial Update Request Types
+// ============================================================================
+
+/** Request to update only basic class information */
+export interface UpdateBasicInfoRequest {
+  name: string;
+  subjectId: string;
+  teacherId: string;
+  classroomId: string;
+}
+
+/** Request to update only additional class details */
+export interface UpdateAdditionalDetailsRequest {
+  description?: string | null;
+  requirements?: string | null;
+  objectives?: string[] | null;
+  materials?: string[] | null;
+}
+
+// ============================================================================
+// Enrollment Management Types
+// ============================================================================
+
+/** Request to add or remove students from a class */
+export interface ManageEnrollmentsRequest {
+  studentIdsToAdd?: string[];
+  studentIdsToRemove?: string[];
+}
+
+/** Response from bulk enrollment management */
+export interface ManageEnrollmentsResponse {
+  addedCount: number;
+  removedCount: number;
+  currentEnrollmentCount: number;
+  warnings?: string[];
+}
+
+/** Request to transfer a student to another class */
+export interface TransferStudentRequest {
+  targetClassId: string;
+  reason?: string;
+}
+
+/** Response from student transfer */
+export interface TransferStudentResponse {
+  studentId: string;
+  studentName: string;
+  sourceClassId: string;
+  sourceClassName: string;
+  targetClassId: string;
+  targetClassName: string;
+  transferredAt: string;
+  reason?: string;
+}
 
 // Validation constants
 export const ClassValidationRules = {

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ClassScheduleSection from '@/domains/classes/components/sections/ClassScheduleSection';
 import ArchivedSchedulesSection from '@/domains/classes/components/schedule/ArchivedSchedulesSection';
 import { AddScheduleSlotDialog } from '@/domains/classes/components/schedule/AddScheduleSlotDialog';
 import { EditScheduleSlotDialog } from '@/domains/classes/components/schedule/EditScheduleSlotDialog';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import ErrorMessage from '@/components/common/ErrorMessage';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,13 +15,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ClassResponse, ScheduleSlotDto } from '@/types/api/class';
+import { ClassBasicInfoResponse, ScheduleSlotDto } from '@/types/api/class';
 import { classApiService } from '@/services/classApiService';
 import { toast } from 'sonner';
 
 interface ClassScheduleTabProps {
-  classData: ClassResponse;
+  classData: ClassBasicInfoResponse;
   onUpdate: () => void;
+  onUnsavedChangesChange?: (hasChanges: boolean) => void;
   archivedSchedules?: Array<{ id: string; dayOfWeek: string; startTime: string; endTime: string; pastLessonCount: number }>;
   loadingArchived?: boolean;
   archivedSchedulesExpanded?: boolean;
@@ -30,17 +33,59 @@ interface ClassScheduleTabProps {
 const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
   classData,
   onUpdate,
+  onUnsavedChangesChange,
   archivedSchedules = [],
   loadingArchived = false,
   archivedSchedulesExpanded = false,
   onToggleArchivedSchedules,
   onRefreshArchivedSchedules,
 }) => {
+  // Lazy loading state for schedule data
+  const [schedule, setSchedule] = useState<ScheduleSlotDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
+
+  // Dialog state
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<ScheduleSlotDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Fetch schedule data on mount (lazy loading)
+  useEffect(() => {
+    if (!hasFetched && classData?.id) {
+      const fetchSchedule = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await classApiService.getClassSchedule(classData.id);
+          setSchedule(response.schedule);
+          setHasFetched(true);
+        } catch (err: any) {
+          setError(err?.message || 'Failed to load schedule');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchSchedule();
+    }
+  }, [classData?.id, hasFetched]);
+
+  // Refetch schedule when onUpdate is called (after add/edit/delete)
+  const handleUpdate = async () => {
+    setLoading(true);
+    try {
+      const response = await classApiService.getClassSchedule(classData.id);
+      setSchedule(response.schedule);
+      await onUpdate(); // Also refresh parent data (for enrolled count, etc.)
+    } catch (err: any) {
+      toast.error('Failed to refresh schedule');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEdit = (slot: ScheduleSlotDto) => {
     setSelectedSlot(slot);
@@ -64,13 +109,15 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
           `Schedule archived. ${response.pastLessonCount} past lesson(s) preserved.`,
           { duration: 6000 }
         );
+        // Refresh archived schedules if expanded
+        onRefreshArchivedSchedules?.();
       } else {
         toast.success('Schedule deleted successfully');
       }
 
       setShowDeleteDialog(false);
       setSelectedSlot(null);
-      await onUpdate();
+      await handleUpdate();
     } catch (error: any) {
       toast.error(error?.message || 'Failed to delete schedule slot');
     } finally {
@@ -78,13 +125,39 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
     }
   };
 
+  if (loading && !hasFetched) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
+  if (error) {
+    return (
+      <ErrorMessage
+        title="Error Loading Schedule"
+        message={error}
+        onRetry={() => {
+          setHasFetched(false);
+          setError(null);
+        }}
+        showRetry
+      />
+    );
+  }
+
+  // Create a classData-like object with schedule for ClassScheduleSection
+  const classDataWithSchedule = {
+    ...classData,
+    schedule,
+  };
 
   return (
     <>
       <div className="space-y-6">
         <ClassScheduleSection
-          classData={classData}
+          classData={classDataWithSchedule}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onAddSchedule={() => setShowAddDialog(true)}
@@ -106,7 +179,7 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
         classId={classData.id}
-        onSuccess={onUpdate}
+        onSuccess={handleUpdate}
       />
 
       <EditScheduleSlotDialog
@@ -114,7 +187,7 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
         onOpenChange={setShowEditDialog}
         classId={classData.id}
         slot={selectedSlot}
-        onSuccess={onUpdate}
+        onSuccess={handleUpdate}
         onDelete={handleDelete}
       />
 

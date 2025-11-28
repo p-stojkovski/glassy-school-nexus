@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import academicCalendarApiService from '@/domains/settings/services/academicCalendarApi';
-import { TeachingBreak } from '@/domains/settings/types/academicCalendarTypes';
+import { AcademicYear, TeachingBreak } from '@/domains/settings/types/academicCalendarTypes';
 
 interface NonTeachingDayData {
   date: string; // yyyy-mm-dd format
@@ -17,19 +17,46 @@ interface UseAcademicCalendarResult {
   error: string | null;
 }
 
+// Module-level cache to persist data across hook instances and re-renders
+// This prevents redundant API calls when navigating between tabs
+const academicYearsCache: { data: AcademicYear[] | null; timestamp: number } = { data: null, timestamp: 0 };
+const teachingBreaksCache: Map<string, { data: TeachingBreak[]; timestamp: number }> = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache TTL
+
+const isCacheValid = (timestamp: number): boolean => {
+  return Date.now() - timestamp < CACHE_TTL_MS;
+};
+
 export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademicCalendarResult => {
   const [nonTeachingDays, setNonTeachingDays] = useState<NonTeachingDayData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Track if we've already loaded data for this date range to prevent redundant calls
+  const lastLoadedRangeRef = useRef<string | null>(null);
 
   useEffect(() => {
+    const rangeKey = `${startDate.getTime()}-${endDate.getTime()}`;
+    
+    // Skip if we've already loaded this exact range
+    if (lastLoadedRangeRef.current === rangeKey && nonTeachingDays.length >= 0) {
+      return;
+    }
+    
     const loadNonTeachingDays = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Get all academic years to find the relevant one(s)
-        const academicYears = await academicCalendarApiService.getAllAcademicYears();
+        // Get academic years from cache or fetch
+        let academicYears: AcademicYear[];
+        if (academicYearsCache.data && isCacheValid(academicYearsCache.timestamp)) {
+          academicYears = academicYearsCache.data;
+        } else {
+          academicYears = await academicCalendarApiService.getAllAcademicYears();
+          academicYearsCache.data = academicYears;
+          academicYearsCache.timestamp = Date.now();
+        }
         
         // Find academic year that overlaps with our date range
         const relevantYear = academicYears.find(year => {
@@ -40,45 +67,39 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
 
         if (!relevantYear) {
           setNonTeachingDays([]);
+          lastLoadedRangeRef.current = rangeKey;
           return;
         }
 
-        // Fetch teaching breaks for the relevant year (holidays are represented as breakType = 'holiday')
+        // Get teaching breaks from cache or fetch
         let teachingBreaks: TeachingBreak[] = [];
-        try {
-          teachingBreaks = await academicCalendarApiService.getTeachingBreaksByYear(relevantYear.id);
-        } catch (err: any) {
-          // If 404, the year might not have breaks defined yet - treat as empty array
-          if (err?.status === 404 || err?.message?.includes('404')) {
-            console.warn(`No teaching breaks found for academic year ${relevantYear.id}`);
-            teachingBreaks = [];
-          } else {
-            // Re-throw other errors
-            throw err;
+        const cachedBreaks = teachingBreaksCache.get(relevantYear.id);
+        
+        if (cachedBreaks && isCacheValid(cachedBreaks.timestamp)) {
+          teachingBreaks = cachedBreaks.data;
+        } else {
+          try {
+            teachingBreaks = await academicCalendarApiService.getTeachingBreaksByYear(relevantYear.id);
+            teachingBreaksCache.set(relevantYear.id, { data: teachingBreaks, timestamp: Date.now() });
+          } catch (err: any) {
+            // If 404, the year might not have breaks defined yet - treat as empty array
+            if (err?.status === 404 || err?.message?.includes('404')) {
+              console.warn(`No teaching breaks found for academic year ${relevantYear.id}`);
+              teachingBreaks = [];
+              teachingBreaksCache.set(relevantYear.id, { data: [], timestamp: Date.now() });
+            } else {
+              // Re-throw other errors
+              throw err;
+            }
           }
         }
 
         const nonTeachingData: NonTeachingDayData[] = [];
-        
-        console.log('Academic Calendar Debug:', {
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0],
-          relevantYear: relevantYear?.name,
-          teachingBreaksCount: teachingBreaks.length
-        });
 
         // Process teaching breaks
         teachingBreaks.forEach(breakItem => {
           const breakStart = new Date(breakItem.startDate);
           const breakEnd = new Date(breakItem.endDate);
-          
-          console.log('Processing break:', {
-            name: breakItem.name,
-            startDate: breakItem.startDate,
-            endDate: breakItem.endDate,
-            breakStartParsed: breakStart.toISOString(),
-            breakEndParsed: breakEnd.toISOString()
-          });
           
           // Check if break overlaps with our date range
           if (breakStart <= endDate && breakEnd >= startDate) {
@@ -88,14 +109,8 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
             const currentDate = new Date(Math.max(breakStart.getTime(), startDate.getTime()));
             const endLimit = new Date(Math.min(breakEnd.getTime(), endDate.getTime()));
             
-            console.log('Date range for break:', {
-              currentDate: currentDate.toISOString(),
-              endLimit: endLimit.toISOString()
-            });
-            
             while (currentDate <= endLimit) {
               const dateString = currentDate.toISOString().split('T')[0];
-              console.log('Adding break date:', dateString);
               
               nonTeachingData.push({
                 date: dateString,
@@ -131,8 +146,8 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
           }
         });
 
-        console.log('Final non-teaching data:', nonTeachingData);
         setNonTeachingDays(nonTeachingData);
+        lastLoadedRangeRef.current = rangeKey;
       } catch (err: any) {
         console.error('Failed to load academic calendar data:', err);
         setError(err?.message || 'Failed to load academic calendar data');
@@ -142,7 +157,14 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
     };
 
     loadNonTeachingDays();
-  }, [startDate.getTime(), endDate.getTime()]);
+  }, [startDate.getTime(), endDate.getTime(), nonTeachingDays.length]);
 
   return { nonTeachingDays, loading, error };
+};
+
+// Utility to clear cache (useful when academic calendar data is modified)
+export const clearAcademicCalendarCache = (): void => {
+  academicYearsCache.data = null;
+  academicYearsCache.timestamp = 0;
+  teachingBreaksCache.clear();
 };

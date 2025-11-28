@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import classroomApiService from '@/services/classroomApiService';
 import { ClassroomResponse } from '@/types/api/classroom';
 
@@ -38,9 +38,13 @@ export const useClassrooms = (): UseClassroomsResult => {
   const [classrooms, setClassrooms] = useState<ClassroomResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isFetchingRef = useRef(false);
 
   const fetchClassrooms = useCallback(async (forceRefresh = false) => {
-    // Check session storage first (unless force refresh)
+    // Prevent concurrent fetches
+    if (isFetchingRef.current) return;
+
+    // Check localStorage first (unless force refresh)
     if (!forceRefresh) {
       const cachedClassrooms = getClassroomsFromStorage();
       if (cachedClassrooms && cachedClassrooms.length > 0) {
@@ -51,6 +55,7 @@ export const useClassrooms = (): UseClassroomsResult => {
     }
 
     // Fetch from API without global loading
+    isFetchingRef.current = true;
     setIsLoading(true);
     setError(null);
     
@@ -66,6 +71,7 @@ export const useClassrooms = (): UseClassroomsResult => {
       console.error('Error fetching classrooms:', err);
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
   }, []);
 
@@ -74,8 +80,36 @@ export const useClassrooms = (): UseClassroomsResult => {
     await fetchClassrooms(true);
   }, [fetchClassrooms]);
 
+  // Initial fetch
   useEffect(() => {
     fetchClassrooms();
+  }, [fetchClassrooms]);
+
+  // Listen for localStorage changes (when cache is cleared from Settings)
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      // When the classrooms cache is cleared (set to null), refetch from API
+      if (event.key === CLASSROOMS_STORAGE_KEY && event.newValue === null) {
+        fetchClassrooms(true);
+      }
+    };
+
+    // Custom event for same-window localStorage changes
+    const handleCustomStorageChange = () => {
+      // Check if the cache was cleared
+      const cached = getClassroomsFromStorage();
+      if (!cached) {
+        fetchClassrooms(true);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('classrooms-cache-cleared', handleCustomStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('classrooms-cache-cleared', handleCustomStorageChange);
+    };
   }, [fetchClassrooms]);
 
   return {

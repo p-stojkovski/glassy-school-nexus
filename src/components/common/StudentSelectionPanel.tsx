@@ -25,7 +25,8 @@ interface StudentSelectionPanelProps {
   students?: Student[]; // Made optional since we'll load them independently
   classes: Class[];
   selectedStudentIds: string[];
-  excludeStudentIds?: string[]; // Students to exclude from the available list (e.g., already enrolled)
+  excludeStudentIds?: string[]; // Students to exclude from the available list (client-side filter)
+  availableForEnrollment?: boolean; // If true, only fetch students not enrolled in any class (server-side filter)
   onSelectionChange: (studentIds: string[]) => void;
   onClose: () => void;
   isOpen: boolean;
@@ -40,6 +41,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   classes,
   selectedStudentIds,
   excludeStudentIds = [],
+  availableForEnrollment = false,
   onSelectionChange,
   onClose,
   isOpen,
@@ -70,7 +72,12 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
         setStudentsError(null);
         
         try {      
-          const { students: activeStudents } = await studentApiService.searchStudents({ isActive: true, skip: 0, take: 1000 });
+          const { students: activeStudents } = await studentApiService.searchStudents({ 
+            isActive: true, 
+            notEnrolledInAnyClass: availableForEnrollment || undefined,
+            skip: 0, 
+            take: 1000 
+          });
           console.log('✅ Students loaded for sidebar:', activeStudents?.length || 0);
           setLoadedStudents(Array.isArray(activeStudents) ? activeStudents : []);
         } catch (error: any) {
