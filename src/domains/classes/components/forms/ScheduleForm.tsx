@@ -14,9 +14,14 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form';
-import { Clock } from 'lucide-react';
+import { Clock, AlertCircle } from 'lucide-react';
 import { ClassFormData } from './ClassFormContent';
 import { NativeTimeInput } from '@/components/common';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 
 const ScheduleForm: React.FC = () => {
   const form = useFormContext<ClassFormData>();
@@ -102,16 +107,32 @@ const ScheduleForm: React.FC = () => {
             )}
           />
 
-          <div className="flex items-end">
+          <div className="flex items-end gap-2">
             <Button
               type="button"
               variant="ghost"
               onClick={() => removeScheduleSlot(index)}
-              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              className="text-red-400 hover:text-red-300 hover:bg-red-500/10 disabled:text-red-400 disabled:opacity-50 disabled:hover:bg-red-500/10"
               disabled={form.watch('schedule').length === 1}
             >
               Remove
             </Button>
+            {form.watch('schedule').length === 1 && (
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center w-5 h-5 text-gray-400 hover:text-gray-300 cursor-help focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded"
+                    aria-label="At least one slot required"
+                  >
+                    <AlertCircle className="w-5 h-5" />
+                  </button>
+                </HoverCardTrigger>
+                <HoverCardContent side="right" className="w-auto">
+                  <p className="text-sm text-gray-200">At least one slot required</p>
+                </HoverCardContent>
+              </HoverCard>
+            )}
           </div>
         </div>
       ))}

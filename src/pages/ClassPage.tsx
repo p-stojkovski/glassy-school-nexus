@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { BookOpen, Calendar, Users, BookmarkCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,12 +6,13 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import ClassPageHeader from '@/domains/classes/components/unified/ClassPageHeader';
-import ClassQuickStats from '@/domains/classes/components/unified/ClassQuickStats';
 import ClassLessonsTab from '@/domains/classes/components/detail/ClassLessonsTab';
 import ClassInfoTab from '@/domains/classes/components/tabs/ClassInfoTab';
 import ClassScheduleTab from '@/domains/classes/components/tabs/ClassScheduleTab';
 import ClassStudentsTab from '@/domains/classes/components/tabs/ClassStudentsTab';
+import QuickConductLessonModal from '@/domains/lessons/components/modals/QuickConductLessonModal';
 import { useClassPage } from '@/domains/classes/hooks/useClassPage';
+import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
 
 const ClassPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,9 +28,39 @@ const ClassPage: React.FC = () => {
     setActiveTab,
     refetchClassData,
     registerTabUnsavedChanges,
+    tabsWithUnsavedChanges,
     canSwitchTab,
     hasAnyUnsavedChanges,
+    // Archived schedules state
+    archivedSchedules,
+    loadingArchived,
+    archivedSchedulesExpanded,
+    // Archived schedules actions
+    toggleArchivedSchedules,
+    refreshArchivedSchedules,
   } = useClassPage(id || '');
+
+  // Quick lesson actions for the dashboard widget
+  const {
+    modals: quickActionModals,
+    openConductModal,
+    closeConductModal,
+    handleQuickConduct,
+    conductingLesson,
+  } = useQuickLessonActions();
+
+  // Memoize refetchClassData to prevent tab prop changes triggering re-renders
+  const memoizedRefetchClassData = useCallback(() => refetchClassData(), [refetchClassData]);
+
+  const handleInfoUnsavedChanges = useCallback(
+    (hasChanges: boolean) => registerTabUnsavedChanges('info', hasChanges),
+    [registerTabUnsavedChanges]
+  );
+
+  const handleScheduleUnsavedChanges = useCallback(
+    (hasChanges: boolean) => registerTabUnsavedChanges('schedule', hasChanges),
+    [registerTabUnsavedChanges]
+  );
 
   // Validate ID
   useEffect(() => {
@@ -49,7 +80,7 @@ const ClassPage: React.FC = () => {
   };
 
   const handleTabChange = (newTab: string) => {
-    const tabs = ['info', 'schedule', 'students', 'lessons'] as const;
+    const tabs = ['lessons', 'students', 'schedule', 'info'] as const;
     if ((tabs as readonly string[]).includes(newTab)) {
       // Check if we can switch tabs
       if (canSwitchTab(newTab as any)) {
@@ -121,24 +152,18 @@ const ClassPage: React.FC = () => {
       <ClassPageHeader
         classData={classData}
         onBack={handleBack}
+        onUpdate={memoizedRefetchClassData}
       />
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="bg-white/10 border-white/20">
           <TabsTrigger
-            value="info"
+            value="lessons"
             className="data-[state=active]:bg-white/20 text-white"
           >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger
-            value="schedule"
-            className="data-[state=active]:bg-white/20 text-white"
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            Schedule
+            <BookmarkCheck className="w-4 h-4 mr-2" />
+            Lessons
           </TabsTrigger>
           <TabsTrigger
             value="students"
@@ -148,33 +173,32 @@ const ClassPage: React.FC = () => {
             Students
           </TabsTrigger>
           <TabsTrigger
-            value="lessons"
-            className="data-[state=active]:bg-white/20 text-white"
+            value="schedule"
+            className="data-[state=active]:bg-white/20 text-white relative"
           >
-            <BookmarkCheck className="w-4 h-4 mr-2" />
-            Lessons
+            <Calendar className="w-4 h-4 mr-2" />
+            Schedule
+            {tabsWithUnsavedChanges?.has('schedule') && (
+              <span className="ml-1.5 inline-block w-2 h-2 bg-orange-500 rounded-full align-middle" />
+            )}
+          </TabsTrigger>
+          <TabsTrigger
+            value="info"
+            className="data-[state=active]:bg-white/20 text-white relative"
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            Overview
+            {tabsWithUnsavedChanges?.has('info') && (
+              <span className="ml-1.5 inline-block w-2 h-2 bg-orange-500 rounded-full align-middle" />
+            )}
           </TabsTrigger>
         </TabsList>
 
-        {/* Info Tab */}
-        <TabsContent value="info" className="mt-6">
-          <ClassInfoTab
+        {/* Lessons Tab */}
+        <TabsContent value="lessons" className="mt-6">
+          <ClassLessonsTab 
             classData={classData}
-            onUpdate={refetchClassData}
-            onUnsavedChangesChange={(hasChanges) =>
-              registerTabUnsavedChanges('info', hasChanges)
-            }
-          />
-        </TabsContent>
-
-        {/* Schedule Tab */}
-        <TabsContent value="schedule" className="mt-6">
-          <ClassScheduleTab
-            classData={classData}
-            onUpdate={refetchClassData}
-            onUnsavedChangesChange={(hasChanges) =>
-              registerTabUnsavedChanges('schedule', hasChanges)
-            }
+            onScheduleTabClick={() => handleTabChange('schedule')}
           />
         </TabsContent>
 
@@ -187,9 +211,27 @@ const ClassPage: React.FC = () => {
           />
         </TabsContent>
 
-        {/* Lessons Tab */}
-        <TabsContent value="lessons" className="mt-6">
-          <ClassLessonsTab classData={classData} />
+        {/* Schedule Tab */}
+        <TabsContent value="schedule" className="mt-6">
+          <ClassScheduleTab
+            classData={classData}
+            onUpdate={memoizedRefetchClassData}
+            onUnsavedChangesChange={handleScheduleUnsavedChanges}
+            archivedSchedules={archivedSchedules}
+            loadingArchived={loadingArchived}
+            archivedSchedulesExpanded={archivedSchedulesExpanded}
+            onToggleArchivedSchedules={toggleArchivedSchedules}
+            onRefreshArchivedSchedules={refreshArchivedSchedules}
+          />
+        </TabsContent>
+
+        {/* Info Tab */}
+        <TabsContent value="info" className="mt-6">
+          <ClassInfoTab
+            classData={classData}
+            onUpdate={memoizedRefetchClassData}
+            onUnsavedChangesChange={handleInfoUnsavedChanges}
+          />
         </TabsContent>
       </Tabs>
 
@@ -203,6 +245,15 @@ const ClassPage: React.FC = () => {
         confirmText="Discard Changes"
         cancelText="Stay on Tab"
         variant="danger"
+      />
+
+      {/* Quick Conduct Lesson Modal (from Dashboard Widget) */}
+      <QuickConductLessonModal
+        lesson={quickActionModals.conduct.lesson}
+        open={quickActionModals.conduct.open}
+        onOpenChange={(open) => !open && closeConductModal()}
+        onConfirm={handleQuickConduct}
+        loading={conductingLesson}
       />
     </div>
   );

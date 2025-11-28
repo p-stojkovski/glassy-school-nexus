@@ -27,6 +27,12 @@ interface LessonCalendarProps {
   compact?: boolean;
   emptyMessage?: string;
   emptyDescription?: string;
+  /** Callback that provides the goToToday function to parent */
+  onGoToTodayRef?: (goToToday: () => void) => void;
+  /** Whether to show the built-in Today button in the calendar header */
+  showTodayButton?: boolean;
+  /** Callback when month changes, provides whether viewing current month */
+  onMonthChange?: (isCurrentMonth: boolean) => void;
 }
 
 interface CalendarDay {
@@ -56,6 +62,9 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
   compact = false,
   emptyMessage = "No lessons scheduled",
   emptyDescription = "There are no lessons scheduled for this month.",
+  onGoToTodayRef,
+  showTodayButton = true,
+  onMonthChange,
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dailyLessonModal, setDailyLessonModal] = useState<{
@@ -73,9 +82,26 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
-  const goToToday = () => {
+  const goToToday = React.useCallback(() => {
     setCurrentDate(new Date());
-  };
+  }, []);
+
+  // Expose goToToday to parent component
+  React.useEffect(() => {
+    onGoToTodayRef?.(goToToday);
+  }, [goToToday, onGoToTodayRef]);
+
+  // Check if current view includes today
+  const isViewingCurrentMonth = React.useMemo(() => {
+    const today = new Date();
+    return currentDate.getFullYear() === today.getFullYear() && 
+           currentDate.getMonth() === today.getMonth();
+  }, [currentDate]);
+
+  // Notify parent when month changes
+  React.useEffect(() => {
+    onMonthChange?.(isViewingCurrentMonth);
+  }, [isViewingCurrentMonth, onMonthChange]);
 
   // Get academic calendar data for the current month view
   // Extend the range to include a few days before and after to catch breaks that span months
@@ -283,30 +309,36 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
   return (
     <div className="space-y-4">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h3 className="text-xl font-bold text-white">
-            {monthName} {year}
-          </h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={goToToday}
-            className="text-white/70 hover:text-white hover:bg-white/10"
-          >
-            Today
-          </Button>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={goToPreviousMonth}
-            className="text-white/70 hover:text-white hover:bg-white/10"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h3 className="text-xl font-bold text-white">
+              {monthName} {year}
+            </h3>
+            {showTodayButton && (
+              <Button
+                variant={isViewingCurrentMonth ? "ghost" : "default"}
+                size="sm"
+                onClick={goToToday}
+                className={isViewingCurrentMonth 
+                  ? "text-white/70 hover:text-white hover:bg-white/10" 
+                  : "bg-blue-600 hover:bg-blue-700 text-white font-semibold animate-pulse"
+                }
+              >
+                {isViewingCurrentMonth ? "Today" : "← Jump to Today"}
+              </Button>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToPreviousMonth}
+              className="text-white/70 hover:text-white hover:bg-white/10"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -316,39 +348,33 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
+        </div>
+        
+        {/* Month Summary Stats - REMOVED for cleaner UI, data in dashboard widget */}
       </div>
 
-            {/* Legend */}
-      <div className="flex flex-wrap gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded border-2 border-blue-500 bg-blue-500/10" />
-          <span className="text-white/70">Today</span>
+      {/* Simplified Legend - Only show when needed */}
+      {lessons.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/60">
+          <span className="text-white/40">Legend:</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-blue-400" />
+            <span>Scheduled</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-green-400" />
+            <span>Conducted</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-red-400" />
+            <span>Cancelled</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-orange-400" />
+            <span>Break</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded border-2 border-yellow-400 bg-yellow-400/10" />
-          <span className="text-white/70">Selected</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded border-2 border-blue-400 bg-blue-400/10" />
-          <span className="text-white/70">Scheduled</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded border-2 border-green-400 bg-green-400/10" />
-          <span className="text-white/70">Conducted</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded border-2 border-red-400 bg-red-400/10" />
-          <span className="text-white/70">Cancelled</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-orange-500/30 border-2 border-orange-500/50 shadow-sm shadow-orange-500/20" />
-          <span className="text-white/70">Teaching Break</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-red-500/30 border-2 border-red-500/50 shadow-sm shadow-red-500/20" />
-          <span className="text-white/70">Public Holiday</span>
-        </div>
-      </div>
+      )}
 
       {/* Calendar Grid */}
       <GlassCard className="p-4">
@@ -375,7 +401,7 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
                   relative min-h-[${compact ? '60px' : '100px'}] p-2 rounded-lg cursor-pointer transition-all duration-200
                   border border-transparent hover:border-white/20 hover:bg-white/5
                   ${day.isSelected ? 'border-yellow-400 bg-yellow-400/10' : ''}
-                  ${day.isToday ? 'border-2 border-blue-400 bg-blue-400/20 shadow-lg shadow-blue-500/25' : ''}
+                  ${day.isToday ? 'border-2 border-blue-500 bg-blue-500/30 shadow-xl shadow-blue-500/40 ring-2 ring-blue-400/50 ring-offset-1 ring-offset-transparent' : ''}
                   ${!day.isCurrentMonth ? 'opacity-40' : ''}
                   ${isWeekend ? 'bg-white/5' : ''}
                   ${statusColor}
@@ -383,14 +409,21 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
                 onClick={() => handleDayClick(day)}
               >
                 <div className="flex justify-between items-start">
-                  <span className={`
-                    text-sm font-medium
-                    ${day.isToday ? 'text-blue-300 font-bold' : ''}
-                    ${day.isSelected ? 'text-yellow-400' : ''}
-                    ${!day.isCurrentMonth ? 'text-white/40' : 'text-white'}
-                  `}>
-                    {day.date.getDate()}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`
+                      text-sm font-medium
+                      ${day.isToday ? 'text-blue-200 font-bold text-base' : ''}
+                      ${day.isSelected ? 'text-yellow-400' : ''}
+                      ${!day.isCurrentMonth ? 'text-white/40' : 'text-white'}
+                    `}>
+                      {day.date.getDate()}
+                    </span>
+                    {day.isToday && (
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-blue-300 bg-blue-500/30 px-1.5 py-0.5 rounded">
+                        Today
+                      </span>
+                    )}
+                  </div>
                   
                   {day.lessons.length > 0 && (
                     <Badge variant="outline" className="text-xs h-4 px-1">

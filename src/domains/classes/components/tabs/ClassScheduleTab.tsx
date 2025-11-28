@@ -1,392 +1,173 @@
-import React, { useCallback } from 'react';
-import { FormProvider } from 'react-hook-form';
-import { Clock, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import GlassCard from '@/components/common/GlassCard';
-import { NativeTimeInput } from '@/components/common';
+import React, { useState } from 'react';
 import ClassScheduleSection from '@/domains/classes/components/sections/ClassScheduleSection';
-import TabEditControls from '@/domains/classes/components/unified/TabEditControls';
-import { ClassResponse } from '@/types/api/class';
-import { useScheduleTabForm, ScheduleFormData } from '@/domains/classes/hooks/useScheduleTabForm';
+import ArchivedSchedulesSection from '@/domains/classes/components/schedule/ArchivedSchedulesSection';
+import { AddScheduleSlotDialog } from '@/domains/classes/components/schedule/AddScheduleSlotDialog';
+import { EditScheduleSlotDialog } from '@/domains/classes/components/schedule/EditScheduleSlotDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { ClassResponse, ScheduleSlotDto } from '@/types/api/class';
 import { classApiService } from '@/services/classApiService';
 import { toast } from 'sonner';
 
 interface ClassScheduleTabProps {
   classData: ClassResponse;
   onUpdate: () => void;
-  onUnsavedChangesChange?: (hasChanges: boolean) => void;
+  archivedSchedules?: Array<{ id: string; dayOfWeek: string; startTime: string; endTime: string; pastLessonCount: number }>;
+  loadingArchived?: boolean;
+  archivedSchedulesExpanded?: boolean;
+  onToggleArchivedSchedules?: () => void;
+  onRefreshArchivedSchedules?: () => void;
 }
 
 const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
   classData,
   onUpdate,
-  onUnsavedChangesChange,
+  archivedSchedules = [],
+  loadingArchived = false,
+  archivedSchedulesExpanded = false,
+  onToggleArchivedSchedules,
+  onRefreshArchivedSchedules,
 }) => {
-  const [mode, setMode] = React.useState<'view' | 'edit'>('view');
-  const [isSaving, setIsSaving] = React.useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<ScheduleSlotDto | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // Extract schedule data from classData
-  const scheduleData: ScheduleFormData = {
-    schedule: classData.schedule || [
-      { dayOfWeek: 'Monday', startTime: '09:00', endTime: '10:00' },
-    ],
+  const handleEdit = (slot: ScheduleSlotDto) => {
+    setSelectedSlot(slot);
+    setShowEditDialog(true);
   };
 
-  // Initialize form
-  const form = useScheduleTabForm(scheduleData);
+  const handleDelete = (slot: ScheduleSlotDto) => {
+    setSelectedSlot(slot);
+    setShowDeleteDialog(true);
+  };
 
-  // Track unsaved changes
-  React.useEffect(() => {
-    if (mode !== 'edit') {
-      setHasUnsavedChanges(false);
-      onUnsavedChangesChange?.(false);
-      return;
-    }
+  const handleConfirmDelete = async () => {
+    if (!selectedSlot?.id) return;
 
-    const subscription = form.watch((formData) => {
-      // Compare with original data
-      const hasChanges =
-        JSON.stringify(formData.schedule || []) !== JSON.stringify(classData.schedule || []);
-
-      setHasUnsavedChanges(hasChanges);
-      onUnsavedChangesChange?.(hasChanges);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [form, mode, classData, onUnsavedChangesChange]);
-
-  const handleEdit = useCallback(() => {
-    setMode('edit');
-    form.reset(scheduleData);
-  }, [form, scheduleData]);
-
-  const handleCancel = useCallback(() => {
-    if (hasUnsavedChanges) {
-      if (window.confirm('You have unsaved changes. Are you sure you want to discard them?')) {
-        setMode('view');
-        form.reset(scheduleData);
-        setHasUnsavedChanges(false);
-        onUnsavedChangesChange?.(false);
-      }
-    } else {
-      setMode('view');
-      form.reset(scheduleData);
-    }
-  }, [hasUnsavedChanges, form, scheduleData, onUnsavedChangesChange]);
-
-  const handleSave = useCallback(async () => {
-    // Validate form
-    const isValid = await form.trigger();
-    if (!isValid) {
-      toast.error('Please fix validation errors before saving');
-      return;
-    }
-
-    setIsSaving(true);
+    setIsDeleting(true);
     try {
-      const formData = form.getValues();
+      const response = await classApiService.deleteScheduleSlot(classData.id, selectedSlot.id);
 
-      // Fetch latest class data to avoid overwriting concurrent changes
-      const latestData = await classApiService.getClassById(classData.id);
-
-      // Merge schedule data with existing class data
-      const merged = {
-        name: latestData.name,
-        subjectId: latestData.subjectId,
-        teacherId: latestData.teacherId,
-        classroomId: latestData.classroomId,
-        description: latestData.description,
-        requirements: latestData.requirements,
-        objectives: latestData.objectives,
-        materials: latestData.materials,
-        schedule: formData.schedule,
-        studentIds: latestData.studentIds,
-      };
-
-      // Update class and capture response
-      const response = await classApiService.updateClass(classData.id, merged);
-
-      // Check if lessons were generated for new schedule slots
-      const generationInfo = response.generatedLessonsInfo || [];
-      if (generationInfo.length > 0) {
-        const totalGenerated = generationInfo.reduce(
-          (sum, info) => sum + info.generatedCount,
-          0
+      if (response.wasArchived) {
+        toast.success(
+          `Schedule archived. ${response.pastLessonCount} past lesson(s) preserved.`,
+          { duration: 6000 }
         );
-        const totalConflicts = generationInfo.reduce(
-          (sum, info) => sum + info.skippedConflictCount,
-          0
-        );
-        const totalPast = generationInfo.reduce(
-          (sum, info) => sum + info.skippedPastDateCount,
-          0
-        );
-
-        const extras: string[] = [];
-        if (totalConflicts > 0) {
-          extras.push(`${totalConflicts} date(s) skipped due to conflicts.`);
-        }
-        if (totalPast > 0) {
-          extras.push(`${totalPast} date(s) skipped because they are in the past.`);
-        }
-
-        const message = [`Schedule updated! Generated ${totalGenerated} lesson(s) for new schedule slot(s).`, ...extras].join(' ');
-        toast.success(message, { duration: extras.length ? 6500 : 5000 });
       } else {
-        toast.success('Schedule updated successfully');
+        toast.success('Schedule deleted successfully');
       }
 
-      const warningMessages = [
-        ...(response.lessonGenerationWarnings || []),
-        ...generationInfo.flatMap((info) => info.warnings || []),
-      ];
-      if (warningMessages.length > 0) {
-        toast.warning(
-          `Some lesson generation warnings: ${warningMessages.join(' ')}`,
-          { duration: 7000 }
-        );
-      }
-
-      setMode('view');
-      setHasUnsavedChanges(false);
-      onUnsavedChangesChange?.(false);
-
-      // Refresh parent data
+      setShowDeleteDialog(false);
+      setSelectedSlot(null);
       await onUpdate();
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to update schedule');
+      toast.error(error?.message || 'Failed to delete schedule slot');
     } finally {
-      setIsSaving(false);
+      setIsDeleting(false);
     }
-  }, [form, classData, onUpdate, onUnsavedChangesChange]);
-
-  // Helper functions for schedule management
-  const addScheduleSlot = () => {
-    const currentSchedule = form.getValues('schedule') || [];
-    form.setValue('schedule', [
-      ...currentSchedule,
-      { dayOfWeek: 'Monday', startTime: '09:00', endTime: '10:00' },
-    ]);
   };
 
-  const removeScheduleSlot = (index: number) => {
-    const currentSchedule = form.getValues('schedule') || [];
-    form.setValue(
-      'schedule',
-      currentSchedule.filter((_, i) => i !== index)
-    );
-  };
 
-  const hasScheduleConflict = (currentIndex: number, schedule: any[]) => {
-    if (!schedule || schedule.length <= 1) return false;
-
-    const currentSlot = schedule[currentIndex];
-    if (!currentSlot?.dayOfWeek || !currentSlot?.startTime || !currentSlot?.endTime)
-      return false;
-
-    return schedule.some((slot, index) => {
-      if (index === currentIndex) return false;
-      if (slot.dayOfWeek !== currentSlot.dayOfWeek) return false;
-
-      // Check for time overlap
-      return currentSlot.startTime < slot.endTime && slot.startTime < currentSlot.endTime;
-    });
-  };
-
-  if (mode === 'view') {
-    return (
-      <div className="space-y-6">
-        <ClassScheduleSection
-          mode="view"
-          classData={classData}
-          onEdit={handleEdit}
-        />
-      </div>
-    );
-  }
-
-  // Edit mode
-  const schedule = form.watch('schedule') || [];
 
   return (
-    <FormProvider {...form}>
+    <>
       <div className="space-y-6">
-        <GlassCard className="p-8">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-1">
-                Edit Schedule
-              </h3>
-              <p className="text-white/60 text-sm">
-                Update the class schedule
-              </p>
-            </div>
-            <TabEditControls
-              mode="edit"
-              hasUnsavedChanges={hasUnsavedChanges}
-              isSaving={isSaving}
-              onEdit={handleEdit}
-              onSave={handleSave}
-              onCancel={handleCancel}
-            />
-          </div>
+        <ClassScheduleSection
+          classData={classData}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onAddSchedule={() => setShowAddDialog(true)}
+        />
 
-          {/* Schedule Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                Schedule
-              </h3>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={addScheduleSlot}
-                className="text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Time Slot
-              </Button>
-            </div>
-
-            {/* Schedule validation error */}
-            {form.formState.errors.schedule?.message && (
-              <div className="text-red-400 text-sm p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                {form.formState.errors.schedule.message}
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {schedule.map((_, index) => {
-                const hasConflict = hasScheduleConflict(index, schedule);
-                return (
-                  <div
-                    key={index}
-                    className={`grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-lg border ${
-                      hasConflict
-                        ? 'bg-red-500/10 border-red-500/30'
-                        : 'bg-white/5 border-white/10'
-                    }`}
-                  >
-                    <FormField
-                      control={form.control}
-                      name={`schedule.${index}.dayOfWeek`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-white/70">Day</FormLabel>
-                          <FormControl>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Monday">Monday</SelectItem>
-                                <SelectItem value="Tuesday">Tuesday</SelectItem>
-                                <SelectItem value="Wednesday">Wednesday</SelectItem>
-                                <SelectItem value="Thursday">Thursday</SelectItem>
-                                <SelectItem value="Friday">Friday</SelectItem>
-                                <SelectItem value="Saturday">Saturday</SelectItem>
-                                <SelectItem value="Sunday">Sunday</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`schedule.${index}.startTime`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <NativeTimeInput
-                            label="Start Time"
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select start time"
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`schedule.${index}.endTime`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <NativeTimeInput
-                            label="End Time"
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select end time"
-                            min={form.watch(`schedule.${index}.startTime`)}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div style={{ paddingTop: '32px' }}>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => removeScheduleSlot(index)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 w-full"
-                        disabled={schedule.length === 1}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Remove
-                      </Button>
-                    </div>
-
-                    {/* Conflict warning */}
-                    {hasConflict && (
-                      <div className="col-span-full mt-2 text-red-400 text-sm flex items-center gap-2">
-                        <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                        This schedule conflicts with another slot on the same day
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {schedule.length === 0 && (
-              <div className="text-center py-8 text-white/60">
-                <Clock className="w-12 h-12 mx-auto mb-4 text-white/40" />
-                <p>No schedule slots added yet.</p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={addScheduleSlot}
-                  className="text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 mt-2"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add First Time Slot
-                </Button>
-              </div>
-            )}
-          </div>
-        </GlassCard>
+        {/* Archived schedules section */}
+        {onToggleArchivedSchedules && (
+          <ArchivedSchedulesSection
+            archivedSchedules={archivedSchedules}
+            isExpanded={archivedSchedulesExpanded}
+            onToggleExpand={onToggleArchivedSchedules}
+            isLoading={loadingArchived}
+          />
+        )}
       </div>
-    </FormProvider>
+
+      {/* Dialogs */}
+      <AddScheduleSlotDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        classId={classData.id}
+        onSuccess={onUpdate}
+      />
+
+      <EditScheduleSlotDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        classId={classData.id}
+        slot={selectedSlot}
+        onSuccess={onUpdate}
+        onDelete={handleDelete}
+      />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Schedule Slot?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedSlot && (
+                <div className="space-y-3">
+                  <p>
+                    This will remove the <strong>{selectedSlot.dayOfWeek}</strong>{' '}
+                    <strong>{selectedSlot.startTime} - {selectedSlot.endTime}</strong> schedule.
+                  </p>
+                  
+                  {/* Warning about future lessons that will be deleted */}
+                  {selectedSlot.futureLessonCount && selectedSlot.futureLessonCount > 0 && (
+                    <div className="rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3">
+                      <p className="font-medium text-red-700 dark:text-red-400">
+                        ⚠️ This will permanently delete {selectedSlot.futureLessonCount} future lesson(s)!
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Information about past lessons and archival */}
+                  {selectedSlot.pastLessonCount && selectedSlot.pastLessonCount > 0 ? (
+                    <div className="rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3">
+                      <p className="font-medium text-amber-700 dark:text-amber-400">
+                        📁 This schedule has {selectedSlot.pastLessonCount} past lesson(s) and will be archived to preserve history.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      This schedule has no past lessons and will be permanently deleted.
+                    </p>
+                  )}
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : (selectedSlot?.pastLessonCount && selectedSlot.pastLessonCount > 0 ? 'Archive' : 'Delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

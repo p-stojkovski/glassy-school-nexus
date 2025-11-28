@@ -5,9 +5,13 @@
 
 // Shared DTOs
 export interface ScheduleSlotDto {
+  id?: string;  // Optional: filled when fetching existing schedules
   dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
   startTime: string; // "HH:mm"
   endTime: string;   // "HH:mm"
+  isObsolete?: boolean;  // Optional: true for archived schedules
+  pastLessonCount?: number;  // Optional: count of past lessons (scheduled_date < today)
+  futureLessonCount?: number;  // Optional: count of future lessons (scheduled_date > today) that will be deleted
 }
 
 // Requests
@@ -72,6 +76,15 @@ export interface ClassResponse {
 }
 
 export interface ClassCreatedResponse { id: string; }
+
+export interface ArchivedScheduleSlotResponse {
+  id: string;
+  dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+  isObsolete: boolean;
+  pastLessonCount: number;
+}
 
 // Student progress summary types
 export interface AttendanceSummary {
@@ -160,6 +173,7 @@ export const ClassApiPaths = {
   BASE: '/api/classes',
   BY_ID: (id: string) => `/api/classes/${id}`,
   SEARCH: '/api/classes/search',
+  ARCHIVED_SCHEDULES: (id: string) => `/api/classes/${id}/schedules/archived`,
 } as const;
 
 // Validation constants

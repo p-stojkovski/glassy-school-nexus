@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { classApiService } from '@/services/classApiService';
-import { ClassResponse, ClassFormData } from '@/types/api/class';
+import { ClassResponse, ClassFormData, ArchivedScheduleSlotResponse } from '@/types/api/class';
 
 type ClassPageMode = 'view' | 'edit';
 type TabId = 'info' | 'schedule' | 'students' | 'lessons';
@@ -16,6 +16,10 @@ export interface ClassPageState {
   loading: boolean;
   error: string | null;
   tabsWithUnsavedChanges: Set<string>;
+  // Archived schedules state
+  archivedSchedules: ArchivedScheduleSlotResponse[];
+  loadingArchived: boolean;
+  archivedSchedulesExpanded: boolean;
 }
 
 // Convert ClassResponse to ClassFormData (stable function)
@@ -43,11 +47,14 @@ export const useClassPage = (classId: string) => {
     mode: initialMode,
     classData: null,
     editData: null,
-    activeTab: 'info',
+    activeTab: 'lessons',
     hasUnsavedChanges: false,
     loading: true,
     error: null,
     tabsWithUnsavedChanges: new Set(),
+    archivedSchedules: [],
+    loadingArchived: false,
+    archivedSchedulesExpanded: false,
   });
 
   // Fetch class data on mount
@@ -233,23 +240,100 @@ export const useClassPage = (classId: string) => {
     return state.tabsWithUnsavedChanges.size > 0;
   }, [state.tabsWithUnsavedChanges]);
 
+  // Load archived schedules (lazy loading)
+  const loadArchivedSchedules = useCallback(async () => {
+    if (state.archivedSchedules.length > 0 || state.loadingArchived) {
+      return; // Already loaded or loading
+    }
+
+    setState((prev) => ({
+      ...prev,
+      loadingArchived: true,
+    }));
+
+    try {
+      const archived = await classApiService.getArchivedSchedules(classId);
+      setState((prev) => ({
+        ...prev,
+        archivedSchedules: archived,
+        loadingArchived: false,
+      }));
+    } catch (err: any) {
+      setState((prev) => ({
+        ...prev,
+        loadingArchived: false,
+      }));
+      console.error('Error loading archived schedules:', err);
+      toast.error('Failed to load archived schedules');
+    }
+  }, [classId, state.archivedSchedules.length, state.loadingArchived]);
+
+  // Toggle archived schedules expansion
+  const toggleArchivedSchedules = useCallback(async () => {
+    setState((prev) => {
+      const newExpanded = !prev.archivedSchedulesExpanded;
+      // Load when expanding if not already loaded
+      if (newExpanded && prev.archivedSchedules.length === 0) {
+        loadArchivedSchedules();
+      }
+      return {
+        ...prev,
+        archivedSchedulesExpanded: newExpanded,
+      };
+    });
+  }, [loadArchivedSchedules]);
+
+  // Refresh archived schedules (after schedule deletion/archival)
+  const refreshArchivedSchedules = useCallback(async () => {
+    if (!state.archivedSchedulesExpanded) {
+      return; // Don't refresh if not visible
+    }
+    setState((prev) => ({
+      ...prev,
+      loadingArchived: true,
+    }));
+    try {
+      const archived = await classApiService.getArchivedSchedules(classId);
+      setState((prev) => ({
+        ...prev,
+        archivedSchedules: archived,
+        loadingArchived: false,
+      }));
+    } catch (err: any) {
+      setState((prev) => ({
+        ...prev,
+        loadingArchived: false,
+      }));
+      console.error('Error refreshing archived schedules:', err);
+    }
+  }, [classId, state.archivedSchedulesExpanded]);
+
   return {
     // State
     ...state,
     
-    // Actions
+    // Actions - Edit mode
     enterEditMode,
     cancelEdit,
     cancelEditConfirmed,
     updateField,
     updateNestedField,
     saveChanges,
+    
+    // Actions - Tab management
     setActiveTab,
     setHasUnsavedChanges,
-    refetchClassData,
     registerTabUnsavedChanges,
     canSwitchTab,
     hasAnyUnsavedChanges,
+    
+    // Actions - Data refresh
+    refetchClassData,
+    
+    // Actions - Archived schedules
+    loadArchivedSchedules,
+    toggleArchivedSchedules,
+    refreshArchivedSchedules,
   };
 };
 

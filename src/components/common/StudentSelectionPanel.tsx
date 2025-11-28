@@ -4,14 +4,10 @@ import {
   Search,
   Users,
   Check,
-  UserCheck,
-  UserX,
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import FormButtons from '@/components/common/FormButtons';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -29,6 +25,7 @@ interface StudentSelectionPanelProps {
   students?: Student[]; // Made optional since we'll load them independently
   classes: Class[];
   selectedStudentIds: string[];
+  excludeStudentIds?: string[]; // Students to exclude from the available list (e.g., already enrolled)
   onSelectionChange: (studentIds: string[]) => void;
   onClose: () => void;
   isOpen: boolean;
@@ -42,6 +39,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   students: propStudents = [],
   classes,
   selectedStudentIds,
+  excludeStudentIds = [],
   onSelectionChange,
   onClose,
   isOpen,
@@ -117,12 +115,16 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
       document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [isOpen, onClose]);
-  // Filter students based on search query only
+  // Filter students based on search query and exclusions
   const filteredStudents = useMemo(() => {
     // Ensure students is an array before filtering
     const studentArray = Array.isArray(students) ? students : [];
     
-    let filtered = studentArray;
+    // First, exclude students that should not be shown (e.g., already enrolled)
+    let filtered = excludeStudentIds.length > 0
+      ? studentArray.filter(student => !excludeStudentIds.includes(student.id))
+      : studentArray;
+    
     // Apply search query filter
     if (searchQuery) {
       const lowercasedQuery = searchQuery.toLowerCase();
@@ -145,7 +147,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
       const nameB = b.fullName || `${b.firstName || ''} ${b.lastName || ''}`.trim() || b.email || '';
       return nameA.localeCompare(nameB);
     });
-  }, [students, searchQuery]);
+  }, [students, searchQuery, excludeStudentIds]);
 
   // Get selected students info
   const selectedStudents = useMemo(() => {
@@ -219,124 +221,119 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <SheetHeader className="flex items-center justify-between px-6 py-4 border-b border-white/20">
-            <SheetTitle className="flex items-center gap-3 text-white text-2xl font-bold">
-              <Users className="w-5 h-5" />
+          <SheetHeader className="px-4 py-4 border-b border-white/10">
+            <SheetTitle className="flex items-center gap-2 text-white text-lg font-semibold">
+              <Users className="w-5 h-5 text-blue-400" />
               {title}
             </SheetTitle>
           </SheetHeader>
-          {/* Search */}
-          <div className="p-4 space-y-3 border-b border-white/20">
+
+          {/* Search Section */}
+          <div className="p-4 border-b border-white/10">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40 w-4 h-4" />
               <Input
                 placeholder="Search students..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 h-10"
               />
+              {searchQuery && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
-
-            {searchQuery && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearSearch}
-                className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10"
-              >
-                <X className="w-3 h-3 mr-2" />
-                Clear Search
-              </Button>
-            )}
           </div>
-          {/* Selection Summary */}
+
+          {/* Selected Students Section - Always visible when selections exist */}
           {tempSelectedIds.length > 0 && (
-            <div className="px-4 py-3 bg-white/5 border-b border-white/20">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-white">
+            <div className="p-4 bg-white/5 border-b border-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-400" />
                   Selected ({tempSelectedIds.length})
-                  {maxSelections && ` / ${maxSelections}`}
-                </span>
+                  {maxSelections && <span className="text-white/50">/ {maxSelections}</span>}
+                </h3>
                 {allowMultiple && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
                     onClick={() => setTempSelectedIds([])}
-                    className="text-white/70 hover:text-white hover:bg-white/10 h-6 px-2 text-xs"
+                    className="text-xs text-white/50 hover:text-white/70 transition-colors"
                   >
                     Clear All
-                  </Button>
+                  </button>
                 )}
               </div>
-              <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
-                {selectedStudents.slice(0, 5).map((student) => (
-                  <Badge
+              <div className="flex flex-wrap gap-2">
+                {selectedStudents.map((student) => (
+                  <div
                     key={student.id}
-                    variant="secondary"
-                    className="bg-blue-500/20 text-white border border-blue-400/30 text-xs font-medium"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/10 border border-white/20 rounded-full text-sm group hover:bg-white/15 transition-colors"
                   >
-                    {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email || 'Unknown'}
+                    <span className="text-white/90 truncate max-w-[120px]">
+                      {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email || 'Unknown'}
+                    </span>
                     <button
                       onClick={() => handleSelect(student)}
-                      className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
-                      title="Remove student"
+                      className="text-white/40 hover:text-white/70 transition-colors p-0.5 hover:bg-white/10 rounded-full"
+                      title="Remove"
                     >
-                      <X className="w-2 h-2" />
+                      <X className="w-3 h-3" />
                     </button>
-                  </Badge>
+                  </div>
                 ))}
-                {selectedStudents.length > 5 && (
-                  <Badge variant="outline" className="text-white/70 text-xs">
-                    +{selectedStudents.length - 5} more
-                  </Badge>
+              </div>
+            </div>
+          )}
+
+          {/* Available Students Section Header */}
+          {!isLoadingStudents && !studentsError && filteredStudents.length > 0 && (
+            <div className="px-4 py-3 border-b border-white/10">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-white/70">
+                  Available Students ({filteredStudents.length})
+                </h3>
+                {allowMultiple && filteredStudents.length > 0 && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSelectAll}
+                      disabled={maxSelections && tempSelectedIds.length >= maxSelections}
+                      className="text-xs text-white/50 hover:text-white/70 transition-colors disabled:opacity-50"
+                    >
+                      Select All
+                    </button>
+                    <span className="text-white/30">|</span>
+                    <button
+                      onClick={handleDeselectAll}
+                      className="text-xs text-white/50 hover:text-white/70 transition-colors"
+                    >
+                      Deselect All
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
           )}
-          {/* Bulk Actions */}
-          {allowMultiple && filteredStudents.length > 0 && !isLoadingStudents && !studentsError && (
-            <div className="px-4 py-3 border-b border-white/20">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSelectAll}
-                  className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 text-xs"
-                  disabled={
-                    maxSelections && tempSelectedIds.length >= maxSelections
-                  }
-                >
-                  <UserCheck className="w-3 h-3 mr-1" />
-                  Select All
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDeselectAll}
-                  className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 text-xs"
-                >
-                  <UserX className="w-3 h-3 mr-1" />
-                  Deselect All
-                </Button>
-              </div>
-            </div>
-          )}
+
           {/* Student List */}
-          <ScrollArea className="flex-1 p-3">
-            <div className="space-y-2">
+          <ScrollArea className="flex-1">
+            <div className="p-4 space-y-2">
               {/* Loading State */}
               {isLoadingStudents ? (
-                <div className="flex flex-col items-center justify-center py-12 text-white/60">
-                  <Loader2 className="w-8 h-8 animate-spin mb-3 text-blue-400" />
-                  <p className="font-medium">Loading students...</p>
-                  <p className="text-sm text-white/40">Please wait while we fetch the student list</p>
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="w-12 h-12 animate-spin mb-4 text-white/40" />
+                  <p className="text-sm font-medium text-white/70">Loading students...</p>
+                  <p className="text-xs text-white/40 mt-1">Please wait</p>
                 </div>
               ) : studentsError ? (
                 /* Error State */
-                <div className="flex flex-col items-center justify-center py-12 text-white/60">
-                  <AlertCircle className="w-8 h-8 mb-3 text-red-400" />
-                  <p className="font-medium text-red-300">Failed to load students</p>
-                  <p className="text-sm text-white/40 text-center max-w-xs">{studentsError}</p>
+                <div className="flex flex-col items-center justify-center py-12">
+                  <AlertCircle className="w-12 h-12 mb-4 text-red-400/60" />
+                  <p className="text-sm font-medium text-white/70">Failed to load students</p>
+                  <p className="text-xs text-white/40 mt-1 text-center max-w-xs">{studentsError}</p>
                   <Button
                     variant="outline"
                     size="sm"
@@ -353,18 +350,20 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                         setIsLoadingStudents(false);
                       }
                     }}
-                    className="mt-3 bg-white/5 border-white/10 text-white hover:bg-white/10"
+                    className="mt-4 bg-white/10 hover:bg-white/20 text-white border border-white/20"
                   >
                     Try Again
                   </Button>
                 </div>
               ) : filteredStudents.length === 0 ? (
                 /* Empty State */
-                <div className="text-center py-8 text-white/60">
-                  <Users className="w-8 h-8 mx-auto mb-2" />
-                  <p>No students found</p>
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Users className="w-12 h-12 text-white/40 mb-4" />
+                  <p className="text-sm font-medium text-white/70">
+                    {searchQuery ? 'No students match your search' : 'No students available'}
+                  </p>
                   {searchQuery && (
-                    <p className="text-sm">Try adjusting your search</p>
+                    <p className="text-xs text-white/40 mt-1">Try a different search term</p>
                   )}
                 </div>
               ) : (
@@ -386,63 +385,62 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                       className={cn(
                         'flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer',
                         isSelected
-                          ? 'bg-blue-500/20 border-blue-400/50 shadow-sm ring-1 ring-blue-400/30'
+                          ? 'bg-white/10 border-white/30'
                           : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20',
                         (isDisabled || isMaxReached) &&
                           'opacity-50 cursor-not-allowed'
                       )}
                     >
+                      {/* Checkbox */}
                       <div
                         className={cn(
-                          'w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0',
+                          'w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0',
                           isSelected
-                            ? 'bg-blue-500 border-blue-500 shadow-sm'
+                            ? 'bg-white/20 border-white/40'
                             : 'border-white/30 hover:border-white/50'
                         )}
                       >
-                        {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                        {isSelected && <Check className="w-3 h-3 text-white" />}
                       </div>
 
+                      {/* Student Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <p className="font-medium text-white truncate text-sm leading-tight">
-                              {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email || 'Unknown Student'}
-                            </p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              {(student.fullName || student.firstName || student.lastName) && student.email && (
-                                <p className="text-xs text-white/60 truncate">
-                                  {student.email}
-                                </p>
-                              )}
-                              {student.phone && (
-                                <span className="text-white/40">|</span>
-                              )}
-                              {student.phone && (
-                                <p className="text-xs text-white/60 truncate">
-                                  {student.phone}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          
-                        </div>
+                        <p className="text-sm font-medium text-white truncate">
+                          {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email || 'Unknown Student'}
+                        </p>
+                        {(student.email || student.phone) && (
+                          <p className="text-xs text-white/50 truncate mt-0.5">
+                            {student.email}
+                            {student.email && student.phone && ' • '}
+                            {student.phone}
+                          </p>
+                        )}
                       </div>
                     </div>
                   );
                 })
               )}
             </div>
-          </ScrollArea>{' '}
+          </ScrollArea>
+
           {/* Footer Actions */}
-          <div className="px-6 py-4 border-t border-white/20">
-            <FormButtons
-              onSubmit={handleApply}
-              onCancel={handleCancel}
-              submitText={`Apply (${tempSelectedIds.length})`}
-              disabled={isLoadingStudents || studentsError !== null || (!allowMultiple && tempSelectedIds.length === 0)}
-              variant="compact"
-            />
+          <div className="p-4 border-t border-white/10 bg-white/5">
+            <div className="flex gap-3">
+              <Button
+                onClick={handleApply}
+                disabled={isLoadingStudents || studentsError !== null}
+                className="flex-1 bg-white/20 hover:bg-white/30 text-white border border-white/30 font-semibold"
+              >
+                Apply ({tempSelectedIds.length})
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={handleCancel}
+                className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         </div>
       </SheetContent>

@@ -16,7 +16,19 @@ import {
   ProblemDetails,
   StudentLessonSummary,
   StudentLessonDetail,
+  ArchivedScheduleSlotResponse,
 } from '@/types/api/class';
+import {
+  ScheduleValidationRequest,
+  ScheduleValidationResponse,
+} from '@/types/api/scheduleValidation';
+import {
+  CreateScheduleSlotRequest,
+  CreateScheduleSlotResponse,
+  UpdateScheduleSlotRequest,
+  UpdateScheduleSlotResponse,
+  DeleteScheduleSlotResponse,
+} from '@/types/api/scheduleSlot';
 
 // Preserve status/details when rethrowing with a custom message
 function makeApiError(original: any, message: string): Error & { status?: number; details?: any } {
@@ -208,6 +220,108 @@ await apiService.delete<void>(ClassApiPaths.BY_ID(id));
       throw makeApiError(error, `Failed to fetch student lesson details: ${error.message || 'Unknown error'}`);
     }
   }
+
+  /** Get archived schedule slots for a class */
+  async getArchivedSchedules(classId: string): Promise<ArchivedScheduleSlotResponse[]> {
+    try {
+      const raw = await apiService.get<any>(ClassApiPaths.ARCHIVED_SCHEDULES(classId));
+      return normalizeListResponse<ArchivedScheduleSlotResponse>(raw);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to view archived schedules');
+      }
+      throw makeApiError(error, `Failed to fetch archived schedules: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Validate schedule changes for conflicts and modifications */
+  async validateScheduleChanges(
+    classId: string,
+    request: ScheduleValidationRequest
+  ): Promise<ScheduleValidationResponse> {
+    try {
+      const endpoint = `/api/classes/${classId}/schedules/validate`;
+      return await apiService.post<any>(endpoint, request);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid schedule data provided');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to validate schedules');
+      }
+      throw makeApiError(error, `Failed to validate schedule changes: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Create a new schedule slot */
+  async createScheduleSlot(
+    classId: string,
+    request: CreateScheduleSlotRequest
+  ): Promise<CreateScheduleSlotResponse> {
+    try {
+      const endpoint = `/api/classes/${classId}/schedules/slots`;
+      return await apiService.post<CreateScheduleSlotResponse>(endpoint, request);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid schedule slot data provided');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to create schedule slots');
+      }
+      throw makeApiError(error, `Failed to create schedule slot: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Update an existing schedule slot */
+  async updateScheduleSlot(
+    classId: string,
+    slotId: string,
+    request: UpdateScheduleSlotRequest
+  ): Promise<UpdateScheduleSlotResponse> {
+    try {
+      const endpoint = `/api/classes/${classId}/schedules/slots/${slotId}`;
+      return await apiService.put<UpdateScheduleSlotResponse>(endpoint, request);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class or schedule slot not found');
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid schedule slot data provided');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to update schedule slots');
+      }
+      throw makeApiError(error, `Failed to update schedule slot: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Delete a schedule slot */
+  async deleteScheduleSlot(
+    classId: string,
+    slotId: string
+  ): Promise<DeleteScheduleSlotResponse> {
+    try {
+      const endpoint = `/api/classes/${classId}/schedules/slots/${slotId}`;
+      return await apiService.delete<DeleteScheduleSlotResponse>(endpoint);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class or schedule slot not found');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to delete schedule slots');
+      }
+      throw makeApiError(error, `Failed to delete schedule slot: ${error.message || 'Unknown error'}`);
+    }
+  }
 }
 
 export const classApiService = new ClassApiService();
@@ -221,4 +335,13 @@ export const updateClass = (id: string, request: UpdateClassRequest) => classApi
 export const deleteClass = (id: string) => classApiService.deleteClass(id);
 export const getClassStudentsSummary = (classId: string) => classApiService.getClassStudentsSummary(classId);
 export const getClassStudentLessons = (classId: string, studentId: string) => classApiService.getClassStudentLessons(classId, studentId);
+export const getArchivedSchedules = (classId: string) => classApiService.getArchivedSchedules(classId);
+export const validateScheduleChanges = (classId: string, request: ScheduleValidationRequest) =>
+  classApiService.validateScheduleChanges(classId, request);
+export const createScheduleSlot = (classId: string, request: CreateScheduleSlotRequest) =>
+  classApiService.createScheduleSlot(classId, request);
+export const updateScheduleSlot = (classId: string, slotId: string, request: UpdateScheduleSlotRequest) =>
+  classApiService.updateScheduleSlot(classId, slotId, request);
+export const deleteScheduleSlot = (classId: string, slotId: string) =>
+  classApiService.deleteScheduleSlot(classId, slotId);
 

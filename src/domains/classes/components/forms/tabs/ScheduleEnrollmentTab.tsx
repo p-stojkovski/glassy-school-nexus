@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Clock, Plus, Trash2, Users, Calendar, CheckCircle2 } from 'lucide-react';
+import { Clock, Plus, Trash2, Users, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -16,6 +16,11 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 import StudentSelectionTrigger from '@/components/common/StudentSelectionTrigger';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import { NativeTimeInput } from '@/components/common';
@@ -170,17 +175,33 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
                 )}
               />
 
-              <div style={{paddingTop: "32px"}}>
+              <div style={{paddingTop: "32px"}} className="flex items-center gap-2">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => removeScheduleSlot(index)}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10 w-full"
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10 w-full disabled:text-red-400 disabled:opacity-50 disabled:hover:bg-red-500/10"
                   disabled={schedule.length === 1}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Remove
                 </Button>
+                {schedule.length === 1 && (
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center w-5 h-5 text-gray-400 hover:text-gray-300 cursor-help focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded flex-shrink-0"
+                        aria-label="At least one slot required"
+                      >
+                        <AlertCircle className="w-5 h-5" />
+                      </button>
+                    </HoverCardTrigger>
+                    <HoverCardContent side="left" className="w-auto">
+                      <p className="text-sm text-gray-200">At least one slot required</p>
+                    </HoverCardContent>
+                  </HoverCard>
+                )}
               </div>
               
               {/* Conflict warning */}

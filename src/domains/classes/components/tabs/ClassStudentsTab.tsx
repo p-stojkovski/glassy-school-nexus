@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, Users, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { toast } from 'sonner';
+import GlassCard from '@/components/common/GlassCard';
 import ScheduleEnrollmentTab from '@/domains/classes/components/forms/tabs/ScheduleEnrollmentTab';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import StudentProgressTable from '@/domains/classes/components/sections/StudentProgressTable';
@@ -147,11 +148,43 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
   if (mode === 'view') {
     return (
       <div className="space-y-6">
-        {/* Student Progress Table */}
+        {/* Student Progress Table or Empty State */}
         {classData.enrolledCount === 0 ? (
-          <div className="text-center py-8 text-white/60">
-            No students enrolled yet
-          </div>
+          <GlassCard className="p-4">
+            <div className="text-center py-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 mb-3">
+                <Users className="w-6 h-6 text-white/40" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">No Students Enrolled</h3>
+              <p className="text-white/60 mb-4 max-w-md mx-auto">
+                This class doesn't have any students yet. Add students to start tracking their progress and attendance.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Button
+                  onClick={() => setIsAddPanelOpen(true)}
+                  disabled={isAdding || isLoadingStudents}
+                  className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
+                >
+                  {isLoadingStudents ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4" />
+                      Add Students
+                    </>
+                  )}
+                </Button>
+              </div>
+              {classData.availableSlots > 0 && (
+                <p className="text-white/40 text-sm mt-4">
+                  {classData.availableSlots} {classData.availableSlots === 1 ? 'slot' : 'slots'} available (capacity: {classData.classroomCapacity})
+                </p>
+              )}
+            </div>
+          </GlassCard>
         ) : (
           <StudentProgressTable
             classId={classData.id}
@@ -170,7 +203,8 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
           onClose={() => setIsAddPanelOpen(false)}
           students={allStudents}
           classes={[]}
-          selectedStudentIds={classData.studentIds}
+          selectedStudentIds={[]}  // Start with empty selection for adding new students
+          excludeStudentIds={classData.studentIds}  // Hide already enrolled students
           onSelectionChange={handleAddStudents}
           title="Add Students to Class"
           allowMultiple={true}

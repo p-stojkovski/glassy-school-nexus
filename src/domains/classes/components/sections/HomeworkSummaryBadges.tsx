@@ -8,13 +8,20 @@ import {
 } from '@/components/ui/tooltip';
 import { HomeworkSummary } from '@/types/api/class';
 import { CheckCircle2, AlertTriangle, XCircle, Circle } from 'lucide-react';
+import TrendIndicator from './TrendIndicator';
+import { calculateHomeworkTrend } from './trendUtils';
 
 interface HomeworkSummaryBadgesProps {
   homework: HomeworkSummary;
   className?: string;
+  showTrend?: boolean;
 }
 
-const HomeworkSummaryBadges: React.FC<HomeworkSummaryBadgesProps> = ({ homework, className = '' }) => {
+const HomeworkSummaryBadges: React.FC<HomeworkSummaryBadgesProps> = ({ 
+  homework, 
+  className = '',
+  showTrend = true,
+}) => {
   const badges = [
     {
       count: homework.complete,
@@ -57,6 +64,11 @@ const HomeworkSummaryBadges: React.FC<HomeworkSummaryBadgesProps> = ({ homework,
   const completionRate = totalLessons > 0 ? Math.round(((homework.complete + homework.partial * 0.5) / totalLessons) * 100) : 0;
   const tooltipText = `Homework: ${homework.complete} Complete, ${homework.partial} Partial, ${homework.missing} Missing${homework.notChecked > 0 ? `, ${homework.notChecked} Not Checked` : ''} (${completionRate}% completion rate)`;
 
+  // Calculate trend based on missing homework rate
+  const trend = showTrend && totalLessons >= 4
+    ? calculateHomeworkTrend(homework.complete, homework.missing, totalLessons)
+    : null;
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -73,6 +85,13 @@ const HomeworkSummaryBadges: React.FC<HomeworkSummaryBadgesProps> = ({ homework,
                 <span className="font-semibold">{count}</span>
               </Badge>
             ))}
+            {trend && (
+              <TrendIndicator 
+                direction={trend.direction} 
+                tooltipText={trend.tooltip}
+                size="sm"
+              />
+            )}
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="bg-gray-900 border-gray-700">

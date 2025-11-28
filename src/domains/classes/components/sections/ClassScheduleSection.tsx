@@ -1,84 +1,72 @@
-import React from 'react';
-import { Calendar } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Calendar, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
-import { ClassResponse } from '@/types/api/class';
-import { formatSchedule } from '@/utils/scheduleFormatter';
+import { ClassResponse, ScheduleSlotDto } from '@/types/api/class';
+import WeeklyScheduleGrid from '@/domains/classes/components/schedule/WeeklyScheduleGrid';
+import { sortSchedulesByDay } from '@/domains/classes/utils/scheduleUtils';
 
 interface ClassScheduleSectionProps {
   classData: ClassResponse;
-  mode?: 'view' | 'edit';
-  onEdit?: () => void;
-  onSave?: () => void;
-  onCancel?: () => void;
-  isSaving?: boolean;
+  onEdit?: (slot: ScheduleSlotDto) => void;
+  onDelete?: (slot: ScheduleSlotDto) => void;
+  onAddSchedule?: () => void;
 }
 
 const ClassScheduleSection: React.FC<ClassScheduleSectionProps> = ({
   classData,
-  mode = 'view',
   onEdit,
-  onSave,
-  onCancel,
-  isSaving = false,
+  onDelete,
+  onAddSchedule,
 }) => {
-  const scheduleDisplay = formatSchedule(classData.schedule || []);
+  const sortedSchedules = useMemo(
+    () => (classData.schedule ? sortSchedulesByDay(classData.schedule) : []),
+    [classData.schedule]
+  );
+
+  const activeSchedules = useMemo(
+    () => sortedSchedules.filter((s) => !s.isObsolete),
+    [sortedSchedules]
+  );
 
   return (
-    <GlassCard className="p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Schedule
-          </h3>
+    <GlassCard className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-blue-400" />
+          Weekly Overview
+        </h3>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-white/50">
+            {activeSchedules.length} {activeSchedules.length === 1 ? 'session' : 'sessions'} per week
+          </span>
+          {onAddSchedule && (
+            <Button
+              onClick={onAddSchedule}
+              size="sm"
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add Schedule Slot
+            </Button>
+          )}
         </div>
-        {mode === 'view' && onEdit && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onEdit}
-            className="text-white border-white/20 hover:bg-white/10"
-          >
-            Edit
-          </Button>
-        )}
-        {mode === 'edit' && (onSave || onCancel) && (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onCancel}
-              disabled={isSaving}
-              className="text-white border-white/20 hover:bg-white/10 disabled:opacity-50"
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              onClick={onSave}
-              disabled={isSaving}
-              className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
-            >
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
-        )}
       </div>
-
-      {classData.schedule && classData.schedule.length > 0 && (
-        <div className="space-y-3">
-          {classData.schedule.map((slot, idx) => (
-            <div
-              key={idx}
-              className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10"
-            >
-              <span className="font-medium text-white">{slot.dayOfWeek}</span>
-              <span className="text-white/70">
-                {slot.startTime} - {slot.endTime}
-              </span>
-            </div>
-          ))}
+      
+      {activeSchedules.length > 0 ? (
+        <WeeklyScheduleGrid
+          schedules={sortedSchedules}
+          onSlotClick={onEdit}
+        />
+      ) : (
+        <div className="text-center py-12">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 mb-3">
+            <Calendar className="w-6 h-6 text-white/40" />
+          </div>
+          <p className="text-white/60 mb-4">No schedule slots configured yet.</p>
+          <p className="text-white/40 text-sm">
+            Add your first slot to see it on the weekly grid.
+          </p>
         </div>
       )}
     </GlassCard>

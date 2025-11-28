@@ -44,7 +44,19 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
         }
 
         // Fetch teaching breaks for the relevant year (holidays are represented as breakType = 'holiday')
-        const teachingBreaks = await academicCalendarApiService.getTeachingBreaksByYear(relevantYear.id);
+        let teachingBreaks: TeachingBreak[] = [];
+        try {
+          teachingBreaks = await academicCalendarApiService.getTeachingBreaksByYear(relevantYear.id);
+        } catch (err: any) {
+          // If 404, the year might not have breaks defined yet - treat as empty array
+          if (err?.status === 404 || err?.message?.includes('404')) {
+            console.warn(`No teaching breaks found for academic year ${relevantYear.id}`);
+            teachingBreaks = [];
+          } else {
+            // Re-throw other errors
+            throw err;
+          }
+        }
 
         const nonTeachingData: NonTeachingDayData[] = [];
         

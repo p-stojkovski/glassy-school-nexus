@@ -8,13 +8,20 @@ import {
 } from '@/components/ui/tooltip';
 import { AttendanceSummary } from '@/types/api/class';
 import { CheckCircle2, XCircle, Clock, FileText, Circle } from 'lucide-react';
+import TrendIndicator from './TrendIndicator';
+import { calculateAttendanceTrend } from './trendUtils';
 
 interface AttendanceSummaryBadgesProps {
   attendance: AttendanceSummary;
   className?: string;
+  showTrend?: boolean;
 }
 
-const AttendanceSummaryBadges: React.FC<AttendanceSummaryBadgesProps> = ({ attendance, className = '' }) => {
+const AttendanceSummaryBadges: React.FC<AttendanceSummaryBadgesProps> = ({ 
+  attendance, 
+  className = '',
+  showTrend = true,
+}) => {
   const badges = [
     {
       count: attendance.present,
@@ -63,6 +70,11 @@ const AttendanceSummaryBadges: React.FC<AttendanceSummaryBadgesProps> = ({ atten
   const totalLessons = totalMarked + attendance.notMarked;
   const tooltipText = `Attendance: ${attendance.present} Present, ${attendance.absent} Absent, ${attendance.late} Late, ${attendance.excused} Excused${attendance.notMarked > 0 ? `, ${attendance.notMarked} Not Marked` : ''} (${totalLessons} total lessons)`;
 
+  // Calculate trend based on absence rate
+  const trend = showTrend && totalLessons >= 4 
+    ? calculateAttendanceTrend(attendance.present, attendance.absent, totalLessons)
+    : null;
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -79,6 +91,13 @@ const AttendanceSummaryBadges: React.FC<AttendanceSummaryBadgesProps> = ({ atten
                 <span className="font-semibold">{count}</span>
               </Badge>
             ))}
+            {trend && (
+              <TrendIndicator 
+                direction={trend.direction} 
+                tooltipText={trend.tooltip}
+                size="sm"
+              />
+            )}
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="bg-gray-900 border-gray-700">

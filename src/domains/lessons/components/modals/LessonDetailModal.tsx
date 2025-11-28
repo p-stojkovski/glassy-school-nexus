@@ -27,6 +27,9 @@ import { LessonResponse } from '@/types/api/lesson';
 import LessonStatusBadge from '../LessonStatusBadge';
 import GlassCard from '@/components/common/GlassCard';
 import { canTransitionToStatus } from '@/types/api/lesson';
+import LessonNotesDisplaySection from './LessonNotesDisplaySection';
+import LessonHomeworkDisplaySection from './LessonHomeworkDisplaySection';
+import LessonStudentRecapSection from './LessonStudentRecapSection';
 
 interface LessonDetailModalProps {
   lesson: LessonResponse | null;
@@ -47,11 +50,14 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
   onCreateMakeup,
   onEdit,
 }) => {
+  const [showFullDetails, setShowFullDetails] = React.useState(false);
+
   if (!lesson) return null;
 
   const canConduct = canTransitionToStatus(lesson.statusName, 'Conducted');
   const canCancel = canTransitionToStatus(lesson.statusName, 'Cancelled');
   const canCreateMakeup = lesson.statusName === 'Cancelled' && !lesson.makeupLessonId;
+  const isConducted = lesson.statusName === 'Conducted';
 
   const lessonDate = new Date(lesson.scheduledDate);
   const isToday = lessonDate.toDateString() === new Date().toDateString();
@@ -80,137 +86,234 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Date & Time Information */}
-          <GlassCard className="p-4">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-400" />
-              Date & Time
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-white/60 text-sm block mb-1">Date</label>
-                <div className="flex items-center gap-2">
-                  <p className="text-white font-medium">
-                    {formattedDate}
-                  </p>
-                  {isToday && (
-                    <Badge variant="outline" className="text-yellow-400 border-yellow-400/50 bg-yellow-400/10">
-                      Today
-                    </Badge>
-                  )}
-                  {isPast && !isToday && (
-                    <Badge variant="outline" className="text-gray-400 border-gray-400/50 bg-gray-400/10">
-                      Past
-                    </Badge>
-                  )}
-                  {isFuture && (
-                    <Badge variant="outline" className="text-green-400 border-green-400/50 bg-green-400/10">
-                      Upcoming
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label className="text-white/60 text-sm block mb-1">Time</label>
-                <p className="text-white font-medium flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {lesson.startTime} - {lesson.endTime}
-                </p>
-              </div>
-            </div>
-          </GlassCard>
-
-          {/* Class Information */}
-          <GlassCard className="p-4">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-green-400" />
-              Class Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label className="text-white/60 text-sm block mb-1">Class Name</label>
-                <p className="text-white font-medium">{lesson.className}</p>
-              </div>
-              <div>
-                <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
-                  <BookOpen className="w-3 h-3" />
-                  Subject
-                </label>
-                <p className="text-white font-medium">{lesson.subjectName}</p>
-              </div>
-              <div>
-                <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
-                  <User className="w-3 h-3" />
-                  Teacher
-                </label>
-                <p className="text-white font-medium">{lesson.teacherName}</p>
-              </div>
-              <div>
-                <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  Classroom
-                </label>
-                <p className="text-white font-medium">{lesson.classroomName}</p>
-              </div>
-            </div>
-          </GlassCard>
-
-          {/* Status Information */}
-          <GlassCard className="p-4">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-purple-400" />
-              Status Information
-            </h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-white/60 text-sm block mb-1">Current Status</label>
-                  <LessonStatusBadge status={lesson.statusName} size="lg" />
-                </div>
-                <div>
-                  <label className="text-white/60 text-sm block mb-1">Generation Source</label>
-                  <Badge variant="outline" className="text-white/80 border-white/20 bg-white/5">
-                    {lesson.generationSource === 'automatic' ? 'Auto-generated' : 
-                     lesson.generationSource === 'makeup' ? 'Makeup Lesson' : 'Manual'}
-                  </Badge>
-                </div>
-              </div>
-
-              {lesson.conductedAt && (
-                <div>
-                  <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" />
-                    Conducted At
-                  </label>
-                  <p className="text-white">
-                    {new Date(lesson.conductedAt).toLocaleString('en-US', {
-                      weekday: 'short',
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
-              )}
-              
-              {lesson.cancellationReason && (
-                <div>
-                  <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
-                    <XCircle className="w-3 h-3" />
-                    Cancellation Reason
-                  </label>
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                    <p className="text-white">{lesson.cancellationReason}</p>
+          {/* CONDENSED VIEW FOR CONDUCTED LESSONS */}
+          {isConducted ? (
+            <>
+              {/* For conducted lessons: Show Class Information and Date & Time first */}
+              {/* Class Information */}
+              <GlassCard className="p-4">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-green-400" />
+                  Class Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1">Class Name</label>
+                    <p className="text-white font-medium">{lesson.className}</p>
+                  </div>
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
+                      <BookOpen className="w-3 h-3" />
+                      Subject
+                    </label>
+                    <p className="text-white font-medium">{lesson.subjectName}</p>
+                  </div>
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
+                      <User className="w-3 h-3" />
+                      Teacher
+                    </label>
+                    <p className="text-white font-medium">{lesson.teacherName}</p>
+                  </div>
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      Classroom
+                    </label>
+                    <p className="text-white font-medium">{lesson.classroomName}</p>
                   </div>
                 </div>
-              )}
-            </div>
-          </GlassCard>
+              </GlassCard>
 
-          {/* Notes */}
-          {lesson.notes && (
+              {/* Date & Time Information */}
+              <GlassCard className="p-4">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-blue-400" />
+                  Date & Time
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1">Date</label>
+                    <p className="text-white font-medium">{formattedDate}</p>
+                  </div>
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1">Time</label>
+                    <p className="text-white font-medium flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {lesson.startTime} - {lesson.endTime}
+                    </p>
+                  </div>
+                </div>
+              </GlassCard>
+
+              {/* Expandable Additional Details Section - Student Records, Notes, Homework */}
+              {showFullDetails && (
+                <>
+                  <LessonStudentRecapSection lessonId={lesson.id} />
+                  <LessonNotesDisplaySection lessonId={lesson.id} />
+                  <LessonHomeworkDisplaySection lessonId={lesson.id} />
+                </>
+              )}
+            </>
+          ) : (
+            /* FULL VIEW FOR NON-CONDUCTED LESSONS */
+            <>
+              {/* Date & Time Information */}
+              <GlassCard className="p-4">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-blue-400" />
+                  Date & Time
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1">Date</label>
+                    <div className="flex items-center gap-2">
+                      <p className="text-white font-medium">
+                        {formattedDate}
+                      </p>
+                      {isToday && (
+                        <Badge variant="outline" className="text-yellow-400 border-yellow-400/50 bg-yellow-400/10">
+                          Today
+                        </Badge>
+                      )}
+                      {isPast && !isToday && (
+                        <Badge variant="outline" className="text-gray-400 border-gray-400/50 bg-gray-400/10">
+                          Past
+                        </Badge>
+                      )}
+                      {isFuture && (
+                        <Badge variant="outline" className="text-green-400 border-green-400/50 bg-green-400/10">
+                          Upcoming
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1">Time</label>
+                    <p className="text-white font-medium flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {lesson.startTime} - {lesson.endTime}
+                    </p>
+                  </div>
+                </div>
+              </GlassCard>
+
+              {/* Class Information */}
+              <GlassCard className="p-4">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-green-400" />
+                  Class Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1">Class Name</label>
+                    <p className="text-white font-medium">{lesson.className}</p>
+                  </div>
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
+                      <BookOpen className="w-3 h-3" />
+                      Subject
+                    </label>
+                    <p className="text-white font-medium">{lesson.subjectName}</p>
+                  </div>
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
+                      <User className="w-3 h-3" />
+                      Teacher
+                    </label>
+                    <p className="text-white font-medium">{lesson.teacherName}</p>
+                  </div>
+                  <div>
+                    <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      Classroom
+                    </label>
+                    <p className="text-white font-medium">{lesson.classroomName}</p>
+                  </div>
+                </div>
+              </GlassCard>
+
+              {/* Status Information */}
+              <GlassCard className="p-4">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-purple-400" />
+                  Status Information
+                </h3>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-white/60 text-sm block mb-1">Current Status</label>
+                      <LessonStatusBadge status={lesson.statusName} size="lg" />
+                    </div>
+                    <div>
+                      <label className="text-white/60 text-sm block mb-1">Generation Source</label>
+                      <Badge variant="outline" className="text-white/80 border-white/20 bg-white/5">
+                        {lesson.generationSource === 'automatic' ? 'Auto-generated' : 
+                         lesson.generationSource === 'makeup' ? 'Makeup Lesson' : 'Manual'}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {lesson.conductedAt && (
+                    <div>
+                      <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" />
+                        Conducted At
+                      </label>
+                      <p className="text-white">
+                        {new Date(lesson.conductedAt).toLocaleString('en-US', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {lesson.cancellationReason && (
+                    <div>
+                      <label className="text-white/60 text-sm block mb-1 flex items-center gap-1">
+                        <XCircle className="w-3 h-3" />
+                        Cancellation Reason
+                      </label>
+                      <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                        <p className="text-white">{lesson.cancellationReason}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </GlassCard>
+            </>
+          )}
+
+          {/* More/Hide Details Toggle Button - For Conducted Lessons Only */}
+          {isConducted && (
+            <div className="flex justify-center pt-2 border-t border-white/10">
+              <Button
+                variant="ghost"
+                onClick={() => setShowFullDetails(!showFullDetails)}
+                className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 gap-2"
+              >
+                {showFullDetails ? (
+                  <>
+                    <span>▼</span>
+                    <span>Hide Details</span>
+                  </>
+                ) : (
+                  <>
+                    <span>▶</span>
+                    <span>More Details</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Notes - Only show for non-conducted lessons */}
+          {!isConducted && lesson.notes && (
             <GlassCard className="p-4">
               <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-yellow-400" />
@@ -222,8 +325,8 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
             </GlassCard>
           )}
 
-          {/* Related Lessons */}
-          {(lesson.makeupLessonId || lesson.originalLessonId) && (
+          {/* Related Lessons - Only show for non-conducted lessons or when details expanded */}
+          {(!isConducted || showFullDetails) && (lesson.makeupLessonId || lesson.originalLessonId) && (
             <GlassCard className="p-4">
               <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                 <RotateCcw className="w-5 h-5 text-purple-400" />
@@ -273,39 +376,41 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
             </GlassCard>
           )}
 
-          {/* Metadata */}
-          <GlassCard className="p-4">
-            <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-gray-400" />
-              Metadata
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <label className="text-white/60 block mb-1">Lesson ID</label>
-                <p className="text-white/80 font-mono bg-white/5 rounded px-2 py-1 break-all">
-                  {lesson.id}
-                </p>
+          {/* Metadata - Only show for non-conducted lessons or when details expanded */}
+          {(!isConducted || showFullDetails) && (
+            <GlassCard className="p-4">
+              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-gray-400" />
+                Metadata
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <label className="text-white/60 block mb-1">Lesson ID</label>
+                  <p className="text-white/80 font-mono bg-white/5 rounded px-2 py-1 break-all">
+                    {lesson.id}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-white/60 block mb-1">Class ID</label>
+                  <p className="text-white/80 font-mono bg-white/5 rounded px-2 py-1 break-all">
+                    {lesson.classId}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-white/60 block mb-1">Created At</label>
+                  <p className="text-white/80">
+                    {new Date(lesson.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-white/60 block mb-1">Updated At</label>
+                  <p className="text-white/80">
+                    {new Date(lesson.updatedAt).toLocaleString()}
+                  </p>
+                </div>
               </div>
-              <div>
-                <label className="text-white/60 block mb-1">Class ID</label>
-                <p className="text-white/80 font-mono bg-white/5 rounded px-2 py-1 break-all">
-                  {lesson.classId}
-                </p>
-              </div>
-              <div>
-                <label className="text-white/60 block mb-1">Created At</label>
-                <p className="text-white/80">
-                  {new Date(lesson.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <label className="text-white/60 block mb-1">Updated At</label>
-                <p className="text-white/80">
-                  {new Date(lesson.updatedAt).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </GlassCard>
+            </GlassCard>
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-end gap-3 pt-4 border-t border-white/10">

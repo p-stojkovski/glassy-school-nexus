@@ -155,24 +155,26 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
   // Empty state
   if (summaries.length === 0) {
     return (
-      <GlassCard className="p-8 text-center">
-        <User className="w-12 h-12 mx-auto mb-4 text-white/40" />
-        <h3 className="text-lg font-semibold text-white mb-2">No Students Enrolled</h3>
-        <p className="text-white/60 text-sm">There are no students enrolled in this class yet.</p>
+      <GlassCard className="p-4 text-center">
+        <div className="py-4">
+          <User className="w-12 h-12 mx-auto mb-3 text-white/40" />
+          <h3 className="text-lg font-semibold text-white mb-2">No Students Enrolled</h3>
+          <p className="text-white/60 text-sm">There are no students enrolled in this class yet.</p>
+        </div>
       </GlassCard>
     );
   }
 
   return (
-    <GlassCard className="p-6">
+    <GlassCard className="p-4">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-500/20 rounded-lg">
             <TrendingUp className="w-5 h-5 text-blue-300" />
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-white">Student Progress Summary</h3>
+            <h3 className="text-lg font-semibold text-white">Student Progress Summary</h3>
             <p className="text-white/60 text-sm">
               {summaries.length} {summaries.length === 1 ? 'student' : 'students'} | {totalConductedLessons} {totalConductedLessons === 1 ? 'lesson' : 'lessons'} conducted
             </p>
@@ -182,7 +184,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
           <Button
             onClick={onAddStudents}
             disabled={isAddingStudents}
-            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+            className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
           >
             {isAddingStudents ? (
               <>
