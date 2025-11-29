@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,
-  Calendar as CalendarIcon,
   Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,8 +24,6 @@ interface LessonCalendarProps {
   onLessonsUpdated?: () => void;
   showWeekends?: boolean;
   compact?: boolean;
-  emptyMessage?: string;
-  emptyDescription?: string;
   /** Callback that provides the goToToday function to parent */
   onGoToTodayRef?: (goToToday: () => void) => void;
   /** Whether to show the built-in Today button in the calendar header */
@@ -60,8 +57,6 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
   onLessonsUpdated,
   showWeekends = true,
   compact = false,
-  emptyMessage = "No lessons scheduled",
-  emptyDescription = "There are no lessons scheduled for this month.",
   onGoToTodayRef,
   showTodayButton = true,
   onMonthChange,
@@ -455,25 +450,6 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
           })}
         </div>
       </GlassCard>
-
-      {/* Empty state for no lessons in current month */}
-      {lessons.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-8"
-        >
-          <GlassCard className="p-8">
-            <CalendarIcon className="w-12 h-12 text-white/40 mx-auto mb-4" />
-            <h4 className="text-lg font-semibold text-white mb-2">
-              {emptyMessage}
-            </h4>
-            <p className="text-white/60 text-sm">
-              {emptyDescription}
-            </p>
-          </GlassCard>
-        </motion.div>
-      )}
       
       {/* Daily Lesson List Modal */}
       <DailyLessonListModal

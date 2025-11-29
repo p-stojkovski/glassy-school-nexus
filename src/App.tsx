@@ -89,7 +89,9 @@ const AppContent: React.FC = () => {
         <Route path="/students/edit/:studentId" element={<StudentFormPage />} />
         <Route path="/students/:studentId" element={<StudentProfilePage />} />
         <Route path="/classes" element={<ClassesPage />} />
-        <Route path="/classes/new" element={<ClassFormPage />} />
+        {/* New unified class page handles both create and view/edit */}
+        <Route path="/classes/new" element={<ClassPage />} />
+        {/* Legacy edit route - keep ClassFormPage for now for backward compatibility */}
         <Route path="/classes/edit/:classId" element={<ClassFormPage />} />
         <Route path="/classes/:id" element={<ClassPage />} />
         <Route path="/teachers" element={<Teachers />} />{' '}

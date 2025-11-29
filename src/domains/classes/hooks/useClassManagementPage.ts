@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store';
-import { Class, deleteClass } from '../classesSlice';
-import { toast } from '@/hooks/use-toast';
+import { Class } from '../classesSlice';
 import { useClassesData } from '@/data/hooks/useClassesData';
 import { useClassroomsData } from '@/data/hooks/useClassroomsData';
 
@@ -13,7 +12,6 @@ export type ClassViewMode = 'grid' | 'table';
 
 export const useClassManagementPage = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { classes, loading } = useAppSelector(
     (state: RootState) => state.classes
   );
@@ -40,9 +38,6 @@ export const useClassManagementPage = () => {
   const [showOnlyWithAvailableSlots, setShowOnlyWithAvailableSlots] =
     useState(false); 
   const [viewMode, setViewMode] = useState<ClassViewMode>('grid');
-  // UI state
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [classToDelete, setClassToDelete] = useState<Class | null>(null);
 
   // Filtered classes
   const filteredClasses = classes.filter((classItem) => {
@@ -69,39 +64,8 @@ export const useClassManagementPage = () => {
     navigate('/classes/new');
   };
 
-  const handleEdit = (classItem: Class) => {
-    navigate(`/classes/edit/${classItem.id}`);
-  };
-
-  const handleDelete = (classItem: Class) => {
-    setClassToDelete(classItem);
-    setShowDeleteDialog(true);
-  };
-
   const handleView = (classItem: Class) => {
-    // Handle view functionality - could navigate to class detail page
-    console.log('Viewing class:', classItem);
-  };
-
-  const confirmDelete = async () => {
-    if (classToDelete) {
-      try {
-        dispatch(deleteClass(classToDelete.id));
-        toast({
-          title: 'Class Deleted',
-          description: `${classToDelete.name} has been successfully deleted.`,
-          variant: 'default',
-        });
-        setShowDeleteDialog(false);
-        setClassToDelete(null);
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to delete class. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    }
+    navigate(`/classes/${classItem.id}`);
   };
 
   const handleFilterChange = (type: string, value: string) => {
@@ -167,17 +131,9 @@ export const useClassManagementPage = () => {
     viewMode,
     setViewMode,
 
-    // UI state
-    showDeleteDialog,
-    setShowDeleteDialog,
-    classToDelete,
-
     // Handlers
     handleAddClass,
-    handleEdit,
-    handleDelete,
     handleView,
-    confirmDelete,
     handleFilterChange,
   };
 };

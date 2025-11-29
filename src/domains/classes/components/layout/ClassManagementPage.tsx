@@ -5,7 +5,6 @@ import ClassCard from '../list/ClassCard';
 import ClassTable from '../list/ClassTable';
 import ClassEmptyState from '../state/ClassEmptyState';
 import ClassLoading from '../state/ClassLoading';
-import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { DemoManager } from '@/data/components/DemoManager';
 import { useClassManagementPage } from '../../hooks/useClassManagementPage';
 
@@ -23,15 +22,9 @@ const ClassManagementPage: React.FC = () => {
     viewMode,
     setViewMode,
 
-    // UI state
-    showDeleteDialog,
-    setShowDeleteDialog,
-    classToDelete, // Handlers
+    // Handlers
     handleAddClass,
-    handleEdit,
-    handleDelete,
     handleView,
-    confirmDelete,
     handleFilterChange,
   } = useClassManagementPage();
 
@@ -65,8 +58,6 @@ const ClassManagementPage: React.FC = () => {
       ) : viewMode === 'table' ? (
         <ClassTable
           classes={filteredClasses}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
           onView={handleView}
           loading={loading}
         />
@@ -76,20 +67,11 @@ const ClassManagementPage: React.FC = () => {
             <ClassCard
               key={classItem.id}
               classItem={classItem}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
               onView={handleView}
             />
           ))}
         </div>
       )}
-      <ConfirmDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        title="Delete Class"
-        description={`Are you sure you want to delete ${classToDelete?.name}? This action cannot be undone.`}
-        onConfirm={confirmDelete}
-      />
     </div>
   );
 };

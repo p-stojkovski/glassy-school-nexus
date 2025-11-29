@@ -221,24 +221,22 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
           <Button
             size="sm"
             onClick={handleEdit}
-            className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
+            className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
           >
-            <Edit2 className="w-4 h-4" />
-            Edit
+            <Edit2 className="w-4 h-4 mr-1" />
+            {hasAnyContent ? 'Edit' : 'Add Details'}
           </Button>
         </div>
 
         {!hasAnyContent ? (
-          <div className="text-center py-8">
-            <p className="text-white/40 mb-4">No additional details have been added yet.</p>
-            <Button
-              size="sm"
-              onClick={handleEdit}
-              className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
-            >
-              <Edit2 className="w-4 h-4" />
-              Add Details
-            </Button>
+          <div className="text-center py-12">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 mb-3">
+              <FileText className="w-6 h-6 text-white/40" />
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">No Additional Details</h3>
+            <p className="text-white/60 mb-4 max-w-md mx-auto">
+              No additional details have been added yet. Add description, objectives, requirements, and materials for this class.
+            </p>
           </div>
         ) : (
           <Accordion type="multiple" defaultValue={defaultOpenSections} className="space-y-2">

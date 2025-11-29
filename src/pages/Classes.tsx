@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
-import ConfirmDialog from '@/components/common/ConfirmDialog';
 import ClassTable from '@/domains/classesApi/components/ClassTable';
 import ClassGrid from '@/domains/classesApi/components/ClassGrid';
 import ClassFilters, { ClassViewMode } from '@/domains/classes/components/filters/ClassFilters';
@@ -14,7 +13,7 @@ import { ClassResponse } from '@/types/api/class';
 
 const ClassesPage: React.FC = () => {
   const navigate = useNavigate();
-  const { classes, loadClasses, search, setSearchQuery, setSearchMode, isSearchMode, remove } = useClassesApi();
+  const { classes, loadClasses, search, setSearchQuery, setSearchMode, isSearchMode } = useClassesApi();
   const [searchTerm, setSearchTerm] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | string>('all');
   const [teacherFilter, setTeacherFilter] = useState<'all' | string>('all');
@@ -23,8 +22,6 @@ const ClassesPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<ClassViewMode>('table');
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [classToDelete, setClassToDelete] = useState<ClassResponse | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousFiltersRef = useRef({ searchTerm: '', subjectFilter: 'all', teacherFilter: 'all', availabilityFilter: 'all' });
 
@@ -167,30 +164,6 @@ const ClassesPage: React.FC = () => {
     }
   }, [isInitialized, hasActiveFilters, isSearchMode, setSearchMode]);
 
-  // Delete handler functions
-  const handleDelete = (classItem: ClassResponse) => {
-    setClassToDelete(classItem);
-    setShowDeleteDialog(true);
-  };
-
-  const confirmDelete = async () => {
-    if (classToDelete) {
-      try {
-        await remove(classToDelete.id, classToDelete.name);
-        setShowDeleteDialog(false);
-        setClassToDelete(null);
-      } catch (error) {
-        // Error handling is done in the remove function via toast
-        console.error('Failed to delete class:', error);
-      }
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowDeleteDialog(false);
-    setClassToDelete(null);
-  };
-
   // Show page-specific loading spinner during initialization
   if (!isInitialized) {
     return <ClassLoading />;
@@ -242,30 +215,15 @@ const ClassesPage: React.FC = () => {
         viewMode === 'grid' ? (
           <ClassGrid
             classes={classes}
-            onEdit={(c) => navigate(`/classes/edit/${c.id}`)}
-            onDelete={handleDelete}
             onView={(c) => navigate(`/classes/${c.id}`)}
           />
         ) : (
           <ClassTable
             classes={classes}
-            onEdit={(c) => navigate(`/classes/edit/${c.id}`)}
-            onDelete={handleDelete}
             onView={(c) => navigate(`/classes/${c.id}`)}
           />
         )
       )}
-      
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        title="Delete Class"
-        description={`Are you sure you want to delete "${classToDelete?.name}"? This action cannot be undone and will remove all associated data.`}
-        onConfirm={confirmDelete}
-        confirmText="Delete"
-        cancelText="Cancel"
-      />
     </div>
   );
 };

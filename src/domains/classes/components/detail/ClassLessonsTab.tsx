@@ -1,10 +1,7 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import { Calendar, Sparkles, Plus, AlertCircle, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import GlassCard from '@/components/common/GlassCard';
 import { ClassBasicInfoResponse } from '@/types/api/class';
 import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData } from '@/types/api/lesson';
 import { useLessonsForClass, useLessons } from '@/domains/lessons/hooks/useLessons';
@@ -223,118 +220,18 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
           onGenerateLessons={() => setIsAcademicGenerationOpen(true)}
           generateDisabled={!scheduleAvailable}
           disabledTooltip={scheduleWarning || undefined}
-          hasLessons={lessons.length > 0}
+          hasLessons={true}
         />
       </div>
 
-      {/* Empty State */}
-      {filteredLessons.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <GlassCard className="p-4">
-            <div className="text-center py-8">
-            {!scheduleAvailable ? (
-              <>
-                <AlertCircle className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  No Schedule Defined
-                </h3>
-                <p className="text-white/60 mb-4 max-w-md mx-auto">
-                  {scheduleWarning} You can still add individual lessons manually.
-                </p>
-              </>
-            ) : (
-              <>
-                <Calendar className="w-12 h-12 text-white/40 mx-auto mb-3" />
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {statusFilter === 'all' && teacherFilter === 'all' ? 'No Lessons Yet' : 'No Lessons Found'}
-                </h3>
-                <p className="text-white/60 mb-4">
-                  {statusFilter === 'all' && teacherFilter === 'all'
-                    ? 'Start by creating your first lesson for this class.'
-                    : (() => {
-                        let message = 'There are no lessons';
-                        if (statusFilter !== 'all') message += ` (${statusFilter.toLowerCase()})`;
-                        if (teacherFilter !== 'all') {
-                          const teacherName = uniqueTeachers.find(t => t.id === teacherFilter)?.name || 'teacher';
-                          message += ` for ${teacherName}`;
-                        }
-                        message += ' for this class.';
-                        return message;
-                      })()
-                  }
-                </p>
-              </>
-            )}
-            {statusFilter === 'all' && teacherFilter === 'all' && (
-              <div className="flex gap-3 justify-center flex-wrap">
-                {!scheduleAvailable ? (
-                  <>
-                    <Button
-                      onClick={onScheduleTabClick}
-                      variant="outline"
-                      className="border-white/20 text-white hover:bg-white/10"
-                    >
-                      <Clock className="w-4 h-4 mr-2" />
-                      Set Up Schedule
-                    </Button>
-                    <Button
-                      onClick={() => setIsCreateLessonOpen(true)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Lesson Manually
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      onClick={() => setIsAcademicGenerationOpen(true)}
-                      className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-semibold"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Smart Generate Lessons
-                    </Button>
-                    <Button
-                      onClick={() => setIsCreateLessonOpen(true)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create First Lesson
-                    </Button>
-                  </>
-                )}
-              </div>
-            )}
-            </div>
-          </GlassCard>
-        </motion.div>
-      ) : (
-        /* Calendar View */
-        <LessonCalendar 
-          lessons={filteredLessons}
-          onLessonClick={handleLessonDetails}
-          onConductLesson={openConductModal}
-          onCancelLesson={openCancelModal}
-          onLessonsUpdated={loadLessons}
-          emptyMessage={statusFilter === 'all' && teacherFilter === 'all' ? 'No Lessons Scheduled' : 'No Lessons Found'}
-          emptyDescription={statusFilter === 'all' && teacherFilter === 'all'
-            ? 'Create lessons to see them appear on the calendar.'
-            : (() => {
-                let message = 'There are no lessons';
-                if (statusFilter !== 'all') message += ` (${statusFilter.toLowerCase()})`;
-              if (teacherFilter !== 'all') {
-                const teacherName = uniqueTeachers.find(t => t.id === teacherFilter)?.name || 'teacher';
-                message += ` for ${teacherName}`;
-              }
-              message += ' scheduled for this period.';
-              return message;
-            })()
-        }
-        />
-      )}
+      {/* Calendar View - Always show calendar regardless of lessons */}
+      <LessonCalendar 
+        lessons={filteredLessons}
+        onLessonClick={handleLessonDetails}
+        onConductLesson={openConductModal}
+        onCancelLesson={openCancelModal}
+        onLessonsUpdated={loadLessons}
+      />
       
       {/* Quick Action Modals */}
       <QuickConductLessonModal

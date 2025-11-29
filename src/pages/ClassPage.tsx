@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { BookOpen, Calendar, Users, BookmarkCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import ClassPageHeader from '@/domains/classes/components/unified/ClassPageHeader';
+import CreateClassHeader from '@/domains/classes/components/unified/CreateClassHeader';
+import { CreateClassSheet } from '@/domains/classes/components/dialogs/CreateClassSheet';
 import ClassLessonsTab from '@/domains/classes/components/detail/ClassLessonsTab';
 import ClassInfoTab from '@/domains/classes/components/tabs/ClassInfoTab';
 import ClassScheduleTab from '@/domains/classes/components/tabs/ClassScheduleTab';
@@ -17,9 +19,23 @@ import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonAct
 const ClassPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Determine if this is create mode (either via route param or pathname)
+  const isCreateMode = id === 'new' || location.pathname.endsWith('/classes/new');
+  
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
+  const [showCreateSheet, setShowCreateSheet] = useState(false); // Start closed, open via effect
 
+  // Open create sheet after mount in create mode
+  useEffect(() => {
+    if (isCreateMode) {
+      setShowCreateSheet(true);
+    }
+  }, [isCreateMode]);
+
+  // Only use the hook if we have a valid ID (not in create mode)
   const {
     classData,
     activeTab,
@@ -38,7 +54,7 @@ const ClassPage: React.FC = () => {
     // Archived schedules actions
     toggleArchivedSchedules,
     refreshArchivedSchedules,
-  } = useClassPage(id || '');
+  } = useClassPage(isCreateMode ? '' : (id || ''));
 
   // Quick lesson actions for the dashboard widget
   const {
@@ -62,12 +78,18 @@ const ClassPage: React.FC = () => {
     [registerTabUnsavedChanges]
   );
 
-  // Validate ID
+  // Handle successful class creation
+  const handleClassCreated = useCallback((newClassId: string) => {
+    // Navigate to the new class page
+    navigate(`/classes/${newClassId}`, { replace: true });
+  }, [navigate]);
+
+  // Validate ID - but allow create mode (where id is undefined)
   useEffect(() => {
-    if (!id) {
+    if (!id && !isCreateMode) {
       navigate('/classes');
     }
-  }, [id, navigate]);
+  }, [id, isCreateMode, navigate]);
 
   const handleBack = () => {
     if (hasAnyUnsavedChanges()) {
@@ -118,6 +140,35 @@ const ClassPage: React.FC = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasAnyUnsavedChanges]);
+
+  // Create mode - show the create sheet
+  if (isCreateMode) {
+    return (
+      <div className="space-y-6">
+        <CreateClassHeader onOpenCreateSheet={() => setShowCreateSheet(true)} />
+        
+        {/* Placeholder content when in create mode */}
+        <div className="text-center py-16">
+          <div className="text-white/50 text-lg mb-4">
+            Complete the form to create your new class
+          </div>
+        </div>
+
+        {/* Create Class Sheet */}
+        <CreateClassSheet
+          open={showCreateSheet}
+          onOpenChange={(open) => {
+            if (!open) {
+              // If user closes the sheet without creating, go back to classes list
+              navigate('/classes');
+            }
+            setShowCreateSheet(open);
+          }}
+          onSuccess={handleClassCreated}
+        />
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -66,9 +66,9 @@ const ClassScheduleSection: React.FC<ClassScheduleSectionProps> = ({
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 mb-3">
             <Calendar className="w-6 h-6 text-white/40" />
           </div>
-          <p className="text-white/60 mb-4">No schedule slots configured yet.</p>
-          <p className="text-white/40 text-sm">
-            Add your first slot to see it on the weekly grid.
+          <h3 className="text-lg font-semibold text-white mb-2">No Schedule Slots Configured</h3>
+          <p className="text-white/60 mb-4 max-w-md mx-auto">
+            This class doesn't have any schedule slots yet. Add your first slot to see it on the weekly grid.
           </p>
         </div>
       )}

@@ -116,7 +116,27 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
         {/* Student Progress Table or Empty State */}
         {classData.enrolledCount === 0 ? (
           <GlassCard className="p-4">
-            <div className="text-center py-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-400" />
+                Students
+              </h3>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-white/50">
+                  {classData.availableSlots} {classData.availableSlots === 1 ? 'slot' : 'slots'} available (capacity: {classData.classroomCapacity})
+                </span>
+                <Button
+                  onClick={() => setIsAddPanelOpen(true)}
+                  disabled={isAdding}
+                  size="sm"
+                  className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
+                >
+                  <UserPlus className="w-4 h-4 mr-1" />
+                  Add Students
+                </Button>
+              </div>
+            </div>
+            <div className="text-center py-12">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 mb-3">
                 <Users className="w-6 h-6 text-white/40" />
               </div>
@@ -124,21 +144,6 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
               <p className="text-white/60 mb-4 max-w-md mx-auto">
                 This class doesn't have any students yet. Add students to start tracking their progress and attendance.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Button
-                  onClick={() => setIsAddPanelOpen(true)}
-                  disabled={isAdding}
-                  className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  Add Students
-                </Button>
-              </div>
-              {classData.availableSlots > 0 && (
-                <p className="text-white/40 text-sm mt-4">
-                  {classData.availableSlots} {classData.availableSlots === 1 ? 'slot' : 'slots'} available (capacity: {classData.classroomCapacity})
-                </p>
-              )}
             </div>
           </GlassCard>
         ) : (

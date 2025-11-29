@@ -23,6 +23,7 @@ interface ClassScheduleTabProps {
   classData: ClassBasicInfoResponse;
   onUpdate: () => void;
   onUnsavedChangesChange?: (hasChanges: boolean) => void;
+  onScheduleCountChange?: (count: number) => void;
   archivedSchedules?: Array<{ id: string; dayOfWeek: string; startTime: string; endTime: string; pastLessonCount: number }>;
   loadingArchived?: boolean;
   archivedSchedulesExpanded?: boolean;
@@ -34,6 +35,7 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
   classData,
   onUpdate,
   onUnsavedChangesChange,
+  onScheduleCountChange,
   archivedSchedules = [],
   loadingArchived = false,
   archivedSchedulesExpanded = false,
@@ -63,15 +65,18 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
           const response = await classApiService.getClassSchedule(classData.id);
           setSchedule(response.schedule);
           setHasFetched(true);
-        } catch (err: any) {
-          setError(err?.message || 'Failed to load schedule');
+          // Notify parent of schedule count
+          onScheduleCountChange?.(response.schedule.filter(s => !s.isObsolete).length);
+        } catch (err: unknown) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to load schedule';
+          setError(errorMessage);
         } finally {
           setLoading(false);
         }
       };
       fetchSchedule();
     }
-  }, [classData?.id, hasFetched]);
+  }, [classData?.id, hasFetched, onScheduleCountChange]);
 
   // Refetch schedule when onUpdate is called (after add/edit/delete)
   const handleUpdate = async () => {
@@ -79,8 +84,10 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
     try {
       const response = await classApiService.getClassSchedule(classData.id);
       setSchedule(response.schedule);
+      // Notify parent of updated schedule count
+      onScheduleCountChange?.(response.schedule.filter(s => !s.isObsolete).length);
       await onUpdate(); // Also refresh parent data (for enrolled count, etc.)
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error('Failed to refresh schedule');
     } finally {
       setLoading(false);

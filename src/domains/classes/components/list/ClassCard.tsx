@@ -1,8 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar } from 'lucide-react';
+import { Calendar, ChevronRight } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
-import { Button } from '@/components/ui/button';
 import { Class } from '@/domains/classes/classesSlice';
 import { formatSchedule } from '@/utils/scheduleFormatter';
 import { LessonStatusSummary } from '@/domains/lessons/components/LessonStatusBadge';
@@ -12,15 +11,11 @@ import { selectLessonSummaryForClass } from '@/domains/lessons/lessonsSlice';
 interface ClassCardProps {
   classItem: Class;
   onView: (classItem: Class) => void;
-  onEdit: (classItem: Class) => void;
-  onDelete: (classItem: Class) => void;
 }
 
 const ClassCard: React.FC<ClassCardProps> = ({
   classItem,
   onView,
-  onEdit,
-  onDelete,
 }) => {
   const lessonSummary = useAppSelector(selectLessonSummaryForClass(classItem.id));
   
@@ -47,27 +42,13 @@ const ClassCard: React.FC<ClassCardProps> = ({
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
     >
-      <GlassCard className="p-6 hover:bg-white/5 transition-all duration-300">
+      <GlassCard 
+        className="p-6 hover:bg-white/10 transition-all duration-300 cursor-pointer group"
+        onClick={() => onView(classItem)}
+      >
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-xl font-semibold text-white">{classItem.name}</h3>
-        <div className="flex space-x-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onEdit(classItem)}
-            className="text-white/70 hover:text-white hover:bg-white/10"
-          >
-            Edit
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onDelete(classItem)}
-            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-          >
-            Delete
-          </Button>
-        </div>
+        <ChevronRight className="h-5 w-5 text-white/40 group-hover:text-white/70 transition-colors shrink-0" />
       </div>
       <p className="text-white/70 mb-1">
         <span className="text-sm font-medium text-white">Teacher:</span>{' '}

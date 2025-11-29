@@ -50,7 +50,7 @@ export const useClassPage = (classId: string) => {
     editData: null,
     activeTab: 'lessons',
     hasUnsavedChanges: false,
-    loading: true,
+    loading: classId ? true : false, // Don't show loading if no classId
     error: null,
     tabsWithUnsavedChanges: new Set(),
     archivedSchedules: [],
@@ -58,8 +58,14 @@ export const useClassPage = (classId: string) => {
     archivedSchedulesExpanded: false,
   });
 
-  // Fetch class data on mount
+  // Fetch class data on mount (only if classId is provided)
   useEffect(() => {
+    if (!classId) {
+      // Skip loading for create mode
+      setState((prev) => ({ ...prev, loading: false }));
+      return;
+    }
+
     const loadClassData = async () => {
       try {
         setState((prev) => ({ ...prev, loading: true, error: null }));

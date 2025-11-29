@@ -24,7 +24,7 @@ export interface CreateClassRequest {
   requirements?: string | null; // optional
   objectives?: string[] | null; // optional
   materials?: string[] | null;  // optional
-  schedule: ScheduleSlotDto[];  // required, ≥ 1 slot
+  schedule?: ScheduleSlotDto[] | null;  // optional - can create class without schedule
   studentIds?: string[] | null; // optional
 }
 
