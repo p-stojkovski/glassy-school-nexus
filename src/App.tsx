@@ -18,7 +18,6 @@ import StudentManagement from './pages/StudentManagement';
 import ClassesPage from './pages/Classes';
 import ClassFormPage from './pages/ClassFormPage';
 import ClassPage from './pages/ClassPage';
-import ClassDetail from './pages/ClassDetail';
 import Teachers from './pages/Teachers';
 import TeacherDashboard from './pages/TeacherDashboard';
 import AttendanceManagement from './pages/AttendanceManagement';
