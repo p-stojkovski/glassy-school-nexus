@@ -238,7 +238,7 @@ const ClassPage: React.FC = () => {
             className="data-[state=active]:bg-white/20 text-white relative"
           >
             <BookOpen className="w-4 h-4 mr-2" />
-            Overview
+            Additional Details
             {tabsWithUnsavedChanges?.has('info') && (
               <span className="ml-1.5 inline-block w-2 h-2 bg-orange-500 rounded-full align-middle" />
             )}

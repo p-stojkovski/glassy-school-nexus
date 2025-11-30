@@ -214,8 +214,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
           <div className="flex items-center gap-3">
             <FileText className="w-5 h-5 text-blue-400" />
             <div>
-              <h3 className="text-lg font-semibold text-white">Additional Details</h3>
-              <p className="text-white/60 text-sm">Description, objectives, requirements, and materials</p>
+              <h3 className="text-lg font-semibold text-white">Description, objectives, requirements, and materials</h3>
             </div>
           </div>
           <Button
