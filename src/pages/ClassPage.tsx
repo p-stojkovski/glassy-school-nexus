@@ -6,14 +6,17 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import ClassPageHeader from '@/domains/classes/components/unified/ClassPageHeader';
+import ClassHeroSection from '@/domains/classes/components/hero/ClassHeroSection';
 import CreateClassHeader from '@/domains/classes/components/unified/CreateClassHeader';
 import { CreateClassSheet } from '@/domains/classes/components/dialogs/CreateClassSheet';
 import ClassLessonsTab from '@/domains/classes/components/detail/ClassLessonsTab';
 import ClassInfoTab from '@/domains/classes/components/tabs/ClassInfoTab';
+
 import ClassScheduleTab from '@/domains/classes/components/tabs/ClassScheduleTab';
 import ClassStudentsTab from '@/domains/classes/components/tabs/ClassStudentsTab';
 import QuickConductLessonModal from '@/domains/lessons/components/modals/QuickConductLessonModal';
 import { useClassPage } from '@/domains/classes/hooks/useClassPage';
+import { useClassLessonContext } from '@/domains/classes/hooks/useClassLessonContext';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
 
 const ClassPage: React.FC = () => {
@@ -55,6 +58,9 @@ const ClassPage: React.FC = () => {
     toggleArchivedSchedules,
     refreshArchivedSchedules,
   } = useClassPage(isCreateMode ? '' : (id || ''));
+
+  // Lesson context for hero section CTA
+  const lessonContext = useClassLessonContext(isCreateMode ? null : (id || null));
 
   // Quick lesson actions for the dashboard widget
   const {
@@ -105,8 +111,8 @@ const ClassPage: React.FC = () => {
     const tabs = ['lessons', 'students', 'schedule', 'info'] as const;
     if ((tabs as readonly string[]).includes(newTab)) {
       // Check if we can switch tabs
-      if (canSwitchTab(newTab as any)) {
-        setActiveTab(newTab as any);
+      if (canSwitchTab(newTab as typeof tabs[number])) {
+        setActiveTab(newTab as typeof tabs[number]);
       } else {
         // Show unsaved changes dialog
         setPendingTab(newTab);
@@ -206,6 +212,13 @@ const ClassPage: React.FC = () => {
         onUpdate={memoizedRefetchClassData}
       />
 
+      {/* Hero Section */}
+      <ClassHeroSection
+        classData={classData}
+        lessonContext={lessonContext}
+        onNavigateToSchedule={() => handleTabChange('lessons')}
+      />
+
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="bg-white/10 border-white/20">
@@ -250,6 +263,7 @@ const ClassPage: React.FC = () => {
           <ClassLessonsTab 
             classData={classData}
             onScheduleTabClick={() => handleTabChange('schedule')}
+            onLessonsUpdated={lessonContext.refreshLessons}
           />
         </TabsContent>
 

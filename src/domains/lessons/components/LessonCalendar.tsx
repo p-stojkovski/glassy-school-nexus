@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import GlassCard from '@/components/common/GlassCard';
 import { LessonResponse, LessonStatusName } from '@/types/api/lesson';
 import LessonStatusBadge from './LessonStatusBadge';
-import DailyLessonListModal from './modals/DailyLessonListModal';
+import DailyLessonsSheet from './sheets/DailyLessonsSheet';
 import { useAcademicCalendar } from '../hooks/useAcademicCalendar';
 
 interface LessonCalendarProps {
@@ -451,8 +451,8 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
         </div>
       </GlassCard>
       
-      {/* Daily Lesson List Modal */}
-      <DailyLessonListModal
+      {/* Daily Lessons Sheet */}
+      <DailyLessonsSheet
         open={dailyLessonModal.open}
         onOpenChange={(open) => 
           setDailyLessonModal(prev => ({ ...prev, open }))

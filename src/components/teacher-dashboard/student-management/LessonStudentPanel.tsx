@@ -23,6 +23,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { LessonResponse } from '@/types/api/lesson';
+import { LessonModeConfig } from '@/domains/lessons/types/lessonMode';
+import { getLessonModeConfig } from '@/domains/lessons/utils/lessonModeUtils';
 import { formatTimeRange } from '../utils/timeUtils';
 import { useLessonStudentData } from '../hooks/useLessonStudentData';
 import { useLessonNotes } from '../hooks/useLessonNotes';
@@ -37,15 +39,23 @@ interface LessonStudentPanelProps {
   currentTime: string;
   onEndLesson?: () => void;
   isLoading?: boolean;
+  /** Optional mode config override - if not provided, will be derived from lesson status */
+  modeConfig?: LessonModeConfig;
 }
 
 const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
   lesson,
   currentTime,
   onEndLesson,
-  isLoading = false
+  isLoading = false,
+  modeConfig: externalModeConfig,
 }) => {
   const navigate = useNavigate();
+  
+  // Derive mode config from lesson status if not provided externally
+  const modeConfig = externalModeConfig || getLessonModeConfig(lesson.statusName, lesson.scheduledDate);
+  const isEditingMode = modeConfig.mode === 'editing';
+  
   const {
     students,
     loading: studentsLoading,
@@ -96,7 +106,10 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
     return (
       <DashboardLoadingState
         rows={6}
-        className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 backdrop-blur-lg border-blue-500/30 shadow-lg"
+        className={isEditingMode 
+          ? "bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-lg border-amber-500/30 shadow-lg"
+          : "bg-gradient-to-r from-blue-500/20 to-indigo-500/20 backdrop-blur-lg border-blue-500/30 shadow-lg"
+        }
         contentClassName="p-2"
       />
     );
@@ -124,13 +137,17 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
   }
 
   return (
-    <Card className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 backdrop-blur-lg border-blue-500/30 shadow-lg w-full max-w-full overflow-hidden">
+    <Card className={`backdrop-blur-lg shadow-lg w-full max-w-full overflow-hidden ${
+      isEditingMode 
+        ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-amber-500/30'
+        : 'bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border-blue-500/30'
+    }`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Badge className="bg-blue-500 hover:bg-blue-500 text-white font-semibold px-3 py-1">
-                🔵 LESSON IN PROGRESS
+              <Badge className={`${modeConfig.badgeClassName} text-white font-semibold px-3 py-1`}>
+                {modeConfig.badgeEmoji} {modeConfig.badgeText}
               </Badge>
             </div>
             <CardTitle className="text-white text-xl font-bold flex items-center gap-2">
@@ -138,7 +155,10 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
               {lesson.className} - Student Management
             </CardTitle>
             <CardDescription className="text-white/80">
-              Manage attendance, homework, and comments for all students in this lesson
+              {isEditingMode 
+                ? 'Update attendance, homework, and comments for this completed lesson'
+                : 'Manage attendance, homework, and comments for all students in this lesson'
+              }
             </CardDescription>
           </div>
         </div>
@@ -148,7 +168,7 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
         {/* Lesson Info Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white/10 rounded-lg">
           <div className="flex items-center gap-2 text-white">
-            <Clock className="w-4 h-4 text-blue-400" />
+            <Clock className={`w-4 h-4 ${isEditingMode ? 'text-amber-400' : 'text-blue-400'}`} />
             <div>
               <div className="text-xs text-white/60">Time</div>
               <div className="font-medium">{timeRange}</div>
@@ -156,7 +176,7 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
           </div>
           
           <div className="flex items-center gap-2 text-white">
-            <MapPin className="w-4 h-4 text-blue-400" />
+            <MapPin className={`w-4 h-4 ${isEditingMode ? 'text-amber-400' : 'text-blue-400'}`} />
             <div>
               <div className="text-xs text-white/60">Room</div>
               <div className="font-medium">{roomName}</div>
@@ -164,7 +184,7 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
           </div>
           
           <div className="flex items-center gap-2 text-white">
-            <Users className="w-4 h-4 text-blue-400" />
+            <Users className={`w-4 h-4 ${isEditingMode ? 'text-amber-400' : 'text-blue-400'}`} />
             <div>
               <div className="text-xs text-white/60">Students</div>
               <div className="font-medium">{students.length} enrolled</div>
@@ -296,24 +316,27 @@ const LessonStudentPanel: React.FC<LessonStudentPanelProps> = ({
           />
         </div>
 
-        {/* Action Section */}
-        <div className="flex items-center justify-center pt-4 border-t border-white/10">
-          {/* End Lesson */}
-          <Button
-            onClick={onEndLesson}
-            className="bg-red-600/80 hover:bg-red-700 text-white font-semibold px-8 py-2"
-            disabled={isLoading}
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            End Lesson
-          </Button>
-        </div>
+        {/* Action Section - Only show End Lesson button in teaching mode */}
+        {modeConfig.showEndLessonButton && onEndLesson && (
+          <div className="flex items-center justify-center pt-4 border-t border-white/10">
+            <Button
+              onClick={onEndLesson}
+              className="bg-red-600/80 hover:bg-red-700 text-white font-semibold px-8 py-2"
+              disabled={isLoading}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              End Lesson
+            </Button>
+          </div>
+        )}
 
         {/* Active Status Indicator */}
         <div className="text-center pt-2">
-          <div className="inline-flex items-center gap-2 text-blue-300 text-sm">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-            Lesson management active - all changes auto-save
+          <div className={`inline-flex items-center gap-2 text-sm ${
+            isEditingMode ? 'text-amber-300' : 'text-blue-300'
+          }`}>
+            <div className={`w-2 h-2 rounded-full animate-pulse ${modeConfig.statusDotClassName}`} />
+            {modeConfig.statusIndicatorText}
           </div>
         </div>
       </CardContent>

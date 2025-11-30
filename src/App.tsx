@@ -18,6 +18,7 @@ import StudentManagement from './pages/StudentManagement';
 import ClassesPage from './pages/Classes';
 import ClassFormPage from './pages/ClassFormPage';
 import ClassPage from './pages/ClassPage';
+import ClassTeachingModePage from './pages/ClassTeachingModePage';
 import Teachers from './pages/Teachers';
 import TeacherDashboard from './pages/TeacherDashboard';
 import AttendanceManagement from './pages/AttendanceManagement';
@@ -93,6 +94,7 @@ const AppContent: React.FC = () => {
         {/* Legacy edit route - keep ClassFormPage for now for backward compatibility */}
         <Route path="/classes/edit/:classId" element={<ClassFormPage />} />
         <Route path="/classes/:id" element={<ClassPage />} />
+        <Route path="/classes/:classId/teach/:lessonId" element={<ClassTeachingModePage />} />
         <Route path="/teachers" element={<Teachers />} />{' '}
         <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
         <Route path="/attendance" element={<AttendanceManagement />} />

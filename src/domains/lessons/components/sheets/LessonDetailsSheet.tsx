@@ -24,8 +24,10 @@ import {
   AlertCircle,
   Eye,
   Edit,
+  Edit3,
   ChevronDown,
   X,
+  Play,
 } from 'lucide-react';
 import { LessonResponse } from '@/types/api/lesson';
 import LessonStatusBadge from '../LessonStatusBadge';
@@ -43,6 +45,8 @@ interface LessonDetailsSheetProps {
   onCancel?: (lesson: LessonResponse) => void;
   onCreateMakeup?: (lesson: LessonResponse) => void;
   onEdit?: (lesson: LessonResponse) => void;
+  /** Handler to open teaching mode / edit lesson details (attendance, homework, comments) */
+  onEditLessonDetails?: (lesson: LessonResponse) => void;
 }
 
 const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
@@ -53,6 +57,7 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
   onCancel,
   onCreateMakeup,
   onEdit,
+  onEditLessonDetails,
 }) => {
   const [showMetadata, setShowMetadata] = React.useState(false);
 
@@ -62,6 +67,10 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
   const canCancel = canTransitionToStatus(lesson.statusName, 'Cancelled');
   const canCreateMakeup = lesson.statusName === 'Cancelled' && !lesson.makeupLessonId;
   const isConducted = lesson.statusName === 'Conducted';
+  const isScheduled = lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
+  
+  // Determine if we can open the teaching/editing interface
+  const canAccessTeachingMode = isScheduled || isConducted;
 
   const lessonDate = new Date(lesson.scheduledDate);
   const isToday = lessonDate.toDateString() === new Date().toDateString();
@@ -411,7 +420,8 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
 
           {/* Action Buttons - Fixed at bottom */}
           <div className="border-t border-white/10 bg-white/5 p-4 flex-shrink-0">
-            <div className="flex flex-wrap justify-end gap-3">
+            <div className="flex items-center justify-between gap-3">
+              {/* Left side - Close button */}
               <Button
                 variant="ghost"
                 onClick={() => onOpenChange(false)}
@@ -420,47 +430,80 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
                 Close
               </Button>
 
-              {onEdit && (
-                <Button
-                  onClick={() => onEdit(lesson)}
-                  variant="ghost"
-                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 text-sm"
-                >
-                  <Edit className="w-3 h-3 mr-2" />
-                  Edit
-                </Button>
-              )}
+              {/* Right side - Action buttons */}
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {onEdit && (
+                  <Button
+                    onClick={() => onEdit(lesson)}
+                    variant="ghost"
+                    className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
+                  >
+                    <Edit className="w-3 h-3 mr-2" />
+                    Edit
+                  </Button>
+                )}
 
-              {canCreateMakeup && onCreateMakeup && (
-                <Button
-                  onClick={() => onCreateMakeup(lesson)}
-                  className="bg-purple-500 hover:bg-purple-600 text-white text-sm"
-                >
-                  <RotateCcw className="w-3 h-3 mr-2" />
-                  Create Makeup
-                </Button>
-              )}
+                {canCreateMakeup && onCreateMakeup && (
+                  <Button
+                    onClick={() => onCreateMakeup(lesson)}
+                    variant="ghost"
+                    className="text-purple-300 hover:text-purple-200 hover:bg-purple-500/10 text-sm"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-2" />
+                    Create Makeup
+                  </Button>
+                )}
 
-              {canCancel && onCancel && (
-                <Button
-                  onClick={() => onCancel(lesson)}
-                  variant="ghost"
-                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10 text-sm"
-                >
-                  <XCircle className="w-3 h-3 mr-2" />
-                  Cancel
-                </Button>
-              )}
+                {/* Cancel Lesson - Destructive action with clear labeling */}
+                {canCancel && onCancel && (
+                  <Button
+                    onClick={() => onCancel(lesson)}
+                    variant="ghost"
+                    className="text-red-300 hover:text-red-200 hover:bg-red-500/10 text-sm"
+                  >
+                    <XCircle className="w-3 h-3 mr-2" />
+                    Cancel Lesson
+                  </Button>
+                )}
 
-              {canConduct && onConduct && (
-                <Button
-                  onClick={() => onConduct(lesson)}
-                  className="bg-green-500 hover:bg-green-600 text-white text-sm"
-                >
-                  <CheckCircle className="w-3 h-3 mr-2" />
-                  Mark as Conducted
-                </Button>
-              )}
+                {canConduct && onConduct && (
+                  <Button
+                    onClick={() => onConduct(lesson)}
+                    variant="ghost"
+                    className="text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 text-sm"
+                  >
+                    <CheckCircle className="w-3 h-3 mr-2" />
+                    Mark as Conducted
+                  </Button>
+                )}
+
+                {/* Teaching Mode / Edit Details Button - Primary action */}
+                {canAccessTeachingMode && onEditLessonDetails && (
+                  <Button
+                    onClick={() => {
+                      onOpenChange(false);
+                      onEditLessonDetails(lesson);
+                    }}
+                    className={`text-sm ${
+                      isConducted 
+                        ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 hover:text-amber-200' 
+                        : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200'
+                    }`}
+                  >
+                    {isConducted ? (
+                      <>
+                        <Edit3 className="w-3 h-3 mr-2" />
+                        Edit Attendance & Details
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3 h-3 mr-2" />
+                        Start Teaching
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>

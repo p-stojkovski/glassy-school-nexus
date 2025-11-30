@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -20,6 +21,8 @@ import { hasActiveSchedules, getScheduleWarningMessage } from '@/domains/classes
 interface ClassLessonsTabProps {
   classData: ClassBasicInfoResponse;
   onScheduleTabClick?: () => void;
+  /** Callback when lessons are created/updated - used to refresh hero section */
+  onLessonsUpdated?: () => void;
 }
 
 type LessonFilter = 'all' | LessonStatusName;
@@ -28,7 +31,9 @@ type TeacherFilter = 'all' | string; // 'all' or teacher ID
 const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   classData,
   onScheduleTabClick,
+  onLessonsUpdated,
 }) => {
+  const navigate = useNavigate();
   const { lessons, loading, loadLessons, summary } = useLessonsForClass(classData.id);
   const [statusFilter, setStatusFilter] = useState<LessonFilter>('all');
   const [teacherFilter, setTeacherFilter] = useState<TeacherFilter>('all');
@@ -68,10 +73,13 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   // Handle lesson creation
   const handleCreateLesson = async (lessonData: CreateLessonRequest) => {
     try {
-      await addLesson(lessonData);
+      // Use unwrap() to properly await the thunk and catch errors
+      await addLesson(lessonData).unwrap();
       setIsCreateLessonOpen(false);
-      // Reload lessons to show the new one
+      // Reload lessons to show the new one and update all related data
       await loadLessons();
+      // Notify parent to refresh hero section (lesson context)
+      onLessonsUpdated?.();
       toast.success('Lesson created successfully');
     } catch (error: any) {
       console.error('Failed to create lesson:', error);
@@ -116,6 +124,8 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
       
       // Reload lessons to show the new makeup lesson and updated original lesson
       await loadLessons();
+      // Notify parent to refresh hero section
+      onLessonsUpdated?.();
       
       // Update the current lesson details if it's still selected
       if (selectedLessonIdForDetails === originalLessonId) {
@@ -144,13 +154,15 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   };
 
   // Handle academic lesson generation success
-  const handleAcademicGenerationSuccess = async (result: any) => {
+  const handleAcademicGenerationSuccess = async (result: { generatedCount: number; skippedCount?: number }) => {
     // Reload lessons to show the newly generated ones
     await loadLessons();
+    // Notify parent to refresh hero section
+    onLessonsUpdated?.();
     setIsAcademicGenerationOpen(false);
     
     const message = `Generated ${result.generatedCount} lessons`;
-    const details = result.skippedCount > 0 ? ` (${result.skippedCount} skipped)` : '';
+    const details = result.skippedCount && result.skippedCount > 0 ? ` (${result.skippedCount} skipped)` : '';
     toast.success(message + details);
   };
 
@@ -174,6 +186,11 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   // Schedule validation
   const scheduleAvailable = hasActiveSchedules(classData);
   const scheduleWarning = getScheduleWarningMessage(classData);
+
+  // Handler to navigate to teaching mode / edit lesson details
+  const handleEditLessonDetails = useCallback((lesson: LessonResponse) => {
+    navigate(`/classes/${classData.id}/teach/${lesson.id}`);
+  }, [navigate, classData.id]);
 
   if (loading && lessons.length === 0) {
     return (
@@ -276,6 +293,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         onOpenChange={setIsLessonDetailsOpen}
         onConduct={openConductModal}
         onCancel={openCancelModal}
+        onEditLessonDetails={handleEditLessonDetails}
       />
     </div>
   );

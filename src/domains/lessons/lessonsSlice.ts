@@ -554,10 +554,13 @@ export const selectTodayLessons = (state: RootState) => state.lessons.todayLesso
 export const selectUpcomingLessons = (state: RootState) => state.lessons.upcomingLessons;
 export const selectLastGenerationResult = (state: RootState) => state.lessons.lastGenerationResult;
 
-// Memoized parameterized selectors with caching
-const lessonsForClassSelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
+// Type for lesson selectors
+type LessonSelector = (state: RootState) => Lesson[];
 
-export const selectLessonsForClass = (classId: string) => {
+// Memoized parameterized selectors with caching
+const lessonsForClassSelectorsCache = new Map<string, LessonSelector>();
+
+export const selectLessonsForClass = (classId: string): LessonSelector => {
   if (!lessonsForClassSelectorsCache.has(classId)) {
     const selector = createSelector(
       [selectLessons],
@@ -568,9 +571,9 @@ export const selectLessonsForClass = (classId: string) => {
   return lessonsForClassSelectorsCache.get(classId)!;
 };
 
-const lessonsByStatusSelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
+const lessonsByStatusSelectorsCache = new Map<string, LessonSelector>();
 
-export const selectLessonsByStatus = (status: LessonStatusName) => {
+export const selectLessonsByStatus = (status: LessonStatusName): LessonSelector => {
   if (!lessonsByStatusSelectorsCache.has(status)) {
     const selector = createSelector(
       [selectLessons],
@@ -586,9 +589,9 @@ export const selectSelectedLessons = createSelector(
   (lessons) => lessons.filter(lesson => lesson.isSelected)
 );
 
-const lessonsInDateRangeSelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
+const lessonsInDateRangeSelectorsCache = new Map<string, LessonSelector>();
 
-export const selectLessonsInDateRange = (startDate: string, endDate: string) => {
+export const selectLessonsInDateRange = (startDate: string, endDate: string): LessonSelector => {
   const cacheKey = `${startDate}-${endDate}`;
   if (!lessonsInDateRangeSelectorsCache.has(cacheKey)) {
     const selector = createSelector(
@@ -602,9 +605,9 @@ export const selectLessonsInDateRange = (startDate: string, endDate: string) => 
   return lessonsInDateRangeSelectorsCache.get(cacheKey)!;
 };
 
-const lessonsByTeacherSelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
+const lessonsByTeacherSelectorsCache = new Map<string, LessonSelector>();
 
-export const selectLessonsByTeacher = (teacherId: string) => {
+export const selectLessonsByTeacher = (teacherId: string): LessonSelector => {
   if (!lessonsByTeacherSelectorsCache.has(teacherId)) {
     const selector = createSelector(
       [selectLessons],
@@ -615,9 +618,9 @@ export const selectLessonsByTeacher = (teacherId: string) => {
   return lessonsByTeacherSelectorsCache.get(teacherId)!;
 };
 
-const lessonsByClassroomSelectorsCache = new Map<string, ReturnType<typeof createSelector>>();
+const lessonsByClassroomSelectorsCache = new Map<string, LessonSelector>();
 
-export const selectLessonsByClassroom = (classroomId: string) => {
+export const selectLessonsByClassroom = (classroomId: string): LessonSelector => {
   if (!lessonsByClassroomSelectorsCache.has(classroomId)) {
     const selector = createSelector(
       [selectLessons],
