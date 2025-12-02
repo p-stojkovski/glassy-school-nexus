@@ -38,20 +38,20 @@ export const HomeworkCell: React.FC<HomeworkCellProps> = ({
   };
 
   const getStatusBadgeClass = (status: HomeworkStatus) => {
-    const baseClass = 'cursor-pointer transition-all hover:scale-105 border';
+    const baseClass = 'cursor-pointer transition-all border text-xs px-2 py-1';
     const colorClass = HomeworkStatusColors[status];
     const isSelected = currentStatus === status;
     
     if (isSelected) {
-      return `${baseClass} ${colorClass}`;
+      return `${baseClass} ${colorClass} font-medium`;
     }
     
-    return `${baseClass} bg-white/10 text-white/60 border-white/20 hover:bg-white/20`;
+    return `${baseClass} bg-transparent text-white/60 border-transparent hover:bg-white/10`;
   };
 
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="inline-flex gap-1 bg-white/5 rounded-md p-1 border border-white/10">
       {HOMEWORK_OPTIONS.map((status) => (
         <Badge
           key={status}

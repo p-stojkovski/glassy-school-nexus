@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Clock, Calendar, BookOpen, Users, MapPin, Loader2, Edit3 } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import { AppBreadcrumb } from '@/components/navigation';
+import { buildClassBreadcrumbs } from '@/domains/classes/utils/classBreadcrumbs';
 import LessonStudentPanel from '@/components/teacher-dashboard/student-management/LessonStudentPanel';
 import { lessonApiService } from '@/services/lessonApiService';
 import { classApiService } from '@/services/classApiService';
@@ -131,6 +131,13 @@ const ClassTeachingModePage: React.FC = () => {
   if (error || !lesson || !classData || !modeConfig) {
     return (
       <div className="space-y-6">
+        {/* Breadcrumbs - show even in error state for context */}
+        <AppBreadcrumb 
+          items={buildClassBreadcrumbs({
+            classData: classData ? { id: classData.id, name: classData.name } : null,
+            pageType: 'teaching',
+          })}
+        />
         <Button
           variant="ghost"
           onClick={handleBack}
@@ -149,98 +156,16 @@ const ClassTeachingModePage: React.FC = () => {
     );
   }
 
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      month: 'long', 
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  // Get status color
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Scheduled':
-        return 'bg-blue-500/90';
-      case 'Conducted':
-        return 'bg-green-500/90';
-      case 'Cancelled':
-        return 'bg-red-500/90';
-      default:
-        return 'bg-gray-500/90';
-    }
-  };
-
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            onClick={handleBack}
-            className="text-white/80 hover:text-white hover:bg-white/10"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Back to Class
-          </Button>
-          <div className="h-6 w-px bg-white/20" />
-          <div>
-            <h1 className="text-2xl font-bold text-white">{classData.name}</h1>
-            <p className="text-white/60 text-sm flex items-center gap-2">
-              {classData.subjectName} - {modeConfig.headerTitle}
-              {isEditingMode && <Edit3 className="w-3 h-3" />}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 text-white/70">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            <span>{currentTime}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Lesson Context Bar */}
-      <Card className={`backdrop-blur-lg border-white/20 ${
-        isEditingMode ? 'bg-amber-500/10' : 'bg-white/10'
-      }`}>
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Calendar className={`w-4 h-4 ${isEditingMode ? 'text-amber-400' : 'text-blue-400'}`} />
-                <span className="text-white">{formatDate(lesson.scheduledDate)}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-green-400" />
-                <span className="text-white">{lesson.startTime} - {lesson.endTime}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-purple-400" />
-                <span className="text-white">{lesson.classroomName || lesson.classroomNameSnapshot}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className={`w-4 h-4 ${isEditingMode ? 'text-amber-400' : 'text-blue-400'}`} />
-                <span className="text-white">{classData.enrolledCount} students</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge className={getStatusColor(lesson.statusName)}>
-                {lesson.statusName}
-              </Badge>
-              {isEditingMode && lesson.conductedAt && (
-                <Badge variant="outline" className="text-white/70 border-white/30 text-xs">
-                  Conducted {new Date(lesson.conductedAt).toLocaleDateString()}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Breadcrumb Navigation */}
+      <AppBreadcrumb 
+        items={buildClassBreadcrumbs({
+          classData: { id: classData.id, name: classData.name },
+          lessonData: { id: lesson.id, scheduledDate: lesson.scheduledDate, statusName: lesson.statusName },
+          pageType: 'teaching',
+        })}
+      />
 
       {/* Main Lesson Management Panel */}
       <LessonStudentPanel

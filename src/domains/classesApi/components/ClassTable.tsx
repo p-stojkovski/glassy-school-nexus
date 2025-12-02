@@ -106,6 +106,12 @@ const ClassTable: React.FC<Props> = React.memo(({ classes, onView }) => {
                         <div className="font-medium text-white">
                           {classItem.name}
                         </div>
+                        {/* Disabled Badge */}
+                        {!classItem.isActive && (
+                          <span className="px-2 py-0.5 text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded">
+                            Disabled
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-white/60 mt-1">
                         <BookOpen className="w-3 h-3" />

@@ -41,15 +41,15 @@ const ArchivedSchedulesSection: React.FC<ArchivedSchedulesSectionProps> = ({
   onToggleExpand,
   isLoading,
 }) => {
-  // Only show section if there are archived schedules
-  if (archivedSchedules.length === 0) {
-    return null;
-  }
-
   const sortedArchivedSchedules = useMemo(
     () => sortSchedulesByDay(archivedSchedules),
     [archivedSchedules]
   );
+
+  // Only show section if there are archived schedules
+  if (archivedSchedules.length === 0) {
+    return null;
+  }
 
   const archivedCount = archivedSchedules.length;
   const totalPastLessons = archivedSchedules.reduce(

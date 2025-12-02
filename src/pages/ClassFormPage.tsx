@@ -1,15 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from '@/components/ui/breadcrumb';
+import { AppBreadcrumb } from '@/components/navigation';
+import { buildClassBreadcrumbs } from '@/domains/classes/utils/classBreadcrumbs';
 import ClassFormContent from '@/domains/classes/components/forms/ClassFormContent';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import { useClassFormPage } from '@/domains/classes/hooks/useClassFormPage';
@@ -100,31 +94,13 @@ const ClassFormPage: React.FC = () => {
       {/* Header with Back Button */}
       <div className="space-y-4">
         {/* Breadcrumbs */}
-        <Breadcrumb>
-          <BreadcrumbList className="text-white/70">
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/" className="hover:text-white transition-colors">
-                  Dashboard
-                </Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-white/50" />
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/classes" className="hover:text-white transition-colors">
-                  Classes
-                </Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-white/50" />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="text-white font-medium">
-                {isEditMode ? `Edit ${classItem?.name}` : 'Add Class'}
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <AppBreadcrumb 
+          items={buildClassBreadcrumbs({
+            classData: classItem ? { id: classItem.id, name: classItem.name } : null,
+            pageType: isEditMode ? 'edit' : 'create',
+          })}
+          showIcons={false}
+        />
 
         <div className="flex items-center gap-4">
           <Button

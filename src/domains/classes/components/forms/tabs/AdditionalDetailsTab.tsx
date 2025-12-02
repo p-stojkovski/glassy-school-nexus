@@ -1,6 +1,6 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FileText, Target, Book } from 'lucide-react';
+import { FileText, Target, Book, List } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import {
   FormControl,
@@ -8,6 +8,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { ClassFormData } from '@/types/api/class';
 
@@ -18,21 +19,24 @@ interface AdditionalDetailsTabProps {
 const AdditionalDetailsTab: React.FC<AdditionalDetailsTabProps> = ({ form }) => {
   return (
     <div className="space-y-6">
-      {/* Requirements */}
+      {/* Description */}
       <FormField
         control={form.control}
-        name="requirements"
+        name="description"
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-white flex items-center gap-2">
               <FileText className="w-4 h-4" />
-              Requirements
+              Description
             </FormLabel>
+            <FormDescription className="text-xs text-white/50">
+              Brief overview of this class
+            </FormDescription>
             <FormControl>
               <Textarea
                 {...field}
-                placeholder="Enter class requirements (prerequisites, materials needed, etc.)"
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 min-h-[100px]"
+                placeholder="e.g., This intermediate conversation class focuses on..."
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 min-h-[72px]"
                 value={field.value || ''}
               />
             </FormControl>
@@ -51,16 +55,45 @@ const AdditionalDetailsTab: React.FC<AdditionalDetailsTabProps> = ({ form }) => 
               <Target className="w-4 h-4" />
               Learning Objectives
             </FormLabel>
+            <FormDescription className="text-xs text-white/50">
+              What students will learn (one per line)
+            </FormDescription>
             <FormControl>
               <Textarea
                 {...field}
-                placeholder="Enter learning objectives (one per line)"
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 min-h-[100px]"
+                placeholder="e.g., Students will be able to hold 5-minute conversations&#10;Students will learn 50 new vocabulary words"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 min-h-[72px]"
                 value={Array.isArray(field.value) ? field.value.join('\n') : field.value || ''}
                 onChange={(e) => {
                   const lines = e.target.value.split('\n').filter(line => line.trim());
                   field.onChange(lines.length > 0 ? lines : null);
                 }}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* Requirements */}
+      <FormField
+        control={form.control}
+        name="requirements"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-white flex items-center gap-2">
+              <List className="w-4 h-4" />
+              Requirements
+            </FormLabel>
+            <FormDescription className="text-xs text-white/50">
+              Prerequisites or prior knowledge needed
+            </FormDescription>
+            <FormControl>
+              <Textarea
+                {...field}
+                placeholder="e.g., Students should be comfortable with basic A2 grammar"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 min-h-[72px]"
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
@@ -78,11 +111,14 @@ const AdditionalDetailsTab: React.FC<AdditionalDetailsTabProps> = ({ form }) => 
               <Book className="w-4 h-4" />
               Materials & Resources
             </FormLabel>
+            <FormDescription className="text-xs text-white/50">
+              Books, supplies, or resources (one per line)
+            </FormDescription>
             <FormControl>
               <Textarea
                 {...field}
-                placeholder="List required materials (one per line)"
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 min-h-[100px]"
+                placeholder="e.g., English File Intermediate textbook&#10;Notebook for vocabulary"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 min-h-[72px]"
                 value={Array.isArray(field.value) ? field.value.join('\n') : field.value || ''}
                 onChange={(e) => {
                   const lines = e.target.value.split('\n').filter(line => line.trim());
@@ -94,28 +130,6 @@ const AdditionalDetailsTab: React.FC<AdditionalDetailsTabProps> = ({ form }) => 
           </FormItem>
         )}
       />
-
-      {/* Additional Information */}
-      <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-        <h4 className="text-white font-medium mb-2 flex items-center gap-2">
-          <FileText className="w-4 h-4" />
-          Additional Notes
-        </h4>
-        <p className="text-white/70 text-sm mb-4">
-          All fields in this section are optional and can be used to provide additional context for the class.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-white/60">
-          <div>
-            <strong>Requirements:</strong> Prerequisites and what students need
-          </div>
-          <div>
-            <strong>Objectives:</strong> What students will learn and achieve
-          </div>
-          <div>
-            <strong>Materials:</strong> Books, supplies, and resources needed
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

@@ -3,7 +3,7 @@ import GlassCard from '@/components/common/GlassCard';
 import ClearFiltersButton from '@/components/common/ClearFiltersButton';
 import SubjectsDropdown from '@/components/common/SubjectsDropdown';
 import SearchInput from '@/components/common/SearchInput';
-import { User, Loader2, AlertCircle } from 'lucide-react';
+import { User, Loader2, AlertCircle, EyeOff, Eye } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -21,11 +21,14 @@ interface ClassFiltersProps {
   subjectFilter: 'all' | string;
   teacherFilter?: 'all' | string;
   showOnlyWithAvailableSlots: boolean;
+  showDisabled: boolean;
+  onShowDisabledChange: (show: boolean) => void;
   onFilterChange: (type: string, value: string) => void;
   clearFilters?: () => void;
   viewMode?: ClassViewMode;
   onViewModeChange?: (mode: ClassViewMode) => void;
   isSearching?: boolean;
+  hasDisabledClasses?: boolean;
 }
 
 const ClassFilters: React.FC<ClassFiltersProps> = ({
@@ -34,11 +37,14 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
   subjectFilter,
   teacherFilter,
   showOnlyWithAvailableSlots,
+  showDisabled,
+  onShowDisabledChange,
   onFilterChange,
   clearFilters,
   viewMode = 'table',
   onViewModeChange,
   isSearching = false,
+  hasDisabledClasses = false,
 }) => {
   const { teachers, isLoading: isLoadingTeachers, error: teachersError } = useTeachers();
 
@@ -117,6 +123,52 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
               </Select>
             </div>
           )}
+          {/* Show Disabled Classes Toggle - Premium style button */}
+          {hasDisabledClasses && (
+            <button
+              onClick={() => onShowDisabledChange(!showDisabled)}
+              className={`
+                group relative flex items-center gap-2.5 px-4 py-2.5 rounded-xl
+                transition-all duration-300 ease-out
+                ${showDisabled 
+                  ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/40 shadow-lg shadow-purple-500/10' 
+                  : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20'
+                }
+              `}
+            >
+              {/* Icon with glow effect when active */}
+              <div className={`
+                relative transition-all duration-300
+                ${showDisabled ? 'text-purple-400' : 'text-white/50 group-hover:text-white/70'}
+              `}>
+                {showDisabled ? (
+                  <Eye className="w-4 h-4" />
+                ) : (
+                  <EyeOff className="w-4 h-4" />
+                )}
+                {showDisabled && (
+                  <div className="absolute inset-0 blur-md bg-purple-400/50 -z-10" />
+                )}
+              </div>
+              
+              {/* Label */}
+              <span className={`
+                text-sm font-medium transition-colors duration-300
+                ${showDisabled ? 'text-white' : 'text-white/60 group-hover:text-white/80'}
+              `}>
+                Disabled
+              </span>
+              
+              {/* Status indicator dot */}
+              <div className={`
+                w-2 h-2 rounded-full transition-all duration-300
+                ${showDisabled 
+                  ? 'bg-purple-400 shadow-lg shadow-purple-400/50' 
+                  : 'bg-white/30 group-hover:bg-white/40'
+                }
+              `} />
+            </button>
+          )}
         </div>
 
         <div className="flex gap-2 lg:flex-shrink-0 w-full lg:w-auto">
@@ -128,4 +180,3 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
 };
 
 export default ClassFilters;
-

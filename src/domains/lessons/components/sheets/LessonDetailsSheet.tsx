@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import {
   Sheet,
   SheetContent,
@@ -11,16 +10,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  Calendar,
-  Clock,
-  User,
-  MapPin,
-  BookOpen,
   FileText,
   CheckCircle,
   XCircle,
   RotateCcw,
-  History,
   AlertCircle,
   Eye,
   Edit,
@@ -30,6 +23,7 @@ import {
   Play,
 } from 'lucide-react';
 import { LessonResponse } from '@/types/api/lesson';
+import { formatTimeRangeWithoutSeconds } from '@/utils/timeFormatUtils';
 import LessonStatusBadge from '../LessonStatusBadge';
 import GlassCard from '@/components/common/GlassCard';
 import { canTransitionToStatus } from '@/types/api/lesson';
@@ -74,8 +68,6 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
 
   const lessonDate = new Date(lesson.scheduledDate);
   const isToday = lessonDate.toDateString() === new Date().toDateString();
-  const isPast = lessonDate < new Date();
-  const isFuture = lessonDate > new Date();
 
   // Format date nicely
   const formattedDate = lessonDate.toLocaleDateString('en-US', {
@@ -122,106 +114,42 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
             <div className="space-y-4 p-4">
               {/* Class Information - Compact */}
               <GlassCard className="p-3">
-                <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-green-400" />
-                  Lesson Information
+                <h3 className="text-sm font-semibold text-white mb-2">
+                  Lesson Snapshot
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-white/60 text-xs block mb-1">
-                      Class Name
-                    </label>
-                    <p className="text-white text-sm font-medium">
-                      {lesson.className}
-                    </p>
+                <div className="space-y-1 text-sm text-white/80">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-white font-semibold">{lesson.className}</span>
+                    <span className="text-white/60">· {lesson.subjectName}</span>
+                    <span className="text-white/60">· {lesson.teacherName}</span>
                   </div>
-                  <div>
-                    <label className="text-white/60 text-xs block mb-1 flex items-center gap-1">
-                      <BookOpen className="w-3 h-3" />
-                      Subject
-                    </label>
-                    <p className="text-white text-sm font-medium">
-                      {lesson.subjectName}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-white/60 text-xs block mb-1 flex items-center gap-1">
-                      <User className="w-3 h-3" />
-                      Teacher
-                    </label>
-                    <p className="text-white text-sm font-medium">
-                      {lesson.teacherName}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-white/60 text-xs block mb-1 flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      Classroom
-                    </label>
-                    <p className="text-white text-sm font-medium">
-                      {lesson.classroomName}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-white/60 text-xs block mb-1 flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      Date
-                    </label>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-white text-sm font-medium">
-                        {formattedDate}
-                      </p>
-                      {isToday && (
-                        <Badge
-                          variant="outline"
-                          className="text-yellow-400 border-yellow-400/50 bg-yellow-400/10 text-xs"
-                        >
-                          Today
-                        </Badge>
-                      )}
-                      {isPast && !isToday && (
-                        <Badge
-                          variant="outline"
-                          className="text-gray-400 border-gray-400/50 bg-gray-400/10 text-xs"
-                        >
-                          Past
-                        </Badge>
-                      )}
-                      {isFuture && (
-                        <Badge
-                          variant="outline"
-                          className="text-green-400 border-green-400/50 bg-green-400/10 text-xs"
-                        >
-                          Upcoming
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-white/60 text-xs block mb-1 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      Time
-                    </label>
-                    <p className="text-white text-sm font-medium">
-                      {lesson.startTime} - {lesson.endTime}
-                    </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-white">{formattedDate}</span>
+                    <span className="text-white/60">· {formatTimeRangeWithoutSeconds(lesson.startTime, lesson.endTime)}</span>
+                    {lesson.classroomName && (
+                      <span className="text-white/60">· {lesson.classroomName}</span>
+                    )}
+                    {isToday && (
+                      <Badge
+                        variant="outline"
+                        className="text-yellow-300 border-yellow-300/40 bg-yellow-300/10 text-[11px]"
+                      >
+                        Today
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </GlassCard>
 
               {/* Teacher Notes - Only for conducted lessons */}
               {isConducted && (
-                <LessonNotesDisplaySection lessonId={lesson.id} />
-              )}
-
-              {/* Homework Assignment - Only for conducted lessons */}
-              {isConducted && (
-                <LessonHomeworkDisplaySection lessonId={lesson.id} />
-              )}
-
-              {/* Student Records - Only for conducted lessons */}
-              {isConducted && (
-                <LessonStudentRecapSection lessonId={lesson.id} />
+                <div className="space-y-2">
+                  <LessonStudentRecapSection lessonId={lesson.id} onEditLessonDetails={onEditLessonDetails} lesson={lesson} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <LessonNotesDisplaySection lessonId={lesson.id} />
+                    <LessonHomeworkDisplaySection lessonId={lesson.id} />
+                  </div>
+                </div>
               )}
 
               {/* Status Information - For non-conducted lessons */}
@@ -420,90 +348,78 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
 
           {/* Action Buttons - Fixed at bottom */}
           <div className="border-t border-white/10 bg-white/5 p-4 flex-shrink-0">
-            <div className="flex items-center justify-between gap-3">
-              {/* Left side - Close button */}
-              <Button
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-                className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
-              >
-                Close
-              </Button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {onEdit && (
+                <Button
+                  onClick={() => onEdit(lesson)}
+                  variant="ghost"
+                  className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
+                >
+                  <Edit className="w-3 h-3 mr-2" />
+                  Edit
+                </Button>
+              )}
 
-              {/* Right side - Action buttons */}
-              <div className="flex flex-wrap items-center justify-end gap-2">
-                {onEdit && (
-                  <Button
-                    onClick={() => onEdit(lesson)}
-                    variant="ghost"
-                    className="text-white/70 hover:text-white hover:bg-white/10 text-sm"
-                  >
-                    <Edit className="w-3 h-3 mr-2" />
-                    Edit
-                  </Button>
-                )}
+              {canCreateMakeup && onCreateMakeup && (
+                <Button
+                  onClick={() => onCreateMakeup(lesson)}
+                  variant="ghost"
+                  className="text-purple-300 hover:text-purple-200 hover:bg-purple-500/10 text-sm"
+                >
+                  <RotateCcw className="w-3 h-3 mr-2" />
+                  Create Makeup
+                </Button>
+              )}
 
-                {canCreateMakeup && onCreateMakeup && (
-                  <Button
-                    onClick={() => onCreateMakeup(lesson)}
-                    variant="ghost"
-                    className="text-purple-300 hover:text-purple-200 hover:bg-purple-500/10 text-sm"
-                  >
-                    <RotateCcw className="w-3 h-3 mr-2" />
-                    Create Makeup
-                  </Button>
-                )}
+              {/* Cancel Lesson - Destructive action with clear labeling */}
+              {canCancel && onCancel && (
+                <Button
+                  onClick={() => onCancel(lesson)}
+                  variant="ghost"
+                  className="text-red-300 hover:text-red-200 hover:bg-red-500/10 text-sm"
+                >
+                  <XCircle className="w-3 h-3 mr-2" />
+                  Cancel Lesson
+                </Button>
+              )}
 
-                {/* Cancel Lesson - Destructive action with clear labeling */}
-                {canCancel && onCancel && (
-                  <Button
-                    onClick={() => onCancel(lesson)}
-                    variant="ghost"
-                    className="text-red-300 hover:text-red-200 hover:bg-red-500/10 text-sm"
-                  >
-                    <XCircle className="w-3 h-3 mr-2" />
-                    Cancel Lesson
-                  </Button>
-                )}
+              {canConduct && onConduct && (
+                <Button
+                  onClick={() => onConduct(lesson)}
+                  variant="ghost"
+                  className="text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 text-sm"
+                >
+                  <CheckCircle className="w-3 h-3 mr-2" />
+                  Mark as Conducted
+                </Button>
+              )}
 
-                {canConduct && onConduct && (
-                  <Button
-                    onClick={() => onConduct(lesson)}
-                    variant="ghost"
-                    className="text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 text-sm"
-                  >
-                    <CheckCircle className="w-3 h-3 mr-2" />
-                    Mark as Conducted
-                  </Button>
-                )}
-
-                {/* Teaching Mode / Edit Details Button - Primary action */}
-                {canAccessTeachingMode && onEditLessonDetails && (
-                  <Button
-                    onClick={() => {
-                      onOpenChange(false);
-                      onEditLessonDetails(lesson);
-                    }}
-                    className={`text-sm ${
-                      isConducted 
-                        ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 hover:text-amber-200' 
-                        : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200'
-                    }`}
-                  >
-                    {isConducted ? (
-                      <>
-                        <Edit3 className="w-3 h-3 mr-2" />
-                        Edit Attendance & Details
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-3 h-3 mr-2" />
-                        Start Teaching
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
+              {/* Teaching Mode / Edit Details Button - Primary action */}
+              {canAccessTeachingMode && onEditLessonDetails && (
+                <Button
+                  onClick={() => {
+                    onOpenChange(false);
+                    onEditLessonDetails(lesson);
+                  }}
+                  className={`text-sm ${
+                    isConducted 
+                      ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 hover:text-amber-200' 
+                      : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200'
+                  }`}
+                >
+                  {isConducted ? (
+                    <>
+                      <Edit3 className="w-3 h-3 mr-2" />
+                      Edit Attendance & Details
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-3 h-3 mr-2" />
+                      Start Teaching
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </div>

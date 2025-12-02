@@ -117,7 +117,7 @@ export function AddScheduleSlotDialog({ open, onOpenChange, classId, onSuccess }
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Calendar className="w-5 h-5 text-yellow-400" />
-            Add Schedule Slot
+            Add session
           </DialogTitle>
           <DialogDescription className="text-white/70">
             Create a new schedule slot for this class

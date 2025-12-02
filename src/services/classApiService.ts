@@ -26,6 +26,11 @@ import {
   ClassBasicInfoResponse,
   ClassScheduleResponse,
   ClassAdditionalDetailsResponse,
+  AddStudentsRequest,
+  AddStudentsResponse,
+  RemoveStudentResponse,
+  DisableClassResponse,
+  EnableClassResponse,
 } from '@/types/api/class';
 import {
   ScheduleValidationRequest,
@@ -107,6 +112,7 @@ return await apiService.get<ClassBasicInfoResponse>(ClassApiPaths.BY_ID(id));
       if (params.subjectId) qs.append('subjectId', params.subjectId);
       if (params.teacherId) qs.append('teacherId', params.teacherId);
       if (params.onlyWithAvailableSlots !== undefined) qs.append('onlyWithAvailableSlots', String(params.onlyWithAvailableSlots));
+      if (params.includeDisabled !== undefined) qs.append('includeDisabled', String(params.includeDisabled));
       const endpoint = qs.toString() ? `${ClassApiPaths.SEARCH}?${qs.toString()}` : ClassApiPaths.SEARCH;
       
 return await apiService.get<ClassResponse[]>(endpoint);
@@ -261,7 +267,7 @@ return await apiService.put<ClassResponse>(ClassApiPaths.BY_ID(id), request);
   /** Delete class */
   async deleteClass(id: string): Promise<void> {
     try {
-      
+
 await apiService.delete<void>(ClassApiPaths.BY_ID(id));
     } catch (error: any) {
       if (error.status === ClassHttpStatus.NOT_FOUND) {
@@ -271,6 +277,42 @@ await apiService.delete<void>(ClassApiPaths.BY_ID(id));
         throw makeApiError(error, 'Authentication required to delete classes');
       }
       throw makeApiError(error, `Failed to delete class: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Disable class */
+  async disableClass(id: string): Promise<DisableClassResponse> {
+    try {
+      return await apiService.post<DisableClassResponse>(ClassApiPaths.DISABLE(id), {});
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'Class is already disabled');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to disable classes');
+      }
+      throw makeApiError(error, `Failed to disable class: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Enable class */
+  async enableClass(id: string): Promise<EnableClassResponse> {
+    try {
+      return await apiService.post<EnableClassResponse>(ClassApiPaths.ENABLE(id), {});
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'Class is already active');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to enable classes');
+      }
+      throw makeApiError(error, `Failed to enable class: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -424,10 +466,10 @@ await apiService.delete<void>(ClassApiPaths.BY_ID(id));
   async addStudentsToClass(
     classId: string,
     request: AddStudentsRequest
-  ): Promise<EnrollmentResultResponse> {
+  ): Promise<AddStudentsResponse> {
     try {
       const endpoint = ClassApiPaths.ENROLLMENTS(classId);
-      return await apiService.post<EnrollmentResultResponse>(endpoint, request);
+      return await apiService.post<AddStudentsResponse>(endpoint, request);
     } catch (error: any) {
       if (error.status === ClassHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Class not found');
@@ -508,6 +550,8 @@ export const updateClass = (id: string, request: UpdateClassRequest) => classApi
 export const updateBasicInfo = (id: string, request: UpdateBasicInfoRequest) => classApiService.updateBasicInfo(id, request);
 export const updateAdditionalDetails = (id: string, request: UpdateAdditionalDetailsRequest) => classApiService.updateAdditionalDetails(id, request);
 export const deleteClass = (id: string) => classApiService.deleteClass(id);
+export const disableClass = (id: string) => classApiService.disableClass(id);
+export const enableClass = (id: string) => classApiService.enableClass(id);
 export const getClassStudentsSummary = (classId: string) => classApiService.getClassStudentsSummary(classId);
 export const getClassStudentLessons = (classId: string, studentId: string) => classApiService.getClassStudentLessons(classId, studentId);
 export const getArchivedSchedules = (classId: string) => classApiService.getArchivedSchedules(classId);

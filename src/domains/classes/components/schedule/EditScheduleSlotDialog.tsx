@@ -120,7 +120,7 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, slot, onSu
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Calendar className="w-5 h-5 text-yellow-400" />
-            Edit Schedule Slot
+            Edit session
           </DialogTitle>
           <DialogDescription className="text-white/70">
             Update the schedule slot details

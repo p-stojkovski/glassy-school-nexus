@@ -1,27 +1,31 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
   Play, 
-  PlayCircle, 
-  BookOpen, 
-  CalendarPlus,
   Clock,
-  Calendar,
-  ChevronRight,
-  Loader2,
-  CheckCircle2
+  CheckCircle,
+  XCircle,
+  MoreVertical,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ClassBasicInfoResponse, ClassResponse } from '@/types/api/class';
-import { UseClassLessonContextResult, ClassLessonState } from '@/domains/classes/hooks/useClassLessonContext';
+import { LessonResponse } from '@/types/api/lesson';
+import { UseClassLessonContextResult } from '@/domains/classes/hooks/useClassLessonContext';
+import { formatTimeRangeWithoutSeconds } from '@/utils/timeFormatUtils';
 import { cn } from '@/lib/utils';
 
 interface ClassHeroSectionProps {
   classData: ClassBasicInfoResponse | ClassResponse;
   lessonContext: UseClassLessonContextResult;
-  onNavigateToSchedule?: () => void;
+  onStartTeaching?: (lesson: LessonResponse) => void;
+  onConductLesson?: (lesson: LessonResponse) => void;
+  onCancelLesson?: (lesson: LessonResponse) => void;
 }
 
 /**
@@ -31,10 +35,11 @@ interface ClassHeroSectionProps {
 const ClassHeroSection: React.FC<ClassHeroSectionProps> = ({
   classData,
   lessonContext,
-  onNavigateToSchedule
+  onStartTeaching,
+  onConductLesson,
+  onCancelLesson,
 }) => {
-  const navigate = useNavigate();
-  const { currentLesson, nextLesson, lessonState, isLoading } = lessonContext;
+  const { currentLesson, nextLesson, lessonState } = lessonContext;
 
   // Calculate progress percentage
   const { lessonSummary } = classData;
@@ -44,88 +49,16 @@ const ClassHeroSection: React.FC<ClassHeroSectionProps> = ({
     ? Math.round((conductedLessons / totalLessons) * 100) 
     : 0;
 
-  // Get CTA configuration based on lesson state
-  const getCTAConfig = (): {
-    label: string;
-    icon: React.ReactNode;
-    className: string;
-    action: () => void;
-    disabled: boolean;
-  } => {
-    if (isLoading) {
-      return {
-        label: 'Loading...',
-        icon: <Loader2 className="w-4 h-4 animate-spin" />,
-        className: 'bg-white/10 text-white/60 cursor-wait',
-        action: () => {},
-        disabled: true
-      };
-    }
-
-    switch (lessonState) {
-      case 'active':
-        return {
-          label: 'Continue Lesson',
-          icon: <PlayCircle className="w-4 h-4" />,
-          className: 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 hover:text-emerald-200',
-          action: () => {
-            if (currentLesson) {
-              navigate(`/classes/${classData.id}/teach/${currentLesson.id}`);
-            }
-          },
-          disabled: !currentLesson
-        };
-      
-      case 'upcoming_today':
-        return {
-          label: 'Start Lesson',
-          icon: <Play className="w-4 h-4" />,
-          className: 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200',
-          action: () => {
-            if (nextLesson) {
-              navigate(`/classes/${classData.id}/teach/${nextLesson.id}`);
-            }
-          },
-          disabled: !nextLesson
-        };
-      
-      case 'upcoming_future':
-        return {
-          label: 'View Schedule',
-          icon: <Calendar className="w-4 h-4" />,
-          className: 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 hover:text-indigo-200',
-          action: () => onNavigateToSchedule?.(),
-          disabled: false
-        };
-      
-      case 'completed':
-        return {
-          label: 'Review Lessons',
-          icon: <BookOpen className="w-4 h-4" />,
-          className: 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 hover:text-purple-200',
-          action: () => onNavigateToSchedule?.(),
-          disabled: false
-        };
-      
-      case 'none':
-      default:
-        return {
-          label: 'Schedule Lessons',
-          icon: <CalendarPlus className="w-4 h-4" />,
-          className: 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/20',
-          action: () => onNavigateToSchedule?.(),
-          disabled: false
-        };
-    }
-  };
-
-  const ctaConfig = getCTAConfig();
+  // Determine which lesson actions are available
   const lesson = currentLesson || nextLesson;
+  const canShowLessonActions = lesson && (lessonState === 'active' || lessonState === 'upcoming_today' || lessonState === 'upcoming_future');
+  const canConduct = lesson && (lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up');
+  const canCancel = lesson && (lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up');
 
   // Format lesson time
   const formatLessonTime = () => {
     if (!lesson) return null;
-    return `${lesson.startTime} - ${lesson.endTime}`;
+    return formatTimeRangeWithoutSeconds(lesson.startTime, lesson.endTime);
   };
 
   // Get status indicator config
@@ -231,23 +164,63 @@ const ClassHeroSection: React.FC<ClassHeroSectionProps> = ({
             )}
           </div>
 
-          {/* Right: CTA */}
+          {/* Right: Lesson Actions Menu */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Button
-              size="sm"
-              onClick={ctaConfig.action}
-              disabled={ctaConfig.disabled}
-              className={cn(
-                'gap-2 font-medium transition-all',
-                ctaConfig.className
-              )}
-            >
-              {ctaConfig.icon}
-              {ctaConfig.label}
-              {!ctaConfig.disabled && (lessonState === 'active' || lessonState === 'upcoming_today') && (
-                <ChevronRight className="w-4 h-4" />
-              )}
-            </Button>
+            {/* Lesson Actions Kebab Menu */}
+            {canShowLessonActions && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium px-2"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-52 bg-gray-900/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl p-1.5"
+                >
+                  {/* Start Teaching - for scheduled lessons */}
+                  {lesson && onStartTeaching && (
+                    <DropdownMenuItem
+                      onClick={() => onStartTeaching(lesson)}
+                      className="gap-2.5 cursor-pointer text-blue-400 hover:text-blue-300 focus:text-blue-300 focus:bg-blue-500/10 rounded-lg px-3 py-2.5 transition-all duration-200"
+                    >
+                      <Play className="w-4 h-4" />
+                      <span className="font-medium">Start Teaching</span>
+                    </DropdownMenuItem>
+                  )}
+
+                  {/* Mark as Conducted */}
+                  {canConduct && onConductLesson && (
+                    <DropdownMenuItem
+                      onClick={() => onConductLesson(lesson!)}
+                      className="gap-2.5 cursor-pointer text-emerald-400 hover:text-emerald-300 focus:text-emerald-300 focus:bg-emerald-500/10 rounded-lg px-3 py-2.5 transition-all duration-200"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="font-medium">Mark as Conducted</span>
+                    </DropdownMenuItem>
+                  )}
+
+                  {/* Separator before destructive action */}
+                  {canCancel && onCancelLesson && (canConduct || onStartTeaching) && (
+                    <DropdownMenuSeparator className="bg-white/10 my-1" />
+                  )}
+
+                  {/* Cancel Lesson */}
+                  {canCancel && onCancelLesson && (
+                    <DropdownMenuItem
+                      onClick={() => onCancelLesson(lesson!)}
+                      className="gap-2.5 cursor-pointer text-rose-400 hover:text-rose-300 focus:text-rose-300 focus:bg-rose-500/10 rounded-lg px-3 py-2.5 transition-all duration-200"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      <span className="font-medium">Cancel Lesson</span>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </div>

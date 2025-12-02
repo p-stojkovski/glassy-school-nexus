@@ -5,10 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { StudentLessonSummary, StudentLessonDetail } from '@/types/api/class';
 import { classApiService } from '@/services/classApiService';
-import { ChevronDown, ChevronRight, User, AlertCircle, Loader2, MessageSquare, TrendingUp, Trash2, Plus, ArrowRightLeft } from 'lucide-react';
-import AttendanceSummaryBadges from './AttendanceSummaryBadges';
-import HomeworkSummaryBadges from './HomeworkSummaryBadges';
+import { ChevronDown, ChevronRight, User, AlertCircle, Loader2, MessageSquare, Plus } from 'lucide-react';
 import StudentLessonDetailsRow from './StudentLessonDetailsRow';
+import StudentProgressChips from './StudentProgressChips';
+import StudentRowActionsMenu from './StudentRowActionsMenu';
 import { DiscountIndicator, PaymentObligationIndicator } from './PrivacyIndicator';
 import { toast } from 'sonner';
 
@@ -117,7 +117,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
   // Loading state
   if (loading) {
     return (
-      <GlassCard className="p-6">
+      <GlassCard className="p-3">
         <div className="flex items-center justify-center space-y-4">
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-white/60" />
@@ -137,7 +137,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
   // Error state
   if (error) {
     return (
-      <GlassCard className="p-6">
+      <GlassCard className="p-3">
         <div className="flex items-center justify-between p-4 rounded-xl border border-red-400/30 bg-red-400/10">
           <div className="flex items-center gap-2 text-red-200">
             <AlertCircle className="w-5 h-5" />
@@ -158,32 +158,11 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
   // Empty state
   if (summaries.length === 0) {
     return (
-      <GlassCard className="p-4 text-center">
+      <GlassCard className="p-6 text-center">
         <div className="py-4">
           <User className="w-12 h-12 mx-auto mb-3 text-white/40" />
           <h3 className="text-lg font-semibold text-white mb-2">No Students Enrolled</h3>
-          <p className="text-white/60 text-sm">There are no students enrolled in this class yet.</p>
-        </div>
-      </GlassCard>
-    );
-  }
-
-  return (
-    <GlassCard className="p-4">
-      {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-500/20 rounded-lg">
-            <TrendingUp className="w-5 h-5 text-blue-300" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-white">Student Progress Summary</h3>
-            <p className="text-white/60 text-sm">
-              {summaries.length} {summaries.length === 1 ? 'student' : 'students'} | {totalConductedLessons} {totalConductedLessons === 1 ? 'lesson' : 'lessons'} conducted
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
+          <p className="text-white/60 text-sm mb-4">There are no students enrolled in this class yet.</p>
           {mode === 'view' && onAddStudents && (
             <Button
               onClick={onAddStudents}
@@ -204,6 +183,40 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
             </Button>
           )}
         </div>
+      </GlassCard>
+    );
+  }
+
+  return (
+    <GlassCard className="p-3">
+      {/* Compact Header */}
+      <div className="mb-3 flex items-center justify-between">
+        <div className="text-sm text-white/70">
+          {summaries.length} {summaries.length === 1 ? 'student' : 'students'} · {totalConductedLessons} {totalConductedLessons === 1 ? 'lesson' : 'lessons'} conducted
+        </div>
+        <div className="flex items-center gap-2">
+          {mode === 'view' && onAddStudents && (
+            <Button
+              onClick={onAddStudents}
+              disabled={isAddingStudents}
+              size="sm"
+              variant="ghost"
+              className="text-white hover:bg-white/10"
+            >
+              {isAddingStudents ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-3 h-3" /> 
+                  Add Students
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Table */}
@@ -213,14 +226,11 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
             <TableRow className="border-white/20 hover:bg-transparent">
               <TableHead className="text-white/90 font-semibold w-8"></TableHead>
               <TableHead className="text-white/90 font-semibold min-w-[180px]">Student</TableHead>
-              <TableHead className="text-white/90 font-semibold text-center w-20">Lessons</TableHead>
-              <TableHead className="text-white/90 font-semibold text-center w-24">Attendance</TableHead>
-              <TableHead className="text-white/90 font-semibold text-center w-24">Homework</TableHead>
-              <TableHead className="text-white/90 font-semibold text-center w-24">Comments</TableHead>
-              <TableHead className="text-white/90 font-semibold text-center w-24">Discounts</TableHead>
-              <TableHead className="text-white/90 font-semibold text-center w-24">Payments</TableHead>
+              <TableHead className="text-white/90 font-semibold min-w-[220px]">Progress</TableHead>
+              <TableHead className="text-white/90 font-semibold text-center w-24">Billing</TableHead>
+              <TableHead className="text-white/90 font-semibold text-center w-20">Comments</TableHead>
               {mode === 'view' && (onRemoveStudent || onTransferStudent) && (
-                <TableHead className="text-white/90 font-semibold text-center w-24">Actions</TableHead>
+                <TableHead className="text-white/90 font-semibold text-center w-16">Actions</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -255,7 +265,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
                     </TableCell>
 
                     {/* Student name with risk indicator */}
-                    <TableCell className="font-medium py-3">
+                    <TableCell className="font-medium py-2">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => navigate(`/students/${summary.studentId}`)}
@@ -272,92 +282,50 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
                       </div>
                     </TableCell>
 
-                    {/* Total lessons */}
-                    <TableCell className="text-center py-3">
-                      <span className="text-white font-semibold">{summary.totalLessons}</span>
+                    {/* Progress: Combined Lessons + Attendance + Homework */}
+                    <TableCell className="py-2">
+                      <StudentProgressChips
+                        totalLessons={summary.totalLessons}
+                        attendance={summary.attendance}
+                        homework={summary.homework}
+                      />
                     </TableCell>
 
-                    {/* Attendance badges */}
-                    <TableCell className="text-center py-3">
-                      <div className="flex justify-center">
-                        <AttendanceSummaryBadges attendance={summary.attendance} />
-                      </div>
-                    </TableCell>
-
-                    {/* Homework badges */}
-                    <TableCell className="text-center py-3">
-                      <div className="flex justify-center">
-                        <HomeworkSummaryBadges homework={summary.homework} />
-                      </div>
-                    </TableCell>
-
-                    {/* Comments count */}
-                    <TableCell className="text-center py-3">
-                      {summary.commentsCount > 0 ? (
-                        <div className="flex items-center justify-center gap-1.5 text-blue-300">
-                          <MessageSquare className="w-4 h-4" />
-                          <span className="font-semibold">{summary.commentsCount}</span>
+                    {/* Billing: Combined Discounts + Payments */}
+                    <TableCell className="text-center py-2">
+                      {summary.discount || summary.paymentObligation ? (
+                        <div className="flex items-center justify-center gap-1">
+                          {summary.discount && <DiscountIndicator discount={summary.discount} />}
+                          {summary.paymentObligation && <PaymentObligationIndicator paymentObligation={summary.paymentObligation} />}
                         </div>
                       ) : (
-                        <span className="text-white/40 text-sm">—</span>
+                        <span className="text-white/30 text-sm">—</span>
                       )}
                     </TableCell>
 
-                    {/* Discount indicator (privacy-protected) */}
-                    <TableCell className="text-center py-3">
-                      <DiscountIndicator discount={summary.discount} />
+                    {/* Comments: Simplified count badge */}
+                    <TableCell className="text-center py-2">
+                      {summary.commentsCount > 0 ? (
+                        <div className="flex items-center justify-center gap-1 text-white/70 text-xs">
+                          <MessageSquare className="w-3 h-3" />
+                          <span>{summary.commentsCount}</span>
+                        </div>
+                      ) : (
+                        <span className="text-white/30 text-xs">—</span>
+                      )}
                     </TableCell>
 
-                    {/* Payment obligations indicator (privacy-protected) */}
-                    <TableCell className="text-center py-3">
-                      <PaymentObligationIndicator paymentObligation={summary.paymentObligation} />
-                    </TableCell>
-
-                    {/* Actions: Transfer and Remove */}
+                    {/* Actions: Dropdown Menu */}
                     {mode === 'view' && (onRemoveStudent || onTransferStudent) && (
-                      <TableCell className="text-center py-3">
-                        <div className="flex items-center justify-center gap-1">
-                          {/* Transfer button */}
-                          {onTransferStudent && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                onTransferStudent(summary.studentId, summary.studentName)
-                              }
-                              className="h-8 w-8 p-0 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300"
-                              title="Transfer student to another class"
-                            >
-                              <ArrowRightLeft className="h-4 w-4" />
-                            </Button>
-                          )}
-                          {/* Remove button */}
-                          {onRemoveStudent && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                onRemoveStudent(
-                                  summary.studentId,
-                                  summary.studentName,
-                                  hasAttendance
-                                )
-                              }
-                              disabled={hasAttendance}
-                              className={`h-8 w-8 p-0 ${
-                                hasAttendance
-                                  ? 'opacity-50 cursor-not-allowed hover:bg-transparent'
-                                  : 'hover:bg-red-500/20 text-red-400 hover:text-red-300'
-                              }`}
-                              title={
-                                hasAttendance
-                                  ? 'Cannot remove student with lesson attendance'
-                                  : 'Remove student from class'
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
+                      <TableCell className="text-center py-2">
+                        <div className="flex items-center justify-center">
+                          <StudentRowActionsMenu
+                            studentId={summary.studentId}
+                            studentName={summary.studentName}
+                            hasAttendance={hasAttendance}
+                            onTransfer={onTransferStudent}
+                            onRemove={onRemoveStudent}
+                          />
                         </div>
                       </TableCell>
                     )}
@@ -367,8 +335,8 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
                   {isExpanded && (
                     <TableRow className="border-white/10">
                       <TableCell
-                        colSpan={mode === 'view' && (onRemoveStudent || onTransferStudent) ? 9 : 8}
-                        className="p-0 bg-white/5"
+                        colSpan={mode === 'view' && (onRemoveStudent || onTransferStudent) ? 6 : 5}
+                        className="p-0 bg-white/[0.02]"
                       >
                         <StudentLessonDetailsRow
                           lessons={details}

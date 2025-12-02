@@ -82,6 +82,32 @@ const classesApiSlice = createSlice({
         state.selectedClass = action.payload;
       }
     },
+    disableClass(state, action: PayloadAction<string>) {
+      const idx = state.classes.findIndex(c => c.id === action.payload);
+      if (idx !== -1) {
+        state.classes[idx] = { ...state.classes[idx], isActive: false };
+      }
+      const sidx = state.searchResults.findIndex(c => c.id === action.payload);
+      if (sidx !== -1) {
+        state.searchResults[sidx] = { ...state.searchResults[sidx], isActive: false };
+      }
+      if (state.selectedClass?.id === action.payload) {
+        state.selectedClass = { ...state.selectedClass, isActive: false };
+      }
+    },
+    enableClass(state, action: PayloadAction<string>) {
+      const idx = state.classes.findIndex(c => c.id === action.payload);
+      if (idx !== -1) {
+        state.classes[idx] = { ...state.classes[idx], isActive: true };
+      }
+      const sidx = state.searchResults.findIndex(c => c.id === action.payload);
+      if (sidx !== -1) {
+        state.searchResults[sidx] = { ...state.searchResults[sidx], isActive: true };
+      }
+      if (state.selectedClass?.id === action.payload) {
+        state.selectedClass = { ...state.selectedClass, isActive: true };
+      }
+    },
     deleteClass(state, action: PayloadAction<string>) {
       state.classes = state.classes.filter(c => c.id !== action.payload);
       state.searchResults = state.searchResults.filter(c => c.id !== action.payload);
@@ -138,6 +164,8 @@ export const {
   setClasses,
   addClass,
   updateClass,
+  disableClass,
+  enableClass,
   deleteClass,
   setSelectedClass,
   setLoadingState,

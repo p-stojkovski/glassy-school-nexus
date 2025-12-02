@@ -4,6 +4,8 @@ import {
   setClasses,
   addClass,
   updateClass as updateInStore,
+  disableClass as disableInStore,
+  enableClass as enableInStore,
   deleteClass as deleteFromStore,
   setSelectedClass,
   setLoadingState,
@@ -15,7 +17,7 @@ import {
   setSearchParams,
   setSearchMode,
 } from '@/domains/classesApi/classesApiSlice';
-import { classApiService, getAllClasses, searchClasses, createClass, updateClass, deleteClass } from '@/services/classApiService';
+import { classApiService, getAllClasses, searchClasses, createClass, updateClass, disableClass, enableClass, deleteClass } from '@/services/classApiService';
 import { ClassResponse, ClassSearchParams, CreateClassRequest, UpdateClassRequest } from '@/types/api/class';
 import { showSuccessMessage, ClassErrorHandlers } from '@/utils/apiErrorHandler';
 import { validateAndPrepareClassData, ClassFormData } from '@/utils/validation/classValidators';
@@ -106,6 +108,40 @@ export const useClassesApi = () => {
     }
   }, [dispatch]);
 
+  const disable = useCallback(async (id: string, name: string) => {
+    dispatch(setLoadingState({ operation: 'updating', loading: true }));
+    dispatch(clearError('update'));
+    try {
+      const response = await disableClass(id);
+      dispatch(disableInStore(id));
+      showSuccessMessage('Class Disabled', `${name} has been disabled successfully.`);
+      return response;
+    } catch (error) {
+      const msg = ClassErrorHandlers.update(error);
+      dispatch(setError({ operation: 'update', error: msg }));
+      throw error;
+    } finally {
+      dispatch(setLoadingState({ operation: 'updating', loading: false }));
+    }
+  }, [dispatch]);
+
+  const enable = useCallback(async (id: string, name: string) => {
+    dispatch(setLoadingState({ operation: 'updating', loading: true }));
+    dispatch(clearError('update'));
+    try {
+      const response = await enableClass(id);
+      dispatch(enableInStore(id));
+      showSuccessMessage('Class Enabled', `${name} has been re-enabled. You can now add new schedules and enroll students.`);
+      return response;
+    } catch (error) {
+      const msg = ClassErrorHandlers.update(error);
+      dispatch(setError({ operation: 'update', error: msg }));
+      throw error;
+    } finally {
+      dispatch(setLoadingState({ operation: 'updating', loading: false }));
+    }
+  }, [dispatch]);
+
   return {
     // state
     classes: state.isSearchMode ? state.searchResults : state.classes,
@@ -123,6 +159,8 @@ export const useClassesApi = () => {
     create,
     update,
     remove,
+    disable,
+    enable,
 
     setSearchQuery: (q: string) => dispatch(setSearchQuery(q)),
     setSearchMode: (m: boolean) => dispatch(setSearchMode(m)),

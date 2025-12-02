@@ -139,13 +139,10 @@ export const useLessons = () => {
   // Academic-aware generation (call service directly for simplicity in this request)
   const generateLessonsAcademicAware = useCallback(
     async (classId: string, request: GenerateLessonsAcademicAwareRequest) => {
-      // Disable global loading for this specific operation
-      lessonApiService
       try {
         const result = await lessonApiService.generateLessonsAcademicAware(classId, request);
         return result;
       } finally {
-                lessonApiService
       }
     },
     []

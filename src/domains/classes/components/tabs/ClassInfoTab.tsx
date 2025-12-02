@@ -200,7 +200,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
     const hasMaterials = additionalDetails.materials && Array.isArray(additionalDetails.materials) && additionalDetails.materials.length > 0;
     const hasAnyContent = hasDescription || hasObjectives || hasRequirements || hasMaterials;
 
-    // Determine which sections to open by default (ones with content)
+    // Only open sections that have content by default
     const defaultOpenSections: string[] = [];
     if (hasDescription) defaultOpenSections.push('description');
     if (hasObjectives) defaultOpenSections.push('objectives');
@@ -208,19 +208,17 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
     if (hasMaterials) defaultOpenSections.push('materials');
 
     return (
-      <GlassCard className="p-4">
+      <GlassCard className="p-3">
         {/* Header with Edit Button */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5 text-blue-400" />
-            <div>
-              <h3 className="text-lg font-semibold text-white">Description, objectives, requirements, and materials</h3>
-            </div>
+            <h3 className="text-lg font-semibold text-white">Class details</h3>
           </div>
           <Button
-            size="sm"
             onClick={handleEdit}
-            className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
+            size="sm"
+            variant="ghost"
+            className="text-white hover:bg-white/10"
           >
             <Edit2 className="w-4 h-4 mr-1" />
             {hasAnyContent ? 'Edit' : 'Add Details'}
@@ -228,24 +226,28 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
         </div>
 
         {!hasAnyContent ? (
-          <div className="text-center py-12">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 mb-3">
-              <FileText className="w-6 h-6 text-white/40" />
+          <div className="text-center py-8">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/5 mb-3">
+              <FileText className="w-5 h-5 text-white/40" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">No Additional Details</h3>
-            <p className="text-white/60 mb-4 max-w-md mx-auto">
-              No additional details have been added yet. Add description, objectives, requirements, and materials for this class.
-            </p>
+            <h3 className="text-base font-semibold text-white mb-1">No details added yet</h3>
+            <Button
+              onClick={handleEdit}
+              variant="ghost"
+              className="mt-2 text-white/60 hover:text-white hover:bg-white/5"
+            >
+              + Add Details
+            </Button>
           </div>
         ) : (
-          <Accordion type="multiple" defaultValue={defaultOpenSections} className="space-y-2">
+          <Accordion type="multiple" defaultValue={defaultOpenSections} className="space-y-1">
             {/* Description */}
-            <AccordionItem value="description" className="border-white/10 rounded-lg bg-white/5">
+            <AccordionItem value="description" className={`border-white/10 rounded-lg ${hasDescription ? 'bg-white/5' : 'bg-white/[0.02]'}`}>
               <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-lg [&[data-state=open]]:rounded-b-none">
                 <div className="flex items-center gap-2">
-                  <span>Description</span>
+                  <span className={hasDescription ? '' : 'text-white/60'}>Description</span>
                   {!hasDescription && (
-                    <span className="text-xs text-white/40 ml-2">(empty)</span>
+                    <span className="text-xs text-white/40">– none</span>
                   )}
                 </div>
               </AccordionTrigger>
@@ -253,23 +255,29 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
                 {hasDescription ? (
                   <p className="text-white/80 leading-relaxed">{additionalDetails.description}</p>
                 ) : (
-                  <p className="text-white/40 text-sm italic">No description provided.</p>
+                  <Button
+                    onClick={handleEdit}
+                    variant="ghost"
+                    className="text-white/50 hover:text-white hover:bg-white/5 h-auto p-1 text-sm"
+                  >
+                    + Add description
+                  </Button>
                 )}
               </AccordionContent>
             </AccordionItem>
 
             {/* Learning Objectives */}
-            <AccordionItem value="objectives" className="border-white/10 rounded-lg bg-white/5">
+            <AccordionItem value="objectives" className={`border-white/10 rounded-lg ${hasObjectives ? 'bg-white/5' : 'bg-white/[0.02]'}`}>
               <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-lg [&[data-state=open]]:rounded-b-none">
                 <div className="flex items-center gap-2">
-                  <span>Learning Objectives</span>
+                  <span className={hasObjectives ? '' : 'text-white/60'}>Learning Objectives</span>
                   {hasObjectives && (
                     <Badge variant="secondary" className="ml-2 bg-white/10 text-white/70 text-xs">
                       {additionalDetails.objectives!.length}
                     </Badge>
                   )}
                   {!hasObjectives && (
-                    <span className="text-xs text-white/40 ml-2">(empty)</span>
+                    <span className="text-xs text-white/40">– none</span>
                   )}
                 </div>
               </AccordionTrigger>
@@ -284,18 +292,24 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-white/40 text-sm italic">No learning objectives set.</p>
+                  <Button
+                    onClick={handleEdit}
+                    variant="ghost"
+                    className="text-white/50 hover:text-white hover:bg-white/5 h-auto p-1 text-sm"
+                  >
+                    + Add objectives
+                  </Button>
                 )}
               </AccordionContent>
             </AccordionItem>
 
             {/* Requirements */}
-            <AccordionItem value="requirements" className="border-white/10 rounded-lg bg-white/5">
+            <AccordionItem value="requirements" className={`border-white/10 rounded-lg ${hasRequirements ? 'bg-white/5' : 'bg-white/[0.02]'}`}>
               <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-lg [&[data-state=open]]:rounded-b-none">
                 <div className="flex items-center gap-2">
-                  <span>Requirements</span>
+                  <span className={hasRequirements ? '' : 'text-white/60'}>Requirements</span>
                   {!hasRequirements && (
-                    <span className="text-xs text-white/40 ml-2">(empty)</span>
+                    <span className="text-xs text-white/40">– none</span>
                   )}
                 </div>
               </AccordionTrigger>
@@ -303,23 +317,29 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
                 {hasRequirements ? (
                   <p className="text-white/80 leading-relaxed">{additionalDetails.requirements}</p>
                 ) : (
-                  <p className="text-white/40 text-sm italic">No requirements specified.</p>
+                  <Button
+                    onClick={handleEdit}
+                    variant="ghost"
+                    className="text-white/50 hover:text-white hover:bg-white/5 h-auto p-1 text-sm"
+                  >
+                    + Add requirements
+                  </Button>
                 )}
               </AccordionContent>
             </AccordionItem>
 
             {/* Materials */}
-            <AccordionItem value="materials" className="border-white/10 rounded-lg bg-white/5">
+            <AccordionItem value="materials" className={`border-white/10 rounded-lg ${hasMaterials ? 'bg-white/5' : 'bg-white/[0.02]'}`}>
               <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-lg [&[data-state=open]]:rounded-b-none">
                 <div className="flex items-center gap-2">
-                  <span>Materials</span>
+                  <span className={hasMaterials ? '' : 'text-white/60'}>Materials</span>
                   {hasMaterials && (
                     <Badge variant="secondary" className="ml-2 bg-white/10 text-white/70 text-xs">
                       {additionalDetails.materials!.length}
                     </Badge>
                   )}
                   {!hasMaterials && (
-                    <span className="text-xs text-white/40 ml-2">(empty)</span>
+                    <span className="text-xs text-white/40">– none</span>
                   )}
                 </div>
               </AccordionTrigger>
@@ -337,7 +357,13 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-white/40 text-sm italic">No materials listed.</p>
+                  <Button
+                    onClick={handleEdit}
+                    variant="ghost"
+                    className="text-white/50 hover:text-white hover:bg-white/5 h-auto p-1 text-sm"
+                  >
+                    + Add materials
+                  </Button>
                 )}
               </AccordionContent>
             </AccordionItem>
@@ -350,18 +376,12 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
   // Edit mode
   return (
     <FormProvider {...form}>
-      <GlassCard className="p-4">
-        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <GlassCard className="p-3">
+        <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5 text-blue-400" />
-            <div>
               <h3 className="text-lg font-semibold text-white">
-                Edit Additional Details
+                Edit details
               </h3>
-              <p className="text-white/60 text-sm">
-                Update description, objectives, requirements, and materials
-              </p>
-            </div>
           </div>
           <TabEditControls
             mode="edit"

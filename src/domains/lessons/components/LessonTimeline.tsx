@@ -2,23 +2,20 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   User, 
-  MapPin, 
-  Eye,
+  MapPin,
   Calendar,
   CheckCircle,
   XCircle,
   RotateCcw,
   UserX,
-  Play,
-  Ban,
   Repeat
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import GlassCard from '@/components/common/GlassCard';
 import { LessonResponse, LessonStatusName } from '@/types/api/lesson';
 import LessonStatusBadge from './LessonStatusBadge';
-import { canTransitionToStatus } from '@/types/api/lesson';
+import LessonStatusChips from './LessonStatusChips';
+import LessonRowActionsMenu from './LessonRowActionsMenu';
 
 interface LessonTimelineProps {
   lessons: LessonResponse[];
@@ -28,10 +25,12 @@ interface LessonTimelineProps {
   maxItems?: number;
   emptyMessage?: string;
   emptyDescription?: string;
+  nextLesson?: LessonResponse | null;
   onViewLesson?: (lesson: LessonResponse) => void;
   onConductLesson?: (lesson: LessonResponse) => void;
   onCancelLesson?: (lesson: LessonResponse) => void;
   onCreateMakeup?: (lesson: LessonResponse) => void;
+  onStartTeaching?: (lesson: LessonResponse) => void;
   // Quick action handlers - these are the actual handlers that will trigger modals
   onQuickConduct?: (lesson: LessonResponse) => void;
   onQuickCancel?: (lesson: LessonResponse) => void;
@@ -45,10 +44,12 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
   maxItems,
   emptyMessage = "No lessons available",
   emptyDescription = "There are no lessons to display in the timeline.",
+  nextLesson = null,
   onViewLesson,
   onConductLesson,
   onCancelLesson,
   onCreateMakeup,
+  onStartTeaching,
   onQuickConduct,
   onQuickCancel,
 }) => {
@@ -79,7 +80,10 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
     const date = new Date(lesson.scheduledDate);
     const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
     const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    return `${dayName}, ${dateStr} • ${lesson.startTime} - ${lesson.endTime}`;
+    // Remove seconds from time display
+    const startTime = lesson.startTime.substring(0, 5);
+    const endTime = lesson.endTime.substring(0, 5);
+    return `${dayName}, ${dateStr} · ${startTime}–${endTime}`;
   };
 
   const isUpcoming = (lesson: LessonResponse) => {
@@ -108,114 +112,18 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
     }
   };
 
-  const canQuickConductLesson = (lesson: LessonResponse) => {
-    return lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
-  };
-
-  const canQuickCancelLesson = (lesson: LessonResponse) => {
-    return lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
-  };
-
-  const canCreateMakeupLesson = (lesson: LessonResponse) => {
-    return lesson.statusName === 'Cancelled' && !lesson.makeupLessonId;
-  };
-
   const renderQuickActions = (lesson: LessonResponse) => {
     if (!showActions) return null;
 
-    const actions = [];
-
-    // Quick conduct action
-    if (canQuickConductLesson(lesson) && onQuickConduct) {
-      actions.push(
-        <Button
-          key="conduct"
-          size="sm"
-          variant="ghost"
-          onClick={(e) => {
-            e.stopPropagation();
-            onQuickConduct(lesson);
-          }}
-          className="text-green-400 hover:text-green-300 hover:bg-green-500/10 p-1 h-8 w-8"
-          title="Mark as conducted"
-        >
-          <Play className="w-3 h-3" />
-        </Button>
-      );
-    }
-
-    // Quick cancel action
-    if (canQuickCancelLesson(lesson) && onQuickCancel) {
-      actions.push(
-        <Button
-          key="cancel"
-          size="sm"
-          variant="ghost"
-          onClick={(e) => {
-            e.stopPropagation();
-            onQuickCancel(lesson);
-          }}
-          className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1 h-8 w-8"
-          title="Cancel lesson"
-        >
-          <Ban className="w-3 h-3" />
-        </Button>
-      );
-    }
-
-    // Create makeup action
-    if (canCreateMakeupLesson(lesson) && onCreateMakeup) {
-      actions.push(
-        <Button
-          key="makeup"
-          size="sm"
-          variant="ghost"
-          onClick={(e) => {
-            e.stopPropagation();
-            onCreateMakeup(lesson);
-          }}
-          className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 p-1 h-8 w-8"
-          title="Create makeup lesson"
-        >
-          <Repeat className="w-3 h-3" />
-        </Button>
-      );
-    }
-
-
-    return actions.length > 0 ? (
-      <div className="flex items-center gap-1">
-        {actions}
-        {onViewLesson && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewLesson(lesson);
-            }}
-            className="text-white/70 hover:text-white hover:bg-white/10 p-1 h-8 w-8"
-            title="View details"
-          >
-            <Eye className="w-3 h-3" />
-          </Button>
-        )}
-      </div>
-    ) : (
-      onViewLesson && (
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewLesson(lesson);
-          }}
-          className="text-white/70 hover:text-white hover:bg-white/10"
-          title="View details"
-        >
-          View
-        </Button>
-      )
+    return (
+      <LessonRowActionsMenu
+        lesson={lesson}
+        onStartTeaching={onStartTeaching}
+        onMarkConducted={onQuickConduct}
+        onCancelLesson={onQuickCancel}
+        onCreateMakeup={onCreateMakeup}
+        onViewDetails={onViewLesson}
+      />
     );
   };
 
@@ -250,10 +158,10 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
           transition={{ delay: monthIndex * 0.1 }}
         >
           {groupByMonth && monthKey !== 'All Lessons' && (
-            <div className="flex items-center gap-4 mb-4">
-              <h4 className="text-lg font-semibold text-white">{monthKey}</h4>
-              <div className="flex-1 h-px bg-white/20" />
-              <span className="text-sm text-white/60">{monthLessons.length} lessons</span>
+            <div className="mb-3">
+              <h4 className="text-base font-medium text-white/80">
+                {monthKey} <span className="text-sm text-white/50">({monthLessons.length})</span>
+              </h4>
             </div>
           )}
 
@@ -261,6 +169,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
             {monthLessons.map((lesson, lessonIndex) => {
               const StatusIcon = getStatusIcon(lesson.statusName);
               const isLastInGroup = lessonIndex === monthLessons.length - 1;
+              const isNextLesson = nextLesson?.id === lesson.id;
 
               return (
                 <motion.div
@@ -269,9 +178,12 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: (monthIndex * 0.1) + (lessonIndex * 0.05) }}
                   className="relative"
+                  data-lesson-id={lesson.id}
                 >
                   <GlassCard 
-                    className="p-4 hover:bg-white/5 transition-all duration-200 cursor-pointer"
+                    className={`p-3 hover:bg-white/5 transition-all duration-200 cursor-pointer ${
+                      isNextLesson ? 'border-l-4 border-blue-400 pl-2' : ''
+                    }`}
                     onClick={() => onViewLesson?.(lesson)}
                   >
                     <div className="flex items-center justify-between">
@@ -287,13 +199,16 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                         {/* Lesson Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-1 flex-wrap">
-                            <div className="text-white font-medium">
+                            <div className="text-white font-medium text-sm">
                               {formatLessonDateTime(lesson)}
                             </div>
-                            <LessonStatusBadge 
-                              status={lesson.statusName} 
-                              size="sm" 
-                            />
+                            {/* Only show status badge for exceptions, not for regular Scheduled lessons */}
+                            {lesson.statusName !== 'Scheduled' && (
+                              <LessonStatusBadge 
+                                status={lesson.statusName} 
+                                size="sm" 
+                              />
+                            )}
                             {lesson.makeupLessonId && (
                               <Badge 
                                 variant="outline" 
@@ -322,7 +237,14 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                             )}
                           </div>
 
-                          <div className="flex items-center gap-4 text-sm text-white/60 mb-1">
+                          {/* Status Chips for conducted lessons */}
+                          {lesson.statusName === 'Conducted' && (
+                            <div className="mb-2">
+                              <LessonStatusChips lesson={lesson} />
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-4 text-sm text-white/50 mb-1">
                             <div className="flex items-center gap-1">
                               <User className="w-3 h-3 flex-shrink-0" />
                               <span className="truncate">{lesson.teacherName}</span>
@@ -353,8 +275,8 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                         </div>
                       </div>
 
-                      {/* Quick Actions */}
-                      <div className="flex items-center gap-2 ml-4">
+                      {/* Actions Menu */}
+                      <div className="flex items-center ml-2">
                         {renderQuickActions(lesson)}
                       </div>
                     </div>

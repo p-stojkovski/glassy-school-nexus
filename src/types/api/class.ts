@@ -61,6 +61,7 @@ export interface ClassResponse {
   classroomName: string;
   classroomCapacity: number;
   enrolledCount: number;
+  isActive: boolean;
   availableSlots: number;
   description: string | null;
   requirements: string | null;
@@ -91,6 +92,7 @@ export interface ClassBasicInfoResponse {
   classroomName: string;
   classroomCapacity: number;
   enrolledCount: number;
+  isActive: boolean;
   availableSlots: number;
   createdAt: string;
   updatedAt: string;
@@ -111,6 +113,21 @@ export interface ClassAdditionalDetailsResponse {
 }
 
 export interface ClassCreatedResponse { id: string; }
+
+export interface DisableClassResponse {
+  classId: string;
+  className: string;
+  futureLessonsDeleted: number;
+  enrollmentsMarkedInactive: number;
+  scheduleSlotsMarkedObsolete: number;
+  disabledAt: string;
+}
+
+export interface EnableClassResponse {
+  classId: string;
+  className: string;
+  enabledAt: string;
+}
 
 export interface ArchivedScheduleSlotResponse {
   id: string;
@@ -195,6 +212,7 @@ export interface ClassSearchParams {
   subjectId?: string;           // GUID
   teacherId?: string;           // GUID
   onlyWithAvailableSlots?: boolean;
+  includeDisabled?: boolean;
 }
 
 // ProblemDetails (reuse shape)
@@ -225,6 +243,8 @@ export const ClassApiPaths = {
   BASE: '/api/classes',
   BY_ID: (id: string) => `/api/classes/${id}`,
   SEARCH: '/api/classes/search',
+  DISABLE: (id: string) => `/api/classes/${id}/disable`,
+  ENABLE: (id: string) => `/api/classes/${id}/enable`,
   ARCHIVED_SCHEDULES: (id: string) => `/api/classes/${id}/schedules/archived`,
   ENROLLMENTS: (classId: string) => `/api/classes/${classId}/enrollments`,
   ENROLLMENT_BY_STUDENT: (classId: string, studentId: string) => `/api/classes/${classId}/enrollments/${studentId}`,
@@ -288,6 +308,22 @@ export interface TransferStudentResponse {
   targetClassName: string;
   transferredAt: string;
   reason?: string;
+}
+
+// Simple enrollment add/remove types used by UI helpers
+export interface AddStudentsRequest {
+  studentIds: string[];
+}
+
+export interface AddStudentsResponse {
+  enrolledCount: number;
+  addedStudentIds?: string[];
+  warnings?: string[];
+}
+
+export interface RemoveStudentResponse {
+  studentId: string;
+  removed: boolean;
 }
 
 // Validation constants

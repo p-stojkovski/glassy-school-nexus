@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { SaveStatus } from '@/types/api/lesson-students';
+import { MessageSquarePlus } from 'lucide-react';
 
 interface CommentsCellProps {
   studentId: string;
@@ -21,10 +22,16 @@ export const CommentsCell: React.FC<CommentsCellProps> = ({
 }) => {
   // Local state for immediate UI updates
   const [localValue, setLocalValue] = useState(currentComments || '');
+  // Expanded state - default to true if comments exist, false otherwise
+  const [isExpanded, setIsExpanded] = useState(!!currentComments);
 
   // Sync with external changes
   useEffect(() => {
     setLocalValue(currentComments || '');
+    // Auto-expand if comments are added externally
+    if (currentComments && !isExpanded) {
+      setIsExpanded(true);
+    }
   }, [currentComments]);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -35,14 +42,35 @@ export const CommentsCell: React.FC<CommentsCellProps> = ({
     onCommentsChange(studentId, newValue);
   };
 
+  // Collapsed view
+  if (!isExpanded) {
+    return (
+      <button
+        onClick={() => setIsExpanded(true)}
+        disabled={disabled}
+        className="flex items-center gap-2 text-white/60 hover:text-white/80 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <MessageSquarePlus className="w-4 h-4" />
+        Add comment
+      </button>
+    );
+  }
 
+  // Expanded view with textarea
   return (
     <Textarea
       value={localValue}
       onChange={handleChange}
+      onBlur={() => {
+        // Auto-collapse if empty on blur
+        if (!localValue.trim()) {
+          setIsExpanded(false);
+        }
+      }}
       placeholder={placeholder}
       disabled={disabled}
       rows={2}
+      autoFocus
       className={`
         bg-white/10 border-white/20 text-white placeholder:text-white/60 
         resize-none min-h-[60px] text-sm

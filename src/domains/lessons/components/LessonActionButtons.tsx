@@ -66,7 +66,7 @@ const LessonActionButtons: React.FC<LessonActionButtonsProps> = ({
             className="bg-white/10 hover:bg-white/20 text-white border border-white/20 h-9"
           >
             <Plus className="w-4 h-4 mr-1.5" />
-            Add
+            New Lesson
             <ChevronDown className="w-3 h-3 ml-1.5" />
           </Button>
         </DropdownMenuTrigger>

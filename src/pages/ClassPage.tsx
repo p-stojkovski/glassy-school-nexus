@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, Calendar, Users, BookmarkCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import ClassPageHeader from '@/domains/classes/components/unified/ClassPageHeader';
-import ClassHeroSection from '@/domains/classes/components/hero/ClassHeroSection';
 import CreateClassHeader from '@/domains/classes/components/unified/CreateClassHeader';
 import { CreateClassSheet } from '@/domains/classes/components/dialogs/CreateClassSheet';
 import ClassLessonsTab from '@/domains/classes/components/detail/ClassLessonsTab';
 import ClassInfoTab from '@/domains/classes/components/tabs/ClassInfoTab';
-
+import { LessonResponse } from '@/types/api/lesson';
 import ClassScheduleTab from '@/domains/classes/components/tabs/ClassScheduleTab';
 import ClassStudentsTab from '@/domains/classes/components/tabs/ClassStudentsTab';
 import QuickConductLessonModal from '@/domains/lessons/components/modals/QuickConductLessonModal';
+import QuickCancelLessonModal from '@/domains/lessons/components/modals/QuickCancelLessonModal';
+import LessonDetailsSheet from '@/domains/lessons/components/sheets/LessonDetailsSheet';
 import { useClassPage } from '@/domains/classes/hooks/useClassPage';
 import { useClassLessonContext } from '@/domains/classes/hooks/useClassLessonContext';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
@@ -30,6 +30,8 @@ const ClassPage: React.FC = () => {
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
   const [showCreateSheet, setShowCreateSheet] = useState(false); // Start closed, open via effect
+  const [isLessonDetailsOpen, setIsLessonDetailsOpen] = useState(false);
+  const [selectedLessonForDetails, setSelectedLessonForDetails] = useState<LessonResponse | null>(null);
 
   // Open create sheet after mount in create mode
   useEffect(() => {
@@ -67,8 +69,12 @@ const ClassPage: React.FC = () => {
     modals: quickActionModals,
     openConductModal,
     closeConductModal,
+    openCancelModal,
+    closeCancelModal,
     handleQuickConduct,
+    handleQuickCancel,
     conductingLesson,
+    cancellingLesson,
   } = useQuickLessonActions();
 
   // Memoize refetchClassData to prevent tab prop changes triggering re-renders
@@ -133,6 +139,50 @@ const ClassPage: React.FC = () => {
     setShowUnsavedChangesDialog(false);
     setPendingTab(null);
   };
+
+  // Handle closing lesson details sheet from hero section
+  const handleHeroLessonDetailsClose = useCallback((open: boolean) => {
+    if (!open) {
+      setIsLessonDetailsOpen(false);
+      setSelectedLessonForDetails(null);
+    }
+  }, []);
+
+  // Handle navigating to teaching mode from hero section
+  const handleHeroStartTeaching = useCallback((lesson: LessonResponse) => {
+    navigate(`/classes/${id}/teach/${lesson.id}`);
+  }, [navigate, id]);
+
+  // Handle navigating to teaching mode from hero lesson details
+  const handleHeroEditLessonDetails = useCallback((lesson: LessonResponse) => {
+    setIsLessonDetailsOpen(false);
+    setSelectedLessonForDetails(null);
+    navigate(`/classes/${id}/teach/${lesson.id}`);
+  }, [navigate, id]);
+
+  // Handle conduct lesson from hero section
+  const handleHeroConductLesson = useCallback((lesson: LessonResponse) => {
+    openConductModal(lesson);
+  }, [openConductModal]);
+
+  // Handle cancel lesson from hero section
+  const handleHeroCancelLesson = useCallback((lesson: LessonResponse) => {
+    openCancelModal(lesson);
+  }, [openCancelModal]);
+
+  // Wrapped quick conduct handler that also refreshes lesson context
+  const handleQuickConductWithRefresh = useCallback(async (lessonId: string, notes?: string) => {
+    await handleQuickConduct(lessonId, notes);
+    lessonContext.refreshLessons();
+    refetchClassData();
+  }, [handleQuickConduct, lessonContext, refetchClassData]);
+
+  // Wrapped quick cancel handler that also refreshes lesson context
+  const handleQuickCancelWithRefresh = useCallback(async (lessonId: string, reason: string, makeupData?: any) => {
+    await handleQuickCancel(lessonId, reason, makeupData);
+    lessonContext.refreshLessons();
+    refetchClassData();
+  }, [handleQuickCancel, lessonContext, refetchClassData]);
 
   // Warn before browser refresh if there are unsaved changes
   useEffect(() => {
@@ -204,56 +254,48 @@ const ClassPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-5">
+      {/* Unified Header (includes class info + progress + next lesson) */}
       <ClassPageHeader
         classData={classData}
-        onBack={handleBack}
         onUpdate={memoizedRefetchClassData}
-      />
-
-      {/* Hero Section */}
-      <ClassHeroSection
-        classData={classData}
         lessonContext={lessonContext}
-        onNavigateToSchedule={() => handleTabChange('lessons')}
+        onStartTeaching={handleHeroStartTeaching}
+        onConductLesson={handleHeroConductLesson}
+        onCancelLesson={handleHeroCancelLesson}
       />
 
-      {/* Main Tabs */}
+      {/* Main Tabs - Minimal underline style */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="bg-white/10 border-white/20">
+        <TabsList className="bg-transparent border-b border-white/10 rounded-none p-0 h-auto gap-1">
           <TabsTrigger
             value="lessons"
-            className="data-[state=active]:bg-white/20 text-white"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white data-[state=active]:shadow-none text-white/70 data-[state=active]:text-white rounded-none px-4 py-2 font-medium"
           >
-            <BookmarkCheck className="w-4 h-4 mr-2" />
             Lessons
           </TabsTrigger>
           <TabsTrigger
             value="students"
-            className="data-[state=active]:bg-white/20 text-white"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white data-[state=active]:shadow-none text-white/70 data-[state=active]:text-white rounded-none px-4 py-2 font-medium"
           >
-            <Users className="w-4 h-4 mr-2" />
             Students
           </TabsTrigger>
           <TabsTrigger
             value="schedule"
-            className="data-[state=active]:bg-white/20 text-white relative"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white data-[state=active]:shadow-none text-white/70 data-[state=active]:text-white rounded-none px-4 py-2 font-medium relative"
           >
-            <Calendar className="w-4 h-4 mr-2" />
             Schedule
             {tabsWithUnsavedChanges?.has('schedule') && (
-              <span className="ml-1.5 inline-block w-2 h-2 bg-orange-500 rounded-full align-middle" />
+              <span className="ml-1.5 inline-block w-1.5 h-1.5 bg-orange-500 rounded-full align-middle" />
             )}
           </TabsTrigger>
           <TabsTrigger
             value="info"
-            className="data-[state=active]:bg-white/20 text-white relative"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white data-[state=active]:shadow-none text-white/70 data-[state=active]:text-white rounded-none px-4 py-2 font-medium relative"
           >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Additional Details
+            Details
             {tabsWithUnsavedChanges?.has('info') && (
-              <span className="ml-1.5 inline-block w-2 h-2 bg-orange-500 rounded-full align-middle" />
+              <span className="ml-1.5 inline-block w-1.5 h-1.5 bg-orange-500 rounded-full align-middle" />
             )}
           </TabsTrigger>
         </TabsList>
@@ -264,6 +306,10 @@ const ClassPage: React.FC = () => {
             classData={classData}
             onScheduleTabClick={() => handleTabChange('schedule')}
             onLessonsUpdated={lessonContext.refreshLessons}
+            externalLessonDetailsOpen={isLessonDetailsOpen}
+            externalSelectedLesson={selectedLessonForDetails}
+            onExternalLessonDetailsChange={setIsLessonDetailsOpen}
+            onExternalSelectedLessonChange={setSelectedLessonForDetails}
           />
         </TabsContent>
 
@@ -312,13 +358,32 @@ const ClassPage: React.FC = () => {
         variant="danger"
       />
 
-      {/* Quick Conduct Lesson Modal (from Dashboard Widget) */}
+      {/* Quick Conduct Lesson Modal (from Hero Section actions) */}
       <QuickConductLessonModal
         lesson={quickActionModals.conduct.lesson}
         open={quickActionModals.conduct.open}
         onOpenChange={(open) => !open && closeConductModal()}
-        onConfirm={handleQuickConduct}
+        onConfirm={handleQuickConductWithRefresh}
         loading={conductingLesson}
+      />
+
+      {/* Lesson Details Sheet - rendered at page level for hero section "View Next Lesson" */}
+      <LessonDetailsSheet
+        lesson={selectedLessonForDetails}
+        open={isLessonDetailsOpen}
+        onOpenChange={handleHeroLessonDetailsClose}
+        onConduct={openConductModal}
+        onCancel={openCancelModal}
+        onEditLessonDetails={handleHeroEditLessonDetails}
+      />
+
+      {/* Quick Cancel Lesson Modal */}
+      <QuickCancelLessonModal
+        lesson={quickActionModals.cancel.lesson}
+        open={quickActionModals.cancel.open}
+        onOpenChange={(open) => !open && closeCancelModal()}
+        onConfirm={handleQuickCancelWithRefresh}
+        loading={cancellingLesson}
       />
     </div>
   );

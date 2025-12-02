@@ -1,8 +1,7 @@
 import React from 'react';
 import { StudentLessonDetail } from '@/types/api/class';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Calendar, Clock, CheckCircle2, XCircle, AlertTriangle, Circle, MessageSquare, FileText } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, AlertTriangle, Circle, FileText } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
 interface StudentLessonDetailsRowProps {
@@ -90,59 +89,53 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
   }
 
   return (
-    <div className="p-4 bg-white/5 space-y-2">
-      <div className="text-xs text-white/70 font-semibold mb-3 flex items-center gap-2">
-        <Calendar className="w-4 h-4" />
-        Lesson History ({lessons.length} lessons)
+    <div className="px-6 py-3">
+      {/* Column Headers */}
+      <div className="flex items-center gap-6 pb-2 mb-1 border-b border-white/10">
+        <div className="flex-shrink-0 w-36 text-xs font-medium text-white/50">Date & Time</div>
+        <div className="flex-shrink-0 w-24 text-xs font-medium text-white/50">Attendance</div>
+        <div className="flex-shrink-0 w-24 text-xs font-medium text-white/50">Homework</div>
+        <div className="flex-1 text-xs font-medium text-white/50">Comments</div>
       </div>
-      <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-        {lessons.map((lesson) => {
+
+      {/* Lesson Rows */}
+      <div className="space-y-0 max-h-96 overflow-y-auto pr-2">
+        {lessons.map((lesson, index) => {
           const lessonDate = parseISO(lesson.lessonDate);
           const formattedDate = format(lessonDate, 'MMM dd, yyyy');
-          const dayOfWeek = format(lessonDate, 'EEEE');
 
           return (
-            <Card
+            <div
               key={lesson.lessonId}
-              className="bg-white/10 border-white/20 p-3 hover:bg-white/15 transition-colors"
+              className={`py-2.5 flex items-center gap-6 text-xs ${index < lessons.length - 1 ? 'border-b border-white/5' : ''}`}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
-                {/* Date & Time */}
-                <div className="flex items-center gap-2">
-                  <div>
-                    <div className="text-white font-medium text-sm">{formattedDate}</div>
-                    <div className="text-white/60 text-xs">{dayOfWeek} | {lesson.lessonTime}</div>
-                  </div>
-                </div>
-
-                {/* Attendance */}
-                <div>
-                  <div className="text-white/60 text-xs mb-1">Attendance</div>
-                  {getAttendanceBadge(lesson.attendanceStatus)}
-                </div>
-
-                {/* Homework */}
-                <div>
-                  <div className="text-white/60 text-xs mb-1">Homework</div>
-                  {getHomeworkBadge(lesson.homeworkStatus)}
-                </div>
-
-                {/* Comments */}
-                <div>
-                  <div className="text-white/60 text-xs mb-1 flex items-center gap-1">
-                    <MessageSquare className="w-3 h-3" />
-                    Comments
-                  </div>
-                  {lesson.comments ? (
-                    <div className="text-white text-xs bg-white/5 p-2 rounded border border-white/10 line-clamp-2">
-                      {lesson.comments}
-                    </div>
-                  ) : (
-                    <span className="text-white/40 text-xs">No comments</span>
-                  )}
-                </div>
+              {/* Date & Time */}
+              <div className="flex-shrink-0 w-36">
+                <div className="text-white/80 font-medium">{formattedDate}</div>
+                <div className="text-white/50 text-[11px]">{lesson.lessonTime}</div>
               </div>
-            </Card>
+
+              {/* Attendance */}
+              <div className="flex-shrink-0 w-24">
+                {getAttendanceBadge(lesson.attendanceStatus)}
+              </div>
+
+              {/* Homework */}
+              <div className="flex-shrink-0 w-24">
+                {getHomeworkBadge(lesson.homeworkStatus)}
+              </div>
+
+              {/* Comments */}
+              <div className="flex-1 min-w-0">
+                {lesson.comments ? (
+                  <div className="text-white/70 truncate">
+                    {lesson.comments}
+                  </div>
+                ) : (
+                  <span className="text-white/30">—</span>
+                )}
+              </div>
+            </div>
           );
         })}
       </div>

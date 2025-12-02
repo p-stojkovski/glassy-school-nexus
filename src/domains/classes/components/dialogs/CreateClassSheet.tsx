@@ -220,15 +220,15 @@ export function CreateClassSheet({
                     <h4 className="text-sm font-medium text-blue-300 mb-2">What happens next?</h4>
                     <ul className="text-sm text-white/70 space-y-1.5">
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-400 mt-0.5">•</span>
+                        <span className="text-blue-400 mt-0.5">&bull;</span>
                         Your class will be created immediately
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-400 mt-0.5">•</span>
+                        <span className="text-blue-400 mt-0.5">&bull;</span>
                         Add a weekly schedule to generate lessons
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-400 mt-0.5">•</span>
+                        <span className="text-blue-400 mt-0.5">&bull;</span>
                         Enroll students and add learning materials
                       </li>
                     </ul>
@@ -272,3 +272,4 @@ export function CreateClassSheet({
     </Sheet>
   );
 }
+

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronRight, Home, GraduationCap, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
+import { AppBreadcrumb } from '@/components/navigation';
+import { buildClassBreadcrumbs } from '@/domains/classes/utils/classBreadcrumbs';
 
 interface CreateClassHeaderProps {
   onOpenCreateSheet: () => void;
@@ -13,33 +14,9 @@ const CreateClassHeader: React.FC<CreateClassHeaderProps> = ({
   return (
     <div className="space-y-4">
       {/* Breadcrumb Navigation */}
-      <nav className="flex items-center text-sm" aria-label="Breadcrumb">
-        <ol className="flex items-center gap-1">
-          <li>
-            <Link
-              to="/"
-              className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"
-            >
-              <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">Dashboard</span>
-            </Link>
-          </li>
-          <li className="flex items-center">
-            <ChevronRight className="w-4 h-4 text-white/40 mx-1" />
-            <Link
-              to="/classes"
-              className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"
-            >
-              <GraduationCap className="w-4 h-4" />
-              <span>Classes</span>
-            </Link>
-          </li>
-          <li className="flex items-center">
-            <ChevronRight className="w-4 h-4 text-white/40 mx-1" />
-            <span className="text-white font-medium">New Class</span>
-          </li>
-        </ol>
-      </nav>
+      <AppBreadcrumb 
+        items={buildClassBreadcrumbs({ pageType: 'create' })}
+      />
 
       {/* Welcome Card for Create Mode */}
       <GlassCard className="p-6 border-yellow-500/20 bg-gradient-to-r from-yellow-500/10 to-orange-500/10">

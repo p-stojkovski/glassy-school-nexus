@@ -10,12 +10,14 @@ interface LessonHomeworkSectionProps {
   lessonId: string;
   classId: string;
   isLoading?: boolean;
+  isEditingMode?: boolean;
 }
 
 const LessonHomeworkSection: React.FC<LessonHomeworkSectionProps> = ({
   lessonId,
   classId,
-  isLoading = false
+  isLoading = false,
+  isEditingMode = false
 }) => {
   const {
     homework,
@@ -197,12 +199,12 @@ const handleHomeworkChange = (value: string) => {
   }
 
   return (
-    <div className="bg-white/5 rounded-lg border border-white/10">
+    <div className="bg-white/5 rounded-lg border border-white/[0.05]">
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
+      <div className="px-3 py-2 border-b border-white/[0.05]">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-blue-400" />
+          <h3 className="text-md font-semibold text-white flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-blue-400" />
             Homework
           </h3>
           {/* Toggle for next lesson */}
@@ -214,7 +216,14 @@ const handleHomeworkChange = (value: string) => {
                 : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
             }`}
           >
-            <span>{showNextLessonInput ? 'Current' : 'Next Lesson'}</span>
+            <span>
+              {showNextLessonInput 
+                ? 'Current Lesson' 
+                : isEditingMode 
+                  ? 'Set homework for upcoming lesson' 
+                  : 'Set homework for next lesson'
+              }
+            </span>
             <ChevronRight
               className={`w-3 h-3 transition-transform ${
                 showNextLessonInput ? 'rotate-90' : ''
@@ -230,15 +239,15 @@ const handleHomeworkChange = (value: string) => {
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-2">
         {!showNextLessonInput && (
           <>
             {/* Read-only Current Homework */}
             {homework ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {homework.description && (
                   <div>
-                    <p className="text-white/80 text-sm whitespace-pre-wrap max-h-24 overflow-y-auto">
+                    <p className="text-white/80 text-xs whitespace-pre-wrap max-h-24 overflow-y-auto">
                       {homework.description}
                     </p>
                   </div>
@@ -246,8 +255,8 @@ const handleHomeworkChange = (value: string) => {
 
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-4 text-center">
-                <p className="text-white/60 text-sm">No homework assigned for this lesson</p>
+              <div className="flex flex-col items-center justify-center py-3 text-center">
+                <p className="text-white/60 text-xs">No homework assigned for this lesson</p>
                 <p className="text-white/40 text-xs mt-1">Use the toggle above to add homework for the next lesson</p>
               </div>
             )}
@@ -262,10 +271,10 @@ const handleHomeworkChange = (value: string) => {
               onChange={(e) => handleHomeworkChange(e.target.value)}
               onBlur={() => void flushNextLessonHomework()}
               placeholder="Add homework for next lesson..."
-              rows={4}
+              rows={3}
               className={`
                 bg-white/10 border-white/20 text-white placeholder:text-white/60 
-                resize-none
+                resize-none text-sm
                 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
                 ${nextLessonSaveStatus === 'saving' ? 'border-blue-500/50' : ''}
                 ${nextLessonSaveStatus === 'error' ? 'border-red-500/50' : ''}

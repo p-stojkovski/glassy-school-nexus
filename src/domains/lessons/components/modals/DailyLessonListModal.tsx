@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
 import LessonStatusBadge from '@/domains/lessons/components/LessonStatusBadge';
 import { LessonResponse } from '@/types/api/lesson';
+import { formatTimeWithoutSeconds } from '@/utils/timeFormatUtils';
 
 interface DailyLessonListModalProps {
   open: boolean;
@@ -132,10 +133,10 @@ const DailyLessonListModal: React.FC<DailyLessonListModalProps> = ({
                         <div className="flex items-center gap-3 flex-1">
                           <div className="text-center bg-white/10 rounded-lg p-2 min-w-[60px]">
                             <div className="text-lg font-bold text-white">
-                              {lesson.startTime}
+                              {formatTimeWithoutSeconds(lesson.startTime)}
                             </div>
                             <div className="text-xs text-white/60">
-                              {lesson.endTime}
+                              {formatTimeWithoutSeconds(lesson.endTime)}
                             </div>
                           </div>
                           

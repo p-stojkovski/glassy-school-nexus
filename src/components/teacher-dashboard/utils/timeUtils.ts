@@ -44,10 +44,10 @@ export const isTimeInRange = (currentTime: string, startTime: string, endTime: s
  * Format time range for display
  * @param startTime - Start time in HH:mm format
  * @param endTime - End time in HH:mm format
- * @returns Formatted time range string
+ * @returns Formatted time range string with en dash
  */
 export const formatTimeRange = (startTime: string, endTime: string): string => {
-  return `${startTime} - ${endTime}`;
+  return `${startTime}–${endTime}`;
 };
 
 /**

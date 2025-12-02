@@ -1,15 +1,25 @@
+/**
+ * @deprecated This component is deprecated and will be removed in a future version.
+ * Use LessonTimeline instead for a more optimized lesson display.
+ * LessonCalendar is kept temporarily for backward compatibility.
+ * Last used: ClassLessonsTab (replaced 2025-12-01)
+ */
+
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,
-  Clock
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import GlassCard from '@/components/common/GlassCard';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { LessonResponse, LessonStatusName } from '@/types/api/lesson';
-import LessonStatusBadge from './LessonStatusBadge';
 import DailyLessonsSheet from './sheets/DailyLessonsSheet';
 import { useAcademicCalendar } from '../hooks/useAcademicCalendar';
 
@@ -231,7 +241,19 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
     }
   };
 
-  // Render lesson indicators for a day
+  // Get status color for lesson dot
+  const getLessonDotColor = (status: LessonStatusName) => {
+    switch (status) {
+      case 'Scheduled': return 'bg-blue-400';
+      case 'Conducted': return 'bg-green-400';
+      case 'Cancelled': return 'bg-red-400';
+      case 'Make Up': return 'bg-purple-400';
+      case 'No Show': return 'bg-gray-400';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  // Render lesson indicators for a day - Simplified: colored dot + time only
   const renderLessonIndicators = (lessons: LessonResponse[]) => {
     if (lessons.length === 0) return null;
     
@@ -239,16 +261,10 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
       // In compact mode, show a small dot for each lesson
       return (
         <div className="flex gap-1 mt-1 justify-center">
-          {lessons.slice(0, 3).map((lesson, index) => (
+          {lessons.slice(0, 3).map((lesson) => (
             <div
               key={lesson.id}
-              className={`w-1.5 h-1.5 rounded-full ${
-                lesson.statusName === 'Scheduled' ? 'bg-blue-400' :
-                lesson.statusName === 'Conducted' ? 'bg-green-400' :
-                lesson.statusName === 'Cancelled' ? 'bg-red-400' :
-                lesson.statusName === 'Make Up' ? 'bg-purple-400' :
-                'bg-gray-400'
-              }`}
+              className={`w-1.5 h-1.5 rounded-full ${getLessonDotColor(lesson.statusName)}`}
             />
           ))}
           {lessons.length > 3 && (
@@ -257,28 +273,25 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
         </div>
       );
     } else {
-      // In full mode, show lesson details
+      // Simplified: colored dot + time only, no status text or icons
       return (
-        <div className="mt-1 space-y-1">
-          {lessons.slice(0, 2).map((lesson) => (
+        <div className="mt-1 space-y-0.5">
+          {lessons.slice(0, 3).map((lesson) => (
             <div
               key={lesson.id}
-              className="text-xs p-1 rounded bg-white/5 border-l-2 border-blue-400 truncate"
+              className="flex items-center gap-1.5 text-xs cursor-pointer hover:bg-white/10 rounded px-1 py-0.5 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 onLessonClick?.(lesson);
               }}
             >
-              <div className="flex items-center gap-1">
-                <Clock className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">{lesson.startTime}</span>
-                <LessonStatusBadge status={lesson.statusName} size="xs" />
-              </div>
+              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${getLessonDotColor(lesson.statusName)}`} />
+              <span className="text-white/80 truncate">{lesson.startTime?.slice(0, 5)}</span>
             </div>
           ))}
-          {lessons.length > 2 && (
-            <div className="text-xs text-white/60 text-center">
-              +{lessons.length - 2} more
+          {lessons.length > 3 && (
+            <div className="text-[10px] text-white/50 text-center pl-1">
+              +{lessons.length - 3} more
             </div>
           )}
         </div>
@@ -293,80 +306,90 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Calendar Header */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h3 className="text-xl font-bold text-white">
-              {monthName} {year}
-            </h3>
-            {showTodayButton && (
-              <Button
-                variant={isViewingCurrentMonth ? "ghost" : "default"}
-                size="sm"
-                onClick={goToToday}
-                className={isViewingCurrentMonth 
-                  ? "text-white/70 hover:text-white hover:bg-white/10" 
-                  : "bg-blue-600 hover:bg-blue-700 text-white font-semibold animate-pulse"
-                }
-              >
-                {isViewingCurrentMonth ? "Today" : "← Jump to Today"}
-              </Button>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-2">
+      {/* Compact Calendar Header - Single row */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <h3 className="text-lg font-semibold text-white">
+            {monthName} {year}
+          </h3>
+          <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
               onClick={goToPreviousMonth}
-              className="text-white/70 hover:text-white hover:bg-white/10"
+              className="text-white/60 hover:text-white hover:bg-white/10 h-7 w-7 p-0"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={goToNextMonth}
-            className="text-white/70 hover:text-white hover:bg-white/10"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToNextMonth}
+              className="text-white/60 hover:text-white hover:bg-white/10 h-7 w-7 p-0"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+          {showTodayButton && (
+            <Button
+              variant={isViewingCurrentMonth ? "ghost" : "default"}
+              size="sm"
+              onClick={goToToday}
+              className={`h-7 px-2 text-xs ${isViewingCurrentMonth 
+                ? "text-white/60 hover:text-white hover:bg-white/10" 
+                : "bg-blue-600 hover:bg-blue-700 text-white font-medium"
+              }`}
+            >
+              Today
+            </Button>
+          )}
         </div>
         
-        {/* Month Summary Stats - REMOVED for cleaner UI, data in dashboard widget */}
+        {/* Legend as compact tooltip */}
+        {lessons.length > 0 && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-white/50 hover:text-white/70 h-7 px-2 gap-1">
+                  <Info className="w-3.5 h-3.5" />
+                  <span className="text-xs">Legend</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="bg-gray-900 border-white/10 p-3">
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-400" />
+                    <span className="text-white/80">Scheduled</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-400" />
+                    <span className="text-white/80">Conducted</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-400" />
+                    <span className="text-white/80">Cancelled</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-purple-400" />
+                    <span className="text-white/80">Make Up</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-orange-400" />
+                    <span className="text-white/80">Break</span>
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
 
-      {/* Simplified Legend - Only show when needed */}
-      {lessons.length > 0 && (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/60">
-          <span className="text-white/40">Legend:</span>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-blue-400" />
-            <span>Scheduled</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-green-400" />
-            <span>Conducted</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red-400" />
-            <span>Cancelled</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-orange-400" />
-            <span>Break</span>
-          </div>
-        </div>
-      )}
-
-      {/* Calendar Grid */}
-      <GlassCard className="p-4">
-        <div className={`grid gap-2 ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'}`}>
+      {/* Calendar Grid - Flatter styling */}
+      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-3">
+        <div className={`grid gap-1.5 ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'}`}>
           {/* Week day headers */}
           {weekDays.map(day => (
-            <div key={day} className="text-center text-sm font-medium text-white/60 p-2">
+            <div key={day} className="text-center text-xs font-medium text-white/50 py-2">
               {day}
             </div>
           ))}
@@ -379,41 +402,41 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
             return (
               <motion.div
                 key={day.date.toISOString()}
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.01 }}
+                transition={{ delay: index * 0.005, duration: 0.15 }}
                 className={`
-                  relative min-h-[${compact ? '60px' : '100px'}] p-2 rounded-lg cursor-pointer transition-all duration-200
+                  relative min-h-[${compact ? '60px' : '80px'}] p-1.5 rounded-lg cursor-pointer transition-all duration-150
                   border border-transparent hover:border-white/20 hover:bg-white/5
-                  ${day.isSelected ? 'border-yellow-400 bg-yellow-400/10' : ''}
-                  ${day.isToday ? 'border-2 border-blue-500 bg-blue-500/30 shadow-xl shadow-blue-500/40 ring-2 ring-blue-400/50 ring-offset-1 ring-offset-transparent' : ''}
-                  ${!day.isCurrentMonth ? 'opacity-40' : ''}
-                  ${isWeekend ? 'bg-white/5' : ''}
+                  ${day.isSelected ? 'border-yellow-400/50 bg-yellow-400/10' : ''}
+                  ${day.isToday ? 'border border-blue-400/50 bg-blue-500/20' : ''}
+                  ${!day.isCurrentMonth ? 'opacity-30' : ''}
+                  ${isWeekend ? 'bg-white/[0.02]' : ''}
                   ${statusColor}
                 `}
                 onClick={() => handleDayClick(day)}
               >
                 <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <span className={`
-                      text-sm font-medium
-                      ${day.isToday ? 'text-blue-200 font-bold text-base' : ''}
+                      text-xs font-medium
+                      ${day.isToday ? 'text-blue-300 font-semibold' : ''}
                       ${day.isSelected ? 'text-yellow-400' : ''}
-                      ${!day.isCurrentMonth ? 'text-white/40' : 'text-white'}
+                      ${!day.isCurrentMonth ? 'text-white/40' : 'text-white/80'}
                     `}>
                       {day.date.getDate()}
                     </span>
                     {day.isToday && (
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-blue-300 bg-blue-500/30 px-1.5 py-0.5 rounded">
-                        Today
+                      <span className="text-[9px] font-medium text-blue-300 bg-blue-500/20 px-1 py-0.5 rounded">
+                        TODAY
                       </span>
                     )}
                   </div>
                   
                   {day.lessons.length > 0 && (
-                    <Badge variant="outline" className="text-xs h-4 px-1">
+                    <span className="text-[10px] text-white/40 font-medium">
                       {day.lessons.length}
-                    </Badge>
+                    </span>
                   )}
                 </div>
                 
@@ -449,7 +472,7 @@ const LessonCalendar: React.FC<LessonCalendarProps> = ({
             );
           })}
         </div>
-      </GlassCard>
+      </div>
       
       {/* Daily Lessons Sheet */}
       <DailyLessonsSheet
