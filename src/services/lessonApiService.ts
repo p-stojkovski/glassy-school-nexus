@@ -23,7 +23,8 @@ import {
   LessonConflict,
   LessonNotesResponse,
   LessonApiPaths,
-  LessonHttpStatus
+  LessonHttpStatus,
+  RescheduleLessonRequest
 } from '@/types/api/lesson';
 import { EnhancedLessonGenerationResult } from '@/types/api/lesson-generation-enhanced';
 // Preserve status/details when rethrowing with a custom message
@@ -268,6 +269,10 @@ return await apiService.patch<LessonResponse>(LessonApiPaths.CONDUCT(id), reques
       }
       if (error.status === LessonHttpStatus.BAD_REQUEST) {
         const details = error.details;
+        const errorType = (details?.type || details?.Type || '') as string;
+        if (typeof errorType === 'string' && errorType.toLowerCase().includes('lesson_not_started_yet')) {
+          throw makeApiError(error, details?.detail || 'Cannot conduct this lesson yet. Please wait until the start time.');
+        }
         if (details?.detail?.includes('cannot conduct')) {
           throw makeApiError(error, 'Lesson cannot be conducted in its current status');
         }
@@ -277,6 +282,35 @@ return await apiService.patch<LessonResponse>(LessonApiPaths.CONDUCT(id), reques
         throw makeApiError(error, 'Authentication required to conduct lessons');
       }
       throw makeApiError(error, `Failed to conduct lesson: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /** Reschedule a lesson to a new date and time */
+  async rescheduleLesson(id: string, request: RescheduleLessonRequest): Promise<LessonResponse> {
+    try {
+      return await apiService.patch<LessonResponse>(LessonApiPaths.RESCHEDULE(id), request);
+    } catch (error: any) {
+      if (error.status === LessonHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Lesson not found');
+      }
+      if (error.status === LessonHttpStatus.CONFLICT) {
+        const details = error.details;
+        throw makeApiError(error, details?.detail || 'Schedule conflict detected at the new time');
+      }
+      if (error.status === LessonHttpStatus.BAD_REQUEST) {
+        const details = error.details;
+        if (details?.detail?.includes('cannot reschedule')) {
+          throw makeApiError(error, 'Lesson cannot be rescheduled in its current status');
+        }
+        if (details?.detail?.includes('past date')) {
+          throw makeApiError(error, 'Cannot reschedule to a past date');
+        }
+        throw makeApiError(error, `Validation error: ${details?.detail || 'Invalid reschedule request'}`);
+      }
+      if (error.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to reschedule lessons');
+      }
+      throw makeApiError(error, `Failed to reschedule lesson: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -575,6 +609,7 @@ export const getUpcomingLessons = (days?: number) => lessonApiService.getUpcomin
 export const getNextLesson = (classId: string, fromDate?: string, limit?: number) => lessonApiService.getNextLesson(classId, fromDate, limit);
 export const quickConductLesson = (id: string, notes?: string) => lessonApiService.quickConductLesson(id, notes);
 export const quickCancelLesson = (id: string, reason: string, makeupData?: MakeupLessonFormData) => lessonApiService.quickCancelLesson(id, reason, makeupData);
+export const rescheduleLesson = (id: string, request: RescheduleLessonRequest) => lessonApiService.rescheduleLesson(id, request);
 
 export default lessonApiService;
 

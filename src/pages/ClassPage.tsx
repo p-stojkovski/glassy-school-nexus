@@ -14,6 +14,7 @@ import ClassScheduleTab from '@/domains/classes/components/tabs/ClassScheduleTab
 import ClassStudentsTab from '@/domains/classes/components/tabs/ClassStudentsTab';
 import QuickConductLessonModal from '@/domains/lessons/components/modals/QuickConductLessonModal';
 import QuickCancelLessonModal from '@/domains/lessons/components/modals/QuickCancelLessonModal';
+import RescheduleLessonModal from '@/domains/lessons/components/modals/RescheduleLessonModal';
 import LessonDetailsSheet from '@/domains/lessons/components/sheets/LessonDetailsSheet';
 import { useClassPage } from '@/domains/classes/hooks/useClassPage';
 import { useClassLessonContext } from '@/domains/classes/hooks/useClassLessonContext';
@@ -71,10 +72,14 @@ const ClassPage: React.FC = () => {
     closeConductModal,
     openCancelModal,
     closeCancelModal,
+    openRescheduleModal,
+    closeRescheduleModal,
     handleQuickConduct,
     handleQuickCancel,
+    handleReschedule,
     conductingLesson,
     cancellingLesson,
+    reschedulingLesson,
   } = useQuickLessonActions();
 
   // Memoize refetchClassData to prevent tab prop changes triggering re-renders
@@ -183,6 +188,18 @@ const ClassPage: React.FC = () => {
     lessonContext.refreshLessons();
     refetchClassData();
   }, [handleQuickCancel, lessonContext, refetchClassData]);
+
+  // Wrapped reschedule handler that also refreshes lesson context
+  const handleRescheduleWithRefresh = useCallback(async (lessonId: string, request: any) => {
+    await handleReschedule(lessonId, request);
+    lessonContext.refreshLessons();
+    refetchClassData();
+  }, [handleReschedule, lessonContext, refetchClassData]);
+
+  // Handle reschedule lesson from hero section or lesson details
+  const handleHeroRescheduleLesson = useCallback((lesson: LessonResponse) => {
+    openRescheduleModal(lesson);
+  }, [openRescheduleModal]);
 
   // Warn before browser refresh if there are unsaved changes
   useEffect(() => {
@@ -374,6 +391,7 @@ const ClassPage: React.FC = () => {
         onOpenChange={handleHeroLessonDetailsClose}
         onConduct={openConductModal}
         onCancel={openCancelModal}
+        onReschedule={handleHeroRescheduleLesson}
         onEditLessonDetails={handleHeroEditLessonDetails}
       />
 
@@ -384,6 +402,15 @@ const ClassPage: React.FC = () => {
         onOpenChange={(open) => !open && closeCancelModal()}
         onConfirm={handleQuickCancelWithRefresh}
         loading={cancellingLesson}
+      />
+
+      {/* Reschedule Lesson Modal */}
+      <RescheduleLessonModal
+        lesson={quickActionModals.reschedule.lesson}
+        open={quickActionModals.reschedule.open}
+        onOpenChange={(open) => !open && closeRescheduleModal()}
+        onConfirm={handleRescheduleWithRefresh}
+        loading={reschedulingLesson}
       />
     </div>
   );

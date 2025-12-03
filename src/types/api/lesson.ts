@@ -48,6 +48,14 @@ export interface GenerateLessonsRequest {
   skipExistingConflicts?: boolean; // optional, defaults to true
 }
 
+// Reschedule lesson request
+export interface RescheduleLessonRequest {
+  newScheduledDate: string;     // required, ISO date "YYYY-MM-DD"
+  newStartTime: string;         // required, "HH:mm"
+  newEndTime: string;           // required, "HH:mm"
+  rescheduleReason?: string;    // optional, max 500 chars
+}
+
 // Generation modes for academic-aware lesson generation
 export type GenerationMode = 'CustomRange' | 'Semester' | 'Month' | 'FullYear';
 
@@ -216,6 +224,7 @@ export const LessonApiPaths = {
   NEXT: '/api/lessons/next',
   CANCEL: (id: string) => `/api/lessons/${id}/cancel`,
   CONDUCT: (id: string) => `/api/lessons/${id}/conduct`,
+  RESCHEDULE: (id: string) => `/api/lessons/${id}/reschedule`,
   MAKEUP: (id: string) => `/api/lessons/${id}/makeup`,
   NOTES: (id: string) => `/api/lessons/${id}/notes`,
   GENERATE: '/api/lessons/generate',
@@ -315,6 +324,11 @@ export function canTransitionToStatus(
   targetStatus: LessonStatusName
 ): boolean {
   return LessonStatusTransitions[currentStatus].includes(targetStatus);
+}
+
+// Check if a lesson can be rescheduled based on status
+export function canRescheduleLesson(status: LessonStatusName): boolean {
+  return status === 'Scheduled' || status === 'Make Up';
 }
 
 // Utility types for forms

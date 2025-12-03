@@ -1,7 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { LessonStatusName } from '@/types/api/lesson';
 import { ScopeFilter } from '@/domains/lessons/utils/lessonFilters';
 
@@ -22,19 +20,11 @@ const LessonsEnhancedFilters: React.FC<LessonsEnhancedFiltersProps> = ({
   onScopeChange,
   compact = false,
 }) => {
-  // Check if any filters are active
-  const hasActiveFilters = statusFilter !== 'all' || scopeFilter !== 'all';
-
-  const clearAllFilters = () => {
-    onStatusChange('all');
-    onScopeChange('all');
-  };
-
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-end gap-3">
       {/* Time Filter */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs text-white/50">Time:</span>
+      <div className="flex flex-col gap-1.5">
+        <span className="text-xs text-white/50 font-medium">Time:</span>
         <Select value={scopeFilter} onValueChange={(value) => onScopeChange(value as ScopeFilter)}>
           <SelectTrigger className={`${compact ? 'w-[120px]' : 'w-[140px]'} bg-white/10 border-white/20 text-white h-9`}>
             <SelectValue />
@@ -54,8 +44,8 @@ const LessonsEnhancedFilters: React.FC<LessonsEnhancedFiltersProps> = ({
       </div>
 
       {/* Status Filter */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs text-white/50">Status:</span>
+      <div className="flex flex-col gap-1.5">
+        <span className="text-xs text-white/50 font-medium">Status:</span>
         <Select value={statusFilter} onValueChange={(value) => onStatusChange(value as LessonFilter)}>
           <SelectTrigger className={`${compact ? 'w-[120px]' : 'w-[140px]'} bg-white/10 border-white/20 text-white h-9`}>
             <SelectValue placeholder="Status" />
@@ -82,19 +72,6 @@ const LessonsEnhancedFilters: React.FC<LessonsEnhancedFiltersProps> = ({
         </SelectContent>
         </Select>
       </div>
-
-      {/* Clear All Filters */}
-      {hasActiveFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={clearAllFilters}
-          className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-9"
-        >
-          <X className="w-3 h-3 mr-1" />
-          Clear
-        </Button>
-      )}
     </div>
   );
 };

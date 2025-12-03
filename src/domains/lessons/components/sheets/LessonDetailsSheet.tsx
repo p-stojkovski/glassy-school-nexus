@@ -15,21 +15,24 @@ import {
   XCircle,
   RotateCcw,
   AlertCircle,
+  AlertTriangle,
   Eye,
   Edit,
   Edit3,
   ChevronDown,
   X,
   Play,
+  CalendarClock,
 } from 'lucide-react';
 import { LessonResponse } from '@/types/api/lesson';
 import { formatTimeRangeWithoutSeconds } from '@/utils/timeFormatUtils';
 import LessonStatusBadge from '../LessonStatusBadge';
 import GlassCard from '@/components/common/GlassCard';
-import { canTransitionToStatus } from '@/types/api/lesson';
+import { canTransitionToStatus, canRescheduleLesson } from '@/types/api/lesson';
 import LessonNotesDisplaySection from '../modals/LessonNotesDisplaySection';
 import LessonHomeworkDisplaySection from '../modals/LessonHomeworkDisplaySection';
 import LessonStudentRecapSection from '../modals/LessonStudentRecapSection';
+import { DEFAULT_CONDUCT_GRACE_MINUTES, canConductLesson as canConductLessonNow, getCannotConductReason, isPastUnstartedLesson } from '../../lessonMode';
 
 interface LessonDetailsSheetProps {
   lesson: LessonResponse | null;
@@ -37,6 +40,7 @@ interface LessonDetailsSheetProps {
   onOpenChange: (open: boolean) => void;
   onConduct?: (lesson: LessonResponse) => void;
   onCancel?: (lesson: LessonResponse) => void;
+  onReschedule?: (lesson: LessonResponse) => void;
   onCreateMakeup?: (lesson: LessonResponse) => void;
   onEdit?: (lesson: LessonResponse) => void;
   /** Handler to open teaching mode / edit lesson details (attendance, homework, comments) */
@@ -49,6 +53,7 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
   onOpenChange,
   onConduct,
   onCancel,
+  onReschedule,
   onCreateMakeup,
   onEdit,
   onEditLessonDetails,
@@ -59,11 +64,34 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
 
   const canConduct = canTransitionToStatus(lesson.statusName, 'Conducted');
   const canCancel = canTransitionToStatus(lesson.statusName, 'Cancelled');
+  const canReschedule = canRescheduleLesson(lesson.statusName);
   const canCreateMakeup = lesson.statusName === 'Cancelled' && !lesson.makeupLessonId;
   const isConducted = lesson.statusName === 'Conducted';
   const isScheduled = lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
+  const statusAllowsConduct = isScheduled;
+  
+  // Check if this is a past unstarted lesson
+  const isPastUnstarted = isPastUnstartedLesson(
+    lesson.statusName,
+    lesson.scheduledDate,
+    lesson.endTime
+  );
+  
+  const canConductLesson = canConductLessonNow(
+    lesson.statusName,
+    lesson.scheduledDate,
+    lesson.startTime,
+    DEFAULT_CONDUCT_GRACE_MINUTES
+  );
+  const conductDisabledReason = getCannotConductReason(
+    lesson.statusName,
+    lesson.scheduledDate,
+    lesson.startTime,
+    DEFAULT_CONDUCT_GRACE_MINUTES
+  );
   
   // Determine if we can open the teaching/editing interface
+  // Past unstarted lessons go directly to editing mode (not teaching mode)
   const canAccessTeachingMode = isScheduled || isConducted;
 
   const lessonDate = new Date(lesson.scheduledDate);
@@ -141,6 +169,24 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
                 </div>
               </GlassCard>
 
+              {/* Past Unstarted Warning Banner */}
+              {isPastUnstarted && (
+                <GlassCard className="p-3 border-amber-500/30 bg-amber-500/10">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-medium text-amber-300 mb-1">
+                        Lesson Needs Documentation
+                      </h4>
+                      <p className="text-xs text-amber-200/80">
+                        This lesson's scheduled time has passed but it was never started. 
+                        Please document attendance and mark the lesson as conducted, cancelled, or no-show.
+                      </p>
+                    </div>
+                  </div>
+                </GlassCard>
+              )}
+
               {/* Teacher Notes - Only for conducted lessons */}
               {isConducted && (
                 <div className="space-y-2">
@@ -153,7 +199,7 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
               )}
 
               {/* Status Information - For non-conducted lessons */}
-              {!isConducted && (
+              {!isConducted && !isPastUnstarted && (
                 <GlassCard className="p-3">
                   <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-purple-400" />
@@ -383,24 +429,61 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
                 </Button>
               )}
 
-              {canConduct && onConduct && (
+              {/* Reschedule Lesson - Available for Scheduled and Make Up statuses, but not past unstarted */}
+              {canReschedule && !isPastUnstarted && onReschedule && (
+                <Button
+                  onClick={() => onReschedule(lesson)}
+                  variant="ghost"
+                  className="text-blue-300 hover:text-blue-200 hover:bg-blue-500/10 text-sm"
+                >
+                  <CalendarClock className="w-3 h-3 mr-2" />
+                  Reschedule
+                </Button>
+              )}
+
+              {/* Mark as Conducted - always available for past unstarted lessons */}
+              {canConduct && statusAllowsConduct && onConduct && (
                 <Button
                   onClick={() => onConduct(lesson)}
                   variant="ghost"
-                  className="text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 text-sm"
+                  disabled={!isPastUnstarted && !canConductLesson}
+                  title={!isPastUnstarted ? (conductDisabledReason || 'Mark lesson as conducted') : 'Mark this past lesson as conducted'}
+                  className="text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 text-sm disabled:opacity-50 disabled:hover:bg-transparent"
                 >
                   <CheckCircle className="w-3 h-3 mr-2" />
                   Mark as Conducted
                 </Button>
               )}
 
-              {/* Teaching Mode / Edit Details Button - Primary action */}
-              {canAccessTeachingMode && onEditLessonDetails && (
+              {/* Document Lesson Button for Past Unstarted - Primary action */}
+              {isPastUnstarted && onEditLessonDetails && (
                 <Button
                   onClick={() => {
                     onOpenChange(false);
                     onEditLessonDetails(lesson);
                   }}
+                  className="text-sm bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 hover:text-amber-200"
+                >
+                  <Edit3 className="w-3 h-3 mr-2" />
+                  Document Lesson
+                </Button>
+              )}
+
+              {/* Teaching Mode / Edit Details Button - Primary action (not for past unstarted) */}
+              {!isPastUnstarted && canAccessTeachingMode && onEditLessonDetails && (
+                <Button
+                  onClick={() => {
+                    if (isConducted || canConductLesson) {
+                      onOpenChange(false);
+                      onEditLessonDetails(lesson);
+                    }
+                  }}
+                  disabled={isScheduled && !canConductLesson}
+                  title={
+                    isScheduled && !canConductLesson
+                      ? conductDisabledReason || 'Teaching mode is available once the lesson window opens'
+                      : undefined
+                  }
                   className={`text-sm ${
                     isConducted 
                       ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 hover:text-amber-200' 

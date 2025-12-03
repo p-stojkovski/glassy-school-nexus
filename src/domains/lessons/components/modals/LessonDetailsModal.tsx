@@ -39,6 +39,7 @@ import { LessonResponse, MakeupLessonFormData } from '@/types/api/lesson';
 import LessonStatusBadge from '../LessonStatusBadge';
 import useConflictPrecheck from '@/domains/lessons/hooks/useConflictPrecheck';
 import ConflictPanel from '@/domains/lessons/components/ConflictPanel';
+import { DEFAULT_CONDUCT_GRACE_MINUTES, canConductLesson as canConductLessonNow, getCannotConductReason } from '../../lessonMode';
 
 interface LessonDetailsModalProps {
   lesson: LessonResponse | null;
@@ -259,7 +260,19 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
 
   const canCreateMakeup = lesson.statusName === 'Cancelled' && !lesson.makeupLessonId;
   const canCancelLesson = lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
-  const canConductLesson = lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
+  const statusAllowsConduct = lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
+  const canConductLesson = canConductLessonNow(
+    lesson.statusName,
+    lesson.scheduledDate,
+    lesson.startTime,
+    DEFAULT_CONDUCT_GRACE_MINUTES
+  );
+  const conductDisabledReason = getCannotConductReason(
+    lesson.statusName,
+    lesson.scheduledDate,
+    lesson.startTime,
+    DEFAULT_CONDUCT_GRACE_MINUTES
+  );
   
   const handleCancelLesson = async () => {
     if (lesson && onCancelLesson) {
@@ -279,7 +292,7 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
   };
   
   const handleConductLesson = async () => {
-    if (lesson && onConductLesson) {
+    if (lesson && onConductLesson && canConductLesson) {
       try {
         setIsRefreshing(true);
         await onConductLesson(lesson);
@@ -482,10 +495,12 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
                 <Separator className="bg-white/10" />
                 <div className="pt-4">
                   <div className="flex items-center justify-center gap-3">
-                    {canConductLesson && (
+                    {statusAllowsConduct && (
                       <Button
                         onClick={handleConductLesson}
+                        disabled={!canConductLesson}
                         className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex-1 max-w-[200px]"
+                        title={conductDisabledReason || 'Mark this lesson as conducted'}
                       >
                         <Check className="w-4 h-4 mr-2" />
                         Mark as Conducted

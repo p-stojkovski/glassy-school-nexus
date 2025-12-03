@@ -186,16 +186,25 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
               )}
             </div>
 
+            {/* Separator */}
+            <span className="hidden lg:block text-white/20">|</span>
+
             {/* Center: Primary metadata (Subject, Location, Capacity) */}
-            <div className="flex flex-wrap items-center gap-4 flex-1 text-sm text-white/70">
+            <div className="flex flex-wrap items-center gap-3 flex-1 text-sm text-white/70">
               <div className="flex items-center gap-1.5">
                 <span className="text-white/40">Subject:</span>
                 <span>{classData.subjectName}</span>
               </div>
+              
+              <span className="text-white/20">|</span>
+              
               <div className="flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-white/50" />
                 <span>{classData.classroomName}</span>
               </div>
+              
+              <span className="text-white/20">|</span>
+              
               <div className="flex items-center gap-1.5">
                 <span className="text-white/40">Capacity:</span>
                 <span>

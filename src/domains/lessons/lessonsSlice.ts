@@ -10,7 +10,8 @@ import {
   GenerateLessonsRequest,
   LessonGenerationResult,
   LessonStatusName,
-  MakeupLessonFormData
+  MakeupLessonFormData,
+  RescheduleLessonRequest
 } from '@/types/api/lesson';
 import lessonApiService from '@/services/lessonApiService';
 import { RootState } from '@/store';
@@ -38,6 +39,7 @@ interface LessonsState {
     conductingLesson: boolean;
     creatingMakeup: boolean;
     generatingLessons: boolean;
+    reschedulingLesson: boolean;
   };
   
   // Error handling
@@ -72,6 +74,7 @@ const initialState: LessonsState = {
     conductingLesson: false,
     creatingMakeup: false,
     generatingLessons: false,
+    reschedulingLesson: false,
   },
   error: null,
   filters: {},
@@ -172,6 +175,13 @@ export const quickCancelLesson = createAsyncThunk(
   'lessons/quickCancelLesson',
   async ({ id, reason, makeupData }: { id: string; reason: string; makeupData?: MakeupLessonFormData }) => {
     return await lessonApiService.quickCancelLesson(id, reason, makeupData);
+  }
+);
+
+export const rescheduleLesson = createAsyncThunk(
+  'lessons/rescheduleLesson',
+  async ({ id, request }: { id: string; request: RescheduleLessonRequest }) => {
+    return await lessonApiService.rescheduleLesson(id, request);
   }
 );
 
@@ -463,6 +473,30 @@ const lessonsSlice = createSlice({
         state.loadingStates.cancellingLesson = false;
         state.error = action.error.message || 'Failed to cancel lesson';
       });
+
+    // Reschedule lesson
+    builder
+      .addCase(rescheduleLesson.pending, (state) => {
+        state.loadingStates.reschedulingLesson = true;
+        state.error = null;
+      })
+      .addCase(rescheduleLesson.fulfilled, (state, action) => {
+        state.loadingStates.reschedulingLesson = false;
+        const updatedLesson = action.payload;
+        
+        // Update the lesson in the lessons array
+        const index = state.lessons.findIndex(l => l.id === updatedLesson.id);
+        if (index !== -1) {
+          state.lessons[index] = updatedLesson;
+        }
+        if (state.selectedLesson?.id === updatedLesson.id) {
+          state.selectedLesson = updatedLesson;
+        }
+      })
+      .addCase(rescheduleLesson.rejected, (state, action) => {
+        state.loadingStates.reschedulingLesson = false;
+        state.error = action.error.message || 'Failed to reschedule lesson';
+      });
   },
 });
 
@@ -544,6 +578,7 @@ export const selectCreatingLesson = (state: RootState) => state.lessons.loadingS
 export const selectCancellingLesson = (state: RootState) => state.lessons.loadingStates.cancellingLesson;
 export const selectConductingLesson = (state: RootState) => state.lessons.loadingStates.conductingLesson;
 export const selectGeneratingLessons = (state: RootState) => state.lessons.loadingStates.generatingLessons;
+export const selectReschedulingLesson = (state: RootState) => state.lessons.loadingStates.reschedulingLesson;
 
 export const selectLessonsError = (state: RootState) => state.lessons.error;
 export const selectLessonsFilters = (state: RootState) => state.lessons.filters;

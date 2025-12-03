@@ -8,11 +8,13 @@ import {
   XCircle,
   RotateCcw,
   UserX,
-  Repeat
+  Repeat,
+  AlertTriangle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import GlassCard from '@/components/common/GlassCard';
 import { LessonResponse, LessonStatusName } from '@/types/api/lesson';
+import { isPastUnstartedLesson } from '@/domains/lessons/lessonMode';
 import LessonStatusBadge from './LessonStatusBadge';
 import LessonStatusChips from './LessonStatusChips';
 import LessonRowActionsMenu from './LessonRowActionsMenu';
@@ -34,6 +36,7 @@ interface LessonTimelineProps {
   // Quick action handlers - these are the actual handlers that will trigger modals
   onQuickConduct?: (lesson: LessonResponse) => void;
   onQuickCancel?: (lesson: LessonResponse) => void;
+  onQuickReschedule?: (lesson: LessonResponse) => void;
 }
 
 const LessonTimeline: React.FC<LessonTimelineProps> = ({
@@ -52,6 +55,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
   onStartTeaching,
   onQuickConduct,
   onQuickCancel,
+  onQuickReschedule,
 }) => {
   // Sort lessons by date (newest first for timeline view)
   const sortedLessons = [...lessons].sort((a, b) => 
@@ -101,8 +105,16 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
     }
   };
 
-  const getTimelineIndicatorColor = (status: LessonStatusName) => {
-    switch (status) {
+  const getTimelineIndicatorColor = (lesson: LessonResponse) => {
+    // Check if this is a past unstarted lesson - show amber/warning color
+    const isPastUnstarted = isPastUnstartedLesson(
+      lesson.statusName,
+      lesson.scheduledDate,
+      lesson.endTime
+    );
+    if (isPastUnstarted) return 'bg-amber-400';
+    
+    switch (lesson.statusName) {
       case 'Scheduled': return 'bg-blue-400';
       case 'Conducted': return 'bg-green-400';
       case 'Cancelled': return 'bg-red-400';
@@ -121,6 +133,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
         onStartTeaching={onStartTeaching}
         onMarkConducted={onQuickConduct}
         onCancelLesson={onQuickCancel}
+        onRescheduleLesson={onQuickReschedule}
         onCreateMakeup={onCreateMakeup}
         onViewDetails={onViewLesson}
       />
@@ -170,6 +183,11 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
               const StatusIcon = getStatusIcon(lesson.statusName);
               const isLastInGroup = lessonIndex === monthLessons.length - 1;
               const isNextLesson = nextLesson?.id === lesson.id;
+              const isPastUnstarted = isPastUnstartedLesson(
+                lesson.statusName,
+                lesson.scheduledDate,
+                lesson.endTime
+              );
 
               return (
                 <motion.div
@@ -183,14 +201,14 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                   <GlassCard 
                     className={`p-3 hover:bg-white/5 transition-all duration-200 cursor-pointer ${
                       isNextLesson ? 'border-l-4 border-blue-400 pl-2' : ''
-                    }`}
+                    } ${isPastUnstarted ? 'border-l-4 border-amber-400 pl-2' : ''}`}
                     onClick={() => onViewLesson?.(lesson)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4 flex-1">
                         {/* Timeline Indicator */}
                         <div className="relative flex flex-col items-center">
-                          <div className={`w-3 h-3 rounded-full ${getTimelineIndicatorColor(lesson.statusName)} flex-shrink-0`} />
+                          <div className={`w-3 h-3 rounded-full ${getTimelineIndicatorColor(lesson)} flex-shrink-0`} />
                           {!isLastInGroup && (
                             <div className="w-px h-8 bg-white/20 mt-2" />
                           )}
@@ -202,8 +220,18 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                             <div className="text-white font-medium text-sm">
                               {formatLessonDateTime(lesson)}
                             </div>
+                            {/* Show warning badge for past unstarted lessons */}
+                            {isPastUnstarted && (
+                              <Badge 
+                                variant="outline" 
+                                className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-xs flex items-center gap-1"
+                              >
+                                <AlertTriangle className="w-3 h-3" />
+                                Not Started
+                              </Badge>
+                            )}
                             {/* Only show status badge for exceptions, not for regular Scheduled lessons */}
-                            {lesson.statusName !== 'Scheduled' && (
+                            {!isPastUnstarted && lesson.statusName !== 'Scheduled' && (
                               <LessonStatusBadge 
                                 status={lesson.statusName} 
                                 size="sm" 
@@ -227,7 +255,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                                 Makeup
                               </Badge>
                             )}
-                            {isUpcoming(lesson) && (
+                            {!isPastUnstarted && isUpcoming(lesson) && (
                               <Badge 
                                 variant="outline" 
                                 className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-xs"
@@ -237,8 +265,8 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                             )}
                           </div>
 
-                          {/* Status Chips for conducted lessons */}
-                          {lesson.statusName === 'Conducted' && (
+                          {/* Status Chips for conducted lessons OR past unstarted lessons */}
+                          {(lesson.statusName === 'Conducted' || isPastUnstarted) && (
                             <div className="mb-2">
                               <LessonStatusChips lesson={lesson} />
                             </div>

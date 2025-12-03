@@ -19,6 +19,7 @@ import { LessonResponse } from '@/types/api/lesson';
 import { UseClassLessonContextResult } from '@/domains/classes/hooks/useClassLessonContext';
 import { formatTimeRangeWithoutSeconds } from '@/utils/timeFormatUtils';
 import { cn } from '@/lib/utils';
+import { DEFAULT_CONDUCT_GRACE_MINUTES, canConductLesson, getCannotConductReason } from '@/domains/lessons/lessonMode';
 
 interface ClassHeroSectionProps {
   classData: ClassBasicInfoResponse | ClassResponse;
@@ -54,6 +55,12 @@ const ClassHeroSection: React.FC<ClassHeroSectionProps> = ({
   const canShowLessonActions = lesson && (lessonState === 'active' || lessonState === 'upcoming_today' || lessonState === 'upcoming_future');
   const canConduct = lesson && (lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up');
   const canCancel = lesson && (lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up');
+  const conductAllowed = lesson
+    ? canConductLesson(lesson.statusName, lesson.scheduledDate, lesson.startTime, DEFAULT_CONDUCT_GRACE_MINUTES)
+    : false;
+  const conductBlockedReason = lesson
+    ? getCannotConductReason(lesson.statusName, lesson.scheduledDate, lesson.startTime, DEFAULT_CONDUCT_GRACE_MINUTES)
+    : null;
 
   // Format lesson time
   const formatLessonTime = () => {
@@ -184,7 +191,9 @@ const ClassHeroSection: React.FC<ClassHeroSectionProps> = ({
                   {/* Start Teaching - for scheduled lessons */}
                   {lesson && onStartTeaching && (
                     <DropdownMenuItem
-                      onClick={() => onStartTeaching(lesson)}
+                      onClick={() => conductAllowed && onStartTeaching(lesson)}
+                      disabled={!conductAllowed}
+                      title={conductBlockedReason || 'Open teaching mode'}
                       className="gap-2.5 cursor-pointer text-blue-400 hover:text-blue-300 focus:text-blue-300 focus:bg-blue-500/10 rounded-lg px-3 py-2.5 transition-all duration-200"
                     >
                       <Play className="w-4 h-4" />
@@ -195,7 +204,9 @@ const ClassHeroSection: React.FC<ClassHeroSectionProps> = ({
                   {/* Mark as Conducted */}
                   {canConduct && onConductLesson && (
                     <DropdownMenuItem
-                      onClick={() => onConductLesson(lesson!)}
+                      onClick={() => conductAllowed && onConductLesson(lesson!)}
+                      disabled={!conductAllowed}
+                      title={conductBlockedReason || 'Mark as conducted'}
                       className="gap-2.5 cursor-pointer text-emerald-400 hover:text-emerald-300 focus:text-emerald-300 focus:bg-emerald-500/10 rounded-lg px-3 py-2.5 transition-all duration-200"
                     >
                       <CheckCircle className="w-4 h-4" />

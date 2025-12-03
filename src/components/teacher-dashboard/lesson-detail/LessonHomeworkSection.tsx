@@ -90,6 +90,12 @@ const fetchNextLesson = async () => {
   }
 };
 
+// Fetch next lesson on component initialization
+useEffect(() => {
+  if (!classId) return;
+  void fetchNextLesson();
+}, [classId]);
+
 // Keep save status indicator in sync with the hook
 useEffect(() => {
   setNextLessonSaveStatus(nextLesson.saveStatus);
@@ -210,17 +216,21 @@ const handleHomeworkChange = (value: string) => {
           {/* Toggle for next lesson */}
           <button
             onClick={handleToggleNextLesson}
+            disabled={nextLessonError !== null && !showNextLessonInput}
+            title={nextLessonError && !showNextLessonInput ? nextLessonError : undefined}
             className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all ${
               showNextLessonInput
                 ? 'bg-blue-600 text-white'
-                : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                : nextLessonError !== null
+                  ? 'bg-white/10 text-white/40 cursor-not-allowed opacity-50'
+                  : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
             }`}
           >
             <span>
-              {showNextLessonInput 
-                ? 'Current Lesson' 
-                : isEditingMode 
-                  ? 'Set homework for upcoming lesson' 
+              {showNextLessonInput
+                ? 'Current Lesson'
+                : isEditingMode
+                  ? 'Set homework for upcoming lesson'
                   : 'Set homework for next lesson'
               }
             </span>

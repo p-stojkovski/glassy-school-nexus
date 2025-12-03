@@ -1,24 +1,25 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ClassBasicInfoResponse } from '@/types/api/class';
 import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData } from '@/types/api/lesson';
 import { useLessonsForClass, useLessons } from '@/domains/lessons/hooks/useLessons';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
 import LessonTimeline from '@/domains/lessons/components/LessonTimeline';
-import LessonsSummaryStrip from '@/domains/lessons/components/LessonsSummaryStrip';
 import LessonsEnhancedFilters from '@/domains/lessons/components/LessonsEnhancedFilters';
 import CreateLessonSidebar from '@/domains/lessons/components/modals/CreateLessonSidebar';
 import QuickConductLessonModal from '@/domains/lessons/components/modals/QuickConductLessonModal';
 import QuickCancelLessonModal from '@/domains/lessons/components/modals/QuickCancelLessonModal';
+import RescheduleLessonModal from '@/domains/lessons/components/modals/RescheduleLessonModal';
 import LessonDetailsSheet from '@/domains/lessons/components/sheets/LessonDetailsSheet';
 import AcademicLessonGenerationModal from '@/domains/lessons/components/modals/AcademicLessonGenerationModal';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import LessonActionButtons from '@/domains/lessons/components/LessonActionButtons';
 import { hasActiveSchedules, getScheduleWarningMessage } from '@/domains/classes/utils/scheduleValidationUtils';
 import { filterLessons, ScopeFilter } from '@/domains/lessons/utils/lessonFilters';
+import { countPastUnstartedLessons } from '@/domains/lessons/lessonMode';
 
 interface ClassLessonsTabProps {
   classData: ClassBasicInfoResponse;
@@ -47,11 +48,8 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   onExternalSelectedLessonChange,
 }) => {
   const navigate = useNavigate();
-  const { lessons, loading, loadLessons, summary } = useLessonsForClass(classData.id);
+  const { lessons, loading, loadLessons } = useLessonsForClass(classData.id);
   const [statusFilter, setStatusFilter] = useState<LessonFilter>('all');
-  
-  // Ref to scroll to next lesson
-  const nextLessonRef = useRef<HTMLDivElement>(null);
   
   // Scope filter - default to 'upcoming' to show what matters most
   const [scopeFilter, setScopeFilter] = useState<ScopeFilter>('upcoming');
@@ -79,10 +77,14 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     closeConductModal,
     openCancelModal,
     closeCancelModal,
+    openRescheduleModal,
+    closeRescheduleModal,
     handleQuickConduct,
     handleQuickCancel,
+    handleReschedule,
     conductingLesson,
     cancellingLesson,
+    reschedulingLesson,
   } = useQuickLessonActions();
   
   // Lesson creation from useLessons hook
@@ -227,20 +229,15 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
       scope: scopeFilter,
     });
   }, [lessons, statusFilter, scopeFilter]);
-  
-  // Memoize unique teachers computation
-  const uniqueTeachers = useMemo(() => {
-    return lessons.reduce((acc, lesson) => {
-      if (!acc.find(t => t.id === lesson.teacherId)) {
-        acc.push({ id: lesson.teacherId, name: lesson.teacherName });
-      }
-      return acc;
-    }, [] as { id: string; name: string }[]);
-  }, [lessons]);
 
   // Schedule validation
   const scheduleAvailable = hasActiveSchedules(classData);
   const scheduleWarning = getScheduleWarningMessage(classData);
+  
+  // Count past unstarted lessons that need documentation
+  const pastUnstartedCount = useMemo(() => {
+    return countPastUnstartedLessons(lessons);
+  }, [lessons]);
 
   // Handler to navigate to teaching mode / edit lesson details
   const handleEditLessonDetails = useCallback((lesson: LessonResponse) => {
@@ -251,22 +248,6 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   const handleStartTeaching = useCallback((lesson: LessonResponse) => {
     navigate(`/classes/${classData.id}/teach/${lesson.id}`);
   }, [navigate, classData.id]);
-  
-  // Handler to scroll to next lesson card
-  const handleScrollToNextLesson = useCallback(() => {
-    if (!nextLesson) return;
-    
-    // Find the lesson card element for the next lesson
-    const lessonCard = document.querySelector(`[data-lesson-id="${nextLesson.id}"]`);
-    if (lessonCard) {
-      lessonCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Add a brief highlight animation
-      lessonCard.classList.add('ring-2', 'ring-blue-400');
-      setTimeout(() => {
-        lessonCard.classList.remove('ring-2', 'ring-blue-400');
-      }, 2000);
-    }
-  }, [nextLesson]);
 
   if (loading && lessons.length === 0) {
     return (
@@ -292,6 +273,19 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Past Unstarted Lessons Warning Banner */}
+      {pastUnstartedCount > 0 && (
+        <Alert className="bg-amber-500/10 border-amber-500/30">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <AlertDescription className="text-amber-200 ml-2">
+            <span className="font-medium">{pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson needs' : 'lessons need'} documentation.</span>
+            <span className="ml-1 text-amber-200/80">
+              These past lessons were never marked as conducted, cancelled, or no-show.
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Schedule Warning Banner */}
       {!scheduleAvailable && scheduleWarning && (
         <Alert className="bg-yellow-500/10 border-yellow-500/30">
@@ -302,40 +296,16 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         </Alert>
       )}
 
-      {/* Summary Strip */}
-      {lessons.length > 0 && (
-        <LessonsSummaryStrip 
-          summary={summary} 
-          nextLesson={nextLesson}
-          onUpcomingClick={() => {
-            setScopeFilter('upcoming');
-            setStatusFilter('all');
-          }}
-          onCompletedClick={() => {
-            setScopeFilter('past');
-            setStatusFilter('conducted');
-          }}
-          onNextLessonClick={handleScrollToNextLesson}
-        />
-      )}
-
       {/* Enhanced Filters and Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         {/* Left: Enhanced Filters */}
-        <div className="flex items-center gap-2">
-          <LessonsEnhancedFilters
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            scopeFilter={scopeFilter}
-            onScopeChange={setScopeFilter}
-            compact={true}
-          />
-          {filteredLessons.length !== lessons.length && (
-            <span className="text-white/50 text-sm">
-              Showing {filteredLessons.length} of {lessons.length}
-            </span>
-          )}
-        </div>
+        <LessonsEnhancedFilters
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          scopeFilter={scopeFilter}
+          onScopeChange={setScopeFilter}
+          compact={true}
+        />
 
         {/* Right: Action Buttons */}
         <LessonActionButtons
@@ -358,6 +328,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         onStartTeaching={handleStartTeaching}
         onQuickConduct={openConductModal}
         onQuickCancel={openCancelModal}
+        onQuickReschedule={openRescheduleModal}
         emptyMessage={getEmptyMessage()}
       />
       
@@ -376,6 +347,14 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         onOpenChange={closeCancelModal}
         onConfirm={handleQuickCancel}
         loading={cancellingLesson}
+      />
+      
+      <RescheduleLessonModal
+        lesson={modals.reschedule.lesson}
+        open={modals.reschedule.open}
+        onOpenChange={closeRescheduleModal}
+        onConfirm={handleReschedule}
+        loading={reschedulingLesson}
       />
       
       {/* Academic Lesson Generation Modal */}
@@ -404,6 +383,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         onOpenChange={handleLessonDetailsClose}
         onConduct={openConductModal}
         onCancel={openCancelModal}
+        onReschedule={openRescheduleModal}
         onEditLessonDetails={handleEditLessonDetails}
       />
     </div>

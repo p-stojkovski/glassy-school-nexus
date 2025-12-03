@@ -28,6 +28,7 @@ import { LessonResponse } from '@/types/api/lesson';
 import LessonStatusBadge from '../LessonStatusBadge';
 import GlassCard from '@/components/common/GlassCard';
 import { cn } from '@/lib/utils';
+import { DEFAULT_CONDUCT_GRACE_MINUTES, canConductLesson as canConductLessonNow, getCannotConductReason } from '../../lessonMode';
 
 interface DailyLessonsSheetProps {
   open: boolean;
@@ -93,7 +94,12 @@ const DailyLessonsSheet: React.FC<DailyLessonsSheetProps> = ({
   };
 
   const canConductLesson = (lesson: LessonResponse) => {
-    return lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
+    return canConductLessonNow(
+      lesson.statusName,
+      lesson.scheduledDate,
+      lesson.startTime,
+      DEFAULT_CONDUCT_GRACE_MINUTES
+    );
   };
 
   const canCancelLesson = (lesson: LessonResponse) => {
@@ -255,7 +261,7 @@ const DailyLessonsSheet: React.FC<DailyLessonsSheetProps> = ({
                           >
                             Open
                           </Button>
-                          {(canConductLesson(lesson) || canCancelLesson(lesson)) && (
+                          {(lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up' || canCancelLesson(lesson)) && (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
@@ -268,9 +274,18 @@ const DailyLessonsSheet: React.FC<DailyLessonsSheetProps> = ({
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="bg-gray-900/95 border-white/10">
-                                {canConductLesson(lesson) && onConductLesson && (
+                                {onConductLesson && (lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up') && (
                                   <DropdownMenuItem
                                     onClick={(e) => handleConductLesson(e, lesson)}
+                                    disabled={!canConductLesson(lesson)}
+                                    title={
+                                      getCannotConductReason(
+                                        lesson.statusName,
+                                        lesson.scheduledDate,
+                                        lesson.startTime,
+                                        DEFAULT_CONDUCT_GRACE_MINUTES
+                                      ) || 'Mark as conducted'
+                                    }
                                     className="text-green-400 focus:text-green-300 focus:bg-green-500/20"
                                   >
                                     <CheckCircle className="w-4 h-4 mr-2" />

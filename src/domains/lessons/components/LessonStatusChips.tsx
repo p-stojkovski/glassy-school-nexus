@@ -1,20 +1,53 @@
 import React from 'react';
-import { CheckCircle, AlertCircle, BookOpen, Users, StickyNote } from 'lucide-react';
+import { CheckCircle, AlertCircle, BookOpen, Users, StickyNote, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { LessonResponse } from '@/types/api/lesson';
 import { useLessonStatusMetrics } from '@/domains/lessons/hooks/useLessonStatusMetrics';
+import { isPastUnstartedLesson } from '@/domains/lessons/lessonMode';
 
 interface LessonStatusChipsProps {
   lesson: LessonResponse;
 }
 
 const LessonStatusChips: React.FC<LessonStatusChipsProps> = ({ lesson }) => {
-  // Only fetch metrics for conducted lessons
-  const shouldFetch = lesson.statusName === 'Conducted';
+  // Check if this is a past unstarted lesson
+  const isPastUnstarted = isPastUnstartedLesson(
+    lesson.statusName,
+    lesson.scheduledDate,
+    lesson.endTime
+  );
+  
+  // Fetch metrics for conducted lessons OR past unstarted lessons (to show missing data)
+  const shouldFetch = lesson.statusName === 'Conducted' || isPastUnstarted;
   const { homework, attendance, loading } = useLessonStatusMetrics(lesson.id, shouldFetch);
 
-  // Don't show chips for non-conducted lessons
-  if (!shouldFetch) {
+  // For past unstarted lessons, show the "Needs Documentation" chip
+  if (isPastUnstarted) {
+    return (
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <Badge 
+          variant="outline"
+          className="bg-amber-500/15 text-amber-400 border-amber-500/40 text-xs flex items-center gap-1"
+        >
+          <AlertTriangle className="w-3 h-3" />
+          Needs Documentation
+        </Badge>
+        {/* Show what's missing */}
+        {!loading && !attendance.allMarked && (
+          <Badge 
+            variant="outline"
+            className="bg-red-500/10 text-red-400 border-red-500/30 text-xs flex items-center gap-1"
+          >
+            <Users className="w-3 h-3" />
+            No attendance
+          </Badge>
+        )}
+      </div>
+    );
+  }
+
+  // Don't show chips for non-conducted, non-past-unstarted lessons
+  if (lesson.statusName !== 'Conducted') {
     return null;
   }
 
@@ -32,7 +65,7 @@ const LessonStatusChips: React.FC<LessonStatusChipsProps> = ({ lesson }) => {
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
       {/* Notes Chip */}
-      {lesson.notes ? (
+      {lesson.notes?.trim() ? (
         <Badge 
           variant="outline"
           className="bg-green-500/10 text-green-400 border-green-500/30 text-xs flex items-center gap-1"

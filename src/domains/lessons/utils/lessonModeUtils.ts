@@ -96,10 +96,129 @@ export function getLessonModeDescription(mode: LessonMode): string {
 }
 
 /**
- * Determines if a lesson can be marked as conducted
- * @param statusName - The current status of the lesson
- * @returns Whether the lesson can transition to Conducted status
+ * Determines if a lesson can be marked as conducted based on status and schedule.
+ * Applies a grace period (minutes before start) when time data is provided.
  */
-export function canConductLesson(statusName: LessonStatusName): boolean {
-  return statusName === 'Scheduled' || statusName === 'Make Up';
+export const DEFAULT_CONDUCT_GRACE_MINUTES = 15;
+
+export function canConductLesson(
+  statusName: LessonStatusName,
+  scheduledDate?: string,
+  startTime?: string,
+  gracePeriodMinutes: number = DEFAULT_CONDUCT_GRACE_MINUTES
+): boolean {
+  const statusAllowsConduct = statusName === 'Scheduled' || statusName === 'Make Up';
+  if (!statusAllowsConduct) return false;
+
+  // Preserve previous behavior if we don't have time data
+  if (!scheduledDate || !startTime) return true;
+
+  const scheduledDateTime = new Date(`${scheduledDate}T${startTime}`);
+  if (Number.isNaN(scheduledDateTime.getTime())) return true;
+
+  const effectiveStart = scheduledDateTime.getTime() - gracePeriodMinutes * 60_000;
+  return Date.now() >= effectiveStart;
+}
+
+/**
+ * Returns a user-facing reason why a lesson cannot be conducted yet.
+ * Null indicates the lesson can be conducted now.
+ */
+export function getCannotConductReason(
+  statusName: LessonStatusName,
+  scheduledDate?: string,
+  startTime?: string,
+  gracePeriodMinutes: number = DEFAULT_CONDUCT_GRACE_MINUTES
+): string | null {
+  const statusAllowsConduct = statusName === 'Scheduled' || statusName === 'Make Up';
+  if (!statusAllowsConduct) {
+    return 'This lesson cannot be conducted in its current status.';
+  }
+
+  if (!scheduledDate || !startTime) return null;
+
+  const scheduledDateTime = new Date(`${scheduledDate}T${startTime}`);
+  if (Number.isNaN(scheduledDateTime.getTime())) return null;
+
+  const effectiveStart = scheduledDateTime.getTime() - gracePeriodMinutes * 60_000;
+  const now = Date.now();
+
+  if (now >= effectiveStart) return null;
+
+  const minutesUntilAllowed = Math.ceil((effectiveStart - now) / 60_000);
+  const localizedStart = scheduledDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return `This lesson starts at ${localizedStart}. You can conduct it in ${minutesUntilAllowed} minute${minutesUntilAllowed === 1 ? '' : 's'}.`;
+}
+
+/**
+ * Checks if a lesson is past its scheduled end time but was never started (still in Scheduled/Make Up status).
+ * These lessons need documentation - the teacher must mark them as Conducted, No Show, or Cancelled.
+ */
+export function isPastUnstartedLesson(
+  statusName: LessonStatusName,
+  scheduledDate?: string,
+  endTime?: string
+): boolean {
+  // Only applies to Scheduled or Make Up lessons
+  const isScheduledStatus = statusName === 'Scheduled' || statusName === 'Make Up';
+  if (!isScheduledStatus) return false;
+
+  if (!scheduledDate || !endTime) return false;
+
+  // Parse date - handle both "YYYY-MM-DD" and "YYYY-MM-DDTHH:mm:ss" formats
+  const datePart = scheduledDate.split('T')[0]; // Get just the date part
+  const [year, month, day] = datePart.split('-').map(Number);
+  
+  // Parse time - handle both "HH:mm" and "HH:mm:ss" formats
+  const timeParts = endTime.split(':').map(Number);
+  const hours = timeParts[0];
+  const minutes = timeParts[1];
+  
+  // Create date in local timezone
+  const lessonEndDateTime = new Date(year, month - 1, day, hours, minutes);
+  if (Number.isNaN(lessonEndDateTime.getTime())) return false;
+
+  // If the lesson's end time has passed, it's a past unstarted lesson
+  const isPast = Date.now() > lessonEndDateTime.getTime();
+  
+  return isPast;
+}
+
+/**
+ * Configuration for past unstarted lessons
+ */
+export interface PastLessonIndicator {
+  isPastUnstarted: boolean;
+  label: string;
+  description: string;
+  actionLabel: string;
+}
+
+/**
+ * Gets indicator configuration for past unstarted lessons
+ */
+export function getPastLessonIndicator(
+  statusName: LessonStatusName,
+  scheduledDate?: string,
+  endTime?: string
+): PastLessonIndicator {
+  const isPast = isPastUnstartedLesson(statusName, scheduledDate, endTime);
+  
+  return {
+    isPastUnstarted: isPast,
+    label: 'Needs Documentation',
+    description: 'This lesson has passed without being marked. Please record attendance and mark the lesson status.',
+    actionLabel: 'Document Lesson',
+  };
+}
+
+/**
+ * Counts the number of past unstarted lessons in a list
+ */
+export function countPastUnstartedLessons(
+  lessons: Array<{ statusName: LessonStatusName; scheduledDate: string; endTime: string }>
+): number {
+  return lessons.filter(lesson => 
+    isPastUnstartedLesson(lesson.statusName, lesson.scheduledDate, lesson.endTime)
+  ).length;
 }

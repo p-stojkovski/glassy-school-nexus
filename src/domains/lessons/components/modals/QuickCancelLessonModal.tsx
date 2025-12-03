@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XCircle, Calendar, User, MapPin, AlertTriangle, Repeat, Clock, Plus } from 'lucide-react';
+import { XCircle, Calendar, User, MapPin, Repeat, Plus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -111,7 +111,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
       day: 'numeric',
       year: 'numeric' 
     });
-    return `${dayName}, ${dateStr} • ${lesson.startTime} - ${lesson.endTime}`;
+    return `${dayName}, ${dateStr} | ${lesson.startTime} - ${lesson.endTime}`;
   };
 
   const isReasonValid = reason.trim().length >= 5;
@@ -237,18 +237,18 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gradient-to-br from-slate-900/95 via-purple-900/90 to-slate-900/95 backdrop-blur-xl border-white/20 text-white max-w-3xl h-[85vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="flex-shrink-0 px-6 pt-5 pb-4 border-b border-white/10">
-          <DialogTitle className="text-white flex items-center gap-2 text-xl">
-            <XCircle className="w-6 h-6 text-red-400" />
+      <DialogContent className="bg-white/10 backdrop-blur-md border-white/20 text-white max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="flex-shrink-0 px-4 py-4 border-b border-white/10">
+          <DialogTitle className="text-white flex items-center gap-2 text-lg font-semibold">
+            <XCircle className="w-5 h-5 text-red-400" />
             Cancel Lesson
           </DialogTitle>
-          <DialogDescription className="text-white/70 text-sm mt-2">
-            Provide a reason for cancelling this lesson. You can optionally schedule a makeup lesson.
+          <DialogDescription className="text-white/60 text-sm mt-1">
+            Cancel the lesson and add a brief reason. Optional: schedule a makeup.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -256,65 +256,57 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
           >
             {/* Lesson Details */}
             <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-white text-lg">{lesson.className}</h4>
-                  <LessonStatusBadge status={lesson.statusName} />
-                </div>
-                
-                <div className="flex items-center gap-3 text-white/80">
-                  <Calendar className="w-4 h-4 text-blue-400" />
-                  <span className="font-medium">{formatLessonDateTime(lesson)}</span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-3 text-white/70">
-                    <User className="w-4 h-4 text-green-400" />
-                    <div>
-                      <p className="text-xs text-white/50 uppercase tracking-wide">Teacher</p>
-                      <p className="font-medium text-sm">{lesson.teacherName}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 text-white/70">
-                    <MapPin className="w-4 h-4 text-yellow-400" />
-                    <div>
-                      <p className="text-xs text-white/50 uppercase tracking-wide">Classroom</p>
-                      <p className="font-medium text-sm">{lesson.classroomName}</p>
-                    </div>
-                  </div>
-                </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="font-semibold text-white text-base">{lesson.className}</h4>
+                <LessonStatusBadge status={lesson.statusName} />
+              </div>
+              <div className="mt-1 text-white/70 text-sm flex flex-wrap items-center gap-2">
+                <Calendar className="w-3.5 h-3.5 text-white/50" />
+                <span>{formatLessonDateTime(lesson)}</span>
+              </div>
+              <div className="mt-1 text-white/70 text-sm flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-1">
+                  <User className="w-3.5 h-3.5 text-white/50" />
+                  {lesson.teacherName}
+                </span>
+                {lesson.classroomName && (
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-white/50" />
+                    {lesson.classroomName}
+                  </span>
+                )}
               </div>
             </div>
 
-            {/* Cancellation Reason */}
+            {/* Cancellation reason */}
             <div>
-              <div>
-                <Label htmlFor="reason" className="text-white font-medium mb-2 block">
-                  Cancellation Reason <span className="text-red-400">*</span>
-                </Label>
+              <Label htmlFor="reason" className="text-white text-sm font-medium">
+                Cancellation reason <span className="text-red-400">*</span>
+              </Label>
+              <div className="mt-1">
                 <Textarea
                   id="reason"
-                  placeholder="Please provide a reason for cancelling this lesson..."
+                  placeholder="Keep it short (e.g., 'Teacher unavailable')."
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="bg-white/5 border-white/20 text-white placeholder:text-white/50 resize-none min-h-[80px]"
+                  className="bg-white/5 border-white/20 text-white placeholder:text-white/50 resize-none"
                   rows={3}
                   maxLength={500}
                 />
-                <div className="flex justify-between mt-2">
-                  <span className={`text-xs ${isReasonValid ? 'text-green-400' : 'text-red-400'}`}>
-                    {isReasonValid ? '✓ Reason is valid' : 'Minimum 5 characters required'}
-                  </span>
-                  <span className="text-white/50 text-xs">
-                    {reason.length}/500 characters
-                  </span>
-                </div>
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <span className={`text-xs ${isReasonValid ? 'text-green-400' : 'text-red-400'}`}>
+                  {isReasonValid ? '✓ Valid' : 'Minimum 5 characters'}
+                </span>
+                <span className="text-white/40 text-xs">
+                  {reason.length}/500
+                </span>
               </div>
             </div>
 
             {/* Makeup Lesson Option */}
             <div className="space-y-3">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="create-makeup"
                   checked={createMakeup}
@@ -323,7 +315,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                 />
                 <Label 
                   htmlFor="create-makeup" 
-                  className="text-white font-medium flex items-center gap-2 cursor-pointer"
+                  className="text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
                 >
                   <Repeat className="w-4 h-4 text-purple-400" />
                   Schedule makeup lesson now
@@ -341,7 +333,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                   >
                     {/* Quick Suggestions */}
                     <div>
-                      <Label className="text-white font-medium mb-2 block">
+                      <Label className="text-white text-sm font-medium mb-2 block">
                         Quick Suggestions
                       </Label>
                       <div className="flex flex-wrap gap-2">
@@ -412,18 +404,20 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
 
                     {/* Makeup Notes */}
                     <div>
-                      <Label className="text-white text-sm font-medium mb-2 block">
+                      <Label className="text-white text-sm font-medium">
                         Makeup Notes (Optional)
                       </Label>
-                      <Textarea
-                        placeholder="Add notes for the makeup lesson..."
-                        value={makeupData.notes || ''}
-                        onChange={(e) => handleMakeupDataChange('notes', e.target.value)}
-                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50 resize-none"
-                        rows={2}
-                        maxLength={500}
-                      />
-                      <p className="text-xs text-white/50 mt-1">
+                      <div className="mt-1">
+                        <Textarea
+                          placeholder="Add notes for the makeup lesson..."
+                          value={makeupData.notes || ''}
+                          onChange={(e) => handleMakeupDataChange('notes', e.target.value)}
+                          className="bg-white/5 border-white/20 text-white placeholder:text-white/50 resize-none"
+                          rows={2}
+                          maxLength={500}
+                        />
+                      </div>
+                      <p className="text-xs text-white/40 mt-1">
                         {(makeupData.notes?.length || 0)}/500 characters
                       </p>
                     </div>
@@ -436,7 +430,6 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                       error={conflictError}
                       onSuggestionClick={applySuggestion}
                       showProceedButton={false}
-                      className="bg-purple-900/30 border-purple-500/40"
                     />
                   </motion.div>
                 )}
@@ -446,20 +439,12 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 px-6 py-4 border-t border-white/10 bg-gradient-to-br from-slate-900/95 via-purple-900/90 to-slate-900/95">
+        <div className="flex-shrink-0 px-4 py-4 border-t border-white/10">
           <div className="flex gap-3">
-            <Button
-              variant="ghost"
-              onClick={handleCancel}
-              disabled={loading}
-              className="flex-1 text-white hover:bg-white/10"
-            >
-              Keep Lesson
-            </Button>
             <Button
               onClick={handleConfirm}
               disabled={loading || !isReasonValid || (createMakeup && (!makeupData.scheduledDate || !makeupData.startTime || !makeupData.endTime || hasConflicts))}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-white/20 hover:bg-white/30 text-white border border-white/30 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <div className="flex items-center gap-2">
@@ -471,7 +456,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                   <div className="w-4 h-4 border-2 border-white/20 rounded-full flex items-center justify-center">
                     <div className="w-1 h-1 bg-white/60 rounded-full" />
                   </div>
-                  Resolve Makeup Conflicts
+                  Resolve Conflicts
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
@@ -479,6 +464,15 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                   {createMakeup ? 'Cancel & Create Makeup' : 'Cancel Lesson'}
                 </div>
               )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleCancel}
+              disabled={loading}
+              className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
+            >
+              Cancel
             </Button>
           </div>
         </div>
@@ -488,4 +482,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
 };
 
 export default QuickCancelLessonModal;
+
+
+
 

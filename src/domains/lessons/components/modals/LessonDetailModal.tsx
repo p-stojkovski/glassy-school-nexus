@@ -30,6 +30,7 @@ import { canTransitionToStatus } from '@/types/api/lesson';
 import LessonNotesDisplaySection from './LessonNotesDisplaySection';
 import LessonHomeworkDisplaySection from './LessonHomeworkDisplaySection';
 import LessonStudentRecapSection from './LessonStudentRecapSection';
+import { DEFAULT_CONDUCT_GRACE_MINUTES, canConductLesson as canConductLessonNow, getCannotConductReason } from '../../lessonMode';
 
 interface LessonDetailModalProps {
   lesson: LessonResponse | null;
@@ -58,6 +59,18 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
   const canCancel = canTransitionToStatus(lesson.statusName, 'Cancelled');
   const canCreateMakeup = lesson.statusName === 'Cancelled' && !lesson.makeupLessonId;
   const isConducted = lesson.statusName === 'Conducted';
+  const canConductLesson = canConductLessonNow(
+    lesson.statusName,
+    lesson.scheduledDate,
+    lesson.startTime,
+    DEFAULT_CONDUCT_GRACE_MINUTES
+  );
+  const conductDisabledReason = getCannotConductReason(
+    lesson.statusName,
+    lesson.scheduledDate,
+    lesson.startTime,
+    DEFAULT_CONDUCT_GRACE_MINUTES
+  );
 
   const lessonDate = new Date(lesson.scheduledDate);
   const isToday = lessonDate.toDateString() === new Date().toDateString();
@@ -456,8 +469,10 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
             
             {canConduct && onConduct && (
               <Button
-                onClick={() => onConduct(lesson)}
-                className="bg-green-500 hover:bg-green-600 text-white"
+                onClick={() => canConductLesson && onConduct(lesson)}
+                disabled={!canConductLesson}
+                title={conductDisabledReason || 'Mark this lesson as conducted'}
+                className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50 disabled:hover:bg-green-500"
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
                 Mark as Conducted

@@ -12,6 +12,7 @@ import GlassCard from '@/components/common/GlassCard';
 import LessonStatusBadge from '@/domains/lessons/components/LessonStatusBadge';
 import { LessonResponse } from '@/types/api/lesson';
 import { formatTimeWithoutSeconds } from '@/utils/timeFormatUtils';
+import { DEFAULT_CONDUCT_GRACE_MINUTES, canConductLesson, getCannotConductReason } from '../../lessonMode';
 
 interface DailyLessonListModalProps {
   open: boolean;
@@ -73,10 +74,6 @@ const DailyLessonListModal: React.FC<DailyLessonListModalProps> = ({
   };
 
   // Helper functions to check if actions are available
-  const canConductLesson = (lesson: LessonResponse) => {
-    return lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
-  };
-
   const canCancelLesson = (lesson: LessonResponse) => {
     return lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
   };
@@ -169,13 +166,29 @@ const DailyLessonListModal: React.FC<DailyLessonListModalProps> = ({
                         
                         {/* Quick Action Buttons */}
                         <div className="flex items-center gap-1 ml-2">
-                          {canConductLesson(lesson) && onConductLesson && (
+                          {onConductLesson && (lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up') && (
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={(e) => handleConductLesson(e, lesson)}
-                              className="text-green-400 hover:text-green-300 hover:bg-green-500/20 p-2 h-8 w-8"
-                              title="Mark as conducted"
+                              onClick={(e) => {
+                                if (!canConductLesson(lesson.statusName, lesson.scheduledDate, lesson.startTime, DEFAULT_CONDUCT_GRACE_MINUTES)) {
+                                  e.stopPropagation();
+                                  return;
+                                }
+                                handleConductLesson(e, lesson);
+                              }}
+                              disabled={
+                                !canConductLesson(lesson.statusName, lesson.scheduledDate, lesson.startTime, DEFAULT_CONDUCT_GRACE_MINUTES)
+                              }
+                              className="text-green-400 hover:text-green-300 hover:bg-green-500/20 p-2 h-8 w-8 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title={
+                                getCannotConductReason(
+                                  lesson.statusName,
+                                  lesson.scheduledDate,
+                                  lesson.startTime,
+                                  DEFAULT_CONDUCT_GRACE_MINUTES
+                                ) || 'Mark as conducted'
+                              }
                             >
                               <CheckCircle className="w-4 h-4" />
                             </Button>

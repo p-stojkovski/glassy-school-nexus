@@ -14,6 +14,7 @@ import {
   fetchUpcomingLessons,
   quickConductLesson,
   quickCancelLesson,
+  rescheduleLesson,
   // Actions
   setLessons,
   setSelectedLesson,
@@ -33,6 +34,7 @@ import {
   selectCancellingLesson,
   selectConductingLesson,
   selectGeneratingLessons,
+  selectReschedulingLesson,
   selectLessonsError,
   selectLessonsFilters,
   selectLessonsViewMode,
@@ -55,6 +57,7 @@ import {
   AcademicAwareLessonGenerationResult,
   LessonStatusName,
   MakeupLessonFormData,
+  RescheduleLessonRequest,
 } from '@/types/api/lesson';
 
 export const useLessons = () => {
@@ -69,6 +72,7 @@ export const useLessons = () => {
   const cancellingLesson = useAppSelector(selectCancellingLesson);
   const conductingLesson = useAppSelector(selectConductingLesson);
   const generatingLessons = useAppSelector(selectGeneratingLessons);
+  const reschedulingLesson = useAppSelector(selectReschedulingLesson);
   const error = useAppSelector(selectLessonsError);
   const filters = useAppSelector(selectLessonsFilters);
   const viewMode = useAppSelector(selectLessonsViewMode);
@@ -170,6 +174,13 @@ export const useLessons = () => {
     [dispatch]
   );
 
+  const rescheduleLessonById = useCallback(
+    (id: string, request: RescheduleLessonRequest) => {
+      return dispatch(rescheduleLesson({ id, request }));
+    },
+    [dispatch]
+  );
+
   // UI Actions
   const selectLesson = useCallback(
     (lesson: any) => {
@@ -229,6 +240,7 @@ export const useLessons = () => {
     cancellingLesson,
     conductingLesson,
     generatingLessons,
+    reschedulingLesson,
     isAnyLoading,
     
     // Error
@@ -254,6 +266,7 @@ export const useLessons = () => {
     loadUpcomingLessons,
     quickConduct,
     quickCancel,
+    rescheduleLessonById,
     
     // UI Actions
     selectLesson,
