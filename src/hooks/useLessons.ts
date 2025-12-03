@@ -37,7 +37,8 @@ import {
   GenerateLessonsRequest,
   GenerateLessonsAcademicAwareRequest,
   AcademicAwareLessonGenerationResult,
-  MakeupLessonFormData
+  MakeupLessonFormData,
+  ClassLessonFilterParams
 } from '@/types/api/lesson';
 import { EnhancedLessonGenerationResult } from '@/types/api/lesson-generation-enhanced';
 
@@ -66,8 +67,8 @@ export function useLessons() {
     return dispatch(fetchLessonById(id));
   }, [dispatch]);
 
-  const fetchLessonsForClassAction = useCallback((classId: string, includeHistory?: boolean) => {
-    return dispatch(fetchLessonsForClass({ classId, includeHistory }));
+  const fetchLessonsForClassAction = useCallback((classId: string, filters?: ClassLessonFilterParams) => {
+    return dispatch(fetchLessonsForClass({ classId, filters }));
   }, [dispatch]);
 
   const createLessonAction = useCallback((request: CreateLessonRequest) => {

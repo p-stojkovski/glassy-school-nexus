@@ -24,7 +24,8 @@ import {
   LessonNotesResponse,
   LessonApiPaths,
   LessonHttpStatus,
-  RescheduleLessonRequest
+  RescheduleLessonRequest,
+  ClassLessonFilterParams
 } from '@/types/api/lesson';
 import { EnhancedLessonGenerationResult } from '@/types/api/lesson-generation-enhanced';
 // Preserve status/details when rethrowing with a custom message
@@ -66,8 +67,9 @@ export class LessonApiService {
       if (params.classroomId) qs.append('classroomId', params.classroomId);
       if (params.statusId) qs.append('statusId', params.statusId);
       if (params.statusName) qs.append('statusName', params.statusName);
-      if (params.startDate) qs.append('startDate', params.startDate);
-      if (params.endDate) qs.append('endDate', params.endDate);
+      // Backend expects fromDate/toDate, but frontend uses startDate/endDate
+      if (params.startDate) qs.append('fromDate', params.startDate);
+      if (params.endDate) qs.append('toDate', params.endDate);
       if (params.generationSource) qs.append('generationSource', params.generationSource);
       if (params.pageSize) qs.append('pageSize', String(params.pageSize));
       if (params.page) qs.append('page', String(params.page));
@@ -162,9 +164,54 @@ return await apiService.get<LessonResponse>(LessonApiPaths.BY_ID(id));
     }
   }
 
-  /** Get lessons for a specific class */
-  async getLessonsForClass(classId: string): Promise<LessonResponse[]> {
-    return this.getLessons({ classId });
+  /** Get lessons for a specific class with optional filters */
+  async getLessonsForClass(classId: string, filters?: ClassLessonFilterParams): Promise<LessonResponse[]> {
+    const params: LessonSearchParams = { classId };
+    
+    if (filters) {
+      // Convert scope filter to date range parameters
+      // 'upcoming' = today and future, 'past' = before today, 'all' = no date filter
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayStr = today.toISOString().split('T')[0];
+      
+      if (filters.scope === 'upcoming') {
+        params.startDate = todayStr;
+        // No end date - get all future lessons
+      } else if (filters.scope === 'past') {
+        // endDate is exclusive of today, so use yesterday
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        params.endDate = yesterday.toISOString().split('T')[0];
+        // No start date - get all past lessons
+      }
+      // 'all' scope: no date filters applied
+      
+      // Apply status filter if not 'all'
+      if (filters.statusName && filters.statusName !== 'all') {
+        params.statusName = filters.statusName;
+      }
+    }
+    
+    return this.getLessons(params);
+  }
+
+  /** Get past unstarted lessons for a class that need documentation */
+  async getPastUnstartedLessons(classId: string): Promise<LessonResponse[]> {
+    try {
+      const endpoint = `${LessonApiPaths.PAST_UNSTARTED}?classId=${classId}`;
+      const raw = await apiService.get<unknown>(endpoint);
+      return normalizeListResponse<LessonResponse>(raw);
+    } catch (error: unknown) {
+      const err = error as { status?: number };
+      if (err.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access past unstarted lessons');
+      }
+      if (err.status === LessonHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid request for past unstarted lessons');
+      }
+      throw makeApiError(error, `Failed to fetch past unstarted lessons: ${(error as Error).message || 'Unknown error'}`);
+    }
   }
 
   /** Get the current active lesson for a class (authoritative server-side determination) */
@@ -593,7 +640,8 @@ export const searchLessons = (params?: {
   take?: number;
 }) => lessonApiService.searchLessons(params);
 export const getLessonById = (id: string) => lessonApiService.getLessonById(id);
-export const getLessonsForClass = (classId: string, includeHistory?: boolean) => lessonApiService.getLessonsForClass(classId, includeHistory);
+export const getLessonsForClass = (classId: string, filters?: ClassLessonFilterParams) => lessonApiService.getLessonsForClass(classId, filters);
+export const getPastUnstartedLessons = (classId: string) => lessonApiService.getPastUnstartedLessons(classId);
 export const createLesson = (request: CreateLessonRequest) => lessonApiService.createLesson(request);
 export const cancelLesson = (id: string, request: CancelLessonRequest) => lessonApiService.cancelLesson(id, request);
 export const conductLesson = (id: string, request?: MarkLessonConductedRequest) => lessonApiService.conductLesson(id, request);

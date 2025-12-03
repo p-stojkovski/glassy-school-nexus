@@ -27,7 +27,6 @@ export const useQuickLessonActions = () => {
     conductingLesson, 
     cancellingLesson,
     reschedulingLesson,
-    loadLessons 
   } = useLessons();
 
   const [modals, setModals] = useState<QuickActionModals>({
@@ -109,6 +108,7 @@ export const useQuickLessonActions = () => {
 
 
   // Handle quick conduct
+  // Note: The caller is responsible for refreshing the lessons list with appropriate filters
   const handleQuickConduct = useCallback(async (lessonId: string, notes?: string) => {
     try {
       await quickConduct(lessonId, notes);
@@ -116,17 +116,16 @@ export const useQuickLessonActions = () => {
       // Close modal and show success message
       closeConductModal();
       toast.success('Lesson marked as conducted successfully');
-      
-      // Refresh lessons list
-      await loadLessons();
     } catch (error: unknown) {
       console.error('Failed to conduct lesson:', error);
       const message = error instanceof Error ? error.message : 'Failed to mark lesson as conducted';
       toast.error(message);
+      throw error; // Re-throw so the caller knows the operation failed
     }
-  }, [quickConduct, closeConductModal, loadLessons]);
+  }, [quickConduct, closeConductModal]);
 
   // Handle quick cancel
+  // Note: The caller is responsible for refreshing the lessons list with appropriate filters
   const handleQuickCancel = useCallback(async (lessonId: string, reason: string, makeupData?: MakeupLessonFormData) => {
     try {
       await quickCancel(lessonId, reason, makeupData);
@@ -144,17 +143,16 @@ export const useQuickLessonActions = () => {
       } else {
         toast.success('Lesson cancelled successfully');
       }
-      
-      // Refresh lessons list
-      await loadLessons();
     } catch (error: unknown) {
       console.error('Failed to cancel lesson:', error);
       const message = error instanceof Error ? error.message : 'Failed to cancel lesson';
       toast.error(message);
+      throw error; // Re-throw so the caller knows the operation failed
     }
-  }, [quickCancel, closeCancelModal, loadLessons]);
+  }, [quickCancel, closeCancelModal]);
 
   // Handle reschedule
+  // Note: The caller is responsible for refreshing the lessons list with appropriate filters
   const handleReschedule = useCallback(async (lessonId: string, request: RescheduleLessonRequest) => {
     try {
       await rescheduleLessonById(lessonId, request);
@@ -168,15 +166,13 @@ export const useQuickLessonActions = () => {
         day: 'numeric'
       });
       toast.success(`Lesson rescheduled to ${newDate} at ${request.newStartTime}`);
-      
-      // Refresh lessons list
-      await loadLessons();
     } catch (error: unknown) {
       console.error('Failed to reschedule lesson:', error);
       const message = error instanceof Error ? error.message : 'Failed to reschedule lesson';
       toast.error(message);
+      throw error; // Re-throw so the caller knows the operation failed
     }
-  }, [rescheduleLessonById, closeRescheduleModal, loadLessons]);
+  }, [rescheduleLessonById, closeRescheduleModal]);
 
 
   // Check if a lesson can be conducted

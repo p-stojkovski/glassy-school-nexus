@@ -5,6 +5,7 @@ import {
   fetchLessons,
   fetchLessonById,
   fetchLessonsForClass,
+  fetchPastUnstartedLessons,
   createLesson,
   cancelLesson,
   conductLesson,
@@ -45,6 +46,8 @@ import {
   selectLessonsByStatus,
   selectLessonCounts,
   selectIsAnyLessonLoading,
+  selectPastUnstartedLessons,
+  selectFetchingPastUnstarted,
 } from '../lessonsSlice';
   import { 
   LessonSearchParams,
@@ -58,6 +61,7 @@ import {
   LessonStatusName,
   MakeupLessonFormData,
   RescheduleLessonRequest,
+  ClassLessonFilterParams,
 } from '@/types/api/lesson';
 
 export const useLessons = () => {
@@ -98,8 +102,8 @@ export const useLessons = () => {
   );
 
   const loadLessonsForClass = useCallback(
-    (classId: string, includeHistory?: boolean) => {
-      return dispatch(fetchLessonsForClass({ classId, includeHistory }));
+    (classId: string, filters?: ClassLessonFilterParams) => {
+      return dispatch(fetchLessonsForClass({ classId, filters }));
     },
     [dispatch]
   );
@@ -279,24 +283,46 @@ export const useLessons = () => {
 };
 
 // Specialized hooks for specific use cases
+
+/**
+ * Hook for managing lessons for a specific class with server-side filtering.
+ * Supports time scope (upcoming/past/all) and status filtering.
+ */
 export const useLessonsForClass = (classId: string) => {
   const dispatch = useAppDispatch();
   const lessons = useAppSelector(selectLessonsForClass(classId));
+  const pastUnstartedLessons = useAppSelector(selectPastUnstartedLessons);
   const summary = useAppSelector(selectLessonSummaryForClass(classId));
   const loading = useAppSelector(selectLessonsLoading);
+  const loadingPastUnstarted = useAppSelector(selectFetchingPastUnstarted);
 
+  /**
+   * Load lessons for the class with optional server-side filters.
+   * @param filters - Optional filters for scope (upcoming/past/all) and status
+   */
   const loadLessons = useCallback(
-    (includeHistory?: boolean) => {
-      return dispatch(fetchLessonsForClass({ classId, includeHistory }));
+    (filters?: ClassLessonFilterParams) => {
+      return dispatch(fetchLessonsForClass({ classId, filters }));
     },
     [dispatch, classId]
   );
 
+  /**
+   * Load past unstarted lessons for the class (for documentation banner).
+   * These are lessons that need to be documented (conduct, cancel, or no-show).
+   */
+  const loadPastUnstartedLessons = useCallback(() => {
+    return dispatch(fetchPastUnstartedLessons(classId));
+  }, [dispatch, classId]);
+
   return {
     lessons,
+    pastUnstartedLessons,
     summary,
     loading,
+    loadingPastUnstarted,
     loadLessons,
+    loadPastUnstartedLessons,
   };
 };
 

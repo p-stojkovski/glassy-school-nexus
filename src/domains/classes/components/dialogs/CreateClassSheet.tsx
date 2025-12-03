@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { GraduationCap, Sparkles, ArrowRight } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -24,8 +24,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import SubjectsDropdown from '@/components/common/SubjectsDropdown';
 import TeachersDropdown from '@/components/common/TeachersDropdown';
 import ClassroomsDropdown from '@/components/common/ClassroomsDropdown';
-import GlassCard from '@/components/common/GlassCard';
 import { classApiService } from '@/services/classApiService';
+import { useAppSelector } from '@/store/hooks';
+import { RootState } from '@/store/store';
+import { useTeachers } from '@/hooks/useTeachers';
 import { CreateClassRequest } from '@/types/api/class';
 import { toast } from 'sonner';
 
@@ -51,6 +53,9 @@ export function CreateClassSheet({
   onSuccess,
 }: CreateClassSheetProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSetTeacherDefault, setHasSetTeacherDefault] = useState(false);
+  const user = useAppSelector((state: RootState) => state.auth.user);
+  const { teachers } = useTeachers();
 
   const form = useForm<QuickCreateFormData>({
     resolver: zodResolver(quickCreateSchema),
@@ -73,6 +78,29 @@ export function CreateClassSheet({
       });
     }
   }, [open, form]);
+
+  // Set teacher default if user is a teacher
+  useEffect(() => {
+    if (open && !hasSetTeacherDefault && user && teachers.length > 0) {
+      const userRole = user.role?.toLowerCase();
+      if (userRole === 'teacher') {
+        // Match by email since User ID !== Teacher ID
+        const matchingTeacher = teachers.find(
+          teacher => teacher.email.toLowerCase() === user.email.toLowerCase()
+        );
+
+        if (matchingTeacher) {
+          form.setValue('teacherId', matchingTeacher.id);
+          setHasSetTeacherDefault(true);
+        }
+      }
+    }
+
+    // Reset flag when sidebar closes
+    if (!open) {
+      setHasSetTeacherDefault(false);
+    }
+  }, [open, user, teachers, form, hasSetTeacherDefault]);
 
   const handleSubmit = async (data: QuickCreateFormData) => {
     setIsSubmitting(true);
@@ -115,124 +143,99 @@ export function CreateClassSheet({
               Create New Class
             </SheetTitle>
             <SheetDescription className="text-white/70 mt-2">
-              Start with the essentials. You'll add the schedule and students next.
+              Create your class with the essentials below. You'll add the schedule and students immediately after.
             </SheetDescription>
+            <p className="text-white/60 text-sm mt-2">
+              All fields are required.
+            </p>
           </SheetHeader>
 
           {/* Form Content */}
           <ScrollArea className="flex-1">
             <div className="p-6">
               <Form {...form}>
-                <form id="quick-create-class-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                  
-                  {/* Essential Information Card */}
-                  <GlassCard className="p-5">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Sparkles className="w-4 h-4 text-yellow-400" />
-                      <h3 className="text-sm font-semibold text-white/90">Class Information</h3>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      {/* Class Name */}
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-white">Class Name *</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="e.g., Beginner English A1"
-                                className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-yellow-500/50"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                <form id="quick-create-class-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
 
-                      {/* Subject */}
-                      <FormField
-                        control={form.control}
-                        name="subjectId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-white">Subject *</FormLabel>
-                            <FormControl>
-                              <SubjectsDropdown
-                                value={field.value}
-                                onValueChange={field.onChange}
-                                placeholder="Select subject"
-                                className="bg-white/5 border-white/20"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                  {/* Class Name Field */}
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Class Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="e.g., Beginner English A1"
+                            className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-yellow-400 focus:ring-yellow-400"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-300" />
+                      </FormItem>
+                    )}
+                  />
 
-                      {/* Teacher */}
-                      <FormField
-                        control={form.control}
-                        name="teacherId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-white">Assigned Teacher *</FormLabel>
-                            <FormControl>
-                              <TeachersDropdown
-                                value={field.value}
-                                onValueChange={field.onChange}
-                                placeholder="Select teacher"
-                                className="bg-white/5 border-white/20"
-                                includeSubjectInfo={true}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                  {/* Subject Field */}
+                  <FormField
+                    control={form.control}
+                    name="subjectId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Subject</FormLabel>
+                        <FormControl>
+                          <SubjectsDropdown
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Select subject"
+                            className="bg-white/5 border-white/20"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-300" />
+                      </FormItem>
+                    )}
+                  />
 
-                      {/* Classroom */}
-                      <FormField
-                        control={form.control}
-                        name="classroomId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-white">Classroom *</FormLabel>
-                            <FormControl>
-                              <ClassroomsDropdown
-                                value={field.value}
-                                onValueChange={field.onChange}
-                                placeholder="Select classroom"
-                                className="bg-white/5 border-white/20"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </GlassCard>
+                  {/* Assigned Teacher Field */}
+                  <FormField
+                    control={form.control}
+                    name="teacherId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Assigned Teacher</FormLabel>
+                        <FormControl>
+                          <TeachersDropdown
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Select teacher"
+                            className="bg-white/5 border-white/20"
+                            includeSubjectInfo={true}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-300" />
+                      </FormItem>
+                    )}
+                  />
 
-                  {/* What's Next Info */}
-                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-blue-300 mb-2">What happens next?</h4>
-                    <ul className="text-sm text-white/70 space-y-1.5">
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-400 mt-0.5">&bull;</span>
-                        Your class will be created immediately
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-400 mt-0.5">&bull;</span>
-                        Add a weekly schedule to generate lessons
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-400 mt-0.5">&bull;</span>
-                        Enroll students and add learning materials
-                      </li>
-                    </ul>
-                  </div>
+                  {/* Assigned Classroom Field */}
+                  <FormField
+                    control={form.control}
+                    name="classroomId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Assigned Classroom</FormLabel>
+                        <FormControl>
+                          <ClassroomsDropdown
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Select classroom"
+                            className="bg-white/5 border-white/20"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-300" />
+                      </FormItem>
+                    )}
+                  />
+
                 </form>
               </Form>
             </div>
@@ -245,16 +248,9 @@ export function CreateClassSheet({
                 type="submit"
                 form="quick-create-class-form"
                 disabled={isSubmitting}
-                className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold gap-2"
+                className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
               >
-                {isSubmitting ? (
-                  'Creating...'
-                ) : (
-                  <>
-                    Create & Continue
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
+                {isSubmitting ? 'Adding...' : 'Add Class'}
               </Button>
               <Button
                 type="button"

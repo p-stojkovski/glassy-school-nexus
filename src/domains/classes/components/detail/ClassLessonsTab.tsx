@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { AlertCircle, AlertTriangle, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ClassBasicInfoResponse } from '@/types/api/class';
-import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData } from '@/types/api/lesson';
+import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData, ClassLessonFilterParams } from '@/types/api/lesson';
 import { useLessonsForClass, useLessons } from '@/domains/lessons/hooks/useLessons';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
 import LessonTimeline from '@/domains/lessons/components/LessonTimeline';
@@ -19,8 +19,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import LessonActionButtons from '@/domains/lessons/components/LessonActionButtons';
 import GlassCard from '@/components/common/GlassCard';
 import { hasActiveSchedules, getScheduleWarningMessage } from '@/domains/classes/utils/scheduleValidationUtils';
-import { filterLessons, ScopeFilter } from '@/domains/lessons/utils/lessonFilters';
-import { countPastUnstartedLessons, isPastUnstartedLesson } from '@/domains/lessons/lessonMode';
+import { ScopeFilter } from '@/domains/lessons/utils/lessonFilters';
 
 interface ClassLessonsTabProps {
   classData: ClassBasicInfoResponse;
@@ -49,7 +48,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   onExternalSelectedLessonChange,
 }) => {
   const navigate = useNavigate();
-  const { lessons, loading, loadLessons } = useLessonsForClass(classData.id);
+  const { lessons, pastUnstartedLessons, loading, loadLessons, loadPastUnstartedLessons } = useLessonsForClass(classData.id);
   const [statusFilter, setStatusFilter] = useState<LessonFilter>('all');
   
   // Scope filter - default to 'upcoming' to show what matters most
@@ -83,9 +82,9 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     closeCancelModal,
     openRescheduleModal,
     closeRescheduleModal,
-    handleQuickConduct,
-    handleQuickCancel,
-    handleReschedule,
+    handleQuickConduct: originalQuickConduct,
+    handleQuickCancel: originalQuickCancel,
+    handleReschedule: originalReschedule,
     conductingLesson,
     cancellingLesson,
     reschedulingLesson,
@@ -94,7 +93,13 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   // Lesson creation from useLessons hook
   const { addLesson, creatingLesson, createMakeup, loadLessonById } = useLessons();
 
-  // Compute next lesson
+  // Build current filter params for API calls
+  const currentFilters = useMemo((): ClassLessonFilterParams => ({
+    scope: scopeFilter,
+    statusName: statusFilter,
+  }), [scopeFilter, statusFilter]);
+
+  // Compute next lesson from the current lessons list
   const nextLesson = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -108,10 +113,63 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     return upcoming[0] || null;
   }, [lessons]);
   
-  // Load lessons when component mounts
+  // Load lessons with server-side filtering when filters change
   useEffect(() => {
-    loadLessons(); // Load all lessons for this class
-  }, [loadLessons]);
+    // Skip loading during review mode - we show pastUnstartedLessons instead
+    if (reviewPastUnstarted) return;
+    
+    loadLessons(currentFilters);
+  }, [loadLessons, currentFilters, reviewPastUnstarted]);
+
+  // Load past unstarted lessons on mount and after mutations for the banner
+  useEffect(() => {
+    loadPastUnstartedLessons();
+  }, [loadPastUnstartedLessons]);
+  
+  // Wrapper for quick conduct that refreshes with current filters
+  const handleQuickConduct = useCallback(async (lessonId: string, notes?: string) => {
+    try {
+      await originalQuickConduct(lessonId, notes);
+      // Refresh with current filters and update past unstarted count
+      await Promise.all([
+        loadLessons(currentFilters),
+        loadPastUnstartedLessons()
+      ]);
+      onLessonsUpdated?.();
+    } catch {
+      // Error already handled/toasted by the hook
+    }
+  }, [originalQuickConduct, loadLessons, loadPastUnstartedLessons, currentFilters, onLessonsUpdated]);
+
+  // Wrapper for quick cancel that refreshes with current filters
+  const handleQuickCancel = useCallback(async (lessonId: string, reason: string, makeupData?: MakeupLessonFormData) => {
+    try {
+      await originalQuickCancel(lessonId, reason, makeupData);
+      // Refresh with current filters and update past unstarted count
+      await Promise.all([
+        loadLessons(currentFilters),
+        loadPastUnstartedLessons()
+      ]);
+      onLessonsUpdated?.();
+    } catch {
+      // Error already handled/toasted by the hook
+    }
+  }, [originalQuickCancel, loadLessons, loadPastUnstartedLessons, currentFilters, onLessonsUpdated]);
+
+  // Wrapper for reschedule that refreshes with current filters
+  const handleReschedule = useCallback(async (lessonId: string, request: Parameters<typeof originalReschedule>[1]) => {
+    try {
+      await originalReschedule(lessonId, request);
+      // Refresh with current filters and update past unstarted count
+      await Promise.all([
+        loadLessons(currentFilters),
+        loadPastUnstartedLessons()
+      ]);
+      onLessonsUpdated?.();
+    } catch {
+      // Error already handled/toasted by the hook
+    }
+  }, [originalReschedule, loadLessons, loadPastUnstartedLessons, currentFilters, onLessonsUpdated]);
   
   // Handle lesson creation
   const handleCreateLesson = async (lessonData: CreateLessonRequest) => {
@@ -119,14 +177,17 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
       // Use unwrap() to properly await the thunk and catch errors
       await addLesson(lessonData).unwrap();
       setIsCreateLessonOpen(false);
-      // Reload lessons to show the new one and update all related data
-      await loadLessons();
+      // Reload lessons with current filters to show the new one
+      await Promise.all([
+        loadLessons(currentFilters),
+        loadPastUnstartedLessons()
+      ]);
       // Notify parent to refresh hero section (lesson context)
       onLessonsUpdated?.();
       toast.success('Lesson created successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create lesson:', error);
-      toast.error(error?.message || 'Failed to create lesson');
+      toast.error((error as Error)?.message || 'Failed to create lesson');
     }
   };
 
@@ -180,8 +241,11 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
       // Call the createMakeup API
       await createMakeup(originalLessonId, makeupData);
       
-      // Reload lessons to show the new makeup lesson and updated original lesson
-      await loadLessons();
+      // Reload lessons with current filters
+      await Promise.all([
+        loadLessons(currentFilters),
+        loadPastUnstartedLessons()
+      ]);
       // Notify parent to refresh hero section
       onLessonsUpdated?.();
       
@@ -207,16 +271,19 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         day: 'numeric'
       });
       toast.success(`Makeup lesson created for ${makeupDate}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create makeup lesson:', error);
-      toast.error(error?.message || 'Failed to create makeup lesson');
+      toast.error((error as Error)?.message || 'Failed to create makeup lesson');
     }
   };
 
   // Handle academic lesson generation success
   const handleAcademicGenerationSuccess = async (result: { generatedCount: number; skippedCount?: number }) => {
-    // Reload lessons to show the newly generated ones
-    await loadLessons();
+    // Reload lessons with current filters to show the newly generated ones
+    await Promise.all([
+      loadLessons(currentFilters),
+      loadPastUnstartedLessons()
+    ]);
     // Notify parent to refresh hero section
     onLessonsUpdated?.();
     setIsAcademicGenerationOpen(false);
@@ -226,28 +293,21 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     toast.success(message + details);
   };
 
-  // Apply all filters using the filterLessons utility
-  const filteredLessons = useMemo(() => {
-    // If in review mode, only show past unstarted lessons
+  // The lessons are already server-side filtered, so we just use them directly
+  // In review mode, we show pastUnstartedLessons instead
+  const displayedLessons = useMemo(() => {
     if (reviewPastUnstarted) {
-      return lessons.filter(lesson => 
-        isPastUnstartedLesson(lesson.statusName, lesson.scheduledDate, lesson.endTime)
-      );
+      return pastUnstartedLessons;
     }
-    return filterLessons(lessons, {
-      status: statusFilter,
-      scope: scopeFilter,
-    });
-  }, [lessons, statusFilter, scopeFilter, reviewPastUnstarted]);
+    return lessons;
+  }, [lessons, pastUnstartedLessons, reviewPastUnstarted]);
 
   // Schedule validation
   const scheduleAvailable = hasActiveSchedules(classData);
   const scheduleWarning = getScheduleWarningMessage(classData);
   
-  // Count past unstarted lessons that need documentation
-  const pastUnstartedCount = useMemo(() => {
-    return countPastUnstartedLessons(lessons);
-  }, [lessons]);
+  // Count past unstarted lessons from the server-fetched data
+  const pastUnstartedCount = pastUnstartedLessons.length;
   
   // Auto-exit review mode when all past unstarted lessons are resolved
   useEffect(() => {
@@ -286,13 +346,13 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
 
   // Empty state message based on filters
   const getEmptyMessage = () => {
-    if (reviewPastUnstarted && filteredLessons.length === 0) {
+    if (reviewPastUnstarted && displayedLessons.length === 0) {
       return "All caught up!";
     }
     if (lessons.length === 0) {
       return "No lessons yet";
     }
-    if (scopeFilter === 'upcoming' && filteredLessons.length === 0) {
+    if (scopeFilter === 'upcoming' && displayedLessons.length === 0) {
       return "No upcoming lessons scheduled";
     }
     if (scopeFilter !== 'all' || statusFilter !== 'all') {
@@ -302,7 +362,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   };
 
   const getEmptyDescription = () => {
-    if (reviewPastUnstarted && filteredLessons.length === 0) {
+    if (reviewPastUnstarted && displayedLessons.length === 0) {
       return "All lessons have been documented. Great work!";
     }
     if (lessons.length === 0) {
@@ -311,7 +371,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
       }
       return "Use Generate from schedule to create lessons for the upcoming period, or add a single lesson manually.";
     }
-    if (scopeFilter === 'upcoming' && filteredLessons.length === 0) {
+    if (scopeFilter === 'upcoming' && displayedLessons.length === 0) {
       return "Use Generate from schedule to create lessons for the upcoming period, or add a single lesson manually.";
     }
     return "There are no lessons to display with the current filters.";
@@ -323,7 +383,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     const emptyDescription = getEmptyDescription();
     
     // If all past unstarted lessons are done, show success message
-    if (reviewPastUnstarted && filteredLessons.length === 0) {
+    if (reviewPastUnstarted && displayedLessons.length === 0) {
       return (
         <GlassCard className="p-8 text-center">
           <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
@@ -443,11 +503,11 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
       )}
 
       {/* Custom Empty State or Timeline View */}
-      {filteredLessons.length === 0 && (reviewPastUnstarted || (lessons.length === 0 && !scheduleAvailable)) ? (
+      {displayedLessons.length === 0 && (reviewPastUnstarted || (lessons.length === 0 && !scheduleAvailable)) ? (
         renderEmptyState()
       ) : (
         <LessonTimeline 
-          lessons={filteredLessons}
+          lessons={displayedLessons}
           loading={loading}
           groupByMonth={true}
           showActions={true}

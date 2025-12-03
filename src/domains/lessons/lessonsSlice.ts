@@ -11,7 +11,8 @@ import {
   LessonGenerationResult,
   LessonStatusName,
   MakeupLessonFormData,
-  RescheduleLessonRequest
+  RescheduleLessonRequest,
+  ClassLessonFilterParams
 } from '@/types/api/lesson';
 import lessonApiService from '@/services/lessonApiService';
 import { RootState } from '@/store';
@@ -27,12 +28,14 @@ interface LessonsState {
   // Lesson data
   lessons: Lesson[];
   selectedLesson: Lesson | null;
+  pastUnstartedLessons: Lesson[];
   
   // Loading states
   loading: boolean;
   loadingStates: {
     fetchingLessons: boolean;
     fetchingLesson: boolean;
+    fetchingPastUnstarted: boolean;
     creatingLesson: boolean;
     updatingLesson: boolean;
     cancellingLesson: boolean;
@@ -64,10 +67,12 @@ interface LessonsState {
 const initialState: LessonsState = {
   lessons: [],
   selectedLesson: null,
+  pastUnstartedLessons: [],
   loading: false,
   loadingStates: {
     fetchingLessons: false,
     fetchingLesson: false,
+    fetchingPastUnstarted: false,
     creatingLesson: false,
     updatingLesson: false,
     cancellingLesson: false,
@@ -105,8 +110,15 @@ export const fetchLessonById = createAsyncThunk(
 
 export const fetchLessonsForClass = createAsyncThunk(
   'lessons/fetchLessonsForClass',
-  async ({ classId, includeHistory }: { classId: string; includeHistory?: boolean }) => {
-    return await lessonApiService.getLessonsForClass(classId, includeHistory);
+  async ({ classId, filters }: { classId: string; filters?: ClassLessonFilterParams }) => {
+    return await lessonApiService.getLessonsForClass(classId, filters);
+  }
+);
+
+export const fetchPastUnstartedLessons = createAsyncThunk(
+  'lessons/fetchPastUnstartedLessons',
+  async (classId: string) => {
+    return await lessonApiService.getPastUnstartedLessons(classId);
   }
 );
 
@@ -326,6 +338,21 @@ const lessonsSlice = createSlice({
         state.error = action.error.message || 'Failed to fetch class lessons';
       });
 
+    // Fetch past unstarted lessons
+    builder
+      .addCase(fetchPastUnstartedLessons.pending, (state) => {
+        state.loadingStates.fetchingPastUnstarted = true;
+      })
+      .addCase(fetchPastUnstartedLessons.fulfilled, (state, action) => {
+        state.loadingStates.fetchingPastUnstarted = false;
+        state.pastUnstartedLessons = action.payload;
+      })
+      .addCase(fetchPastUnstartedLessons.rejected, (state, action) => {
+        state.loadingStates.fetchingPastUnstarted = false;
+        // Don't set error for past unstarted - it's a secondary data source
+        console.error('Failed to fetch past unstarted lessons:', action.error.message);
+      });
+
 
     // Create lesson
     builder
@@ -523,6 +550,8 @@ export const {
 // Selectors
 export const selectLessons = (state: RootState) => state.lessons.lessons;
 export const selectSelectedLesson = (state: RootState) => state.lessons.selectedLesson;
+export const selectPastUnstartedLessons = (state: RootState) => state.lessons.pastUnstartedLessons;
+export const selectFetchingPastUnstarted = (state: RootState) => state.lessons.loadingStates.fetchingPastUnstarted;
 
 // Memoized selector factories for class-specific data
 // Using a cache to ensure same classId returns same memoized selector

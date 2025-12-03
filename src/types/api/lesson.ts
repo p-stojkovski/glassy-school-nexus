@@ -183,13 +183,24 @@ export interface LessonSearchParams {
   teacherId?: string;           // GUID - filter by teacher
   classroomId?: string;         // GUID - filter by classroom
   statusId?: string;            // GUID - filter by status
-  statusName?: LessonStatusName; // filter by status name
-  startDate?: string;           // ISO date - filter from this date
-  endDate?: string;             // ISO date - filter until this date
+  statusName?: LessonStatusName; // filter by status name (takes precedence over statusId on backend)
+  startDate?: string;           // ISO date - filter from this date (maps to fromDate on backend)
+  endDate?: string;             // ISO date - filter until this date (maps to toDate on backend)
   generationSource?: 'manual' | 'automatic' | 'makeup';
   includeHistory?: boolean;     // include past lessons, defaults to true
   pageSize?: number;            // pagination
   page?: number;                // pagination (0-based)
+}
+
+/**
+ * Filter parameters specific to the class lessons tab.
+ * These are used to request server-side filtered lessons for a class.
+ */
+export interface ClassLessonFilterParams {
+  /** Time scope filter: 'upcoming' returns today and future, 'past' returns before today, 'all' returns everything */
+  scope?: 'upcoming' | 'past' | 'all';
+  /** Status filter: 'all' returns all statuses, otherwise filter by specific status name */
+  statusName?: 'all' | LessonStatusName;
 }
 
 // Lesson summary for class overview
@@ -222,6 +233,7 @@ export const LessonApiPaths = {
   BY_ID: (id: string) => `/api/lessons/${id}`,
   CURRENT: '/api/lessons/current',
   NEXT: '/api/lessons/next',
+  PAST_UNSTARTED: '/api/lessons/past-unstarted',
   CANCEL: (id: string) => `/api/lessons/${id}/cancel`,
   CONDUCT: (id: string) => `/api/lessons/${id}/conduct`,
   RESCHEDULE: (id: string) => `/api/lessons/${id}/reschedule`,
