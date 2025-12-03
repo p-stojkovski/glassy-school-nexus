@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { AlertCircle, AlertTriangle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, AlertTriangle, Calendar, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { ClassBasicInfoResponse } from '@/types/api/class';
 import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData } from '@/types/api/lesson';
 import { useLessonsForClass, useLessons } from '@/domains/lessons/hooks/useLessons';
@@ -17,9 +17,10 @@ import LessonDetailsSheet from '@/domains/lessons/components/sheets/LessonDetail
 import AcademicLessonGenerationModal from '@/domains/lessons/components/modals/AcademicLessonGenerationModal';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import LessonActionButtons from '@/domains/lessons/components/LessonActionButtons';
+import GlassCard from '@/components/common/GlassCard';
 import { hasActiveSchedules, getScheduleWarningMessage } from '@/domains/classes/utils/scheduleValidationUtils';
 import { filterLessons, ScopeFilter } from '@/domains/lessons/utils/lessonFilters';
-import { countPastUnstartedLessons } from '@/domains/lessons/lessonMode';
+import { countPastUnstartedLessons, isPastUnstartedLesson } from '@/domains/lessons/lessonMode';
 
 interface ClassLessonsTabProps {
   classData: ClassBasicInfoResponse;
@@ -55,6 +56,9 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   const [scopeFilter, setScopeFilter] = useState<ScopeFilter>('upcoming');
   const [isCreateLessonOpen, setIsCreateLessonOpen] = useState(false);
   const [isAcademicGenerationOpen, setIsAcademicGenerationOpen] = useState(false);
+  
+  // Review mode for past unstarted lessons
+  const [reviewPastUnstarted, setReviewPastUnstarted] = useState(false);
   
   // Internal state for lesson details
   const [internalIsLessonDetailsOpen, setInternalIsLessonDetailsOpen] = useState(false);
@@ -224,11 +228,17 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
 
   // Apply all filters using the filterLessons utility
   const filteredLessons = useMemo(() => {
+    // If in review mode, only show past unstarted lessons
+    if (reviewPastUnstarted) {
+      return lessons.filter(lesson => 
+        isPastUnstartedLesson(lesson.statusName, lesson.scheduledDate, lesson.endTime)
+      );
+    }
     return filterLessons(lessons, {
       status: statusFilter,
       scope: scopeFilter,
     });
-  }, [lessons, statusFilter, scopeFilter]);
+  }, [lessons, statusFilter, scopeFilter, reviewPastUnstarted]);
 
   // Schedule validation
   const scheduleAvailable = hasActiveSchedules(classData);
@@ -238,6 +248,23 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   const pastUnstartedCount = useMemo(() => {
     return countPastUnstartedLessons(lessons);
   }, [lessons]);
+  
+  // Auto-exit review mode when all past unstarted lessons are resolved
+  useEffect(() => {
+    if (reviewPastUnstarted && pastUnstartedCount === 0) {
+      setReviewPastUnstarted(false);
+    }
+  }, [reviewPastUnstarted, pastUnstartedCount]);
+  
+  // Handle review mode activation
+  const handleReviewNow = useCallback(() => {
+    setReviewPastUnstarted(true);
+  }, []);
+  
+  // Handle exiting review mode
+  const handleExitReviewMode = useCallback(() => {
+    setReviewPastUnstarted(false);
+  }, []);
 
   // Handler to navigate to teaching mode / edit lesson details
   const handleEditLessonDetails = useCallback((lesson: LessonResponse) => {
@@ -259,6 +286,9 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
 
   // Empty state message based on filters
   const getEmptyMessage = () => {
+    if (reviewPastUnstarted && filteredLessons.length === 0) {
+      return "All caught up!";
+    }
     if (lessons.length === 0) {
       return "No lessons yet";
     }
@@ -271,66 +301,167 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     return "No lessons available";
   };
 
+  const getEmptyDescription = () => {
+    if (reviewPastUnstarted && filteredLessons.length === 0) {
+      return "All lessons have been documented. Great work!";
+    }
+    if (lessons.length === 0) {
+      if (!scheduleAvailable) {
+        return "To create lessons for this class, first add a weekly schedule in the Schedule tab, then return here and use Generate from schedule to create lessons for the term.";
+      }
+      return "Use Generate from schedule to create lessons for the upcoming period, or add a single lesson manually.";
+    }
+    if (scopeFilter === 'upcoming' && filteredLessons.length === 0) {
+      return "Use Generate from schedule to create lessons for the upcoming period, or add a single lesson manually.";
+    }
+    return "There are no lessons to display with the current filters.";
+  };
+  
+  // Render empty state with improved guidance
+  const renderEmptyState = () => {
+    const emptyMessage = getEmptyMessage();
+    const emptyDescription = getEmptyDescription();
+    
+    // If all past unstarted lessons are done, show success message
+    if (reviewPastUnstarted && filteredLessons.length === 0) {
+      return (
+        <GlassCard className="p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+            <Calendar className="w-6 h-6 text-green-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">{emptyMessage}</h3>
+          <p className="text-white/60 text-sm mb-4">{emptyDescription}</p>
+          <Button
+            variant="outline"
+            onClick={handleExitReviewMode}
+            className="text-white border-white/20 hover:bg-white/10"
+          >
+            Return to lessons
+          </Button>
+        </GlassCard>
+      );
+    }
+    
+    // If no lessons and no schedule, guide to schedule tab
+    if (lessons.length === 0 && !scheduleAvailable) {
+      return (
+        <GlassCard className="p-8 text-center">
+          <Calendar className="w-12 h-12 text-white/40 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-2">{emptyMessage}</h3>
+          <p className="text-white/60 text-sm mb-4 max-w-md mx-auto">{emptyDescription}</p>
+          {onScheduleTabClick && (
+            <Button
+              onClick={onScheduleTabClick}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Go to Schedule tab
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          )}
+        </GlassCard>
+      );
+    }
+    
+    // Default empty state - handled by LessonTimeline
+    return null;
+  };
+
   return (
     <div className="space-y-4">
-      {/* Past Unstarted Lessons Warning Banner */}
-      {pastUnstartedCount > 0 && (
-        <Alert className="bg-amber-500/10 border-amber-500/30">
-          <AlertTriangle className="h-4 w-4 text-amber-500" />
-          <AlertDescription className="text-amber-200 ml-2">
+      {/* Review Mode Banner */}
+      {reviewPastUnstarted && (
+        <div className="flex items-center gap-3 bg-amber-500/20 border border-amber-500/40 rounded-lg px-3 py-2">
+          <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0" />
+          <span className="text-sm text-amber-200 flex-1">
+            <span className="font-medium">Reviewing {pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'} needing documentation.</span>
+            <span className="ml-1 text-amber-200/80">
+              Document each lesson by clicking "Document Lesson" to mark attendance and status.
+            </span>
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExitReviewMode}
+            className="text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 flex-shrink-0 h-7 px-2 text-xs"
+          >
+            Exit review
+          </Button>
+        </div>
+      )}
+
+      {/* Past Unstarted Lessons Warning Banner - only show when not in review mode */}
+      {!reviewPastUnstarted && pastUnstartedCount > 0 && (
+        <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
+          <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+          <span className="text-sm text-amber-200 flex-1">
             <span className="font-medium">{pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson needs' : 'lessons need'} documentation.</span>
             <span className="ml-1 text-amber-200/80">
               These past lessons were never marked as conducted, cancelled, or no-show.
             </span>
-          </AlertDescription>
-        </Alert>
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleReviewNow}
+            className="text-amber-300 hover:text-amber-200 hover:bg-amber-500/20 flex-shrink-0 h-7 px-2 text-xs"
+          >
+            Review now
+            <ArrowRight className="w-3 h-3 ml-1" />
+          </Button>
+        </div>
       )}
 
       {/* Schedule Warning Banner */}
       {!scheduleAvailable && scheduleWarning && (
-        <Alert className="bg-yellow-500/10 border-yellow-500/30">
-          <AlertCircle className="h-4 w-4 text-yellow-500" />
-          <AlertDescription className="text-yellow-200 ml-2 flex items-center justify-between">
-            <span>{scheduleWarning}</span>
-          </AlertDescription>
-        </Alert>
+        <div className="flex items-center gap-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2">
+          <AlertCircle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+          <span className="text-sm text-yellow-200">{scheduleWarning}</span>
+        </div>
       )}
 
-      {/* Enhanced Filters and Actions */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        {/* Left: Enhanced Filters */}
-        <LessonsEnhancedFilters
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-          scopeFilter={scopeFilter}
-          onScopeChange={setScopeFilter}
-          compact={true}
-        />
+      {/* Enhanced Filters and Actions - hide when in review mode */}
+      {!reviewPastUnstarted && (
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          {/* Left: Enhanced Filters */}
+          <LessonsEnhancedFilters
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            scopeFilter={scopeFilter}
+            onScopeChange={setScopeFilter}
+            compact={true}
+          />
 
-        {/* Right: Action Buttons */}
-        <LessonActionButtons
-          onCreateLesson={() => setIsCreateLessonOpen(true)}
-          onGenerateLessons={() => setIsAcademicGenerationOpen(true)}
-          generateDisabled={!scheduleAvailable}
-          disabledTooltip={scheduleWarning || undefined}
-          hasLessons={lessons.length > 0}
-        />
-      </div>
+          {/* Right: Action Buttons */}
+          <LessonActionButtons
+            onCreateLesson={() => setIsCreateLessonOpen(true)}
+            onGenerateLessons={() => setIsAcademicGenerationOpen(true)}
+            generateDisabled={!scheduleAvailable}
+            disabledTooltip={scheduleWarning || undefined}
+            hasLessons={lessons.length > 0}
+          />
+        </div>
+      )}
 
-      {/* Timeline View */}
-      <LessonTimeline 
-        lessons={filteredLessons}
-        loading={loading}
-        groupByMonth={true}
-        showActions={true}
-        nextLesson={nextLesson}
-        onViewLesson={handleLessonDetails}
-        onStartTeaching={handleStartTeaching}
-        onQuickConduct={openConductModal}
-        onQuickCancel={openCancelModal}
-        onQuickReschedule={openRescheduleModal}
-        emptyMessage={getEmptyMessage()}
-      />
+      {/* Custom Empty State or Timeline View */}
+      {filteredLessons.length === 0 && (reviewPastUnstarted || (lessons.length === 0 && !scheduleAvailable)) ? (
+        renderEmptyState()
+      ) : (
+        <LessonTimeline 
+          lessons={filteredLessons}
+          loading={loading}
+          groupByMonth={true}
+          showActions={true}
+          nextLesson={nextLesson}
+          showTeacherName={false} // Teacher is already shown in the class header
+          onViewLesson={handleLessonDetails}
+          onStartTeaching={handleStartTeaching}
+          onQuickConduct={openConductModal}
+          onQuickCancel={openCancelModal}
+          onQuickReschedule={openRescheduleModal}
+          emptyMessage={getEmptyMessage()}
+          emptyDescription={getEmptyDescription()}
+        />
+      )}
       
       {/* Quick Action Modals */}
       <QuickConductLessonModal

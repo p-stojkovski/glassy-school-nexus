@@ -244,7 +244,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
             Cancel Lesson
           </DialogTitle>
           <DialogDescription className="text-white/60 text-sm mt-1">
-            Cancel the lesson and add a brief reason. Optional: schedule a makeup.
+            Cancel this lesson and add a short reason. You can optionally schedule a <strong>replacement lesson</strong> if you plan to compensate students.
           </DialogDescription>
         </DialogHeader>
 
@@ -318,7 +318,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                   className="text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
                 >
                   <Repeat className="w-4 h-4 text-purple-400" />
-                  Schedule makeup lesson now
+                  Schedule replacement lesson now
                 </Label>
               </div>
               

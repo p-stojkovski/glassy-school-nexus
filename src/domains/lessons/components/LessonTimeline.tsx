@@ -9,15 +9,38 @@ import {
   RotateCcw,
   UserX,
   Repeat,
-  AlertTriangle
+  AlertTriangle,
+  Play,
+  Edit3,
+  Eye
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import GlassCard from '@/components/common/GlassCard';
 import { LessonResponse, LessonStatusName } from '@/types/api/lesson';
-import { isPastUnstartedLesson } from '@/domains/lessons/lessonMode';
+import { isPastUnstartedLesson, canConductLesson, getCannotConductReason, DEFAULT_CONDUCT_GRACE_MINUTES } from '@/domains/lessons/lessonMode';
 import LessonStatusBadge from './LessonStatusBadge';
 import LessonStatusChips from './LessonStatusChips';
 import LessonRowActionsMenu from './LessonRowActionsMenu';
+
+/**
+ * System-generated note that should be hidden from UI display.
+ * This note is auto-created when ending a lesson via teaching mode without explicit notes.
+ */
+const SYSTEM_TEACHING_MODE_NOTE = 'Lesson completed via teaching mode';
+
+/**
+ * Checks if a note is a system-generated technical note that should be hidden.
+ * These notes don't provide meaningful content for teachers.
+ */
+const isSystemTeachingModeNote = (note?: string | null): boolean =>
+  note?.trim() === SYSTEM_TEACHING_MODE_NOTE;
 
 interface LessonTimelineProps {
   lessons: LessonResponse[];
@@ -28,6 +51,12 @@ interface LessonTimelineProps {
   emptyMessage?: string;
   emptyDescription?: string;
   nextLesson?: LessonResponse | null;
+  /**
+   * Whether to show the teacher name on each lesson card.
+   * Set to false in contexts where the teacher is already known (e.g., Class Lessons tab).
+   * @default true
+   */
+  showTeacherName?: boolean;
   onViewLesson?: (lesson: LessonResponse) => void;
   onConductLesson?: (lesson: LessonResponse) => void;
   onCancelLesson?: (lesson: LessonResponse) => void;
@@ -48,6 +77,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
   emptyMessage = "No lessons available",
   emptyDescription = "There are no lessons to display in the timeline.",
   nextLesson = null,
+  showTeacherName = true,
   onViewLesson,
   onConductLesson,
   onCancelLesson,
@@ -124,13 +154,161 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
     }
   };
 
+  /**
+   * Determines the primary CTA for a lesson based on its state.
+   * Returns: { label, icon, action, disabled, tooltip, variant }
+   */
+  const getPrimaryCTA = (lesson: LessonResponse) => {
+    const isPastUnstarted = isPastUnstartedLesson(
+      lesson.statusName,
+      lesson.scheduledDate,
+      lesson.endTime
+    );
+    
+    const isScheduledOrMakeUp = lesson.statusName === 'Scheduled' || lesson.statusName === 'Make Up';
+    const isConducted = lesson.statusName === 'Conducted';
+    const isCancelledOrNoShow = lesson.statusName === 'Cancelled' || lesson.statusName === 'No Show';
+    
+    const canConduct = canConductLesson(
+      lesson.statusName,
+      lesson.scheduledDate,
+      lesson.startTime,
+      DEFAULT_CONDUCT_GRACE_MINUTES
+    );
+    const conductDisabledReason = getCannotConductReason(
+      lesson.statusName,
+      lesson.scheduledDate,
+      lesson.startTime,
+      DEFAULT_CONDUCT_GRACE_MINUTES
+    );
+
+    // 1. Past unstarted lesson - "Document Lesson"
+    if (isPastUnstarted) {
+      return {
+        label: 'Document Lesson',
+        icon: Edit3,
+        action: () => onStartTeaching?.(lesson),
+        disabled: false,
+        tooltip: null,
+        variant: 'amber' as const, // Warning style for attention-required action
+      };
+    }
+
+    // 2. Upcoming Scheduled/Make Up within conduct window - "Start Teaching"
+    if (isScheduledOrMakeUp && canConduct) {
+      return {
+        label: 'Start Teaching',
+        icon: Play,
+        action: () => onStartTeaching?.(lesson),
+        disabled: false,
+        tooltip: null,
+        variant: 'blue' as const, // Primary style for standard action
+      };
+    }
+
+    // 3. Upcoming Scheduled/Make Up before conduct window - "View Lesson" (Start Teaching disabled)
+    if (isScheduledOrMakeUp && !canConduct) {
+      return {
+        label: 'View Lesson',
+        icon: Eye,
+        action: () => onViewLesson?.(lesson),
+        disabled: false,
+        tooltip: conductDisabledReason,
+        variant: 'ghost' as const, // Neutral style for non-primary action
+      };
+    }
+
+    // 4. Conducted lesson - "View Summary"
+    if (isConducted) {
+      return {
+        label: 'View Summary',
+        icon: Eye,
+        action: () => onStartTeaching?.(lesson), // Navigate to teaching mode for editing
+        disabled: false,
+        tooltip: null,
+        variant: 'blue' as const,
+      };
+    }
+
+    // 5. Cancelled/No Show - "View Summary"
+    if (isCancelledOrNoShow) {
+      return {
+        label: 'View Summary',
+        icon: Eye,
+        action: () => onViewLesson?.(lesson),
+        disabled: false,
+        tooltip: null,
+        variant: 'ghost' as const,
+      };
+    }
+
+    // Fallback
+    return {
+      label: 'View',
+      icon: Eye,
+      action: () => onViewLesson?.(lesson),
+      disabled: false,
+      tooltip: null,
+      variant: 'ghost' as const,
+    };
+  };
+
+  const renderPrimaryCTA = (lesson: LessonResponse) => {
+    if (!showActions) return null;
+    
+    const cta = getPrimaryCTA(lesson);
+    const Icon = cta.icon;
+    
+    // Unified button styles with white text on subtle solid backgrounds:
+    // - 'blue' (primary): Standard actions like Start Teaching, View Summary
+    // - 'amber' (warning): Attention-required actions like Document Lesson
+    // - 'ghost': Neutral/secondary actions
+    const variantClasses = {
+      amber: 'bg-amber-600/20 text-white hover:bg-amber-600/30 border-amber-600/30',
+      blue: 'bg-blue-600/20 text-white hover:bg-blue-600/30 border-blue-600/30',
+      ghost: 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border-white/20',
+    };
+    
+    const button = (
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={cta.disabled}
+        onClick={(e) => {
+          e.stopPropagation();
+          cta.action();
+        }}
+        className={`h-7 px-2 text-xs font-medium ${variantClasses[cta.variant]} border`}
+      >
+        <Icon className="w-3 h-3 mr-1" />
+        {cta.label}
+      </Button>
+    );
+    
+    if (cta.tooltip) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {button}
+            </TooltipTrigger>
+            <TooltipContent side="left" className="bg-gray-900 border-white/20 text-white text-xs max-w-[200px]">
+              {cta.tooltip}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    
+    return button;
+  };
+
   const renderQuickActions = (lesson: LessonResponse) => {
     if (!showActions) return null;
 
     return (
       <LessonRowActionsMenu
         lesson={lesson}
-        onStartTeaching={onStartTeaching}
         onMarkConducted={onQuickConduct}
         onCancelLesson={onQuickCancel}
         onRescheduleLesson={onQuickReschedule}
@@ -272,23 +450,27 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                             </div>
                           )}
 
-                          <div className="flex items-center gap-4 text-sm text-white/50 mb-1">
-                            <div className="flex items-center gap-1">
-                              <User className="w-3 h-3 flex-shrink-0" />
-                              <span className="truncate">{lesson.teacherName}</span>
+                          {/* Teacher/Location row - only shown when showTeacherName is true (non-class contexts) */}
+                          {showTeacherName && (
+                            <div className="flex items-center gap-4 text-sm text-white/50 mb-1">
+                              <div className="flex items-center gap-1">
+                                <User className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{lesson.teacherName}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{lesson.classroomName}</span>
+                              </div>
+                              {lesson.generationSource && lesson.generationSource !== 'manual' && (
+                                <span className="capitalize text-xs bg-white/10 px-2 py-1 rounded">
+                                  {lesson.generationSource}
+                                </span>
+                              )}
                             </div>
-                            <div className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 flex-shrink-0" />
-                              <span className="truncate">{lesson.classroomName}</span>
-                            </div>
-                            {lesson.generationSource && lesson.generationSource !== 'manual' && (
-                              <span className="capitalize text-xs bg-white/10 px-2 py-1 rounded">
-                                {lesson.generationSource}
-                              </span>
-                            )}
-                          </div>
+                          )}
 
-                          {lesson.notes && (
+                          {/* Notes - hide system-generated teaching mode note */}
+                          {lesson.notes && !isSystemTeachingModeNote(lesson.notes) && (
                             <p className="text-sm text-white/70 mt-2 line-clamp-2">
                               {lesson.notes}
                             </p>
@@ -303,8 +485,9 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                         </div>
                       </div>
 
-                      {/* Actions Menu */}
-                      <div className="flex items-center ml-2">
+                      {/* Actions Area - Primary CTA + Menu */}
+                      <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                        {renderPrimaryCTA(lesson)}
                         {renderQuickActions(lesson)}
                       </div>
                     </div>

@@ -261,7 +261,7 @@ const RescheduleLessonModal: React.FC<RescheduleLessonModalProps> = ({
             Reschedule Lesson
           </DialogTitle>
           <DialogDescription className="text-white/60 text-sm mt-1">
-            Move this lesson to a different date and time.
+            Move this lesson to a different date and time. This keeps the same lesson and does not add an extra one.
           </DialogDescription>
         </DialogHeader>
 

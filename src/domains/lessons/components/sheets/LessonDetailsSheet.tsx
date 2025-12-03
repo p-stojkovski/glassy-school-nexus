@@ -411,13 +411,14 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
                   onClick={() => onCreateMakeup(lesson)}
                   variant="ghost"
                   className="text-purple-300 hover:text-purple-200 hover:bg-purple-500/10 text-sm"
+                  title="Add an extra lesson to compensate for this cancelled lesson."
                 >
                   <RotateCcw className="w-3 h-3 mr-2" />
-                  Create Makeup
+                  Schedule replacement lesson
                 </Button>
               )}
 
-              {/* Cancel Lesson - Destructive action with clear labeling */}
+              {/* Cancel lesson - Destructive action with clear labeling */}
               {canCancel && onCancel && (
                 <Button
                   onClick={() => onCancel(lesson)}
@@ -425,33 +426,33 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
                   className="text-red-300 hover:text-red-200 hover:bg-red-500/10 text-sm"
                 >
                   <XCircle className="w-3 h-3 mr-2" />
-                  Cancel Lesson
+                  Cancel lesson
                 </Button>
               )}
 
-              {/* Reschedule Lesson - Available for Scheduled and Make Up statuses, but not past unstarted */}
+              {/* Change schedule - Available for Scheduled and Make Up statuses, but not past unstarted */}
               {canReschedule && !isPastUnstarted && onReschedule && (
                 <Button
                   onClick={() => onReschedule(lesson)}
                   variant="ghost"
                   className="text-blue-300 hover:text-blue-200 hover:bg-blue-500/10 text-sm"
+                  title="Move this lesson to a different time. No additional lesson is added."
                 >
                   <CalendarClock className="w-3 h-3 mr-2" />
-                  Reschedule
+                  Change schedule
                 </Button>
               )}
 
-              {/* Mark as Conducted - always available for past unstarted lessons */}
-              {canConduct && statusAllowsConduct && onConduct && (
+              {/* Quick mark as conducted - only for past unstarted lessons */}
+              {isPastUnstarted && canConduct && statusAllowsConduct && onConduct && (
                 <Button
                   onClick={() => onConduct(lesson)}
                   variant="ghost"
-                  disabled={!isPastUnstarted && !canConductLesson}
-                  title={!isPastUnstarted ? (conductDisabledReason || 'Mark lesson as conducted') : 'Mark this past lesson as conducted'}
-                  className="text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 text-sm disabled:opacity-50 disabled:hover:bg-transparent"
+                  title="Mark this as conducted without entering detailed attendance."
+                  className="text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 text-sm"
                 >
                   <CheckCircle className="w-3 h-3 mr-2" />
-                  Mark as Conducted
+                  Quick mark as conducted
                 </Button>
               )}
 
@@ -462,7 +463,7 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
                     onOpenChange(false);
                     onEditLessonDetails(lesson);
                   }}
-                  className="text-sm bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 hover:text-amber-200"
+                  className="text-sm bg-amber-600/20 text-white hover:bg-amber-600/30"
                 >
                   <Edit3 className="w-3 h-3 mr-2" />
                   Document Lesson
@@ -470,6 +471,7 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
               )}
 
               {/* Teaching Mode / Edit Details Button - Primary action (not for past unstarted) */}
+              {/* Uses unified blue primary style for both Start Teaching and View Summary */}
               {!isPastUnstarted && canAccessTeachingMode && onEditLessonDetails && (
                 <Button
                   onClick={() => {
@@ -484,16 +486,12 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
                       ? conductDisabledReason || 'Teaching mode is available once the lesson window opens'
                       : undefined
                   }
-                  className={`text-sm ${
-                    isConducted 
-                      ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 hover:text-amber-200' 
-                      : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200'
-                  }`}
+                  className="text-sm bg-blue-600/20 text-white hover:bg-blue-600/30 disabled:bg-blue-600/10 disabled:text-white/50"
                 >
                   {isConducted ? (
                     <>
-                      <Edit3 className="w-3 h-3 mr-2" />
-                      Edit Attendance & Details
+                      <Eye className="w-3 h-3 mr-2" />
+                      View Summary
                     </>
                   ) : (
                     <>

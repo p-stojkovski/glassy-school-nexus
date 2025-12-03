@@ -79,7 +79,7 @@ const LessonActionButtons: React.FC<LessonActionButtonsProps> = ({
                   className="text-white/50 cursor-not-allowed"
                 >
                   <Sparkles className="w-4 h-4 mr-2 text-purple-400/50" />
-                  Smart Generate
+                  Generate from schedule
                 </DropdownMenuItem>
               </HoverCardTrigger>
               {disabledTooltip && (
@@ -97,7 +97,7 @@ const LessonActionButtons: React.FC<LessonActionButtonsProps> = ({
               className="text-white focus:bg-white/10 cursor-pointer"
             >
               <Sparkles className="w-4 h-4 mr-2 text-purple-400" />
-              Smart Generate
+              Generate from schedule
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
@@ -105,7 +105,7 @@ const LessonActionButtons: React.FC<LessonActionButtonsProps> = ({
             className="text-white focus:bg-white/10 cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-2 text-yellow-400" />
-            Add Single Lesson
+            Add one lesson
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -123,7 +123,7 @@ const LessonActionButtons: React.FC<LessonActionButtonsProps> = ({
           className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed h-9"
         >
           <Sparkles className="w-4 h-4 mr-1.5" />
-          Smart Generate
+          Generate from schedule
         </Button>
       </GenerateButtonWithTooltip>
       <Button

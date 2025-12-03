@@ -87,14 +87,16 @@ const ClassTeachingModePage: React.FC = () => {
   }, []);
 
   // Handle ending the lesson
+  // Note: We no longer send a generic system note when conducting a lesson.
+  // Only meaningful teacher-provided notes should be persisted.
   const handleEndLesson = async () => {
     if (!lesson) return;
 
     setIsEnding(true);
     try {
-      await lessonApiService.conductLesson(lesson.id, {
-        notes: 'Lesson completed via teaching mode'
-      });
+      // Conduct the lesson without a generic system note.
+      // If the lesson already has notes (from editing), they are preserved on the backend.
+      await lessonApiService.conductLesson(lesson.id, {});
       toast.success('Lesson ended successfully!');
       navigate(`/classes/${classId}`);
     } catch (err: unknown) {
