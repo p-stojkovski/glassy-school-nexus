@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { AlertCircle, AlertTriangle, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ClassBasicInfoResponse } from '@/types/api/class';
-import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData, ClassLessonFilterParams } from '@/types/api/lesson';
+import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData, ClassLessonFilterParams, LessonTimeWindow } from '@/types/api/lesson';
 import { useLessonsForClass, useLessons } from '@/domains/lessons/hooks/useLessons';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
 import LessonTimeline from '@/domains/lessons/components/LessonTimeline';
@@ -20,6 +20,7 @@ import LessonActionButtons from '@/domains/lessons/components/LessonActionButton
 import GlassCard from '@/components/common/GlassCard';
 import { hasActiveSchedules, getScheduleWarningMessage } from '@/domains/classes/utils/scheduleValidationUtils';
 import { ScopeFilter } from '@/domains/lessons/utils/lessonFilters';
+import { loadFromStorage, saveToStorage } from '@/lib/storage';
 
 interface ClassLessonsTabProps {
   classData: ClassBasicInfoResponse;
@@ -37,6 +38,13 @@ interface ClassLessonsTabProps {
 }
 
 type LessonFilter = 'all' | LessonStatusName;
+type TimeFilterState = {
+  scope: ScopeFilter;
+  timeWindow: LessonTimeWindow;
+};
+
+const DEFAULT_SCOPE: ScopeFilter = 'upcoming';
+const DEFAULT_TIME_WINDOW: LessonTimeWindow = 'month';
 
 const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   classData,
@@ -52,7 +60,18 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   const [statusFilter, setStatusFilter] = useState<LessonFilter>('all');
   
   // Scope filter - default to 'upcoming' to show what matters most
-  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>('upcoming');
+  const storageKey = `class-lessons-time-filter-${classData.id}`;
+  const loadStoredTimeFilters = useCallback((): TimeFilterState => {
+    const stored = loadFromStorage<Partial<TimeFilterState>>(storageKey);
+    return {
+      scope: stored?.scope ?? DEFAULT_SCOPE,
+      timeWindow: stored?.timeWindow ?? DEFAULT_TIME_WINDOW,
+    };
+  }, [storageKey]);
+
+  const initialTimeFilters = loadStoredTimeFilters();
+  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>(initialTimeFilters.scope);
+  const [timeWindow, setTimeWindow] = useState<LessonTimeWindow>(initialTimeFilters.timeWindow);
   const [isCreateLessonOpen, setIsCreateLessonOpen] = useState(false);
   const [isAcademicGenerationOpen, setIsAcademicGenerationOpen] = useState(false);
   
@@ -93,11 +112,31 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   // Lesson creation from useLessons hook
   const { addLesson, creatingLesson, createMakeup, loadLessonById } = useLessons();
 
+  // Persist time filters per class (session-level)
+  useEffect(() => {
+    saveToStorage(storageKey, { scope: scopeFilter, timeWindow });
+  }, [scopeFilter, timeWindow, storageKey]);
+
+  // Reload stored filters when switching classes
+  useEffect(() => {
+    const stored = loadStoredTimeFilters();
+    setScopeFilter(stored.scope);
+    setTimeWindow(stored.timeWindow);
+  }, [classData.id, loadStoredTimeFilters]);
+
+  const handleScopeChange = useCallback((value: ScopeFilter) => {
+    setScopeFilter(value);
+    if (value === 'all') {
+      setTimeWindow('all');
+    }
+  }, []);
+
   // Build current filter params for API calls
   const currentFilters = useMemo((): ClassLessonFilterParams => ({
     scope: scopeFilter,
     statusName: statusFilter,
-  }), [scopeFilter, statusFilter]);
+    timeWindow,
+  }), [scopeFilter, statusFilter, timeWindow]);
 
   // Compute next lesson from the current lessons list
   const nextLesson = useMemo(() => {
@@ -302,6 +341,9 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     return lessons;
   }, [lessons, pastUnstartedLessons, reviewPastUnstarted]);
 
+  // Display lessons in descending order by date for all scopes
+  const timelineSortDirection = 'desc';
+
   // Schedule validation
   const scheduleAvailable = hasActiveSchedules(classData);
   const scheduleWarning = getScheduleWarningMessage(classData);
@@ -487,7 +529,9 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
             statusFilter={statusFilter}
             onStatusChange={setStatusFilter}
             scopeFilter={scopeFilter}
-            onScopeChange={setScopeFilter}
+            onScopeChange={handleScopeChange}
+            timeWindow={timeWindow}
+            onTimeWindowChange={setTimeWindow}
             compact={true}
           />
 
@@ -511,6 +555,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
           loading={loading}
           groupByMonth={true}
           showActions={true}
+          sortDirection={timelineSortDirection}
           nextLesson={nextLesson}
           showTeacherName={false} // Teacher is already shown in the class header
           onViewLesson={handleLessonDetails}

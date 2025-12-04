@@ -169,22 +169,46 @@ return await apiService.get<LessonResponse>(LessonApiPaths.BY_ID(id));
     const params: LessonSearchParams = { classId };
     
     if (filters) {
-      // Convert scope filter to date range parameters
-      // 'upcoming' = today and future, 'past' = before today, 'all' = no date filter
+      const toIsoDate = (date: Date) => {
+        const normalized = new Date(date);
+        normalized.setHours(0, 0, 0, 0);
+        return normalized.toISOString().split('T')[0];
+      };
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const todayStr = today.toISOString().split('T')[0];
-      
+      const timeWindow = filters.timeWindow || 'all';
+
+      // Convert scope + window to date range parameters
+      // 'upcoming' = today and future, 'past' = before today, 'all' = no date filter
       if (filters.scope === 'upcoming') {
-        params.startDate = todayStr;
-        // No end date - get all future lessons
+        params.startDate = toIsoDate(today);
+
+        if (timeWindow === 'week') {
+          const endDate = new Date(today);
+          endDate.setDate(endDate.getDate() + 7);
+          params.endDate = toIsoDate(endDate);
+        } else if (timeWindow === 'month') {
+          const endDate = new Date(today);
+          endDate.setMonth(endDate.getMonth() + 1);
+          params.endDate = toIsoDate(endDate);
+        }
       } else if (filters.scope === 'past') {
-        // endDate is exclusive of today, so use yesterday
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
-        params.endDate = yesterday.toISOString().split('T')[0];
-        // No start date - get all past lessons
+        params.endDate = toIsoDate(yesterday);
+
+        if (timeWindow === 'week') {
+          const startDate = new Date(yesterday);
+          startDate.setDate(startDate.getDate() - 7);
+          params.startDate = toIsoDate(startDate);
+        } else if (timeWindow === 'month') {
+          const startDate = new Date(yesterday);
+          startDate.setMonth(startDate.getMonth() - 1);
+          params.startDate = toIsoDate(startDate);
+        }
       }
+      
       // 'all' scope: no date filters applied
       
       // Apply status filter if not 'all'

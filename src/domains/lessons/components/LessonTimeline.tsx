@@ -66,6 +66,8 @@ interface LessonTimelineProps {
   onQuickConduct?: (lesson: LessonResponse) => void;
   onQuickCancel?: (lesson: LessonResponse) => void;
   onQuickReschedule?: (lesson: LessonResponse) => void;
+  /** Sorting direction for timeline. Defaults to 'desc' (newest first). */
+  sortDirection?: 'asc' | 'desc';
 }
 
 const LessonTimeline: React.FC<LessonTimelineProps> = ({
@@ -86,11 +88,17 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
   onQuickConduct,
   onQuickCancel,
   onQuickReschedule,
+  sortDirection = 'desc',
 }) => {
-  // Sort lessons by date (newest first for timeline view)
-  const sortedLessons = [...lessons].sort((a, b) => 
-    new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime()
-  );
+  // Sort lessons by date/time, defaulting to newest first for existing contexts
+  const sortedLessons = [...lessons].sort((a, b) => {
+    const dateDiff = new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+    if (dateDiff !== 0) {
+      return sortDirection === 'asc' ? dateDiff : -dateDiff;
+    }
+    const timeDiff = a.startTime.localeCompare(b.startTime);
+    return sortDirection === 'asc' ? timeDiff : -timeDiff;
+  });
 
   // Apply max items limit if specified
   const displayLessons = maxItems ? sortedLessons.slice(0, maxItems) : sortedLessons;

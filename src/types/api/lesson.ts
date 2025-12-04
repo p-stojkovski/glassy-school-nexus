@@ -192,6 +192,9 @@ export interface LessonSearchParams {
   page?: number;                // pagination (0-based)
 }
 
+// Time windows for Class Lessons tab
+export type LessonTimeWindow = 'week' | 'month' | 'all';
+
 /**
  * Filter parameters specific to the class lessons tab.
  * These are used to request server-side filtered lessons for a class.
@@ -201,6 +204,13 @@ export interface ClassLessonFilterParams {
   scope?: 'upcoming' | 'past' | 'all';
   /** Status filter: 'all' returns all statuses, otherwise filter by specific status name */
   statusName?: 'all' | LessonStatusName;
+  /**
+   * Optional preset window for time filtering.
+   * - 'week' -> 7 day window anchored to today/yesterday depending on scope
+   * - 'month' -> 1 month window anchored to today/yesterday depending on scope
+   * - 'all' -> full history/future for the selected scope
+   */
+  timeWindow?: LessonTimeWindow;
 }
 
 // Lesson summary for class overview
