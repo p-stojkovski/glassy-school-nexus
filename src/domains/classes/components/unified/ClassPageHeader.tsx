@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, MapPin, Edit2, Trash2, Info, MoreVertical, Archive, Play, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { User, MapPin, Edit2, Trash2, Info, MoreVertical, Archive, Play, Clock, CheckCircle, XCircle, Calendar } from 'lucide-react';
 import { LessonResponse } from '@/types/api/lesson';
 import { UseClassLessonContextResult } from '@/domains/classes/hooks/useClassLessonContext';
 import { formatTimeRangeWithoutSeconds } from '@/utils/timeFormatUtils';
@@ -189,8 +189,19 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
             {/* Separator */}
             <span className="hidden lg:block text-white/20">|</span>
 
-            {/* Center: Primary metadata (Subject, Location, Capacity) */}
+            {/* Center: Primary metadata (Year, Subject, Location, Capacity) */}
             <div className="flex flex-wrap items-center gap-3 flex-1 text-sm text-white/70">
+              {/* Academic Year Badge */}
+              {classData.academicYearName && (
+                <>
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-500/20 border border-indigo-500/30 rounded-md">
+                    <Calendar className="w-3.5 h-3.5 text-indigo-400" />
+                    <span className="text-indigo-300 font-medium">{classData.academicYearName}</span>
+                  </div>
+                  <span className="text-white/20">|</span>
+                </>
+              )}
+              
               <div className="flex items-center gap-1.5">
                 <span className="text-white/40">Subject:</span>
                 <span>{classData.subjectName}</span>

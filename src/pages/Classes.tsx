@@ -10,11 +10,13 @@ import ClassLoading from '@/domains/classes/components/state/ClassLoading';
 import { useClassesApi } from '@/domains/classesApi/hooks/useClassesApi';
 import { classApiService } from '@/services/classApiService';
 import { ClassResponse } from '@/types/api/class';
+import { AcademicYear } from '@/domains/settings/types/academicCalendarTypes';
 
 const ClassesPage: React.FC = () => {
   const navigate = useNavigate();
   const { classes, loadClasses, search, setSearchQuery, setSearchMode, isSearchMode } = useClassesApi();
   const [searchTerm, setSearchTerm] = useState('');
+  const [academicYearFilter, setAcademicYearFilter] = useState<'all' | string>('all');
   const [subjectFilter, setSubjectFilter] = useState<'all' | string>('all');
   const [teacherFilter, setTeacherFilter] = useState<'all' | string>('all');
   const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'available' | 'full'>('all');
@@ -23,9 +25,22 @@ const ClassesPage: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [hasDisabledClasses, setHasDisabledClasses] = useState<boolean>(false);
+  const [activeYearId, setActiveYearId] = useState<string | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const previousFiltersRef = useRef({ searchTerm: '', subjectFilter: 'all', teacherFilter: 'all', availabilityFilter: 'all', statusFilter: 'active' as 'all' | 'active' | 'inactive' });
+  const previousFiltersRef = useRef({ searchTerm: '', academicYearFilter: 'all', subjectFilter: 'all', teacherFilter: 'all', availabilityFilter: 'all', statusFilter: 'active' as 'all' | 'active' | 'inactive' });
 
+
+  // Handler for when academic years are loaded - set default to active year
+  const handleYearsLoaded = useCallback((years: AcademicYear[]) => {
+    const active = years.find((y) => y.isActive);
+    if (active) {
+      setActiveYearId(active.id);
+      // Only set default filter if not already set by user
+      if (academicYearFilter === 'all' && !isInitialized) {
+        setAcademicYearFilter(active.id);
+      }
+    }
+  }, [academicYearFilter, isInitialized]);
 
   // Load classes only once on mount with disabled global loading
   useEffect(() => {
@@ -37,7 +52,7 @@ const ClassesPage: React.FC = () => {
         await loadClasses();
         
         // Also fetch count of disabled classes
-        const allClasses = await classApiService.searchClasses({ includeDisabled: true });
+        const allClasses = await classApiService.searchClasses({ includeDisabled: true, includeAllYears: true });
         const hasDisabled = allClasses.some((c: ClassResponse) => !c.isActive);
         if (mounted) {
           setHasDisabledClasses(hasDisabled);
@@ -57,7 +72,13 @@ const ClassesPage: React.FC = () => {
     };
   }, []); // Empty dependency - run only once
 
+  // Determine if year filter differs from active year (user changed it)
+  const isYearFilterChanged = activeYearId 
+    ? academicYearFilter !== activeYearId 
+    : academicYearFilter !== 'all';
+
   const hasActiveFilters = searchTerm.trim() !== '' ||
+    isYearFilterChanged ||
     subjectFilter !== 'all' ||
     teacherFilter !== 'all' ||
     availabilityFilter !== 'all' ||
@@ -68,6 +89,8 @@ const ClassesPage: React.FC = () => {
     if (hasActiveFilters) {
       await search({
         searchTerm: searchTerm.trim() || undefined,
+        academicYearId: academicYearFilter !== 'all' ? academicYearFilter : undefined,
+        includeAllYears: academicYearFilter === 'all',
         subjectId: subjectFilter !== 'all' ? subjectFilter : undefined,
         teacherId: teacherFilter !== 'all' ? teacherFilter : undefined,
         onlyWithAvailableSlots: availabilityFilter === 'available' || undefined,
@@ -77,10 +100,12 @@ const ClassesPage: React.FC = () => {
       // Exit search mode when no filters are active
       setSearchMode(false);
     }
-  }, [hasActiveFilters, searchTerm, subjectFilter, teacherFilter, availabilityFilter, statusFilter, search, setSearchMode]);
+  }, [hasActiveFilters, searchTerm, academicYearFilter, subjectFilter, teacherFilter, availabilityFilter, statusFilter, search, setSearchMode]);
 
   const clearFilters = () => {
     setSearchTerm('');
+    // Reset to active year (or 'all' if no active year)
+    setAcademicYearFilter(activeYearId || 'all');
     setSubjectFilter('all');
     setTeacherFilter('all');
     setAvailabilityFilter('all');
@@ -92,7 +117,9 @@ const ClassesPage: React.FC = () => {
   };
 
   const handleFilterChange = useCallback((type: string, value: string) => {
-    if (type === 'subject') {
+    if (type === 'academicYear') {
+      setAcademicYearFilter(value as 'all' | string);
+    } else if (type === 'subject') {
       setSubjectFilter(value as 'all' | string);
     } else if (type === 'teacher') {
       setTeacherFilter(value as 'all' | string);
@@ -109,7 +136,7 @@ const ClassesPage: React.FC = () => {
     if (!isInitialized) return;
     
     // Check if filters actually changed
-    const currentFilters = { searchTerm, subjectFilter, teacherFilter, availabilityFilter, statusFilter };
+    const currentFilters = { searchTerm, academicYearFilter, subjectFilter, teacherFilter, availabilityFilter, statusFilter };
     const filtersChanged = JSON.stringify(currentFilters) !== JSON.stringify(previousFiltersRef.current);
     
     if (!filtersChanged) return;
@@ -130,6 +157,8 @@ const ClassesPage: React.FC = () => {
         try {
           await search({
             searchTerm: searchTerm.trim() || undefined,
+            academicYearId: academicYearFilter !== 'all' ? academicYearFilter : undefined,
+            includeAllYears: academicYearFilter === 'all',
             subjectId: subjectFilter !== 'all' ? subjectFilter : undefined,
             teacherId: teacherFilter !== 'all' ? teacherFilter : undefined,
             onlyWithAvailableSlots: availabilityFilter === 'available' || undefined,
@@ -156,7 +185,7 @@ const ClassesPage: React.FC = () => {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchTerm, subjectFilter, teacherFilter, availabilityFilter, statusFilter, isInitialized, hasActiveFilters, search, setSearchMode]);
+  }, [searchTerm, academicYearFilter, subjectFilter, teacherFilter, availabilityFilter, statusFilter, isInitialized, hasActiveFilters, search, setSearchMode]);
 
   // Immediately exit search mode when no filters are active
   useEffect(() => {
@@ -189,6 +218,7 @@ const ClassesPage: React.FC = () => {
       <ClassFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        academicYearFilter={academicYearFilter}
         subjectFilter={subjectFilter}
         teacherFilter={teacherFilter}
         statusFilter={statusFilter}
@@ -199,6 +229,7 @@ const ClassesPage: React.FC = () => {
         onViewModeChange={setViewMode}
         isSearching={isSearching}
         hasActiveFilters={hasActiveFilters}
+        onYearsLoaded={handleYearsLoaded}
       />
 
       {classes.length === 0 ? (

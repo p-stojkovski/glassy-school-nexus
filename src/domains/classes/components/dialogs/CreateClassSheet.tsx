@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, Calendar, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -28,6 +28,7 @@ import { classApiService } from '@/services/classApiService';
 import { useAppSelector } from '@/store/hooks';
 import { RootState } from '@/store/store';
 import { useTeachers } from '@/hooks/useTeachers';
+import { useAcademicYears } from '@/hooks/useAcademicYears';
 import { CreateClassRequest } from '@/types/api/class';
 import { toast } from 'sonner';
 
@@ -56,6 +57,11 @@ export function CreateClassSheet({
   const [hasSetTeacherDefault, setHasSetTeacherDefault] = useState(false);
   const user = useAppSelector((state: RootState) => state.auth.user);
   const { teachers } = useTeachers();
+  const { years, isLoading: isLoadingYears } = useAcademicYears();
+  
+  // Find the active academic year
+  const activeYear = useMemo(() => years.find(y => y.isActive), [years]);
+  const hasActiveYear = !!activeYear;
 
   const form = useForm<QuickCreateFormData>({
     resolver: zodResolver(quickCreateSchema),
@@ -145,14 +151,49 @@ export function CreateClassSheet({
             <SheetDescription className="text-white/70 mt-2">
               Create your class with the essentials below. You'll add the schedule and students immediately after.
             </SheetDescription>
-            <p className="text-white/60 text-sm mt-2">
-              All fields are required.
-            </p>
+            
+            {/* Academic Year Banner */}
+            {!isLoadingYears && (
+              hasActiveYear ? (
+                <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-indigo-500/20 border border-indigo-500/30 rounded-lg">
+                  <Calendar className="w-4 h-4 text-indigo-400" />
+                  <span className="text-sm text-indigo-300">
+                    This class will be created for <span className="font-semibold">{activeYear.name}</span>
+                  </span>
+                </div>
+              ) : (
+                <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-amber-500/20 border border-amber-500/30 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 text-amber-400" />
+                  <span className="text-sm text-amber-300">
+                    No active academic year. Please configure an academic year before creating classes.
+                  </span>
+                </div>
+              )
+            )}
+            
+            {hasActiveYear && (
+              <p className="text-white/60 text-sm mt-2">
+                All fields are required.
+              </p>
+            )}
           </SheetHeader>
 
           {/* Form Content */}
           <ScrollArea className="flex-1">
             <div className="p-6">
+              {/* Show blocking message if no active year */}
+              {!isLoadingYears && !hasActiveYear ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="p-4 bg-amber-500/20 rounded-full mb-4">
+                    <AlertTriangle className="w-8 h-8 text-amber-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Academic Year Required</h3>
+                  <p className="text-white/60 max-w-xs">
+                    You need to set up an active academic year before you can create classes. 
+                    Please go to Settings → Academic Calendar to configure your academic year.
+                  </p>
+                </div>
+              ) : (
               <Form {...form}>
                 <form id="quick-create-class-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
 
@@ -238,29 +279,43 @@ export function CreateClassSheet({
 
                 </form>
               </Form>
+              )}
             </div>
           </ScrollArea>
 
           {/* Footer Actions */}
           <div className="p-4 border-t border-white/10 bg-white/5">
             <div className="flex gap-3">
-              <Button
-                type="submit"
-                form="quick-create-class-form"
-                disabled={isSubmitting}
-                className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-              >
-                {isSubmitting ? 'Adding...' : 'Add Class'}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-                className="text-white/70 hover:text-white hover:bg-white/10"
-              >
-                Cancel
-              </Button>
+              {hasActiveYear ? (
+                <>
+                  <Button
+                    type="submit"
+                    form="quick-create-class-form"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+                  >
+                    {isSubmitting ? 'Adding...' : 'Add Class'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => onOpenChange(false)}
+                    disabled={isSubmitting}
+                    className="text-white/70 hover:text-white hover:bg-white/10"
+                  >
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => onOpenChange(false)}
+                  className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
+                >
+                  Close
+                </Button>
+              )}
             </div>
           </div>
         </div>

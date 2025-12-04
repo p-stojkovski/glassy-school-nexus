@@ -53,6 +53,8 @@ export interface NewScheduleSlotGenerationInfo {
 export interface ClassResponse {
   id: string;                   // GUID
   name: string;
+  academicYearId: string;       // GUID of the academic year
+  academicYearName: string;     // Human-readable year name (e.g., "2024-2025")
   subjectId: string;
   subjectName: string;
   teacherId: string;
@@ -84,6 +86,8 @@ export interface ClassResponse {
 export interface ClassBasicInfoResponse {
   id: string;
   name: string;
+  academicYearId: string;
+  academicYearName: string;
   subjectId: string;
   subjectName: string;
   teacherId: string;
@@ -211,8 +215,10 @@ export interface ClassSearchParams {
   searchTerm?: string;
   subjectId?: string;           // GUID
   teacherId?: string;           // GUID
+  academicYearId?: string;      // GUID - filter by academic year
   onlyWithAvailableSlots?: boolean;
   includeDisabled?: boolean;
+  includeAllYears?: boolean;    // If true, search across all years
 }
 
 // ProblemDetails (reuse shape)

@@ -1,6 +1,7 @@
 import React from 'react';
 import GlassCard from '@/components/common/GlassCard';
 import SubjectsDropdown from '@/components/common/SubjectsDropdown';
+import YearsDropdown from '@/components/common/YearsDropdown';
 import SearchInput from '@/components/common/SearchInput';
 import { Loader2, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,12 +14,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTeachers } from '@/hooks/useTeachers';
+import { AcademicYear } from '@/domains/settings/types/academicCalendarTypes';
 
 export type ClassViewMode = 'grid' | 'table';
 
 interface ClassFiltersProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
+  academicYearFilter: 'all' | string;
   subjectFilter: 'all' | string;
   teacherFilter?: 'all' | string;
   statusFilter: 'all' | 'active' | 'inactive';
@@ -29,11 +32,13 @@ interface ClassFiltersProps {
   onViewModeChange?: (mode: ClassViewMode) => void;
   isSearching?: boolean;
   hasActiveFilters?: boolean;
+  onYearsLoaded?: (years: AcademicYear[]) => void;
 }
 
 const ClassFilters: React.FC<ClassFiltersProps> = ({
   searchTerm,
   onSearchChange,
+  academicYearFilter,
   subjectFilter,
   teacherFilter,
   statusFilter,
@@ -42,6 +47,7 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
   clearFilters,
   isSearching = false,
   hasActiveFilters = false,
+  onYearsLoaded,
 }) => {
   const { teachers, isLoading: isLoadingTeachers, error: teachersError } = useTeachers();
 
@@ -74,6 +80,22 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
             placeholder="Search by name, teacher, or subject..."
             isSearching={isSearching}
             className="h-9"
+          />
+        </div>
+
+        {/* Academic Year Filter */}
+        <div className={`${filterContainerClass} w-full sm:w-1/4 lg:w-44 lg:flex-shrink-0`}>
+          <Label htmlFor="year-filter" className={labelClass}>
+            Academic Year
+          </Label>
+          <YearsDropdown
+            value={academicYearFilter}
+            onValueChange={(value) => onFilterChange('academicYear', value)}
+            includeAllOption={true}
+            allOptionLabel="All Years"
+            showIcon={false}
+            className={selectTriggerClass}
+            onLoaded={onYearsLoaded}
           />
         </div>
 

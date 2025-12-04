@@ -111,8 +111,10 @@ return await apiService.get<ClassBasicInfoResponse>(ClassApiPaths.BY_ID(id));
       if (params.searchTerm) qs.append('searchTerm', params.searchTerm);
       if (params.subjectId) qs.append('subjectId', params.subjectId);
       if (params.teacherId) qs.append('teacherId', params.teacherId);
+      if (params.academicYearId) qs.append('academicYearId', params.academicYearId);
       if (params.onlyWithAvailableSlots !== undefined) qs.append('onlyWithAvailableSlots', String(params.onlyWithAvailableSlots));
       if (params.includeDisabled !== undefined) qs.append('includeDisabled', String(params.includeDisabled));
+      if (params.includeAllYears !== undefined) qs.append('includeAllYears', String(params.includeAllYears));
       const endpoint = qs.toString() ? `${ClassApiPaths.SEARCH}?${qs.toString()}` : ClassApiPaths.SEARCH;
       
 return await apiService.get<ClassResponse[]>(endpoint);
