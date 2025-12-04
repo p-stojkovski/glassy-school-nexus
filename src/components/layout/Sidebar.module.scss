@@ -11,7 +11,7 @@
   @apply h-full rounded-none rounded-r-2xl p-4;
 }
 .header {
-  @apply flex items-center justify-between mb-8;
+  @apply flex items-center justify-between mb-6;
 }
 .logo {
   @apply flex items-center space-x-3;
@@ -20,27 +20,71 @@
   @apply w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden;
 }
 .collapseButton {
-  @apply p-2 rounded-lg hover:bg-white/10 text-white transition-colors;
+  @apply p-2 rounded-lg hover:bg-white/10 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400/50;
 }
 .nav {
   @apply flex-1 flex flex-col min-h-0;
 }
+
+/* Navigation group styles */
+.navGroup {
+  @apply mb-0.5;
+}
+.groupHeader {
+  @apply w-full flex items-center justify-between p-2.5 rounded-lg text-white/50 hover:text-white/70 hover:bg-white/5 transition-all cursor-pointer text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/50;
+}
+.groupHeaderActive {
+  @apply text-yellow-200/80 bg-yellow-500/5;
+}
+.groupLabel {
+  @apply text-xs font-semibold uppercase tracking-wider;
+}
+.groupItems {
+  @apply ml-6 mt-0.5 space-y-0.5 overflow-hidden;
+}
+.collapsedGroupItems {
+  @apply hidden;
+}
+
+/* Menu item styles */
 .menuItem {
-  @apply w-full flex items-center space-x-3 p-3 rounded-xl transition-all font-medium border border-transparent;
+  @apply w-full flex items-center space-x-3 p-2.5 rounded-xl transition-all text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/50;
+}
+.menuItemNested {
+  @apply py-2 px-2.5;
 }
 .menuActive {
-  @apply bg-yellow-500/30 text-yellow-100 font-semibold shadow-lg border border-yellow-500/20;
+  @apply bg-yellow-500/25 text-yellow-100 font-semibold;
 }
 .menuInactive {
   @apply text-white/70 hover:text-yellow-100 hover:bg-yellow-500/10 font-medium transition-all;
 }
+
+/* Compact user section */
 .userSection {
-  @apply border-t border-white/10 pt-4 flex-shrink-0;
+  @apply border-t border-white/10 pt-3 flex-shrink-0;
 }
-.profile {
-  @apply flex items-center space-x-3 p-3 rounded-xl mb-2;
+.compactUserRow {
+  @apply flex items-center gap-2;
+}
+.userAvatar {
+  @apply w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-white/70 flex-shrink-0;
+}
+.userInfo {
+  @apply flex-1 min-w-0 flex flex-col;
+}
+.userName {
+  @apply text-white text-sm font-medium truncate leading-tight;
+}
+.userRole {
+  @apply text-white/50 text-xs capitalize leading-tight;
 }
 .logoutButton {
-  @apply w-full flex items-center space-x-3 p-3 rounded-xl text-white/70 hover:text-white hover:bg-red-500/20 transition-all;
+  @apply flex-shrink-0;
+}
+
+/* Legacy styles kept for compatibility */
+.profile {
+  @apply flex items-center space-x-3 p-3 rounded-xl mb-2;
 }
 

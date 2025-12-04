@@ -18,14 +18,13 @@ const ClassesPage: React.FC = () => {
   const [subjectFilter, setSubjectFilter] = useState<'all' | string>('all');
   const [teacherFilter, setTeacherFilter] = useState<'all' | string>('all');
   const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'available' | 'full'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [showDisabled, setShowDisabled] = useState<boolean>(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('active');
   const [viewMode, setViewMode] = useState<ClassViewMode>('table');
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [hasDisabledClasses, setHasDisabledClasses] = useState<boolean>(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const previousFiltersRef = useRef({ searchTerm: '', subjectFilter: 'all', teacherFilter: 'all', availabilityFilter: 'all', showDisabled: false });
+  const previousFiltersRef = useRef({ searchTerm: '', subjectFilter: 'all', teacherFilter: 'all', availabilityFilter: 'all', statusFilter: 'active' as 'all' | 'active' | 'inactive' });
 
 
   // Load classes only once on mount with disabled global loading
@@ -62,8 +61,7 @@ const ClassesPage: React.FC = () => {
     subjectFilter !== 'all' ||
     teacherFilter !== 'all' ||
     availabilityFilter !== 'all' ||
-    statusFilter !== 'all' ||
-    showDisabled;
+    statusFilter !== 'active';
 
   const handleSearch = useCallback(async () => {
     // Only search if there are active filters
@@ -73,21 +71,20 @@ const ClassesPage: React.FC = () => {
         subjectId: subjectFilter !== 'all' ? subjectFilter : undefined,
         teacherId: teacherFilter !== 'all' ? teacherFilter : undefined,
         onlyWithAvailableSlots: availabilityFilter === 'available' || undefined,
-        includeDisabled: showDisabled
+        includeDisabled: statusFilter !== 'active'
       });
     } else {
       // Exit search mode when no filters are active
       setSearchMode(false);
     }
-  }, [hasActiveFilters, searchTerm, subjectFilter, teacherFilter, availabilityFilter, showDisabled, search, setSearchMode]);
+  }, [hasActiveFilters, searchTerm, subjectFilter, teacherFilter, availabilityFilter, statusFilter, search, setSearchMode]);
 
   const clearFilters = () => {
     setSearchTerm('');
     setSubjectFilter('all');
     setTeacherFilter('all');
     setAvailabilityFilter('all');
-    setStatusFilter('all');
-    setShowDisabled(false);
+    setStatusFilter('active');
     setSearchQuery('');
     // Exit search mode and reload all classes
     setSearchMode(false);
@@ -100,7 +97,9 @@ const ClassesPage: React.FC = () => {
     } else if (type === 'teacher') {
       setTeacherFilter(value as 'all' | string);
     } else if (type === 'availableSlots') {
-      setAvailabilityFilter(value === 'true' ? 'available' : 'all');
+      setAvailabilityFilter(value === 'available' ? 'available' : 'all');
+    } else if (type === 'status') {
+      setStatusFilter(value as 'all' | 'active' | 'inactive');
     }
   }, []);
 
@@ -110,7 +109,7 @@ const ClassesPage: React.FC = () => {
     if (!isInitialized) return;
     
     // Check if filters actually changed
-    const currentFilters = { searchTerm, subjectFilter, teacherFilter, availabilityFilter, showDisabled };
+    const currentFilters = { searchTerm, subjectFilter, teacherFilter, availabilityFilter, statusFilter };
     const filtersChanged = JSON.stringify(currentFilters) !== JSON.stringify(previousFiltersRef.current);
     
     if (!filtersChanged) return;
@@ -134,7 +133,7 @@ const ClassesPage: React.FC = () => {
             subjectId: subjectFilter !== 'all' ? subjectFilter : undefined,
             teacherId: teacherFilter !== 'all' ? teacherFilter : undefined,
             onlyWithAvailableSlots: availabilityFilter === 'available' || undefined,
-            includeDisabled: showDisabled
+            includeDisabled: statusFilter !== 'active'
           });
           
           // Ensure minimum loading duration for better UX
@@ -157,7 +156,7 @@ const ClassesPage: React.FC = () => {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchTerm, subjectFilter, teacherFilter, availabilityFilter, showDisabled, isInitialized, hasActiveFilters, search, setSearchMode]);
+  }, [searchTerm, subjectFilter, teacherFilter, availabilityFilter, statusFilter, isInitialized, hasActiveFilters, search, setSearchMode]);
 
   // Immediately exit search mode when no filters are active
   useEffect(() => {
@@ -175,8 +174,8 @@ const ClassesPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Class Management</h1>
-          <p className="text-white/70">Manage classes, schedules, and enrollment</p>
+          <h3 className="text-2xl font-bold text-white mb-2">Class Management</h3>
+          <p className=" text-md text-white/70">Manage classes, schedules, and enrollment</p>
         </div>
         <Button
           onClick={() => navigate('/classes/new')}
@@ -192,15 +191,14 @@ const ClassesPage: React.FC = () => {
         onSearchChange={setSearchTerm}
         subjectFilter={subjectFilter}
         teacherFilter={teacherFilter}
+        statusFilter={statusFilter}
         showOnlyWithAvailableSlots={availabilityFilter === 'available'}
-        showDisabled={showDisabled}
-        onShowDisabledChange={setShowDisabled}
         onFilterChange={handleFilterChange}
         clearFilters={clearFilters}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         isSearching={isSearching}
-        hasDisabledClasses={hasDisabledClasses}
+        hasActiveFilters={hasActiveFilters}
       />
 
       {classes.length === 0 ? (

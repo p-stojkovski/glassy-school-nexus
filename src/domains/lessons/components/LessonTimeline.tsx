@@ -340,13 +340,14 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       {Object.entries(groupedLessons).map(([monthKey, monthLessons], monthIndex) => (
         <motion.div
           key={monthKey}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: monthIndex * 0.1 }}
+          className="w-full"
         >
           {groupByMonth && monthKey !== 'All Lessons' && (
             <div className="mb-3">
@@ -356,40 +357,36 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
             </div>
           )}
 
-          <div className="space-y-3">
-            {monthLessons.map((lesson, lessonIndex) => {
-              const StatusIcon = getStatusIcon(lesson.statusName);
-              const isLastInGroup = lessonIndex === monthLessons.length - 1;
-              const isNextLesson = nextLesson?.id === lesson.id;
-              const isPastUnstarted = isPastUnstartedLesson(
-                lesson.statusName,
-                lesson.scheduledDate,
-                lesson.endTime
-              );
+          <div className="space-y-3 w-full">
+              {monthLessons.map((lesson, lessonIndex) => {
+                const StatusIcon = getStatusIcon(lesson.statusName);
+                const isNextLesson = nextLesson?.id === lesson.id;
+                const isPastUnstarted = isPastUnstartedLesson(
+                  lesson.statusName,
+                  lesson.scheduledDate,
+                  lesson.endTime
+                );
 
-              return (
-                <motion.div
-                  key={lesson.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: (monthIndex * 0.1) + (lessonIndex * 0.05) }}
-                  className="relative"
-                  data-lesson-id={lesson.id}
-                >
-                  <GlassCard 
-                    className={`p-3 hover:bg-white/5 transition-all duration-200 cursor-pointer ${
-                      isNextLesson ? 'border-l-4 border-blue-400 pl-2' : ''
-                    } ${isPastUnstarted ? 'border-l-4 border-amber-400 pl-2' : ''}`}
-                    onClick={() => onViewLesson?.(lesson)}
+                return (
+                  <motion.div
+                    key={lesson.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (monthIndex * 0.1) + (lessonIndex * 0.05) }}
+                    className="relative w-full"
+                    data-lesson-id={lesson.id}
                   >
+                    <GlassCard 
+                      className={`w-full py-2.5 px-3 hover:bg-white/5 transition-all duration-200 cursor-pointer ${
+                        isNextLesson ? 'border-l-4 border-blue-400 pl-2' : ''
+                      } ${isPastUnstarted ? 'border-l-4 border-amber-400 pl-2' : ''}`}
+                      onClick={() => onViewLesson?.(lesson)}
+                    >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4 flex-1">
                         {/* Timeline Indicator */}
-                        <div className="relative flex flex-col items-center">
-                          <div className={`w-3 h-3 rounded-full ${getTimelineIndicatorColor(lesson)} flex-shrink-0`} />
-                          {!isLastInGroup && (
-                            <div className="w-px h-8 bg-white/20 mt-2" />
-                          )}
+                        <div className="relative flex items-center justify-center w-3 flex-shrink-0">
+                          <div className={`w-3 h-3 rounded-full ${getTimelineIndicatorColor(lesson)} z-10`} />
                         </div>
 
                         {/* Lesson Content */}

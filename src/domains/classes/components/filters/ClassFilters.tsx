@@ -1,9 +1,10 @@
 import React from 'react';
 import GlassCard from '@/components/common/GlassCard';
-import ClearFiltersButton from '@/components/common/ClearFiltersButton';
 import SubjectsDropdown from '@/components/common/SubjectsDropdown';
 import SearchInput from '@/components/common/SearchInput';
-import { User, Loader2, AlertCircle, EyeOff, Eye } from 'lucide-react';
+import { Loader2, AlertCircle, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -20,15 +21,14 @@ interface ClassFiltersProps {
   onSearchChange: (term: string) => void;
   subjectFilter: 'all' | string;
   teacherFilter?: 'all' | string;
+  statusFilter: 'all' | 'active' | 'inactive';
   showOnlyWithAvailableSlots: boolean;
-  showDisabled: boolean;
-  onShowDisabledChange: (show: boolean) => void;
   onFilterChange: (type: string, value: string) => void;
   clearFilters?: () => void;
   viewMode?: ClassViewMode;
   onViewModeChange?: (mode: ClassViewMode) => void;
   isSearching?: boolean;
-  hasDisabledClasses?: boolean;
+  hasActiveFilters?: boolean;
 }
 
 const ClassFilters: React.FC<ClassFiltersProps> = ({
@@ -36,15 +36,12 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
   onSearchChange,
   subjectFilter,
   teacherFilter,
+  statusFilter,
   showOnlyWithAvailableSlots,
-  showDisabled,
-  onShowDisabledChange,
   onFilterChange,
   clearFilters,
-  viewMode = 'table',
-  onViewModeChange,
   isSearching = false,
-  hasDisabledClasses = false,
+  hasActiveFilters = false,
 }) => {
   const { teachers, isLoading: isLoadingTeachers, error: teachersError } = useTeachers();
 
@@ -57,57 +54,72 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
   // Only show teacher filter if teacherFilter prop is provided
   const showTeacherFilter = teacherFilter !== undefined;
 
+  // Common styles for filter containers
+  const filterContainerClass = "flex flex-col gap-1.5";
+  const labelClass = "text-xs font-medium text-white/70";
+  const selectTriggerClass = "h-9 bg-white/5 border-white/10 text-white text-sm hover:bg-white/10 focus:ring-1 focus:ring-white/20";
+
   return (
-    <GlassCard className="p-6">
-      <div className="flex flex-col lg:flex-row gap-4 items-start">
-        <div className="flex-1 flex flex-col lg:flex-row gap-4">
-          {/* Search Input */}
-          <div className="flex-1">
-            <SearchInput
-              value={searchTerm}
-              onChange={onSearchChange}
-              placeholder="Search classes by name, teacher, or subject..."
-              isSearching={isSearching}
-            />
-          </div>
+    <GlassCard className="p-4">
+      {/* Single row: Search + all filters */}
+      <div className="flex flex-col lg:flex-row gap-3 items-end">
+        {/* Search Input - grows to fill available space */}
+        <div className={`${filterContainerClass} w-full lg:flex-1 lg:min-w-0`}>
+          <Label htmlFor="class-search" className={labelClass}>
+            Search
+          </Label>
+          <SearchInput
+            value={searchTerm}
+            onChange={onSearchChange}
+            placeholder="Search by name, teacher, or subject..."
+            isSearching={isSearching}
+            className="h-9"
+          />
+        </div>
 
-          {/* Subject Filter */}
-          <div className="w-full lg:w-48">
-            <SubjectsDropdown
-              value={subjectFilter}
-              onValueChange={(value) => onFilterChange('subject', value)}
-              includeAllOption={true}
-              allOptionLabel="All Subjects"
-              showIcon={false}
-              className="bg-white/10 border-white/20"
-            />
-          </div>
+        {/* Subject Filter */}
+        <div className={`${filterContainerClass} w-full sm:w-1/4 lg:w-44 lg:flex-shrink-0`}>
+          <Label htmlFor="subject-filter" className={labelClass}>
+            Subject
+          </Label>
+          <SubjectsDropdown
+            value={subjectFilter}
+            onValueChange={(value) => onFilterChange('subject', value)}
+            includeAllOption={true}
+            allOptionLabel="All"
+            showIcon={false}
+            className={selectTriggerClass}
+          />
+        </div>
 
-          {/* Teacher Filter - only shown when teacherFilter prop is provided */}
-          {showTeacherFilter && (
-            <div className="w-full lg:w-48">
+        {/* Teacher Filter */}
+        {showTeacherFilter && (
+          <div className={`${filterContainerClass} w-full sm:w-1/4 lg:w-44 lg:flex-shrink-0`}>
+              <Label htmlFor="teacher-filter" className={labelClass}>
+                Teacher
+              </Label>
               <Select
                 value={teacherFilter}
                 onValueChange={(value) => onFilterChange('teacher', value)}
                 disabled={isLoadingTeachers}
               >
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectTrigger className={selectTriggerClass}>
                   {isLoadingTeachers ? (
                     <div className="flex items-center">
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
                       <span>Loading...</span>
                     </div>
                   ) : teachersError ? (
                     <div className="flex items-center text-red-400">
-                      <AlertCircle className="w-4 h-4 mr-2" />
+                      <AlertCircle className="w-3.5 h-3.5 mr-2" />
                       <span>Error</span>
                     </div>
                   ) : (
-                    <SelectValue placeholder="All Teachers" />
+                    <SelectValue placeholder="All" />
                   )}
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Teachers</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   {teachersError ? (
                     <SelectItem value="__error__" disabled>
                       Failed to load teachers
@@ -122,59 +134,74 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
                 </SelectContent>
               </Select>
             </div>
-          )}
-          {/* Show Disabled Classes Toggle - Premium style button */}
-          {hasDisabledClasses && (
-            <button
-              onClick={() => onShowDisabledChange(!showDisabled)}
-              className={`
-                group relative flex items-center gap-2.5 px-4 py-2.5 rounded-xl
-                transition-all duration-300 ease-out
-                ${showDisabled 
-                  ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/40 shadow-lg shadow-purple-500/10' 
-                  : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20'
-                }
-              `}
+        )}
+
+        {/* Status Filter */}
+        <div className={`${filterContainerClass} w-full sm:w-1/4 lg:w-40 lg:flex-shrink-0`}>
+            <Label htmlFor="status-filter" className={labelClass}>
+              Status
+            </Label>
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => onFilterChange('status', value)}
             >
-              {/* Icon with glow effect when active */}
-              <div className={`
-                relative transition-all duration-300
-                ${showDisabled ? 'text-purple-400' : 'text-white/50 group-hover:text-white/70'}
-              `}>
-                {showDisabled ? (
-                  <Eye className="w-4 h-4" />
-                ) : (
-                  <EyeOff className="w-4 h-4" />
-                )}
-                {showDisabled && (
-                  <div className="absolute inset-0 blur-md bg-purple-400/50 -z-10" />
-                )}
-              </div>
-              
-              {/* Label */}
-              <span className={`
-                text-sm font-medium transition-colors duration-300
-                ${showDisabled ? 'text-white' : 'text-white/60 group-hover:text-white/80'}
-              `}>
-                Disabled
-              </span>
-              
-              {/* Status indicator dot */}
-              <div className={`
-                w-2 h-2 rounded-full transition-all duration-300
-                ${showDisabled 
-                  ? 'bg-purple-400 shadow-lg shadow-purple-400/50' 
-                  : 'bg-white/30 group-hover:bg-white/40'
-                }
-              `} />
-            </button>
-          )}
+              <SelectTrigger className={selectTriggerClass}>
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="active">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    <span>Active</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="inactive">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                    <span>Inactive</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
         </div>
 
-        <div className="flex gap-2 lg:flex-shrink-0 w-full lg:w-auto">
-           <ClearFiltersButton onClick={clearFilters} />
+        {/* Enrollment Filter */}
+        <div className={`${filterContainerClass} w-full sm:w-1/4 lg:w-44 lg:flex-shrink-0`}>
+            <Label htmlFor="enrollment-filter" className={labelClass}>
+              Enrollment
+            </Label>
+            <Select
+              value={showOnlyWithAvailableSlots ? 'open' : 'all'}
+              onValueChange={(value) => onFilterChange('availableSlots', value === 'open' ? 'available' : 'all')}
+            >
+              <SelectTrigger className={selectTriggerClass}>
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="open">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    <span>Open slots</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
         </div>
-      </div>
+
+        {/* Clear Filters Button - always visible */}
+        <Button
+          onClick={clearFilters}
+          variant="ghost"
+          size="sm"
+          className="h-9 px-3 text-white/60 hover:text-white hover:bg-white/10 border border-white/10 shrink-0"
+          disabled={!hasActiveFilters}
+        >
+          <X className="w-3.5 h-3.5 mr-1.5" />
+          Clear
+        </Button>
+        </div>
     </GlassCard>
   );
 };

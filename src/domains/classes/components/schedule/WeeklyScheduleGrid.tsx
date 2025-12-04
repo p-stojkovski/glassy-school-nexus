@@ -18,9 +18,9 @@ const DAY_ABBREVIATIONS: Record<string, string> = {
   Sunday: 'Sun',
 };
 
-// Default time range: 8 AM to 6 PM (10 hours)
-const DEFAULT_START_HOUR = 8;
-const DEFAULT_END_HOUR = 18;
+// Default time range: 7 AM to 10 PM (15 hours)
+const DEFAULT_START_HOUR = 7;
+const DEFAULT_END_HOUR = 22;
 
 const parseTime = (timeStr: string): number => {
   const [hours, minutes] = timeStr.split(':').map(Number);
@@ -108,17 +108,17 @@ const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
   const getSlotStyle = (slot: ScheduleSlotDto) => {
     const startTime = parseTime(slot.startTime);
     const endTime = parseTime(slot.endTime);
-    
-    // Calculate top position as percentage
-    const topPercent = ((startTime - effectiveStartHour) / (effectiveEndHour - effectiveStartHour + 1)) * 100;
-    
-    // Calculate height as percentage
+
+    // Calculate top position in pixels
+    const topPosition = (startTime - effectiveStartHour) * 80;
+
+    // Calculate height in pixels
     const duration = endTime - startTime;
-    const heightPercent = (duration / (effectiveEndHour - effectiveStartHour + 1)) * 100;
-    
+    const heightPx = duration * 80;
+
     return {
-      top: `${topPercent}%`,
-      height: `${Math.max(heightPercent, 4)}%`, // Minimum 4% height for visibility
+      top: `${topPosition}px`,
+      height: `${Math.max(heightPx, 32)}px`, // Minimum 32px height for visibility
     };
   };
 
@@ -131,92 +131,110 @@ const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
 
   return (
     <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
-      {/* Header with day names */}
-      <div className="grid grid-cols-8 border-b border-white/[0.08]">
-        {/* Time column header */}
-        <div className="p-2 text-center text-white/40 text-xs font-medium border-r border-white/[0.05]">
-          Time
-        </div>
-        {/* Day headers */}
-        {DAYS_OF_WEEK.map((day) => {
-          const hasSlots = schedulesByDay[day].length > 0;
-          const isToday = day === currentDay;
-          return (
-            <div
-              key={day}
-              className={cn(
-                'p-2 text-center text-xs font-medium border-r border-white/[0.05] last:border-r-0',
-                isToday && 'bg-white/[0.05]',
-                hasSlots ? (isToday ? 'text-blue-300' : 'text-white') : 'text-white/40'
-              )}
-            >
-              <span className="hidden sm:inline">{day}</span>
-              <span className="sm:hidden">{DAY_ABBREVIATIONS[day]}</span>
-              {hasSlots && (
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mx-auto mt-1" />
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Grid body with time slots */}
-      <div className="grid grid-cols-8 relative" style={{ minHeight: '300px' }}>
-        {/* Time labels column */}
-        <div className="border-r border-white/[0.05] relative">
-          {HOURS.map((hour, idx) => (
-            <div
-              key={hour}
-              className="absolute w-full text-right pr-2 text-xs text-white/40"
-              style={{
-                top: `${(idx / (HOURS.length)) * 100}%`,
-                transform: 'translateY(-50%)',
-              }}
-            >
-              {formatHour(hour)}
-            </div>
-          ))}
-        </div>
-
-        {/* Day columns */}
-        {DAYS_OF_WEEK.map((day) => (
-          <div
-            key={day}
-            className="relative border-r border-white/[0.05] last:border-r-0"
-          >
-            {/* Hour grid lines */}
-            {HOURS.map((hour, idx) => (
+      <div className="grid grid-cols-8">
+        {/* Header with day names */}
+        <div className="col-span-8 grid grid-cols-8 border-b border-white/[0.08] sticky top-0 bg-white/5 z-10">
+          {/* Time column header */}
+          <div className="p-2 text-center text-white/40 text-xs font-medium border-r border-white/[0.08]">
+            Time
+          </div>
+          {/* Day headers */}
+          {DAYS_OF_WEEK.map((day) => {
+            const hasSlots = schedulesByDay[day].length > 0;
+            const isToday = day === currentDay;
+            return (
               <div
-                key={hour}
-                className="absolute w-full border-t border-white/[0.02]"
-                style={{ top: `${(idx / HOURS.length) * 100}%` }}
-              />
-            ))}
-
-            {/* Schedule slots */}
-            {schedulesByDay[day].map((slot, idx) => (
-              <div
-                key={`${slot.dayOfWeek}-${slot.startTime}-${idx}`}
+                key={day}
                 className={cn(
-                  'absolute left-1 right-1 rounded-md px-1 py-0.5 overflow-hidden cursor-pointer',
-                  'bg-blue-500/60 border border-blue-400/70 shadow-sm shadow-blue-500/20',
-                  'hover:bg-blue-500/80',
-                  'transition-all duration-200'
+                  'p-2 text-center text-xs font-medium border-r border-white/[0.08] last:border-r-0',
+                  isToday && 'bg-white/[0.05]',
+                  hasSlots ? (isToday ? 'text-blue-300' : 'text-white') : 'text-white/40'
                 )}
-                style={getSlotStyle(slot)}
-                onClick={() => onSlotClick?.(slot)}
-                title={`${slot.dayOfWeek} ${slot.startTime} - ${slot.endTime}`}
               >
-                <div className="text-xs text-white font-semibold truncate">
-                  {slot.startTime}
-                </div>
-                <div className="text-xs text-white/60 truncate hidden sm:block">
-                  {slot.endTime}
-                </div>
+                <span className="hidden sm:inline">{day}</span>
+                <span className="sm:hidden">{DAY_ABBREVIATIONS[day]}</span>
+                {hasSlots && (
+                  <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mx-auto mt-1" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Grid body with time slots - scrollable */}
+        <div className="col-span-8 max-h-[600px] overflow-y-auto">
+          <div className="grid grid-cols-8 relative" style={{ height: `${HOURS.length * 80}px` }}>
+            {/* Time labels column */}
+            <div className="border-r border-white/[0.08] relative">
+              {HOURS.map((hour, idx) => (
+                <React.Fragment key={hour}>
+                  {/* Hour label */}
+                  <div
+                    className="absolute w-full text-right pr-3 text-xs text-white/70 font-semibold"
+                    style={{
+                      top: `${idx * 80}px`,
+                    }}
+                  >
+                    {formatHour(hour)}
+                  </div>
+                  {/* 30-minute label */}
+                  <div
+                    className="absolute w-full text-right pr-3 text-[10px] text-white/30"
+                    style={{
+                      top: `${(idx * 80) + 40}px`,
+                    }}
+                  >
+                    :30
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+
+            {/* Day columns */}
+            {DAYS_OF_WEEK.map((day) => (
+              <div
+                key={day}
+                className="relative border-r border-white/[0.08] last:border-r-0"
+              >
+                {/* Hour and 30-minute grid lines */}
+                {HOURS.map((hour, idx) => (
+                  <React.Fragment key={hour}>
+                    {/* Hour line (more visible) */}
+                    <div
+                      className="absolute w-full border-t border-white/[0.08]"
+                      style={{ top: `${idx * 80}px` }}
+                    />
+                    {/* 30-minute line (less visible) */}
+                    <div
+                      className="absolute w-full border-t border-white/[0.04] border-dashed"
+                      style={{ top: `${(idx * 80) + 40}px` }}
+                    />
+                  </React.Fragment>
+                ))}
+
+                {/* Schedule slots */}
+                {schedulesByDay[day].map((slot, idx) => (
+                  <div
+                    key={`${slot.dayOfWeek}-${slot.startTime}-${idx}`}
+                    className={cn(
+                      'absolute left-1 right-1 rounded-md px-2 py-1.5 overflow-hidden cursor-pointer',
+                      'bg-blue-500/60 border border-blue-400/70 shadow-sm shadow-blue-500/20',
+                      'hover:bg-blue-500/80',
+                      'transition-all duration-200'
+                    )}
+                    style={getSlotStyle(slot)}
+                    onClick={() => onSlotClick?.(slot)}
+                    title={`${slot.dayOfWeek} ${slot.startTime} - ${slot.endTime}`}
+                  >
+                    <div className="text-xs text-white font-semibold truncate">
+                      {slot.startTime} - {slot.endTime}
+                    </div>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
