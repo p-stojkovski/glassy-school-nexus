@@ -37,14 +37,55 @@
   @apply bg-yellow-500/20 text-yellow-300;
 }
 
-/* Main app background */
+/* Main app background - calmer monochromatic slate */
 .app-background {
   background: linear-gradient(
     to bottom right,
-    rgb(30, 64, 175),
-    /* blue-800 */ rgb(107, 33, 168),
-    /* purple-800 */ rgb(4, 120, 87) /* green-700 */
+    rgb(15, 23, 42),   /* slate-900 */
+    rgb(30, 41, 59),   /* slate-800 */
+    rgb(15, 23, 42)    /* slate-900 */
   );
+}
+
+/* ================================
+   SEMANTIC COLOR SYSTEM
+   For consistent color usage across the app
+   ================================ */
+
+/* Primary action - main CTAs like Start Teaching, View Summary */
+.btn-primary-action {
+  @apply bg-blue-600/20 text-blue-300 hover:bg-blue-600/30 border-blue-600/30;
+}
+
+/* Warning/attention - needs documentation, alerts */
+.btn-warning-action {
+  @apply bg-amber-600/20 text-amber-300 hover:bg-amber-600/30 border-amber-600/30;
+}
+
+/* Neutral/secondary - routine states, secondary actions */
+.btn-neutral-action {
+  @apply bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border-white/10;
+}
+
+/* Status chip variants - calmer, less saturated */
+.chip-neutral {
+  @apply bg-slate-500/15 text-slate-300 border-slate-500/20;
+}
+
+.chip-success {
+  @apply bg-emerald-500/15 text-emerald-300 border-emerald-500/20;
+}
+
+.chip-warning {
+  @apply bg-amber-500/20 text-amber-300 border-amber-500/30;
+}
+
+.chip-error {
+  @apply bg-rose-500/15 text-rose-300 border-rose-500/20;
+}
+
+.chip-info {
+  @apply bg-sky-500/15 text-sky-300 border-sky-500/20;
 }
 
 /* Standardized Form Components */

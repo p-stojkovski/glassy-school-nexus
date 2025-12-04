@@ -1,84 +1,161 @@
+/* =============================================
+   SIDEBAR STYLES
+   
+   Design goals:
+   - Sidebar should visually recede behind main content
+   - Use darker, flatter background than content area
+   - Navigation items should be readable but quiet
+   - Active state clear but not competing with main content
+   - User section discoverable but secondary
+   ============================================= */
+
 .sidebar {
   @apply fixed left-0 top-0 h-full z-30 transition-all duration-300;
 }
+
 .collapsedWidth {
   @apply w-16;
 }
+
 .expandedWidth {
   @apply w-64;
 }
+
+/* Override glass container to be darker/flatter than main content */
 .glassContainer {
   @apply h-full rounded-none rounded-r-2xl p-4;
+  /* Darker, more opaque background to recede visually */
+  background: rgba(15, 23, 42, 0.95) !important; /* slate-900 at 95% opacity */
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  /* Subtle inner shadow for depth separation */
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
 }
+
 .header {
   @apply flex items-center justify-between mb-6;
 }
+
 .logo {
   @apply flex items-center space-x-3;
 }
+
 .logoImage {
   @apply w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden;
 }
+
 .collapseButton {
-  @apply p-2 rounded-lg hover:bg-white/10 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400/50;
+  @apply p-2 rounded-lg text-white/50 transition-colors;
+  @apply hover:bg-white/[0.06] hover:text-white/70;
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20;
 }
+
 .nav {
   @apply flex-1 flex flex-col min-h-0;
 }
 
-/* Navigation group styles */
+/* =============================================
+   NAVIGATION GROUP STYLES
+   ============================================= */
+
 .navGroup {
   @apply mb-0.5;
 }
+
+/* Group header - quiet by default, subtle when active */
 .groupHeader {
-  @apply w-full flex items-center justify-between p-2.5 rounded-lg text-white/50 hover:text-white/70 hover:bg-white/5 transition-all cursor-pointer text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/50;
+  @apply w-full flex items-center justify-between p-2.5 rounded-lg;
+  @apply text-white/40 text-sm cursor-pointer;
+  @apply hover:text-white/60 hover:bg-white/[0.04];
+  @apply transition-all duration-150;
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20;
 }
+
+/* Active group header - subtle highlight, not competing with main content */
 .groupHeaderActive {
-  @apply text-yellow-200/80 bg-yellow-500/5;
+  @apply text-white/70 bg-white/[0.04];
 }
+
 .groupLabel {
   @apply text-xs font-semibold uppercase tracking-wider;
 }
+
 .groupItems {
   @apply ml-6 mt-0.5 space-y-0.5 overflow-hidden;
 }
+
 .collapsedGroupItems {
   @apply hidden;
 }
 
-/* Menu item styles */
+/* =============================================
+   MENU ITEM STYLES
+   ============================================= */
+
 .menuItem {
-  @apply w-full flex items-center space-x-3 p-2.5 rounded-xl transition-all text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/50;
+  @apply w-full flex items-center space-x-3 p-2.5 rounded-lg;
+  @apply text-sm transition-all duration-150;
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20;
 }
+
 .menuItemNested {
   @apply py-2 px-2.5;
 }
+
+/* Active menu item - clear but calm indicator */
 .menuActive {
-  @apply bg-yellow-500/25 text-yellow-100 font-semibold;
-}
-.menuInactive {
-  @apply text-white/70 hover:text-yellow-100 hover:bg-yellow-500/10 font-medium transition-all;
+  @apply font-medium;
+  /* Use a subtle white highlight instead of yellow to not compete with main content */
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.95);
+  /* Left border indicator for clear active state */
+  box-shadow: inset 3px 0 0 rgba(148, 163, 184, 0.6); /* slate-400 */
 }
 
-/* Compact user section */
-.userSection {
-  @apply border-t border-white/10 pt-3 flex-shrink-0;
+/* Inactive menu item - quiet, readable */
+.menuInactive {
+  @apply text-white/50 font-normal;
+  @apply hover:text-white/75 hover:bg-white/[0.04];
+  @apply transition-all duration-150;
 }
+
+/* =============================================
+   USER SECTION - Secondary, discoverable
+   ============================================= */
+
+.userSection {
+  @apply pt-3 flex-shrink-0;
+  /* Softer separator line */
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 .compactUserRow {
   @apply flex items-center gap-2;
 }
+
+/* User avatar - subtle but visible */
 .userAvatar {
-  @apply w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-white/70 flex-shrink-0;
+  @apply w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.60);
 }
+
 .userInfo {
   @apply flex-1 min-w-0 flex flex-col;
 }
+
+/* User name - readable with good contrast */
 .userName {
-  @apply text-white text-sm font-medium truncate leading-tight;
+  @apply text-sm font-medium truncate leading-tight;
+  color: rgba(255, 255, 255, 0.80);
 }
+
+/* User role - secondary info */
 .userRole {
-  @apply text-white/50 text-xs capitalize leading-tight;
+  @apply text-xs capitalize leading-tight;
+  color: rgba(255, 255, 255, 0.45);
 }
+
 .logoutButton {
   @apply flex-shrink-0;
 }

@@ -282,37 +282,37 @@ const ClassPage: React.FC = () => {
         onCancelLesson={handleHeroCancelLesson}
       />
 
-      {/* Main Tabs - Minimal underline style */}
+      {/* Main Tabs - Clean underline style with calmer active state */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="bg-transparent border-b border-white/10 rounded-none p-0 h-auto gap-1">
+        <TabsList className="bg-transparent border-b border-white/[0.08] rounded-none p-0 h-auto gap-1">
           <TabsTrigger
             value="lessons"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white data-[state=active]:shadow-none text-white/70 data-[state=active]:text-white rounded-none px-4 py-2 font-medium"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
             Lessons
           </TabsTrigger>
           <TabsTrigger
             value="students"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white data-[state=active]:shadow-none text-white/70 data-[state=active]:text-white rounded-none px-4 py-2 font-medium"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
             Students
           </TabsTrigger>
           <TabsTrigger
             value="schedule"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white data-[state=active]:shadow-none text-white/70 data-[state=active]:text-white rounded-none px-4 py-2 font-medium relative"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors relative"
           >
             Schedule
             {tabsWithUnsavedChanges?.has('schedule') && (
-              <span className="ml-1.5 inline-block w-1.5 h-1.5 bg-orange-500 rounded-full align-middle" />
+              <span className="ml-1.5 inline-block w-1.5 h-1.5 bg-amber-400 rounded-full align-middle" />
             )}
           </TabsTrigger>
           <TabsTrigger
             value="info"
-            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white data-[state=active]:shadow-none text-white/70 data-[state=active]:text-white rounded-none px-4 py-2 font-medium relative"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors relative"
           >
             Details
             {tabsWithUnsavedChanges?.has('info') && (
-              <span className="ml-1.5 inline-block w-1.5 h-1.5 bg-orange-500 rounded-full align-middle" />
+              <span className="ml-1.5 inline-block w-1.5 h-1.5 bg-amber-400 rounded-full align-middle" />
             )}
           </TabsTrigger>
         </TabsList>

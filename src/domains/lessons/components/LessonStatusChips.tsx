@@ -21,29 +21,10 @@ const LessonStatusChips: React.FC<LessonStatusChipsProps> = ({ lesson }) => {
   const shouldFetch = lesson.statusName === 'Conducted' || isPastUnstarted;
   const { homework, attendance, loading } = useLessonStatusMetrics(lesson.id, shouldFetch);
 
-  // For past unstarted lessons, show the "Needs Documentation" chip
+  // For past unstarted lessons, don't show any chips
+  // The "Needs Documentation" badge in the main lesson row is sufficient
   if (isPastUnstarted) {
-    return (
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <Badge 
-          variant="outline"
-          className="bg-amber-500/15 text-amber-400 border-amber-500/40 text-xs flex items-center gap-1"
-        >
-          <AlertTriangle className="w-3 h-3" />
-          Needs Documentation
-        </Badge>
-        {/* Show what's missing */}
-        {!loading && !attendance.allMarked && (
-          <Badge 
-            variant="outline"
-            className="bg-red-500/10 text-red-400 border-red-500/30 text-xs flex items-center gap-1"
-          >
-            <Users className="w-3 h-3" />
-            No attendance
-          </Badge>
-        )}
-      </div>
-    );
+    return null;
   }
 
   // Don't show chips for non-conducted, non-past-unstarted lessons

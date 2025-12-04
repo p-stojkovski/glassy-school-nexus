@@ -242,7 +242,7 @@ const Sidebar: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-white font-semibold text-lg">
+                <span className="text-white/90 font-semibold text-lg">
                   Think English
                 </span>
               </motion.div>

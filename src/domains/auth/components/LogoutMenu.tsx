@@ -116,13 +116,12 @@ const LogoutMenu: React.FC<LogoutMenuProps> = ({
             size={size}
             disabled={isLoading}
             className={cn(
-              // Base glass morphism styles
-              'bg-white/5 border border-white/10 backdrop-blur-sm',
-              'hover:bg-white/10 hover:border-white/20',
-              'focus:bg-white/10 focus:border-white/20 focus:ring-2 focus:ring-orange-400/50',
-              'transition-all duration-200',
-              'text-white/70 hover:text-white',
-              'shadow-lg hover:shadow-xl',
+              // Subtle button that fits the darker sidebar - improved contrast
+              'bg-white/[0.04] border border-white/[0.08]',
+              'hover:bg-white/[0.08] hover:border-white/[0.12]',
+              'focus:bg-white/[0.08] focus:border-white/[0.12] focus:ring-2 focus:ring-white/20',
+              'transition-all duration-150',
+              'text-white/55 hover:text-white/80',
               // Disabled state
               'disabled:opacity-50 disabled:cursor-not-allowed',
               // Size-specific styles

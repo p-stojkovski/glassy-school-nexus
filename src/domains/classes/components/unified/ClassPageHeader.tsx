@@ -169,8 +169,8 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
           })}
         />
 
-        {/* Unified Header Strip - Compact single bar */}
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3">
+        {/* Unified Header Strip - Compact single bar with calmer styling */}
+        <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-xl px-4 py-3">
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             
             {/* Left: Teacher Name (class name is in breadcrumb) */}
@@ -191,14 +191,14 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
 
             {/* Center: Primary metadata (Year, Subject, Location, Capacity) */}
             <div className="flex flex-wrap items-center gap-3 flex-1 text-sm text-white/70">
-              {/* Academic Year Badge */}
+              {/* Academic Year Badge - subtle emphasis */}
               {classData.academicYearName && (
                 <>
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-500/20 border border-indigo-500/30 rounded-md">
-                    <Calendar className="w-3.5 h-3.5 text-indigo-400" />
-                    <span className="text-indigo-300 font-medium">{classData.academicYearName}</span>
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-500/15 border border-slate-500/20 rounded-md">
+                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-slate-300 font-medium">{classData.academicYearName}</span>
                   </div>
-                  <span className="text-white/20">|</span>
+                  <span className="text-white/15">|</span>
                 </>
               )}
               

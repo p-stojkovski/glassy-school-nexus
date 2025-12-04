@@ -144,7 +144,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
   };
 
   const getTimelineIndicatorColor = (lesson: LessonResponse) => {
-    // Check if this is a past unstarted lesson - show amber/warning color
+    // Check if this is a past unstarted lesson - show amber/warning color (clear attention)
     const isPastUnstarted = isPastUnstartedLesson(
       lesson.statusName,
       lesson.scheduledDate,
@@ -152,13 +152,14 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
     );
     if (isPastUnstarted) return 'bg-amber-400';
     
+    // Timeline dots use softer colors to reduce visual noise
     switch (lesson.statusName) {
-      case 'Scheduled': return 'bg-blue-400';
-      case 'Conducted': return 'bg-green-400';
-      case 'Cancelled': return 'bg-red-400';
-      case 'Make Up': return 'bg-purple-400';
-      case 'No Show': return 'bg-gray-400';
-      default: return 'bg-gray-400';
+      case 'Scheduled': return 'bg-slate-400';
+      case 'Conducted': return 'bg-emerald-400';
+      case 'Cancelled': return 'bg-rose-400';
+      case 'Make Up': return 'bg-violet-400';
+      case 'No Show': return 'bg-slate-500';
+      default: return 'bg-slate-500';
     }
   };
 
@@ -267,14 +268,14 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
     const cta = getPrimaryCTA(lesson);
     const Icon = cta.icon;
     
-    // Unified button styles with white text on subtle solid backgrounds:
+    // Unified button styles - calmer, consistent color hierarchy:
     // - 'blue' (primary): Standard actions like Start Teaching, View Summary
-    // - 'amber' (warning): Attention-required actions like Document Lesson
-    // - 'ghost': Neutral/secondary actions
+    // - 'amber' (warning): Attention-required actions like Document Lesson (stands out clearly)
+    // - 'ghost': Neutral/secondary actions (blends into background)
     const variantClasses = {
-      amber: 'bg-amber-600/20 text-white hover:bg-amber-600/30 border-amber-600/30',
-      blue: 'bg-blue-600/20 text-white hover:bg-blue-600/30 border-blue-600/30',
-      ghost: 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border-white/20',
+      amber: 'bg-amber-500/25 text-amber-200 hover:bg-amber-500/35 border-amber-500/40 font-medium',
+      blue: 'bg-sky-600/15 text-sky-300 hover:bg-sky-600/25 border-sky-600/25',
+      ghost: 'bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white/80 border-white/[0.08]',
     };
     
     const button = (
@@ -385,9 +386,9 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                     data-lesson-id={lesson.id}
                   >
                     <GlassCard 
-                      className={`w-full py-2.5 px-3 hover:bg-white/5 transition-all duration-200 cursor-pointer ${
-                        isNextLesson ? 'border-l-4 border-blue-400 pl-2' : ''
-                      } ${isPastUnstarted ? 'border-l-4 border-amber-400 pl-2' : ''}`}
+                      className={`w-full py-2.5 px-3 hover:bg-white/[0.04] transition-all duration-150 cursor-pointer ${
+                        isNextLesson ? 'border-l-2 border-sky-400/60 pl-2.5' : ''
+                      } ${isPastUnstarted ? 'border-l-2 border-amber-400/70 pl-2.5' : ''}`}
                       onClick={() => onViewLesson?.(lesson)}
                     >
                     <div className="flex items-center justify-between">
@@ -399,18 +400,18 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
 
                         {/* Lesson Content */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-1 flex-wrap">
+                          <div className={`flex items-center gap-3 flex-wrap ${lesson.statusName === 'Conducted' || (showTeacherName) || lesson.notes || lesson.cancellationReason ? 'mb-1' : ''}`}>
                             <div className="text-white font-medium text-sm">
                               {formatLessonDateTime(lesson)}
                             </div>
-                            {/* Show warning badge for past unstarted lessons */}
+                            {/* Show warning badge for past unstarted lessons - clear attention indicator */}
                             {isPastUnstarted && (
                               <Badge 
                                 variant="outline" 
-                                className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-xs flex items-center gap-1"
+                                className="bg-amber-500/25 text-amber-200 border-amber-500/35 text-xs flex items-center gap-1 font-medium"
                               >
                                 <AlertTriangle className="w-3 h-3" />
-                                Not Started
+                                Needs Documentation
                               </Badge>
                             )}
                             {/* Only show status badge for exceptions, not for regular Scheduled lessons */}
@@ -423,7 +424,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                             {lesson.makeupLessonId && (
                               <Badge 
                                 variant="outline" 
-                                className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs flex items-center gap-1"
+                                className="bg-violet-500/15 text-violet-300 border-violet-500/20 text-xs flex items-center gap-1"
                               >
                                 <Repeat className="w-3 h-3" />
                                 Has Makeup
@@ -432,7 +433,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                             {lesson.originalLessonId && (
                               <Badge 
                                 variant="outline" 
-                                className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs flex items-center gap-1"
+                                className="bg-violet-500/15 text-violet-300 border-violet-500/20 text-xs flex items-center gap-1"
                               >
                                 <RotateCcw className="w-3 h-3" />
                                 Makeup
@@ -441,15 +442,15 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                             {!isPastUnstarted && isUpcoming(lesson) && (
                               <Badge 
                                 variant="outline" 
-                                className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-xs"
+                                className="bg-slate-500/15 text-slate-300 border-slate-500/20 text-xs"
                               >
                                 Upcoming
                               </Badge>
                             )}
                           </div>
 
-                          {/* Status Chips for conducted lessons OR past unstarted lessons */}
-                          {(lesson.statusName === 'Conducted' || isPastUnstarted) && (
+                          {/* Status Chips for conducted lessons only */}
+                          {lesson.statusName === 'Conducted' && (
                             <div className="mb-2">
                               <LessonStatusChips lesson={lesson} />
                             </div>

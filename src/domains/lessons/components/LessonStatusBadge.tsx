@@ -18,31 +18,36 @@ interface LessonStatusBadgeProps {
   className?: string;
 }
 
+// Status colors follow semantic hierarchy:
+// - Neutral (Scheduled, No Show): Low visual weight, doesn't compete for attention
+// - Success (Conducted): Positive confirmation, subtle green
+// - Info (Make Up): Informational, subtle blue-purple
+// - Error (Cancelled): Problem state, uses rose for clear attention
 const statusConfig = {
   'Scheduled': {
     icon: Calendar,
     label: 'Scheduled',
-    colorClasses: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    colorClasses: 'bg-slate-500/15 text-slate-300 border-slate-500/20',
   },
   'Conducted': {
     icon: CheckCircle,
     label: 'Conducted',
-    colorClasses: 'bg-green-500/20 text-green-300 border-green-500/30',
+    colorClasses: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
   },
   'Cancelled': {
     icon: XCircle,
     label: 'Cancelled',
-    colorClasses: 'bg-red-500/20 text-red-300 border-red-500/30',
+    colorClasses: 'bg-rose-500/20 text-rose-300 border-rose-500/25',
   },
   'Make Up': {
     icon: RotateCcw,
     label: 'Make Up',
-    colorClasses: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    colorClasses: 'bg-violet-500/15 text-violet-300 border-violet-500/20',
   },
   'No Show': {
     icon: UserX,
     label: 'No Show',
-    colorClasses: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
+    colorClasses: 'bg-slate-500/15 text-slate-400 border-slate-500/20',
   },
 } as const;
 

@@ -22,11 +22,11 @@ const GlassCard: React.FC<GlassCardProps> = ({
     return (
       <div
         className={cn(
-          // Base glass card styles
-          'backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl',
-          // Hover styles
+          // Base glass card styles - softened for calmer appearance
+          'backdrop-blur-sm bg-white/[0.03] border border-white/[0.06] rounded-xl shadow-lg',
+          // Hover styles - subtle elevation
           hover &&
-            'hover:bg-white/10 hover:shadow-2xl transition-all duration-300 cursor-pointer',
+            'hover:bg-white/[0.05] hover:border-white/[0.1] hover:shadow-xl transition-all duration-200 cursor-pointer',
           // Clickable styles
           onClick && 'cursor-pointer',
           className
@@ -41,20 +41,20 @@ const GlassCard: React.FC<GlassCardProps> = ({
   return (
     <motion.div
       className={cn(
-        // Base glass card styles
-        'backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl shadow-xl',
-        // Hover styles
+        // Base glass card styles - softened for calmer appearance
+        'backdrop-blur-sm bg-white/[0.03] border border-white/[0.06] rounded-xl shadow-lg',
+        // Hover styles - subtle elevation
         hover &&
-          'hover:bg-white/10 hover:shadow-2xl transition-all duration-300 cursor-pointer',
+          'hover:bg-white/[0.05] hover:border-white/[0.1] hover:shadow-xl transition-all duration-200 cursor-pointer',
         // Clickable styles
         onClick && 'cursor-pointer',
         className
       )}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.2 }} // Faster transition
-      whileHover={hover ? { scale: 1.02, y: -2 } : undefined}
-      whileTap={onClick ? { scale: 0.98 } : undefined}
+      transition={{ duration: 0.15 }}
+      whileHover={hover ? { scale: 1.01, y: -1 } : undefined}
+      whileTap={onClick ? { scale: 0.99 } : undefined}
       onClick={onClick}
     >
       {children}

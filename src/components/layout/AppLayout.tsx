@@ -16,7 +16,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const isDashboard = location.pathname === '/';
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-gradient-to-br from-blue-800 via-purple-800 to-green-700">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="flex h-screen">
           <Sidebar />
           <div

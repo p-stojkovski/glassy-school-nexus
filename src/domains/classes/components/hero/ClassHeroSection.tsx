@@ -68,32 +68,32 @@ const ClassHeroSection: React.FC<ClassHeroSectionProps> = ({
     return formatTimeRangeWithoutSeconds(lesson.startTime, lesson.endTime);
   };
 
-  // Get status indicator config
+  // Get status indicator config - calmer, consistent color palette
   const getStatusConfig = () => {
     switch (lessonState) {
       case 'active':
         return {
-          dot: 'bg-green-500 animate-pulse',
+          dot: 'bg-emerald-400 animate-pulse',
           text: 'In Progress',
-          textColor: 'text-green-400'
+          textColor: 'text-emerald-300'
         };
       case 'upcoming_today':
         return {
-          dot: 'bg-blue-500',
+          dot: 'bg-sky-400',
           text: 'Today',
-          textColor: 'text-blue-400'
+          textColor: 'text-sky-300'
         };
       case 'upcoming_future':
         return {
-          dot: 'bg-indigo-500',
+          dot: 'bg-slate-400',
           text: 'Scheduled',
-          textColor: 'text-indigo-400'
+          textColor: 'text-slate-300'
         };
       case 'completed':
         return {
-          dot: 'bg-purple-500',
+          dot: 'bg-emerald-400',
           text: 'Complete',
-          textColor: 'text-purple-400'
+          textColor: 'text-emerald-300'
         };
       default:
         return null;
@@ -103,7 +103,7 @@ const ClassHeroSection: React.FC<ClassHeroSectionProps> = ({
   const statusConfig = getStatusConfig();
 
   return (
-    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl">
+    <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-xl">
       <div className="px-4 py-3">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           
@@ -131,7 +131,7 @@ const ClassHeroSection: React.FC<ClassHeroSectionProps> = ({
                     strokeWidth="4"
                     strokeDasharray={`${completionPercentage * 1.256} 125.6`}
                     strokeLinecap="round"
-                    className="text-green-500 transition-all duration-500"
+                    className="text-emerald-400 transition-all duration-500"
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">

@@ -470,13 +470,13 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Review Mode Banner */}
+      {/* Review Mode Banner - clear attention indicator, this should be the primary visual focus */}
       {reviewPastUnstarted && (
-        <div className="flex items-center gap-3 bg-amber-500/20 border border-amber-500/40 rounded-lg px-3 py-2">
-          <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0" />
-          <span className="text-sm text-amber-200 flex-1">
-            <span className="font-medium">Reviewing {pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'} needing documentation.</span>
-            <span className="ml-1 text-amber-200/80">
+        <div className="flex items-center gap-3 bg-amber-500/20 border border-amber-400/40 rounded-lg px-4 py-3 shadow-sm shadow-amber-500/10">
+          <AlertTriangle className="h-5 w-5 text-amber-400 flex-shrink-0" />
+          <span className="text-sm text-amber-100 flex-1">
+            <span className="font-semibold">Reviewing {pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'} needing documentation.</span>
+            <span className="ml-1 text-amber-200/70">
               Document each lesson by clicking "Document Lesson" to mark attendance and status.
             </span>
           </span>
@@ -484,20 +484,20 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
             variant="ghost"
             size="sm"
             onClick={handleExitReviewMode}
-            className="text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 flex-shrink-0 h-7 px-2 text-xs"
+            className="text-amber-100 hover:text-amber-50 hover:bg-amber-500/25 flex-shrink-0 h-7 px-3 text-xs font-medium"
           >
             Exit review
           </Button>
         </div>
       )}
 
-      {/* Past Unstarted Lessons Warning Banner - only show when not in review mode */}
+      {/* Past Unstarted Lessons Warning Banner - primary attention element on the page */}
       {!reviewPastUnstarted && pastUnstartedCount > 0 && (
-        <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
-          <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />
-          <span className="text-sm text-amber-200 flex-1">
-            <span className="font-medium">{pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson needs' : 'lessons need'} documentation.</span>
-            <span className="ml-1 text-amber-200/80">
+        <div className="flex items-center gap-3 bg-amber-500/15 border border-amber-400/35 rounded-lg px-4 py-3">
+          <AlertTriangle className="h-5 w-5 text-amber-400 flex-shrink-0" />
+          <span className="text-sm text-amber-100 flex-1">
+            <span className="font-semibold">{pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson needs' : 'lessons need'} documentation.</span>
+            <span className="ml-1 text-amber-200/70">
               These past lessons were never marked as conducted, cancelled, or no-show.
             </span>
           </span>
@@ -505,7 +505,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
             variant="ghost"
             size="sm"
             onClick={handleReviewNow}
-            className="text-amber-300 hover:text-amber-200 hover:bg-amber-500/20 flex-shrink-0 h-7 px-2 text-xs"
+            className="text-amber-200 hover:text-amber-100 hover:bg-amber-500/25 flex-shrink-0 h-7 px-3 text-xs font-medium"
           >
             Review now
             <ArrowRight className="w-3 h-3 ml-1" />
@@ -513,11 +513,11 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         </div>
       )}
 
-      {/* Schedule Warning Banner */}
+      {/* Schedule Warning Banner - informational, lower priority than documentation warnings */}
       {!scheduleAvailable && scheduleWarning && (
-        <div className="flex items-center gap-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2">
-          <AlertCircle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
-          <span className="text-sm text-yellow-200">{scheduleWarning}</span>
+        <div className="flex items-center gap-3 bg-slate-500/10 border border-slate-500/20 rounded-lg px-4 py-2.5">
+          <AlertCircle className="h-4 w-4 text-slate-400 flex-shrink-0" />
+          <span className="text-sm text-slate-300">{scheduleWarning}</span>
         </div>
       )}
 
