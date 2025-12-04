@@ -35,12 +35,12 @@ const ClassesPage: React.FC = () => {
     const active = years.find((y) => y.isActive);
     if (active) {
       setActiveYearId(active.id);
-      // Only set default filter if not already set by user
-      if (academicYearFilter === 'all' && !isInitialized) {
+      // Set default to active year if user hasn't chosen one yet
+      if (academicYearFilter === 'all') {
         setAcademicYearFilter(active.id);
       }
     }
-  }, [academicYearFilter, isInitialized]);
+  }, [academicYearFilter]);
 
   // Load classes only once on mount with disabled global loading
   useEffect(() => {
@@ -72,17 +72,17 @@ const ClassesPage: React.FC = () => {
     };
   }, []); // Empty dependency - run only once
 
-  // Determine if year filter differs from active year (user changed it)
-  const isYearFilterChanged = activeYearId 
-    ? academicYearFilter !== activeYearId 
-    : academicYearFilter !== 'all';
+  // Year filter is active when any specific year is selected
+  const hasYearFilter = academicYearFilter !== 'all';
+
+  const hasStatusFilter = statusFilter !== 'all';
 
   const hasActiveFilters = searchTerm.trim() !== '' ||
-    isYearFilterChanged ||
+    hasYearFilter ||
     subjectFilter !== 'all' ||
     teacherFilter !== 'all' ||
     availabilityFilter !== 'all' ||
-    statusFilter !== 'active';
+    hasStatusFilter;
 
   const handleSearch = useCallback(async () => {
     // Only search if there are active filters
@@ -230,6 +230,7 @@ const ClassesPage: React.FC = () => {
         isSearching={isSearching}
         hasActiveFilters={hasActiveFilters}
         onYearsLoaded={handleYearsLoaded}
+        activeYearId={activeYearId}
       />
 
       {classes.length === 0 ? (

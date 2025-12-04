@@ -1,20 +1,14 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Check, ChevronDown, Loader2, X } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
-import SubjectsDropdown from '@/components/common/SubjectsDropdown';
-import YearsDropdown from '@/components/common/YearsDropdown';
 import SearchInput from '@/components/common/SearchInput';
-import { Loader2, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTeachers } from '@/hooks/useTeachers';
+import { useSubjects } from '@/hooks/useSubjects';
+import { useAcademicYears } from '@/hooks/useAcademicYears';
 import { AcademicYear } from '@/domains/settings/types/academicCalendarTypes';
+import { cn } from '@/lib/utils';
 
 export type ClassViewMode = 'grid' | 'table';
 
@@ -33,6 +27,7 @@ interface ClassFiltersProps {
   isSearching?: boolean;
   hasActiveFilters?: boolean;
   onYearsLoaded?: (years: AcademicYear[]) => void;
+  activeYearId?: string | null;
 }
 
 const ClassFilters: React.FC<ClassFiltersProps> = ({
@@ -48,183 +43,334 @@ const ClassFilters: React.FC<ClassFiltersProps> = ({
   isSearching = false,
   hasActiveFilters = false,
   onYearsLoaded,
+  activeYearId = null,
 }) => {
   const { teachers, isLoading: isLoadingTeachers, error: teachersError } = useTeachers();
+  const { subjects, isLoading: isLoadingSubjects, error: subjectsError } = useSubjects();
+  const { years, isLoading: isLoadingYears, error: yearsError } = useAcademicYears();
 
-  // Sort teachers by name
-  const sortedTeachers = React.useMemo(
+  const [openFilter, setOpenFilter] = useState<string | null>(null);
+  const emittedYearsRef = useRef(false);
+
+  const sortedTeachers = useMemo(
     () => [...teachers].sort((a, b) => a.name.localeCompare(b.name)),
     [teachers]
   );
 
-  // Only show teacher filter if teacherFilter prop is provided
-  const showTeacherFilter = teacherFilter !== undefined;
+  const sortedSubjects = useMemo(
+    () => [...subjects].sort((a, b) => a.sortOrder - b.sortOrder),
+    [subjects]
+  );
 
-  // Common styles for filter containers
-  const filterContainerClass = "flex flex-col gap-1.5";
-  const labelClass = "text-xs font-medium text-white/70";
-  const selectTriggerClass = "h-9 bg-white/5 border-white/10 text-white text-sm hover:bg-white/10 focus:ring-1 focus:ring-white/20";
+  const sortedYears = useMemo(
+    () =>
+      [...years].sort((a, b) => {
+        if (a.isActive && !b.isActive) return -1;
+        if (!a.isActive && b.isActive) return 1;
+        return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+      }),
+    [years]
+  );
+
+  // Ensure parent receives loaded years (keeps default active year logic intact)
+  useEffect(() => {
+    if (!emittedYearsRef.current && sortedYears.length > 0) {
+      onYearsLoaded?.(sortedYears);
+      emittedYearsRef.current = true;
+    }
+  }, [sortedYears, onYearsLoaded]);
+
+  const closePopover = () => setOpenFilter(null);
+
+  const handleSelect = (type: string, value: string) => {
+    onFilterChange(type, value);
+    closePopover();
+  };
+
+  const yearLabel =
+    academicYearFilter === 'all'
+      ? 'All Years'
+      : sortedYears.find((y) => y.id === academicYearFilter)?.name || 'Year';
+
+  const subjectLabel =
+    subjectFilter === 'all'
+      ? 'All Subjects'
+      : sortedSubjects.find((s) => s.id === subjectFilter)?.name || 'Subject';
+
+  const teacherLabel =
+    teacherFilter && teacherFilter !== 'all'
+      ? sortedTeachers.find((t) => t.id === teacherFilter)?.name || 'Teacher'
+      : 'All Teachers';
+
+  const yearFilterIsActive = academicYearFilter !== 'all';
+
+  const activeChips: { key: string; label: string }[] = [];
+  if (searchTerm.trim()) activeChips.push({ key: 'search', label: `Search: ${searchTerm.trim()}` });
+  if (yearFilterIsActive) activeChips.push({ key: 'academicYear', label: `Academic Year: ${yearLabel}` });
+  if (subjectFilter !== 'all') activeChips.push({ key: 'subject', label: `Subject: ${subjectLabel}` });
+  if (teacherFilter && teacherFilter !== 'all') activeChips.push({ key: 'teacher', label: `Teacher: ${teacherLabel}` });
+  if (statusFilter !== 'all') {
+    const statusName =
+      statusFilter === 'inactive'
+        ? 'Inactive'
+        : 'Active';
+    activeChips.push({ key: 'status', label: `Status: ${statusName}` });
+  }
+  if (showOnlyWithAvailableSlots) activeChips.push({ key: 'availableSlots', label: 'Enrollment: Open slots' });
+
+  const clearSingleChip = (key: string) => {
+    switch (key) {
+      case 'search':
+        onSearchChange('');
+        break;
+      case 'academicYear':
+        onFilterChange('academicYear', activeYearId || 'all');
+        break;
+      case 'subject':
+        onFilterChange('subject', 'all');
+        break;
+      case 'teacher':
+        onFilterChange('teacher', 'all');
+        break;
+      case 'status':
+        onFilterChange('status', 'all');
+        break;
+      case 'availableSlots':
+        onFilterChange('availableSlots', 'all');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const renderOptions = (
+    options: { value: string; label: string; hint?: string }[],
+    selected: string,
+    onSelect: (value: string) => void,
+    isLoading = false,
+    error?: string,
+    emptyLabel = 'No options found'
+  ) => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center gap-2 px-3 py-2 text-sm text-white/70">
+          <Loader2 className="w-4 h-4 animate-spin text-cyan-300" />
+          Loading...
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="px-3 py-2 text-sm text-amber-200">
+          {error}
+        </div>
+      );
+    }
+
+    if (!options.length) {
+      return <div className="px-3 py-2 text-sm text-white/50">{emptyLabel}</div>;
+    }
+
+    return options.map((option) => (
+      <button
+        key={option.value}
+        onClick={() => onSelect(option.value)}
+        className={cn(
+          'w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-sm text-white transition-colors',
+          'hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40',
+          selected === option.value ? 'bg-white/10 border border-cyan-400/30 shadow-inner' : 'border border-transparent'
+        )}
+      >
+        <div className="flex flex-col">
+          <span>{option.label}</span>
+          {option.hint && <span className="text-xs text-white/50">{option.hint}</span>}
+        </div>
+        {selected === option.value && <Check className="w-4 h-4 text-cyan-300" />}
+      </button>
+    ));
+  };
+
+  const filterButtonClass =
+    'h-10 px-3 rounded-full border border-white/15 bg-white/5 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/30 transition-colors flex items-center gap-2';
 
   return (
-    <GlassCard className="p-4">
-      {/* Single row: Search + all filters */}
-      <div className="flex flex-col lg:flex-row gap-3 items-end">
-        {/* Search Input - grows to fill available space */}
-        <div className={`${filterContainerClass} w-full lg:flex-1 lg:min-w-0`}>
-          <Label htmlFor="class-search" className={labelClass}>
-            Search
-          </Label>
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
+        <div className="w-full lg:flex-1 lg:min-w-0">
           <SearchInput
             value={searchTerm}
             onChange={onSearchChange}
-            placeholder="Search by name, teacher, or subject..."
+            placeholder="Search by name, teacher, or subject"
             isSearching={isSearching}
-            className="h-9"
+            showStatusText={false}
+            className="h-11 rounded-full bg-white/10 border-white/20 text-white placeholder:text-white/70"
           />
         </div>
 
-        {/* Academic Year Filter */}
-        <div className={`${filterContainerClass} w-full sm:w-1/4 lg:w-44 lg:flex-shrink-0`}>
-          <Label htmlFor="year-filter" className={labelClass}>
-            Academic Year
-          </Label>
-          <YearsDropdown
-            value={academicYearFilter}
-            onValueChange={(value) => onFilterChange('academicYear', value)}
-            includeAllOption={true}
-            allOptionLabel="All Years"
-            showIcon={false}
-            className={selectTriggerClass}
-            onLoaded={onYearsLoaded}
-          />
-        </div>
+        <div className="w-full lg:w-auto flex flex-wrap items-center gap-2">
+          <Popover
+            open={openFilter === 'academicYear'}
+            onOpenChange={(open) => setOpenFilter(open ? 'academicYear' : null)}
+          >
+            <PopoverTrigger asChild>
+              <Button className={filterButtonClass} variant="outline">
+                Academic Year
+                <ChevronDown className="w-4 h-4 text-white/60" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
+              {renderOptions(
+                [
+                  { value: 'all', label: 'All Years' },
+                  ...sortedYears.map((year) => ({
+                    value: year.id,
+                    label: year.name,
+                    hint: year.isActive ? 'Active year' : undefined,
+                  })),
+                ],
+                academicYearFilter,
+                (value) => handleSelect('academicYear', value),
+                isLoadingYears,
+                yearsError || undefined,
+                'No academic years found'
+              )}
+            </PopoverContent>
+          </Popover>
 
-        {/* Subject Filter */}
-        <div className={`${filterContainerClass} w-full sm:w-1/4 lg:w-44 lg:flex-shrink-0`}>
-          <Label htmlFor="subject-filter" className={labelClass}>
-            Subject
-          </Label>
-          <SubjectsDropdown
-            value={subjectFilter}
-            onValueChange={(value) => onFilterChange('subject', value)}
-            includeAllOption={true}
-            allOptionLabel="All"
-            showIcon={false}
-            className={selectTriggerClass}
-          />
-        </div>
+          <Popover
+            open={openFilter === 'subject'}
+            onOpenChange={(open) => setOpenFilter(open ? 'subject' : null)}
+          >
+            <PopoverTrigger asChild>
+              <Button className={filterButtonClass} variant="outline">
+                Subject
+                <ChevronDown className="w-4 h-4 text-white/60" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-60 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
+              {renderOptions(
+                [
+                  { value: 'all', label: 'All Subjects' },
+                  ...sortedSubjects.map((subject) => ({
+                    value: subject.id,
+                    label: subject.name,
+                  })),
+                ],
+                subjectFilter,
+                (value) => handleSelect('subject', value),
+                isLoadingSubjects,
+                subjectsError || undefined,
+                'No subjects found'
+              )}
+            </PopoverContent>
+          </Popover>
 
-        {/* Teacher Filter */}
-        {showTeacherFilter && (
-          <div className={`${filterContainerClass} w-full sm:w-1/4 lg:w-44 lg:flex-shrink-0`}>
-              <Label htmlFor="teacher-filter" className={labelClass}>
-                Teacher
-              </Label>
-              <Select
-                value={teacherFilter}
-                onValueChange={(value) => onFilterChange('teacher', value)}
-                disabled={isLoadingTeachers}
-              >
-                <SelectTrigger className={selectTriggerClass}>
-                  {isLoadingTeachers ? (
-                    <div className="flex items-center">
-                      <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
-                      <span>Loading...</span>
-                    </div>
-                  ) : teachersError ? (
-                    <div className="flex items-center text-red-400">
-                      <AlertCircle className="w-3.5 h-3.5 mr-2" />
-                      <span>Error</span>
-                    </div>
-                  ) : (
-                    <SelectValue placeholder="All" />
-                  )}
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  {teachersError ? (
-                    <SelectItem value="__error__" disabled>
-                      Failed to load teachers
-                    </SelectItem>
-                  ) : (
-                    sortedTeachers.map((teacher) => (
-                      <SelectItem key={teacher.id} value={teacher.id}>
-                        {teacher.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+          {teacherFilter !== undefined && (
+            <Popover
+              open={openFilter === 'teacher'}
+              onOpenChange={(open) => setOpenFilter(open ? 'teacher' : null)}
+            >
+              <PopoverTrigger asChild>
+                <Button className={filterButtonClass} variant="outline">
+                  Teacher
+                  <ChevronDown className="w-4 h-4 text-white/60" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
+                {renderOptions(
+                  [
+                    { value: 'all', label: 'All Teachers' },
+                    ...sortedTeachers.map((teacher) => ({
+                      value: teacher.id,
+                      label: teacher.name,
+                    })),
+                  ],
+                  teacherFilter,
+                  (value) => handleSelect('teacher', value),
+                  isLoadingTeachers,
+                  teachersError || undefined,
+                  'No teachers found'
+                )}
+              </PopoverContent>
+            </Popover>
+          )}
+
+          <Popover
+            open={openFilter === 'status'}
+            onOpenChange={(open) => setOpenFilter(open ? 'status' : null)}
+          >
+            <PopoverTrigger asChild>
+              <Button className={filterButtonClass} variant="outline">
+                Status
+                <ChevronDown className="w-4 h-4 text-white/60" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-52 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
+              {renderOptions(
+                [
+                  { value: 'all', label: 'All' },
+                  { value: 'active', label: 'Active' },
+                  { value: 'inactive', label: 'Inactive' },
+                ],
+                statusFilter,
+                (value) => handleSelect('status', value)
+              )}
+            </PopoverContent>
+          </Popover>
+
+          <Popover
+            open={openFilter === 'enrollment'}
+            onOpenChange={(open) => setOpenFilter(open ? 'enrollment' : null)}
+          >
+            <PopoverTrigger asChild>
+              <Button className={filterButtonClass} variant="outline">
+                Enrollment
+                <ChevronDown className="w-4 h-4 text-white/60" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
+              {renderOptions(
+                [
+                  { value: 'all', label: 'All' },
+                  { value: 'open', label: 'Open slots' },
+                ],
+                showOnlyWithAvailableSlots ? 'open' : 'all',
+                (value) => handleSelect('availableSlots', value === 'open' ? 'available' : 'all')
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 min-h-[44px]">
+        {activeChips.map((chip) => (
+          <button
+            key={chip.key}
+            onClick={() => clearSingleChip(chip.key)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-400/15 border border-cyan-300/30 text-sm text-white hover:bg-cyan-400/25 transition-colors"
+          >
+            <span>{chip.label}</span>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        ))}
+
+        {activeChips.length === 0 && (
+          <span className="text-sm text-white/50">No filters applied</span>
         )}
 
-        {/* Status Filter */}
-        <div className={`${filterContainerClass} w-full sm:w-1/4 lg:w-40 lg:flex-shrink-0`}>
-            <Label htmlFor="status-filter" className={labelClass}>
-              Status
-            </Label>
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => onFilterChange('status', value)}
-            >
-              <SelectTrigger className={selectTriggerClass}>
-                <SelectValue placeholder="All" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="active">
-                  <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    <span>Active</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="inactive">
-                  <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                    <span>Inactive</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-        </div>
-
-        {/* Enrollment Filter */}
-        <div className={`${filterContainerClass} w-full sm:w-1/4 lg:w-44 lg:flex-shrink-0`}>
-            <Label htmlFor="enrollment-filter" className={labelClass}>
-              Enrollment
-            </Label>
-            <Select
-              value={showOnlyWithAvailableSlots ? 'open' : 'all'}
-              onValueChange={(value) => onFilterChange('availableSlots', value === 'open' ? 'available' : 'all')}
-            >
-              <SelectTrigger className={selectTriggerClass}>
-                <SelectValue placeholder="All" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="open">
-                  <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                    <span>Open slots</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-        </div>
-
-        {/* Clear Filters Button - always visible */}
-        <Button
-          onClick={clearFilters}
-          variant="ghost"
-          size="sm"
-          className="h-9 px-3 text-white/60 hover:text-white hover:bg-white/10 border border-white/10 shrink-0"
-          disabled={!hasActiveFilters}
-        >
-          <X className="w-3.5 h-3.5 mr-1.5" />
-          Clear
-        </Button>
-        </div>
-    </GlassCard>
+        {hasActiveFilters && clearFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-9 px-3 text-sm text-white/80 hover:text-white hover:bg-white/10 border border-transparent"
+          >
+            Clear All
+          </Button>
+        )}
+      </div>
+    </div>
   );
 };
 
