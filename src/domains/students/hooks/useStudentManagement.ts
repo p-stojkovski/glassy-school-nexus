@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useStudents } from './useStudents';
 import { Student } from '../studentsSlice';
 import {
@@ -74,25 +74,44 @@ export const useStudentManagement = () => {
   } = useStudents();
 
   // Local UI state
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [discountStatusFilter, setDiscountStatusFilter] = useState<'all' | 'with-discount' | 'no-discount'>('all');
-  const [discountTypeFilter, setDiscountTypeFilter] = useState<'all' | string>('all');
+  const [searchTerm, setSearchTermState] = useState('');
+  const [statusFilter, setStatusFilterState] = useState<'all' | 'active' | 'inactive'>('all');
+  const [teacherFilter, setTeacherFilterState] = useState<string>('all');
+  const [discountFilter, setDiscountFilterState] = useState<'all' | 'with-discount' | 'no-discount'>('all');
+  const [paymentFilter, setPaymentFilterState] = useState<'all' | 'has-obligations' | 'no-obligations'>('all');
+  const [discountStatusFilter, setDiscountStatusFilterState] = useState<'all' | 'with-discount' | 'no-discount'>('all');
+  const [discountTypeFilter, setDiscountTypeFilterState] = useState<'all' | string>('all');
+  const [teachers, setTeachers] = useState<{ id: string; name: string }[]>([]);
   const [viewMode, setViewMode] = useState<StudentViewMode>('table');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Refs for debounced search
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const previousFiltersRef = useRef({
+    searchTerm: '',
+    statusFilter: 'all' as 'all' | 'active' | 'inactive',
+    teacherFilter: 'all',
+    discountFilter: 'all' as 'all' | 'with-discount' | 'no-discount',
+    paymentFilter: 'all' as 'all' | 'has-obligations' | 'no-obligations',
+    discountStatusFilter: 'all' as 'all' | 'with-discount' | 'no-discount',
+    discountTypeFilter: 'all' as 'all' | string,
+  });
 
   // Filtered students for local search (when not using API search)
   const filteredStudents = useMemo(() => {
     if (isSearchMode) {
-      return searchResults;
+      return searchResults || [];
     }
     
+    if (!displayStudents) return [];
+    
     return displayStudents.filter((student) => {
-      if (!searchTerm && statusFilter === 'all' && discountStatusFilter === 'all' && discountTypeFilter === 'all') return true;
+      if (!searchTerm && statusFilter === 'all' && teacherFilter === 'all' && discountFilter === 'all' && paymentFilter === 'all' && discountStatusFilter === 'all' && discountTypeFilter === 'all') return true;
       
       const matchesSearch = !searchTerm || (
         student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -103,6 +122,20 @@ export const useStudentManagement = () => {
         (statusFilter === 'active' && student.isActive) ||
         (statusFilter === 'inactive' && !student.isActive);
 
+      const matchesTeacher = teacherFilter === 'all' || 
+        student.currentTeacherName === teachers.find(t => t.id === teacherFilter)?.name;
+
+      const matchesDiscount = discountFilter === 'all' ||
+        (discountFilter === 'with-discount' && student.hasDiscount) ||
+        (discountFilter === 'no-discount' && !student.hasDiscount);
+
+      // Payment filter: check frontend finance obligations
+      const matchesPayment = paymentFilter === 'all' || (() => {
+        // We'll need to get obligations from store in the component that uses this hook
+        // For now, return true to not break filtering
+        return true;
+      })();
+
       const matchesDiscountStatus = discountStatusFilter === 'all' ||
         (discountStatusFilter === 'with-discount' && student.hasDiscount) ||
         (discountStatusFilter === 'no-discount' && !student.hasDiscount);
@@ -110,9 +143,9 @@ export const useStudentManagement = () => {
       const matchesDiscountType = discountTypeFilter === 'all' || 
         student.discountTypeId === discountTypeFilter;
 
-      return matchesSearch && matchesStatus && matchesDiscountStatus && matchesDiscountType;
+      return matchesSearch && matchesStatus && matchesTeacher && matchesDiscount && matchesPayment && matchesDiscountStatus && matchesDiscountType;
     });
-  }, [displayStudents, searchResults, searchTerm, statusFilter, discountStatusFilter, discountTypeFilter, isSearchMode]);
+  }, [displayStudents, searchResults, searchTerm, statusFilter, teacherFilter, discountFilter, paymentFilter, discountStatusFilter, discountTypeFilter, isSearchMode, teachers]);
 
   // Load all students (loading handled by global interceptor)
   const loadStudents = useCallback(async () => {
@@ -290,100 +323,128 @@ export const useStudentManagement = () => {
     }
   }, [studentToDelete, deleteStudentApi]);
 
+  // Load teachers
+  const loadTeachers = useCallback(async () => {
+    try {
+      const { getAllTeachers } = await import('@/services/teacherApiService');
+      const teachersData = await getAllTeachers();
+      setTeachers(teachersData.map(t => ({ id: t.id, name: t.name })));
+    } catch (error) {
+      console.error('Failed to load teachers:', error);
+    }
+  }, []);
+
+  // Check if any filters are active (computed early for use in effects)
+  const hasActiveFilters = searchTerm !== '' || statusFilter !== 'all' || teacherFilter !== 'all' || discountFilter !== 'all' || paymentFilter !== 'all' || discountStatusFilter !== 'all' || discountTypeFilter !== 'all';
+
   const clearFilters = useCallback(() => {
-    setSearchTerm('');
-    setStatusFilter('all');
-    setDiscountStatusFilter('all');
-    setDiscountTypeFilter('all');
+    setSearchTermState('');
+    setStatusFilterState('all');
+    setTeacherFilterState('all');
+    setDiscountFilterState('all');
+    setPaymentFilterState('all');
+    setDiscountStatusFilterState('all');
+    setDiscountTypeFilterState('all');
     setSearchQuery('');
     setSearchMode(false);
-  }, []); // Redux dispatch functions are stable, no dependencies needed
+    loadStudents();
+  }, [loadStudents, setSearchQuery, setSearchMode]);
 
-  // Filter handlers with API integration
-  const handleSearchChange = useCallback((term: string) => {
-    setSearchTerm(term);
+  // Simple setters that just update state (debounced effect handles the search)
+  const setSearchTerm = useCallback((term: string) => {
+    setSearchTermState(term);
     setSearchQuery(term);
-    
-    // Build search params
-    const params: StudentSearchParams = {
-      searchTerm: term.trim() || undefined,
-      isActive: statusFilter === 'all' ? undefined : statusFilter === 'active',
-      hasDiscount: discountStatusFilter === 'all' ? undefined : discountStatusFilter === 'with-discount',
-      discountTypeId: discountTypeFilter === 'all' ? undefined : discountTypeFilter,
-      skip: 0,
-      take: pageSize,
-    };
+  }, [setSearchQuery]);
 
-    // If any filter is active, trigger API search
-    if (term.trim() || statusFilter !== 'all' || discountStatusFilter !== 'all' || discountTypeFilter !== 'all') {
-      searchStudentsApi(params);
-    } else {
+  const setStatusFilter = useCallback((status: 'all' | 'active' | 'inactive') => {
+    setStatusFilterState(status);
+  }, []);
+
+  const setTeacherFilter = useCallback((teacherId: string) => {
+    setTeacherFilterState(teacherId);
+  }, []);
+
+  const setDiscountFilter = useCallback((status: 'all' | 'with-discount' | 'no-discount') => {
+    setDiscountFilterState(status);
+  }, []);
+
+  const setPaymentFilter = useCallback((status: 'all' | 'has-obligations' | 'no-obligations') => {
+    setPaymentFilterState(status);
+  }, []);
+
+  const setDiscountStatusFilter = useCallback((status: 'all' | 'with-discount' | 'no-discount') => {
+    setDiscountStatusFilterState(status);
+  }, []);
+
+  const setDiscountTypeFilter = useCallback((typeId: 'all' | string) => {
+    setDiscountTypeFilterState(typeId);
+  }, []);
+
+  // Debounced filter effect - triggers search only when filters actually change
+  useEffect(() => {
+    // Skip if not initialized yet to prevent duplicate initial load
+    if (!isInitialized) return;
+
+    // Check if filters actually changed
+    const currentFilters = { searchTerm, statusFilter, teacherFilter, discountFilter, paymentFilter, discountStatusFilter, discountTypeFilter };
+    const filtersChanged = JSON.stringify(currentFilters) !== JSON.stringify(previousFiltersRef.current);
+
+    if (!filtersChanged) return;
+
+    previousFiltersRef.current = currentFilters;
+
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout for search or exit search mode
+    searchTimeoutRef.current = setTimeout(async () => {
+      if (hasActiveFilters) {
+        setIsSearching(true);
+        const startTime = Date.now();
+
+        try {
+          const params: StudentSearchParams = {
+            searchTerm: searchTerm.trim() || undefined,
+            isActive: statusFilter === 'all' ? undefined : statusFilter === 'active',
+            hasDiscount: discountFilter === 'all' ? undefined : discountFilter === 'with-discount',
+            discountTypeId: discountTypeFilter === 'all' ? undefined : discountTypeFilter,
+            teacherId: teacherFilter === 'all' ? undefined : teacherFilter,
+            skip: 0,
+            take: pageSize,
+          };
+
+          await searchStudentsApi(params);
+
+          // Ensure minimum loading duration for better UX
+          const elapsed = Date.now() - startTime;
+          const minDuration = 500; // 500ms minimum
+          if (elapsed < minDuration) {
+            await new Promise(resolve => setTimeout(resolve, minDuration - elapsed));
+          }
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchMode(false);
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm, statusFilter, teacherFilter, discountFilter, paymentFilter, discountStatusFilter, discountTypeFilter, isInitialized, hasActiveFilters, pageSize, searchStudentsApi, setSearchMode]);
+
+  // Immediately exit search mode when no filters are active
+  useEffect(() => {
+    if (isInitialized && !hasActiveFilters && isSearchMode) {
       setSearchMode(false);
     }
-  }, [statusFilter, discountStatusFilter, discountTypeFilter, pageSize, searchStudentsApi]);
-
-  const handleStatusFilterChange = useCallback((status: 'all' | 'active' | 'inactive') => {
-    setStatusFilter(status);
-    
-    // Build search params
-    const params: StudentSearchParams = {
-      searchTerm: searchTerm.trim() || undefined,
-      isActive: status === 'all' ? undefined : status === 'active',
-      hasDiscount: discountStatusFilter === 'all' ? undefined : discountStatusFilter === 'with-discount',
-      discountTypeId: discountTypeFilter === 'all' ? undefined : discountTypeFilter,
-      skip: 0,
-      take: pageSize,
-    };
-
-    // If any filter is active, trigger API search
-    if (searchTerm.trim() || status !== 'all' || discountStatusFilter !== 'all' || discountTypeFilter !== 'all') {
-      searchStudentsApi(params);
-    } else {
-      setSearchMode(false);
-    }
-  }, [searchTerm, discountStatusFilter, discountTypeFilter, pageSize, searchStudentsApi]);
-
-  const handleDiscountStatusFilterChange = useCallback((discountStatus: 'all' | 'with-discount' | 'no-discount') => {
-    setDiscountStatusFilter(discountStatus);
-    
-    // Build search params
-    const params: StudentSearchParams = {
-      searchTerm: searchTerm.trim() || undefined,
-      isActive: statusFilter === 'all' ? undefined : statusFilter === 'active',
-      hasDiscount: discountStatus === 'all' ? undefined : discountStatus === 'with-discount',
-      discountTypeId: discountTypeFilter === 'all' ? undefined : discountTypeFilter,
-      skip: 0,
-      take: pageSize,
-    };
-
-    // If any filter is active, trigger API search
-    if (searchTerm.trim() || statusFilter !== 'all' || discountStatus !== 'all' || discountTypeFilter !== 'all') {
-      searchStudentsApi(params);
-    } else {
-      setSearchMode(false);
-    }
-  }, [searchTerm, statusFilter, discountTypeFilter, pageSize, searchStudentsApi]);
-
-  const handleDiscountTypeFilterChange = useCallback((typeId: 'all' | string) => {
-    setDiscountTypeFilter(typeId);
-    
-    // Build search params
-    const params: StudentSearchParams = {
-      searchTerm: searchTerm.trim() || undefined,
-      isActive: statusFilter === 'all' ? undefined : statusFilter === 'active',
-      hasDiscount: discountStatusFilter === 'all' ? undefined : discountStatusFilter === 'with-discount',
-      discountTypeId: typeId === 'all' ? undefined : typeId,
-      skip: 0,
-      take: pageSize,
-    };
-
-    // If any filter is active, trigger API search
-    if (searchTerm.trim() || statusFilter !== 'all' || discountStatusFilter !== 'all' || typeId !== 'all') {
-      searchStudentsApi(params);
-    } else {
-      setSearchMode(false);
-    }
-  }, [searchTerm, statusFilter, discountStatusFilter, pageSize, searchStudentsApi]);
+  }, [isInitialized, hasActiveFilters, isSearchMode, setSearchMode]);
 
   const handleAdvancedSearch = useCallback((params: StudentSearchParams) => {
     searchStudentsApi(params);
@@ -415,7 +476,7 @@ export const useStudentManagement = () => {
       studentApiService
       
       try {
-        await Promise.all([loadStudents(), loadDiscountTypes()]);
+        await Promise.all([loadStudents(), loadDiscountTypes(), loadTeachers()]);
         if (mounted) {
           setIsInitialized(true);
         }
@@ -435,9 +496,6 @@ export const useStudentManagement = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Check if any filters are active
-  const hasActiveFilters = searchTerm !== '' || statusFilter !== 'all' || discountStatusFilter !== 'all' || discountTypeFilter !== 'all';
-
   return {
     // Data
     students: filteredStudents,
@@ -451,6 +509,7 @@ export const useStudentManagement = () => {
     // Loading states (only form-related, global loading handled by interceptor)
     loading,
     isLoading: loading.creating || loading.updating || loading.deleting,
+    isSearching,
     isInitialized,
     
     // Error states
@@ -459,8 +518,12 @@ export const useStudentManagement = () => {
     // Filter state
     searchTerm,
     statusFilter,
+    teacherFilter,
+    discountFilter,
+    paymentFilter,
     discountStatusFilter,
     discountTypeFilter,
+    teachers,
     hasActiveFilters,
     searchParams,
     
@@ -491,15 +554,17 @@ export const useStudentManagement = () => {
     handleSubmit,
     confirmDeleteStudent,
     clearFilters,
-    handleSearchChange,
     handleAdvancedSearch,
     
     // Filter handlers
-    setSearchTerm: handleSearchChange,
-    setStatusFilter: handleStatusFilterChange,
-    setDiscountStatusFilter: handleDiscountStatusFilterChange,
-    setDiscountTypeFilter: handleDiscountTypeFilterChange,
-    
+    setSearchTerm,
+    setStatusFilter,
+    setTeacherFilter,
+    setDiscountFilter,
+    setPaymentFilter,
+    setDiscountStatusFilter,
+    setDiscountTypeFilter,
+    clearFilters,
     // Pagination handlers
     handlePageChange,
     setPageSize,

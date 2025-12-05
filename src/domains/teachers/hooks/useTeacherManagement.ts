@@ -70,34 +70,25 @@ export const useTeacherManagement = () => {
   const [teacherToDelete, setTeacherToDelete] = useState<Teacher | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Filtered teachers for local search
+  // Display filtered teachers from API - no local filtering
   const filteredTeachers = useMemo(() => {
-    if (isSearchMode) {
-      return searchResults;
-    }
-    
-    return displayTeachers.filter((teacher) => {
-      if (!searchTerm && subjectFilter === 'all') return true;
-      
-      const matchesSearch = !searchTerm || (
-        teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        teacher.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        teacher.subjectName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      
-      const matchesSubject = subjectFilter === 'all' || teacher.subjectId === subjectFilter;
+    return displayTeachers;
+  }, [displayTeachers]);
 
-      return matchesSearch && matchesSubject;
-    });
-  }, [displayTeachers, searchResults, searchTerm, subjectFilter, isSearchMode]);
-
-  // Load all teachers (loading handled by global interceptor)
-  const loadTeachers = useCallback(async () => {
+  // Load all teachers with optional filters (loading handled by global interceptor)
+  const loadTeachers = useCallback(async (params?: TeacherSearchParams) => {
     clearError('fetch');
     
     try {
-      const teachersData = await getAllTeachers();
+      const teachersData = await getAllTeachers(params);
       setTeachers(teachersData);
+      
+      // If we have filters, set search mode
+      if (params && (params.searchTerm || params.subjectId)) {
+        setSearchMode(true);
+      } else {
+        setSearchMode(false);
+      }
     } catch (error) {
       const errorMessage = TeacherErrorHandlers.fetchAll(error);
       setError('fetch', errorMessage);
@@ -272,42 +263,45 @@ export const useTeacherManagement = () => {
     setSearchTerm('');
     setSubjectFilter('all');
     setSearchQuery('');
-    setSearchMode(false);
-  }, []); // Redux dispatch functions are stable, no dependencies needed
+    // Reload all teachers without filters
+    loadTeachers();
+  }, [loadTeachers]); // Redux dispatch functions are stable, no dependencies needed
 
-  // Filter handlers
+  // Filter handlers - now using loadTeachers with params
   const handleSearchChange = useCallback((term: string) => {
     setSearchTerm(term);
     setSearchQuery(term);
     
-    // If term is empty and no subject filter, exit search mode
-    if (!term.trim() && subjectFilter === 'all') {
-      setSearchMode(false);
-    } else if (term.trim() || subjectFilter !== 'all') {
-      // If there's a search term or subject filter, trigger API search
-      const params: TeacherSearchParams = {
-        searchTerm: term.trim() || undefined,
-        subjectId: subjectFilter !== 'all' ? subjectFilter : undefined
-      };
-      searchTeachersApi(params);
+    // Call loadTeachers with filters
+    const params: TeacherSearchParams = {
+      searchTerm: term.trim() || undefined,
+      subjectId: subjectFilter !== 'all' ? subjectFilter : undefined
+    };
+    
+    // If no filters active, load all teachers
+    if (!params.searchTerm && !params.subjectId) {
+      loadTeachers();
+    } else {
+      loadTeachers(params);
     }
-  }, [subjectFilter, searchTeachersApi]); // Keep only necessary dependencies
+  }, [subjectFilter, loadTeachers]); // Keep only necessary dependencies
   
   const handleSubjectFilterChange = useCallback((subjectId: string) => {
     setSubjectFilter(subjectId);
     
-    // If a specific subject is selected or search term exists, trigger API search
-    if (subjectId !== 'all' || searchTerm.trim()) {
-      const params: TeacherSearchParams = {
-        searchTerm: searchTerm.trim() || undefined,
-        subjectId: subjectId !== 'all' ? subjectId : undefined
-      };
-      searchTeachersApi(params);
+    // Call loadTeachers with filters
+    const params: TeacherSearchParams = {
+      searchTerm: searchTerm.trim() || undefined,
+      subjectId: subjectId !== 'all' ? subjectId : undefined
+    };
+    
+    // If no filters active, load all teachers
+    if (!params.searchTerm && !params.subjectId) {
+      loadTeachers();
     } else {
-      // If all filters are cleared, exit search mode
-      setSearchMode(false);
+      loadTeachers(params);
     }
-  }, [searchTerm, searchTeachersApi]); // Keep only necessary dependencies
+  }, [searchTerm, loadTeachers]); // Keep only necessary dependencies
 
   const handleAdvancedSearch = useCallback((params: TeacherSearchParams) => {
     searchTeachersApi(params);

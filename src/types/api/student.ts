@@ -39,6 +39,12 @@ export interface UpdateStudentRequest {
 }
 
 // Response Models
+export interface StudentScheduleSlot {
+  dayOfWeek: string;        // Day of the week (Monday, Tuesday, etc.)
+  startTime: string;        // Start time (HH:mm)
+  endTime: string;          // End time (HH:mm)
+}
+
 export interface StudentResponse {
   id: string;               // GUID as string
   firstName: string;        // Student's first name
@@ -59,6 +65,10 @@ export interface StudentResponse {
   createdAt: string;        // ISO 8601 date string
   updatedAt: string;        // ISO 8601 date string
   notes?: string;           // Additional notes
+  currentClassId?: string;  // Current class ID (if enrolled)
+  currentClassName?: string;// Current class name (if enrolled)
+  currentTeacherName?: string; // Current teacher name (if enrolled)
+  currentClassSchedule?: StudentScheduleSlot[]; // Current class schedule (if enrolled)
 }
 
 export interface StudentCreatedResponse {
@@ -89,6 +99,7 @@ export interface StudentSearchParams {
   isActive?: boolean;       // Filter by active status
   hasDiscount?: boolean;    // Filter by discount status
   discountTypeId?: string;  // Filter by specific discount type (GUID format)
+  teacherId?: string;       // Filter by teacher ID (students enrolled in classes taught by this teacher)
   notEnrolledInAnyClass?: boolean; // Filter to students not enrolled in any active class
   skip?: number;            // Pagination offset (default: 0)
   take?: number;            // Number of results to return (default: 50)

@@ -110,6 +110,10 @@ export class StudentApiService {
         params.append('discountTypeId', searchParams.discountTypeId);
       }
 
+      if (searchParams.teacherId) {
+        params.append('teacherId', searchParams.teacherId);
+      }
+
       if (searchParams.notEnrolledInAnyClass !== undefined) {
         params.append('notEnrolledInAnyClass', searchParams.notEnrolledInAnyClass.toString());
       }
@@ -125,9 +129,17 @@ export class StudentApiService {
       const queryString = params.toString();
       const endpoint = queryString ? `${StudentApiPaths.SEARCH}?${queryString}` : StudentApiPaths.SEARCH;
       
+      const response = await apiService.get<any>(endpoint);
       
-const response = await apiService.get<StudentSearchResponse>(endpoint);
-      return response;
+      // Normalize response - API returns 'items' but we expect 'students'
+      const normalizedResponse: StudentSearchResponse = {
+        students: response.items || response.students || [],
+        totalCount: response.totalCount ?? 0,
+        skip: response.skip ?? 0,
+        take: response.take ?? 50,
+      };
+      
+      return normalizedResponse;
     } catch (error: any) {
       if (error.status === StudentHttpStatus.BAD_REQUEST) {
         // Check if it's invalid discount type ID error

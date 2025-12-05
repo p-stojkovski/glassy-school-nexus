@@ -46,13 +46,30 @@ function normalizeListResponse<T>(raw: any): T[] {
 export class TeacherApiService {
   
   /**
-   * Get all teachers in the system
+   * Get all teachers in the system with optional filtering
+   * @param searchParams - Optional search parameters
    * @returns Promise<TeacherResponse[]>
    */
-  async getAllTeachers(): Promise<TeacherResponse[]> {
+  async getAllTeachers(searchParams?: TeacherSearchParams): Promise<TeacherResponse[]> {
     try {
+      let endpoint = TeacherApiPaths.BASE;
       
-const raw = await apiService.get<any>(TeacherApiPaths.BASE);
+      if (searchParams && (searchParams.searchTerm || searchParams.subjectId)) {
+        const params = new URLSearchParams();
+        
+        if (searchParams.searchTerm) {
+          params.append('searchTerm', searchParams.searchTerm);
+        }
+        
+        if (searchParams.subjectId) {
+          params.append('subjectId', searchParams.subjectId);
+        }
+        
+        const queryString = params.toString();
+        endpoint = `${endpoint}?${queryString}`;
+      }
+      
+const raw = await apiService.get<any>(endpoint);
       const teachers = normalizeListResponse<TeacherResponse>(raw);
       return teachers;
     } catch (error: any) {
@@ -286,7 +303,7 @@ const raw = await apiService.get<any>(endpoint);
 export const teacherApiService = new TeacherApiService();
 
 // Export convenience functions that match the pattern from the integration guide
-export const getAllTeachers = () => teacherApiService.getAllTeachers();
+export const getAllTeachers = (searchParams?: TeacherSearchParams) => teacherApiService.getAllTeachers(searchParams);
 
 export const getTeacherById = (id: string) => teacherApiService.getTeacherById(id);
 

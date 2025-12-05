@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useSelector } from 'react-redux';
 import {
   Table,
   TableBody,
@@ -20,37 +21,33 @@ import {
 import { Student } from '@/domains/students/studentsSlice';
 import GlassCard from '@/components/common/GlassCard';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  MoreVertical,
-  Edit,
-  Trash2,
-  Eye,
   Phone,
-  Mail,
   User,
-  Percent,
+  ChevronRight,
+  Mail,
+  Calendar,
+  MapPin,
+  GraduationCap,
+  Clock,
 } from 'lucide-react';
-import { getStudentStatusColor } from '@/utils/statusColors';
 import { formatDate } from '@/utils/dateFormatters';
+import { formatSchedule } from '@/utils/scheduleFormatter';
+import { DiscountIndicator, PaymentObligationIndicator } from '@/domains/classes/components/sections/PrivacyIndicator';
+import {
+  selectObligationsByStudentId,
+  selectStudentOutstandingBalance,
+} from '@/domains/finance/financeSlice';
+import { RootState } from '@/store';
+import { StudentDiscountInfo, StudentPaymentObligationInfo } from '@/types/api/class';
+import { ObligationStatus } from '@/types/enums';
 
 interface StudentTableProps {
   students: Student[];
   totalCount: number;
   currentPage: number;
   pageSize: number;
-  onEdit: (student: Student) => void;
-  onDelete: (student: Student) => void;
   onView: (student: Student) => void;
   onPageChange: (page: number) => void;
-  loading?: boolean;
 }
 
 const StudentTable: React.FC<StudentTableProps> = ({
@@ -58,14 +55,10 @@ const StudentTable: React.FC<StudentTableProps> = ({
   totalCount,
   currentPage,
   pageSize,
-  onEdit,
-  onDelete,
   onView,
   onPageChange,
-  loading = false,
 }) => {
   const totalPages = Math.ceil(totalCount / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
 
   const renderPaginationItems = () => {
     const items = [];
@@ -85,7 +78,6 @@ const StudentTable: React.FC<StudentTableProps> = ({
         );
       }
     } else {
-      // Show first page
       items.push(
         <PaginationItem key={1}>
           <PaginationLink
@@ -98,7 +90,6 @@ const StudentTable: React.FC<StudentTableProps> = ({
         </PaginationItem>
       );
 
-      // Show ellipsis if needed
       if (currentPage > 3) {
         items.push(
           <PaginationItem key="ellipsis1">
@@ -107,7 +98,6 @@ const StudentTable: React.FC<StudentTableProps> = ({
         );
       }
 
-      // Show current page and surrounding pages
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
 
@@ -125,7 +115,6 @@ const StudentTable: React.FC<StudentTableProps> = ({
         );
       }
 
-      // Show ellipsis if needed
       if (currentPage < totalPages - 2) {
         items.push(
           <PaginationItem key="ellipsis2">
@@ -134,7 +123,6 @@ const StudentTable: React.FC<StudentTableProps> = ({
         );
       }
 
-      // Show last page
       if (totalPages > 1) {
         items.push(
           <PaginationItem key={totalPages}>
@@ -153,16 +141,54 @@ const StudentTable: React.FC<StudentTableProps> = ({
     return items;
   };
 
+  // Get all obligations and balances from finance slice
+  const allObligations = useSelector((state: RootState) => state.finance.obligations);
+  const allPayments = useSelector((state: RootState) => state.finance.payments);
+
+  // Helper to build discount info from student data
+  const buildDiscountInfo = (student: Student): StudentDiscountInfo | null => {
+    if (!student.hasDiscount) return null;
+    
+    return {
+      hasDiscount: true,
+      discountTypeName: student.discountTypeName || null,
+      discountAmount: student.discountAmount || null,
+    };
+  };
+
+  // Helper to build payment obligation info from finance slice
+  const buildPaymentObligationInfo = (studentId: string): StudentPaymentObligationInfo | null => {
+    const obligations = allObligations.filter(o => o.studentId === studentId);
+    const payments = allPayments.filter(p => p.studentId === studentId);
+
+    const totalObligations = obligations.reduce((sum, o) => sum + o.amount, 0);
+    const totalPayments = payments.reduce((sum, p) => sum + p.amount, 0);
+    const outstandingBalance = totalObligations - totalPayments;
+
+    const hasPending = outstandingBalance > 0;
+    if (!hasPending) return null;
+
+    const pendingCount = obligations.filter(
+      (o) => o.status !== ObligationStatus.Paid
+    ).length;
+
+    return {
+      hasPendingObligations: true,
+      pendingCount,
+      totalPendingAmount: outstandingBalance,
+    };
+  };
+
   return (
-    <motion.div 
-      layout 
-      initial={{ opacity: 0, y: 20 }} 
-      animate={{ opacity: 1, y: 0 }} 
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
       className="space-y-4"
     >
-      <GlassCard className="overflow-hidden">
+      <GlassCard className="overflow-visible">
         <Table>
           <TableHeader>
             <TableRow className="border-white/20 hover:bg-white/5">
@@ -170,141 +196,187 @@ const StudentTable: React.FC<StudentTableProps> = ({
                 Student
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
-                Contact
+                Personal
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
-                Enrollment Date
+                Parent/Guardian
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
-                Discount
+                Class
               </TableHead>
-              <TableHead className="text-white/90 font-semibold text-right">
-                Actions
+              <TableHead className="text-white/90 font-semibold">
+                Schedule
+              </TableHead>
+              <TableHead className="text-white/90 font-semibold text-center">
+                Billing
+              </TableHead>
+              <TableHead className="w-12">
+                {/* Navigation indicator column */}
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {students.map((student) => (
-              <TableRow
-                key={student.id}
-                className="border-white/10 hover:bg-white/5"
-              >
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div>
+            {students.map((student) => {
+              const discountInfo = buildDiscountInfo(student);
+              const paymentInfo = buildPaymentObligationInfo(student.id);
+
+              return (
+                <TableRow
+                  key={student.id}
+                  onClick={() => onView(student)}
+                  className="border-white/10 hover:bg-white/10 cursor-pointer transition-colors group"
+                >
+                  {/* Student name + status + phone + join date */}
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <div className="font-medium text-white">
+                        <span className="font-medium text-white">
                           {student.fullName}
-                        </div>
-                        <Badge
-                          className={`${getStudentStatusColor(student.isActive ? 'active' : 'inactive')} border text-xs`}
-                        >
-                          {student.isActive ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-white/60">
-                        {student.email}
-                      </div>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm space-y-1">
-                    {student.phone && (
-                      <div className="flex items-center gap-2 text-white/80">
-                        <Phone className="w-3 h-3 text-white/60" />
-                        <span>{student.phone}</span>
-                      </div>
-                    )}
-                    {student.parentContact && (
-                      <div className="flex items-center gap-2 text-white/60">
-                        <User className="w-3 h-3" />
-                        <span className="truncate max-w-[180px]">
-                          {student.parentContact}
                         </span>
-                      </div>
-                    )}
-                    {student.parentEmail && (
-                      <div className="flex items-center gap-2 text-white/60">
-                        <Mail className="w-3 h-3" />
-                        <span className="truncate max-w-[180px]">
-                          {student.parentEmail}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm text-white/80">
-                    {formatDate(student.enrollmentDate)}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {student.hasDiscount && student.discountTypeName ? (
-                    <div className="flex items-center gap-2">
-                      <Percent className="w-4 h-4 text-yellow-400" />
-                      <div className="text-sm">
-                        <div className="text-yellow-400 font-medium">
-                          {student.discountTypeName}
-                        </div>
-                        {student.discountAmount > 0 && (
-                          <div className="text-yellow-300 text-xs">
-                            {student.discountAmount} MKD
-                          </div>
+                        {!student.isActive && (
+                          <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded">
+                            Inactive
+                          </span>
                         )}
                       </div>
+                      {student.phone && (
+                        <span className="text-xs text-white/70">
+                          {student.phone}
+                        </span>
+                      )}
+                      <span className="text-xs text-white/50">
+                        Joined {formatDate(student.enrollmentDate)}
+                      </span>
                     </div>
-                  ) : (
-                    <span className="text-white/50 text-sm">No discount</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-end">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8 p-0"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="bg-gray-900/95 border-white/20 text-white"
-                      >
-                        <DropdownMenuItem
-                          onClick={() => onView(student)}
-                          className="text-blue-400 focus:text-blue-300 focus:bg-blue-500/10 cursor-pointer"
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </DropdownMenuItem>
+                  </TableCell>
 
-                        <DropdownMenuItem
-                          onClick={() => onEdit(student)}
-                          className="text-white/70 focus:text-white focus:bg-white/10 cursor-pointer"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit Student
-                        </DropdownMenuItem>
+                  {/* Personal details: DOB and Place of Birth */}
+                  <TableCell>
+                    <div className="text-sm space-y-1">
+                      {student.dateOfBirth ? (
+                        <span className="text-white/80">
+                          {formatDate(student.dateOfBirth)}
+                        </span>
+                      ) : (
+                        <span className="text-white/40">—</span>
+                      )}
+                      {student.placeOfBirth ? (
+                        <span className="text-white/80 truncate max-w-[120px] block">
+                          {student.placeOfBirth}
+                        </span>
+                      ) : (
+                        <span className="text-white/40">—</span>
+                      )}
+                    </div>
+                  </TableCell>
 
-                        <DropdownMenuSeparator className="bg-white/20" />
+                  {/* Parent/Guardian: parent contact, parent email */}
+                  <TableCell>
+                    <div className="text-sm space-y-1">
+                      {student.parentContact ? (
+                        <span className="text-white/70 truncate max-w-[150px] block">
+                          {student.parentContact}
+                        </span>
+                      ) : (
+                        <span className="text-white/40">—</span>
+                      )}
+                      {student.parentEmail ? (
+                        <span className="text-white/70 truncate max-w-[150px] block">
+                          {student.parentEmail}
+                        </span>
+                      ) : (
+                        <span className="text-white/40">—</span>
+                      )}
+                    </div>
+                  </TableCell>
 
-                        <DropdownMenuItem
-                          onClick={() => onDelete(student)}
-                          className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Student
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                  {/* Class: class name and teacher name */}
+                  <TableCell>
+                    {student.currentClassId ? (
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium text-white">
+                          {student.currentClassName}
+                        </span>
+                        {student.currentTeacherName && (
+                          <span className="text-xs text-white/60">
+                            {student.currentTeacherName}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-white/40">Not enrolled</span>
+                    )}
+                  </TableCell>
+
+                  {/* Schedule: formatted schedule or "Not scheduled" */}
+                  <TableCell>
+                    {student.currentClassSchedule &&
+                    student.currentClassSchedule.length > 0 ? (
+                      <div className="flex flex-col gap-1.5">
+                        {(() => {
+                          // Group schedule by time slots
+                          const timeSlots = new Map<string, string[]>();
+                          student.currentClassSchedule.forEach((slot) => {
+                            // Format time without seconds
+                            const startTime = slot.startTime.substring(0, 5);
+                            const endTime = slot.endTime.substring(0, 5);
+                            const timeSlot = `${startTime}-${endTime}`;
+                            
+                            // Abbreviate day
+                            const dayAbbr = slot.dayOfWeek.substring(0, 3);
+                            
+                            if (!timeSlots.has(timeSlot)) {
+                              timeSlots.set(timeSlot, []);
+                            }
+                            timeSlots.get(timeSlot)!.push(dayAbbr);
+                          });
+
+                          return Array.from(timeSlots.entries()).map(
+                            ([timeSlot, days], index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-1.5 text-xs"
+                              >
+                                <span className="text-white/90 font-medium">
+                                  {days.join(', ')}
+                                </span>
+                                <span className="text-white/50">•</span>
+                                <span className="text-white/70">
+                                  {timeSlot}
+                                </span>
+                              </div>
+                            )
+                          );
+                        })()}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-white/40">
+                        {student.currentClassId
+                          ? 'No schedule'
+                          : 'Not enrolled'}
+                      </span>
+                    )}
+                  </TableCell>
+
+                  {/* Billing: Discount and Payment icons side by side */}
+                  <TableCell>
+                    <div className="flex items-center justify-center gap-2">
+                      <DiscountIndicator discount={discountInfo} />
+                      <PaymentObligationIndicator
+                        paymentObligation={paymentInfo}
+                      />
+                    </div>
+                  </TableCell>
+
+                  {/* Navigation chevron */}
+                  <TableCell>
+                    <div className="flex justify-end">
+                      <ChevronRight className="h-5 w-5 text-white/40 group-hover:text-white/70 transition-colors" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </GlassCard>
@@ -344,13 +416,10 @@ const StudentTable: React.FC<StudentTableProps> = ({
       )}
 
       <div className="text-center text-white/60 text-sm">
-        Showing {startIndex + 1} to{' '}
-        {Math.min(startIndex + pageSize, totalCount)} of{' '}
-        {totalCount} students
+        {totalCount} {totalCount === 1 ? 'student' : 'students'}
       </div>
     </motion.div>
   );
 };
 
 export default StudentTable;
-

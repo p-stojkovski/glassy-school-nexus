@@ -1,35 +1,25 @@
-import React from 'react';
-import { Filter, Percent, Grid, List } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import GlassCard from '@/components/common/GlassCard';
-import { DiscountTypeDto } from '@/types/api/student';
-import { StudentViewMode } from '@/domains/students/hooks/useStudentManagement';
-import ClearFiltersButton from '@/components/common/ClearFiltersButton';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import SearchInput from '@/components/common/SearchInput';
+import { cn } from '@/lib/utils';
 
 interface StudentFiltersProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   statusFilter: 'all' | 'active' | 'inactive';
   setStatusFilter: (filter: 'all' | 'active' | 'inactive') => void;
-  discountStatusFilter: 'all' | 'with-discount' | 'no-discount';
-  setDiscountStatusFilter: (filter: 'all' | 'with-discount' | 'no-discount') => void;
-  discountTypeFilter: 'all' | string;
-  setDiscountTypeFilter: (filter: 'all' | string) => void;
+  teacherFilter: string;
+  setTeacherFilter: (filter: string) => void;
+  discountFilter: 'all' | 'with-discount' | 'no-discount';
+  setDiscountFilter: (filter: 'all' | 'with-discount' | 'no-discount') => void;
+  paymentFilter: 'all' | 'has-obligations' | 'no-obligations';
+  setPaymentFilter: (filter: 'all' | 'has-obligations' | 'no-obligations') => void;
+  teachers: { id: string; name: string }[];
   clearFilters: () => void;
-  discountTypes: DiscountTypeDto[];
   hasActiveFilters?: boolean;
-  viewMode?: StudentViewMode;
-  setViewMode?: (mode: StudentViewMode) => void;
-  isSearchMode?: boolean;
-  loading?: boolean;
+  isSearching?: boolean;
 }
 
 const StudentFilters: React.FC<StudentFiltersProps> = ({
@@ -37,136 +27,240 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
   setSearchTerm,
   statusFilter,
   setStatusFilter,
-  discountStatusFilter,
-  setDiscountStatusFilter,
-  discountTypeFilter,
-  setDiscountTypeFilter,
+  teacherFilter,
+  setTeacherFilter,
+  discountFilter,
+  setDiscountFilter,
+  paymentFilter,
+  setPaymentFilter,
+  teachers,
   clearFilters,
-  discountTypes,
   hasActiveFilters = false,
-  viewMode = 'grid',
-  setViewMode,
-  isSearchMode = false,
-  loading = false,
+  isSearching = false,
 }) => {
+  const [openFilter, setOpenFilter] = useState<string | null>(null);
+
+  const closePopover = () => setOpenFilter(null);
+
+  const handleStatusSelect = (value: string) => {
+    setStatusFilter(value as 'all' | 'active' | 'inactive');
+    closePopover();
+  };
+
+  const handleTeacherSelect = (value: string) => {
+    setTeacherFilter(value);
+    closePopover();
+  };
+
+  const handleDiscountSelect = (value: string) => {
+    setDiscountFilter(value as 'all' | 'with-discount' | 'no-discount');
+    closePopover();
+  };
+
+  const handlePaymentSelect = (value: string) => {
+    setPaymentFilter(value as 'all' | 'has-obligations' | 'no-obligations');
+    closePopover();
+  };
+
+  // Labels for display
+  const statusLabel = statusFilter === 'all' ? 'All' : statusFilter === 'active' ? 'Active' : 'Inactive';
+  const teacherLabel = teacherFilter === 'all' ? 'All' : teachers.find(t => t.id === teacherFilter)?.name || 'Unknown';
+  const discountLabel = discountFilter === 'all' ? 'All' : discountFilter === 'with-discount' ? 'With Discount' : 'No Discount';
+  const paymentLabel = paymentFilter === 'all' ? 'All' : paymentFilter === 'has-obligations' ? 'Has Obligations' : 'No Obligations';
+
+  // Build active filter chips
+  const activeChips: { key: string; label: string }[] = [];
+  if (searchTerm.trim()) activeChips.push({ key: 'search', label: `Search: ${searchTerm.trim()}` });
+  if (statusFilter !== 'all') activeChips.push({ key: 'status', label: `Status: ${statusLabel}` });
+  if (teacherFilter !== 'all') activeChips.push({ key: 'teacher', label: `Teacher: ${teacherLabel}` });
+  if (discountFilter !== 'all') activeChips.push({ key: 'discount', label: `Discount: ${discountLabel}` });
+  if (paymentFilter !== 'all') activeChips.push({ key: 'payment', label: `Payment: ${paymentLabel}` });
+
+  const clearSingleChip = (key: string) => {
+    switch (key) {
+      case 'search':
+        setSearchTerm('');
+        break;
+      case 'status':
+        setStatusFilter('all');
+        break;
+      case 'teacher':
+        setTeacherFilter('all');
+        break;
+      case 'discount':
+        setDiscountFilter('all');
+        break;
+      case 'payment':
+        setPaymentFilter('all');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const renderOptions = (
+    options: { value: string; label: string }[],
+    selected: string,
+    onSelect: (value: string) => void
+  ) => {
+    return options.map((option) => (
+      <button
+        key={option.value}
+        onClick={() => onSelect(option.value)}
+        className={cn(
+          'w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-sm text-white transition-colors',
+          'hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40',
+          selected === option.value ? 'bg-white/10 border border-cyan-400/30 shadow-inner' : 'border border-transparent'
+        )}
+      >
+        <span>{option.label}</span>
+        {selected === option.value && <Check className="w-4 h-4 text-cyan-300" />}
+      </button>
+    ));
+  };
+
+  const filterButtonClass =
+    'h-10 px-3 rounded-full border border-white/15 bg-white/5 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/30 transition-colors flex items-center gap-2';
+
   return (
-    <GlassCard className="p-6">     
-      <div className="flex flex-col lg:flex-row gap-4 items-start">
-        <div className="flex-1 flex flex-col lg:flex-row gap-4">
-          {/* Search Input */}
-          <div className="flex-1">
-            <SearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="Search students by name or email..."
-              isSearching={loading}
-              disabled={loading}
-            />
-          </div>
-          {/* Status Filter */}
-          <div className="w-full lg:w-48">
-            <Select
-              value={statusFilter}
-              onValueChange={(value: 'all' | 'active' | 'inactive') =>
-                setStatusFilter(value)
-              }
-              disabled={loading}
-            >
-              <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Discount Status Filter */}
-          <div className="w-full lg:w-48">
-            <Select
-              value={discountStatusFilter}
-              onValueChange={(value: 'all' | 'with-discount' | 'no-discount') =>
-                setDiscountStatusFilter(value)
-              }
-              disabled={loading}
-            >
-              <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                <Percent className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Discounts</SelectItem>
-                <SelectItem value="with-discount">With Discount</SelectItem>
-                <SelectItem value="no-discount">No Discount</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Discount Type Filter */}
-          <div className="w-full lg:w-48">
-            <Select
-              value={discountTypeFilter}
-              onValueChange={(value: string) => setDiscountTypeFilter(value)}
-              disabled={loading || discountTypes.length === 0}
-            >
-              <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                <Percent className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                {discountTypes.length > 0 ? (
-                  discountTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.id}>
-                      {type.name}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="loading" disabled>
-                    Loading discount types...
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
+        {/* Search Input */}
+        <div className="w-full lg:flex-1 lg:min-w-0">
+          <SearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Search by name or email"
+            isSearching={isSearching}
+            showStatusText={false}
+            className="h-11 rounded-full bg-white/10 border-white/20 text-white placeholder:text-white/70"
+          />
         </div>
-        
-        {/* View Mode Toggle and Actions */}
-        <div className="flex gap-2 lg:flex-shrink-0">
-          {/* View Mode Toggle */}
-          {setViewMode && (
-            <div className="flex border border-white/20 rounded-lg overflow-hidden">
-              <Button
-                onClick={() => setViewMode('grid')}
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                className={`px-3 py-2 border-0 rounded-none ${
-                  viewMode === 'grid'
-                    ? 'bg-white/20 text-white'
-                    : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <Grid className="w-4 h-4" />
+
+        {/* Filters */}
+        <div className="w-full lg:w-auto flex flex-wrap items-center gap-2">
+          {/* Status Filter */}
+          <Popover
+            open={openFilter === 'status'}
+            onOpenChange={(open) => setOpenFilter(open ? 'status' : null)}
+          >
+            <PopoverTrigger asChild>
+              <Button className={filterButtonClass} variant="outline">
+                Status
+                <ChevronDown className="w-4 h-4 text-white/60" />
               </Button>
-              <Button
-                onClick={() => setViewMode('table')}
-                variant={viewMode === 'table' ? 'default' : 'ghost'}
-                size="sm"
-                className={`px-3 py-2 border-0 rounded-none ${
-                  viewMode === 'table'
-                    ? 'bg-white/20 text-white'
-                    : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <List className="w-4 h-4" />
+            </PopoverTrigger>
+            <PopoverContent className="w-52 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
+              {renderOptions(
+                [
+                  { value: 'all', label: 'All' },
+                  { value: 'active', label: 'Active' },
+                  { value: 'inactive', label: 'Inactive' },
+                ],
+                statusFilter,
+                handleStatusSelect
+              )}
+            </PopoverContent>
+          </Popover>
+
+          {/* Teacher Filter */}
+          <Popover
+            open={openFilter === 'teacher'}
+            onOpenChange={(open) => setOpenFilter(open ? 'teacher' : null)}
+          >
+            <PopoverTrigger asChild>
+              <Button className={filterButtonClass} variant="outline">
+                Teacher
+                <ChevronDown className="w-4 h-4 text-white/60" />
               </Button>
-            </div>
-          )}
-        <ClearFiltersButton onClick={clearFilters} />
+            </PopoverTrigger>
+            <PopoverContent className="w-52 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl max-h-80 overflow-y-auto">
+              {renderOptions(
+                [
+                  { value: 'all', label: 'All Teachers' },
+                  ...teachers.map(t => ({ value: t.id, label: t.name }))
+                ],
+                teacherFilter,
+                handleTeacherSelect
+              )}
+            </PopoverContent>
+          </Popover>
+
+          {/* Discount Filter */}
+          <Popover
+            open={openFilter === 'discount'}
+            onOpenChange={(open) => setOpenFilter(open ? 'discount' : null)}
+          >
+            <PopoverTrigger asChild>
+              <Button className={filterButtonClass} variant="outline">
+                Discount
+                <ChevronDown className="w-4 h-4 text-white/60" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-52 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
+              {renderOptions(
+                [
+                  { value: 'all', label: 'All' },
+                  { value: 'with-discount', label: 'With Discount' },
+                  { value: 'no-discount', label: 'No Discount' },
+                ],
+                discountFilter,
+                handleDiscountSelect
+              )}
+            </PopoverContent>
+          </Popover>
+
+          {/* Payment Filter */}
+          <Popover
+            open={openFilter === 'payment'}
+            onOpenChange={(open) => setOpenFilter(open ? 'payment' : null)}
+          >
+            <PopoverTrigger asChild>
+              <Button className={filterButtonClass} variant="outline">
+                Payment
+                <ChevronDown className="w-4 h-4 text-white/60" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-52 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
+              {renderOptions(
+                [
+                  { value: 'all', label: 'All' },
+                  { value: 'has-obligations', label: 'Has Obligations' },
+                  { value: 'no-obligations', label: 'No Obligations' },
+                ],
+                paymentFilter,
+                handlePaymentSelect
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
-    </GlassCard>
+
+      {/* Active Filter Chips - only show when there are filters */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-2">
+          {activeChips.map((chip) => (
+            <button
+              key={chip.key}
+              onClick={() => clearSingleChip(chip.key)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-400/15 border border-cyan-300/30 text-sm text-white hover:bg-cyan-400/25 transition-colors"
+            >
+              <span>{chip.label}</span>
+              <X className="w-3.5 h-3.5" />
+            </button>
+          ))}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-9 px-3 text-sm text-white/80 hover:text-white hover:bg-white/10 border border-transparent"
+          >
+            Clear all
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 
