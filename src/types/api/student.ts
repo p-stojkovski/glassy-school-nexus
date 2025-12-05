@@ -123,6 +123,42 @@ export interface EmailAvailabilityResponse {
   isAvailable: boolean;     // Whether the email is available
 }
 
+// Student Overview Response (aggregated metrics for Overview tab)
+export interface StudentOverviewResponse {
+  studentId: string;
+  attendance: AttendanceOverview;
+  homework: HomeworkOverview;
+  grades: GradesOverview;
+  billing: BillingOverview;
+}
+
+export interface AttendanceOverview {
+  totalSessions: number;
+  presentCount: number;
+  absentCount: number;
+  lateCount: number;
+  attendanceRate: number;  // Percentage (0-100)
+}
+
+export interface HomeworkOverview {
+  totalAssigned: number;
+  completedCount: number;
+  missingCount: number;
+  completionRate: number;  // Percentage (0-100)
+}
+
+export interface GradesOverview {
+  totalAssessments: number;
+}
+
+export interface BillingOverview {
+  totalPaid: number;
+  outstandingBalance: number;
+  hasDiscount: boolean;
+  discountTypeName?: string;
+  discountAmount?: number;
+}
+
 // API Error Codes (based on business rules)
 export enum StudentErrorCodes {
   DUPLICATE_EMAIL = 'duplicate_email',
@@ -155,6 +191,8 @@ export enum StudentHttpStatus {
 export const StudentApiPaths = {
   BASE: '/api/students',
   BY_ID: (id: string) => `/api/students/${id}`,
+  OVERVIEW: (id: string) => `/api/students/${id}/overview`,
+  CLASSES: (id: string) => `/api/students/${id}/classes`,
   SEARCH: '/api/students/search',
   EMAIL_AVAILABLE: '/api/students/email-available',
   DISCOUNT_TYPES: '/api/discount-types',
@@ -272,4 +310,59 @@ export function isProblemDetails(obj: any): obj is ProblemDetails {
     typeof obj.traceId === 'string'
   );
 }
+
+// Student Class Enrollment Types
+
+/** Summary of student attendance across lessons in a class */
+export interface StudentAttendanceSummary {
+  present: number;
+  absent: number;
+  late: number;
+  excused: number;
+  notMarked: number;
+}
+
+/** Summary of student homework completion across lessons in a class */
+export interface StudentHomeworkSummary {
+  complete: number;
+  partial: number;
+  missing: number;
+  notChecked: number;
+}
+
+/** Represents a student's enrollment in a class with progress summary */
+export interface StudentClassEnrollment {
+  studentId: string;
+  classId: string;
+  className: string;
+  academicYearId: string;
+  academicYearName: string;
+  subjectId: string;
+  subjectName: string;
+  teacherId: string;
+  teacherName: string;
+  enrollmentStatus: string;  // 'active', 'transferred', 'inactive', etc.
+  enrolledAt: string;        // ISO date string
+  transferredToClassId?: string | null;
+  transferredAt?: string | null;
+  transferReason?: string | null;
+  // Per-class summary stats
+  totalLessons: number;
+  attendance: StudentAttendanceSummary;
+  homework: StudentHomeworkSummary;
+  commentsCount: number;
+  lastUpdated?: string | null;
+}
+
+/** Response model for student class enrollments */
+export interface StudentClassEnrollmentResponse {
+  classes: StudentClassEnrollment[];
+}
+
+/** Search params for student classes endpoint */
+export interface StudentClassesSearchParams {
+  academicYearId?: string;
+  includeAllYears?: boolean;
+}
+
 

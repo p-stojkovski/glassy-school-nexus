@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import SearchInput from '@/components/common/SearchInput';
 import { cn } from '@/lib/utils';
+import { useCanViewFinance } from '@/hooks/usePermissions';
 
 interface StudentFiltersProps {
   searchTerm: string;
@@ -20,6 +21,8 @@ interface StudentFiltersProps {
   clearFilters: () => void;
   hasActiveFilters?: boolean;
   isSearching?: boolean;
+  /** Override for canViewFinance permission (optional - uses hook if not provided) */
+  canViewFinance?: boolean;
 }
 
 const StudentFilters: React.FC<StudentFiltersProps> = ({
@@ -37,8 +40,13 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
   clearFilters,
   hasActiveFilters = false,
   isSearching = false,
+  canViewFinance: canViewFinanceProp,
 }) => {
   const [openFilter, setOpenFilter] = useState<string | null>(null);
+  
+  // Use prop if provided, otherwise use hook
+  const canViewFinanceFromHook = useCanViewFinance();
+  const canViewFinance = canViewFinanceProp ?? canViewFinanceFromHook;
 
   const closePopover = () => setOpenFilter(null);
 
@@ -74,7 +82,8 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
   if (statusFilter !== 'all') activeChips.push({ key: 'status', label: `Status: ${statusLabel}` });
   if (teacherFilter !== 'all') activeChips.push({ key: 'teacher', label: `Teacher: ${teacherLabel}` });
   if (discountFilter !== 'all') activeChips.push({ key: 'discount', label: `Discount: ${discountLabel}` });
-  if (paymentFilter !== 'all') activeChips.push({ key: 'payment', label: `Payment: ${paymentLabel}` });
+  // Only show payment filter chip if user can view finance
+  if (canViewFinance && paymentFilter !== 'all') activeChips.push({ key: 'payment', label: `Payment: ${paymentLabel}` });
 
   const clearSingleChip = (key: string) => {
     switch (key) {
@@ -210,29 +219,31 @@ const StudentFilters: React.FC<StudentFiltersProps> = ({
             </PopoverContent>
           </Popover>
 
-          {/* Payment Filter */}
-          <Popover
-            open={openFilter === 'payment'}
-            onOpenChange={(open) => setOpenFilter(open ? 'payment' : null)}
-          >
-            <PopoverTrigger asChild>
-              <Button className={filterButtonClass} variant="outline">
-                Payment
-                <ChevronDown className="w-4 h-4 text-white/60" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-52 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
-              {renderOptions(
-                [
-                  { value: 'all', label: 'All' },
-                  { value: 'has-obligations', label: 'Has Obligations' },
-                  { value: 'no-obligations', label: 'No Obligations' },
-                ],
-                paymentFilter,
-                handlePaymentSelect
-              )}
-            </PopoverContent>
-          </Popover>
+          {/* Payment Filter - Only visible if user can view finance */}
+          {canViewFinance && (
+            <Popover
+              open={openFilter === 'payment'}
+              onOpenChange={(open) => setOpenFilter(open ? 'payment' : null)}
+            >
+              <PopoverTrigger asChild>
+                <Button className={filterButtonClass} variant="outline">
+                  Payment
+                  <ChevronDown className="w-4 h-4 text-white/60" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-52 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
+                {renderOptions(
+                  [
+                    { value: 'all', label: 'All' },
+                    { value: 'has-obligations', label: 'Has Obligations' },
+                    { value: 'no-obligations', label: 'No Obligations' },
+                  ],
+                  paymentFilter,
+                  handlePaymentSelect
+                )}
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
       </div>
 

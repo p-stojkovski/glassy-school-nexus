@@ -28,6 +28,7 @@ import PrivateLessons from './pages/PrivateLessons';
 import PrivateLessonDetailPage from './domains/privateLessons/components/PrivateLessonDetailPage';
 import StudentProfilePage from './domains/students/components/profile/StudentProfilePage';
 import StudentFormPage from './pages/StudentFormPage';
+import StudentPage from './pages/StudentPage';
 import SettingsPage from './pages/SettingsPage';
 import NotFound from './pages/NotFound';
 
@@ -85,9 +86,11 @@ const AppContent: React.FC = () => {
         <Route path="/" element={<Dashboard />} />{' '}
         <Route path="/classrooms" element={<Navigate to="/settings" replace />} />
         <Route path="/students" element={<StudentManagement />} />
-        <Route path="/students/new" element={<StudentFormPage />} />
-        <Route path="/students/edit/:studentId" element={<StudentFormPage />} />
-        <Route path="/students/:studentId" element={<StudentProfilePage />} />
+        {/* New unified student page handles both create and view/edit */}
+        <Route path="/students/new" element={<StudentPage />} />
+        {/* Legacy edit route - redirects to unified page with edit sheet */}
+        <Route path="/students/edit/:studentId" element={<StudentPage />} />
+        <Route path="/students/:studentId" element={<StudentPage />} />
         <Route path="/classes" element={<ClassesPage />} />
         {/* New unified class page handles both create and view/edit */}
         <Route path="/classes/new" element={<ClassPage />} />

@@ -13,8 +13,12 @@ import {
   StudentSearchParams,
   StudentSearchResponse,
   EmailAvailabilityResponse,
+  StudentOverviewResponse,
   StudentApiPaths,
   StudentHttpStatus,
+  StudentClassEnrollment,
+  StudentClassEnrollmentResponse,
+  StudentClassesSearchParams,
 } from '@/types/api/student';
 
 // Preserve status/details when rethrowing with a custom message
@@ -82,6 +86,68 @@ export class StudentApiService {
         throw makeApiError(error, 'Authentication required to access student details');
       }
       throw makeApiError(error, `Failed to fetch student: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get student overview metrics (attendance, homework, grades, billing)
+   * @param id - Student ID (UUID format)
+   * @returns Promise<StudentOverviewResponse>
+   */
+  async getStudentOverview(id: string): Promise<StudentOverviewResponse> {
+    try {
+      const overview = await apiService.get<StudentOverviewResponse>(StudentApiPaths.OVERVIEW(id));
+      return overview;
+    } catch (error: any) {
+      if (error.status === StudentHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Student not found');
+      }
+      if (error.status === StudentHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access student overview');
+      }
+      throw makeApiError(error, `Failed to fetch student overview: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get student class enrollments with per-class progress summary
+   * @param id - Student ID (UUID format)
+   * @param options - Optional filters (academicYearId, includeAllYears)
+   * @returns Promise<StudentClassEnrollment[]>
+   */
+  async getStudentClasses(
+    id: string,
+    options: StudentClassesSearchParams = {}
+  ): Promise<StudentClassEnrollment[]> {
+    try {
+      const params = new URLSearchParams();
+      
+      if (options.academicYearId) {
+        params.append('academicYearId', options.academicYearId);
+      }
+      
+      if (options.includeAllYears !== undefined) {
+        params.append('includeAllYears', options.includeAllYears.toString());
+      }
+      
+      const queryString = params.toString();
+      const endpoint = queryString 
+        ? `${StudentApiPaths.CLASSES(id)}?${queryString}` 
+        : StudentApiPaths.CLASSES(id);
+      
+      const response = await apiService.get<StudentClassEnrollmentResponse>(endpoint);
+      return response.classes || [];
+    } catch (error: any) {
+      if (error.status === StudentHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Student not found');
+      }
+      if (error.status === StudentHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid academic year ID format');
+      }
+      if (error.status === StudentHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access student classes');
+      }
+      throw makeApiError(error, `Failed to fetch student classes: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -342,6 +408,11 @@ export const studentApiService = new StudentApiService();
 export const getAllStudents = () => studentApiService.getAllStudents();
 
 export const getStudentById = (id: string) => studentApiService.getStudentById(id);
+
+export const getStudentOverview = (id: string) => studentApiService.getStudentOverview(id);
+
+export const getStudentClasses = (id: string, options?: StudentClassesSearchParams) =>
+  studentApiService.getStudentClasses(id, options);
 
 export const searchStudents = (searchParams: StudentSearchParams = {}) => 
   studentApiService.searchStudents(searchParams);

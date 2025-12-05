@@ -10,14 +10,18 @@ import {
 } from '@/components/ui/table';
 import GlassCard from '@/components/common/GlassCard';
 
+// Flexible grade assessment type for display
 interface GradeAssessment {
-  id: string;
-  value: string | number;
+  id?: string;
+  assessmentId?: string;
+  value?: string | number;
   comments?: string;
   assessment?: {
-    title: string;
-    type: string;
-    date: string;
+    id?: string;
+    name?: string;
+    title?: string;
+    type?: string;
+    date?: string;
   };
 }
 
@@ -52,22 +56,22 @@ const StudentGradesTab: React.FC<StudentGradesTabProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {gradeAssessments.map((item) => (
+              {gradeAssessments.map((item, index) => (
                 <TableRow
-                  key={item.id}
+                  key={item.id || item.assessmentId || index}
                   className="border-white/10 hover:bg-white/5"
                 >
                   <TableCell className="font-medium">
-                    {item.assessment?.title}
+                    {item.assessment?.title || item.assessment?.name || '-'}
                   </TableCell>
-                  <TableCell>{item.assessment?.type}</TableCell>
+                  <TableCell>{item.assessment?.type || '-'}</TableCell>
                   <TableCell>
-                    {item.assessment
+                    {item.assessment?.date
                       ? new Date(item.assessment.date).toLocaleDateString()
                       : '-'}
                   </TableCell>
                   <TableCell className="font-semibold text-green-300">
-                    {item.value}
+                    {item.value || '-'}
                   </TableCell>
                   <TableCell>{item.comments || '-'}</TableCell>
                 </TableRow>

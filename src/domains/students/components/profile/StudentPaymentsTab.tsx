@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, CheckCircle, CreditCard } from 'lucide-react';
+import { DollarSign, CheckCircle, CreditCard, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -11,15 +11,33 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import GlassCard from '@/components/common/GlassCard';
-import { PaymentObligation, Payment } from '@/domains/finance/financeSlice';
+import { PaymentObligation } from '@/domains/finance/financeSlice';
 import { ObligationStatus } from '@/types/enums';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+// Flexible payment type for display
+interface PaymentInfo {
+  id: string;
+  amount: number;
+  date: string;
+  method: string;
+  reference?: string;
+  notes?: string;
+}
 
 interface StudentPaymentsTabProps {
   obligations: PaymentObligation[];
-  payments: Payment[];
+  payments: PaymentInfo[];
   onOpenPaymentSidebar: (obligation: PaymentObligation) => void;
   canMakePayment: (status: string) => boolean;
   getPaymentStatusColor: (status: string) => string;
+  /** Whether the user can manage payments (make payments). If false, read-only mode. */
+  canManagePayments?: boolean;
 }
 
 const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
@@ -28,6 +46,7 @@ const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
   onOpenPaymentSidebar,
   canMakePayment,
   getPaymentStatusColor,
+  canManagePayments = true,
 }) => {
   return (
     <div className="space-y-6">
@@ -54,7 +73,9 @@ const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
                   <TableHead className="text-white/90">Amount</TableHead>
                   <TableHead className="text-white/90">Due Date</TableHead>
                   <TableHead className="text-white/90">Status</TableHead>
-                  <TableHead className="text-white/90">Actions</TableHead>
+                  {canManagePayments && (
+                    <TableHead className="text-white/90">Actions</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -79,19 +100,21 @@ const StudentPaymentsTab: React.FC<StudentPaymentsTabProps> = ({
                           obligation.status.slice(1)}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      {canMakePayment(obligation.status) && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onOpenPaymentSidebar(obligation)}
-                          className="bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/30 hover:text-blue-200"
-                        >
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          Pay
-                        </Button>
-                      )}
-                    </TableCell>
+                    {canManagePayments && (
+                      <TableCell>
+                        {canMakePayment(obligation.status) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => onOpenPaymentSidebar(obligation)}
+                            className="bg-blue-500/20 text-blue-300 border-blue-500/30 hover:bg-blue-500/30 hover:text-blue-200"
+                          >
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Pay
+                          </Button>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

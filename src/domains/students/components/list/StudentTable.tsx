@@ -40,6 +40,7 @@ import {
 import { RootState } from '@/store';
 import { StudentDiscountInfo, StudentPaymentObligationInfo } from '@/types/api/class';
 import { ObligationStatus } from '@/types/enums';
+import { useCanViewFinance } from '@/hooks/usePermissions';
 
 interface StudentTableProps {
   students: Student[];
@@ -48,6 +49,8 @@ interface StudentTableProps {
   pageSize: number;
   onView: (student: Student) => void;
   onPageChange: (page: number) => void;
+  /** Override for canViewFinance permission (optional - uses hook if not provided) */
+  canViewFinance?: boolean;
 }
 
 const StudentTable: React.FC<StudentTableProps> = ({
@@ -57,8 +60,13 @@ const StudentTable: React.FC<StudentTableProps> = ({
   pageSize,
   onView,
   onPageChange,
+  canViewFinance: canViewFinanceProp,
 }) => {
   const totalPages = Math.ceil(totalCount / pageSize);
+  
+  // Use prop if provided, otherwise use hook
+  const canViewFinanceFromHook = useCanViewFinance();
+  const canViewFinance = canViewFinanceProp ?? canViewFinanceFromHook;
 
   const renderPaginationItems = () => {
     const items = [];
@@ -207,9 +215,11 @@ const StudentTable: React.FC<StudentTableProps> = ({
               <TableHead className="text-white/90 font-semibold">
                 Schedule
               </TableHead>
-              <TableHead className="text-white/90 font-semibold text-center">
-                Billing
-              </TableHead>
+              {canViewFinance && (
+                <TableHead className="text-white/90 font-semibold text-center">
+                  Billing
+                </TableHead>
+              )}
               <TableHead className="w-12">
                 {/* Navigation indicator column */}
               </TableHead>
@@ -358,15 +368,17 @@ const StudentTable: React.FC<StudentTableProps> = ({
                     )}
                   </TableCell>
 
-                  {/* Billing: Discount and Payment icons side by side */}
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-2">
-                      <DiscountIndicator discount={discountInfo} />
-                      <PaymentObligationIndicator
-                        paymentObligation={paymentInfo}
-                      />
-                    </div>
-                  </TableCell>
+                  {/* Billing: Discount and Payment icons side by side - Only visible if user can view finance */}
+                  {canViewFinance && (
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-2">
+                        <DiscountIndicator discount={discountInfo} />
+                        <PaymentObligationIndicator
+                          paymentObligation={paymentInfo}
+                        />
+                      </div>
+                    </TableCell>
+                  )}
 
                   {/* Navigation chevron */}
                   <TableCell>

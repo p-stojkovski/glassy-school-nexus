@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -12,11 +12,19 @@ import {
 import GlassCard from '@/components/common/GlassCard';
 import { AttendanceStatus } from '@/types/enums';
 import { formatHomeworkStatus } from '@/utils/homeworkStatusUtils';
+import { useNavigate } from 'react-router-dom';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface AttendanceRecord {
   id: string;
   sessionDate: string;
   className: string;
+  classId?: string;
   studentRecords: Array<{
     studentId: string;
     status: AttendanceStatus;
@@ -30,13 +38,28 @@ interface StudentAttendanceTabProps {
   attendanceRecords: AttendanceRecord[];
   studentId: string;
   getAttendanceStatusColor: (status: string) => string;
+  /** Whether to enable navigation to lesson pages for editing */
+  enableLessonNavigation?: boolean;
 }
 
 const StudentAttendanceTab: React.FC<StudentAttendanceTabProps> = ({
   attendanceRecords,
   studentId,
   getAttendanceStatusColor,
+  enableLessonNavigation = true,
 }) => {
+  const navigate = useNavigate();
+
+  const handleRowClick = (record: AttendanceRecord) => {
+    // Navigate to lesson teaching mode if we have the class ID
+    if (enableLessonNavigation && record.classId) {
+      navigate(`/classes/${record.classId}/teach/${record.id}`);
+    }
+  };
+
+  const canNavigateToLesson = (record: AttendanceRecord): boolean => {
+    return enableLessonNavigation && !!record.classId;
+  };
   return (
     <GlassCard className="p-6">
       <h3 className="text-xl font-semibold text-white mb-4">
@@ -60,6 +83,9 @@ const StudentAttendanceTab: React.FC<StudentAttendanceTabProps> = ({
                 <TableHead className="text-white/90">Status</TableHead>
                 <TableHead className="text-white/90">Homework</TableHead>
                 <TableHead className="text-white/90">Notes</TableHead>
+                {enableLessonNavigation && (
+                  <TableHead className="w-10"></TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -72,7 +98,10 @@ const StudentAttendanceTab: React.FC<StudentAttendanceTabProps> = ({
                 return (
                   <TableRow
                     key={record.id}
-                    className="border-white/10 hover:bg-white/5"
+                    onClick={() => handleRowClick(record)}
+                    className={`border-white/10 hover:bg-white/5 ${
+                      canNavigateToLesson(record) ? 'cursor-pointer group' : ''
+                    }`}
                   >
                     <TableCell>
                       {new Date(record.sessionDate).toLocaleDateString()}
@@ -104,6 +133,22 @@ const StudentAttendanceTab: React.FC<StudentAttendanceTabProps> = ({
                     <TableCell>
                       {studentRecord.notes || (studentRecord.homeworkNotes ? `HW: ${studentRecord.homeworkNotes}` : '-')}
                     </TableCell>
+                    {enableLessonNavigation && (
+                      <TableCell>
+                        {canNavigateToLesson(record) && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <ExternalLink className="w-4 h-4 text-white/40 group-hover:text-cyan-400 transition-colors" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Open lesson to edit</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })}
