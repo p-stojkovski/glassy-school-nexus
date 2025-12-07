@@ -17,6 +17,8 @@ interface UseConflictPrecheckReturn {
   error: string | null;
   hasConflicts: boolean;
   suggestions: ConflictSuggestion[];
+  validationWarning?: string | null;
+  academicYearName?: string | null;
   runCheck: (params: ConflictPrecheckParams) => Promise<void>;
   clearConflicts: () => void;
   applySuggestion: (suggestion: ConflictSuggestion) => void;
@@ -32,6 +34,8 @@ export const useConflictPrecheck = (
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<ConflictSuggestion[]>([]);
+  const [validationWarning, setValidationWarning] = useState<string | null>(null);
+  const [academicYearName, setAcademicYearName] = useState<string | null>(null);
   
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastCheckRef = useRef<string>('');
@@ -42,6 +46,8 @@ export const useConflictPrecheck = (
     setConflicts([]);
     setError(null);
     setSuggestions([]);
+    setValidationWarning(null);
+    setAcademicYearName(null);
   }, []);
 
   // Generate suggestions for alternative times
@@ -133,34 +139,26 @@ export const useConflictPrecheck = (
           return;
         }
 
-        // Temporarily disable global loading for conflict checks
-        const wasUsingInterceptor = lessonApiService['useInterceptor'];
-        lessonApiService
-        
-        try {
-          const conflictResults = await lessonApiService.checkConflicts(
-            classId,
-            scheduledDate,
-            startTime,
-            endTime,
-            excludeLessonId
-          );
-        
-          // Only apply results if this is still the latest check
-          if (lastCheckRef.current === scheduledKey) {
-            setConflicts(conflictResults);
+        const result = await lessonApiService.checkConflicts(
+          classId,
+          scheduledDate,
+          startTime,
+          endTime,
+          excludeLessonId
+        );
+      
+        // Only apply results if this is still the latest check
+        if (lastCheckRef.current === scheduledKey) {
+          const conflictsList = result.conflicts || [];
+          setConflicts(conflictsList);
+          setValidationWarning(result.validationWarning || null);
+          setAcademicYearName(result.academicContext?.academicYearName || null);
 
-            if (conflictResults.length > 0) {
-              const newSuggestions = generateSuggestions(scheduledDate, startTime, endTime);
-              setSuggestions(newSuggestions);
-            } else {
-              setSuggestions([]);
-            }
-          }
-        } finally {
-          // Restore original interceptor setting
-          if (wasUsingInterceptor) {
-            lessonApiService
+          if (conflictsList.length > 0) {
+            const newSuggestions = generateSuggestions(scheduledDate, startTime, endTime);
+            setSuggestions(newSuggestions);
+          } else {
+            setSuggestions([]);
           }
         }
       } catch (err: any) {
@@ -169,6 +167,8 @@ export const useConflictPrecheck = (
           setError(err.message || 'Failed to check for conflicts');
           setConflicts([]);
           setSuggestions([]);
+          setValidationWarning(null);
+          setAcademicYearName(null);
         }
       } finally {
         if (lastCheckRef.current === scheduledKey) {
@@ -207,6 +207,8 @@ export const useConflictPrecheck = (
     error,
     hasConflicts,
     suggestions,
+    validationWarning,
+    academicYearName,
     runCheck,
     clearConflicts,
     applySuggestion,

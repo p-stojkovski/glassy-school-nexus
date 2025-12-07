@@ -83,6 +83,8 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
     error: conflictError,
     hasConflicts,
     suggestions,
+    validationWarning,
+    academicYearName,
     runCheck,
     clearConflicts,
     applySuggestion,
@@ -629,6 +631,8 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
                 suggestions={suggestions}
                 checking={checkingConflicts}
                 error={conflictError}
+                validationWarning={validationWarning}
+                academicYearName={academicYearName}
                 onSuggestionClick={applySuggestion}
                 showProceedButton={false}
                 className="bg-purple-900/30 border-purple-500/40"

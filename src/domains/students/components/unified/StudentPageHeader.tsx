@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  User, 
-  MoreVertical, 
-  Edit2, 
-  Trash2, 
-  Power, 
+import { Link } from 'react-router-dom';
+import {
+  User,
+  MoreVertical,
+  Edit2,
+  Trash2,
+  Power,
   PowerOff,
   Percent,
   AlertCircle,
@@ -64,14 +63,9 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
   canDelete = true,
   deleteDisabledReason,
 }) => {
-  const navigate = useNavigate();
   const canViewFinance = useCanViewFinance();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
-
-  const handleBack = () => {
-    navigate('/students');
-  };
 
   const handleDeleteClick = () => {
     setShowDeleteDialog(true);
@@ -91,18 +85,11 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
     onToggleStatus();
   };
 
-  const statusText = student.isActive ? 'Active' : 'Inactive';
-  const statusColor = student.isActive 
-    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
-    : 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-
-  // Build discount label
+  // Build compact discount label
   const discountLabel = student.hasDiscount
-    ? `${student.discountTypeName ?? 'Discount'}${
-        student.discountAmount && student.discountAmount > 0
-          ? ` (${student.discountAmount} MKD)`
-          : ''
-      }`
+    ? student.discountAmount && student.discountAmount > 0
+      ? `${student.discountAmount} MKD`
+      : student.discountTypeName ?? 'Discount'
     : null;
 
   return (
@@ -139,37 +126,12 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
         <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-xl px-4 py-3">
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
             
-            {/* Left: Back button + Student Name + Status */}
+            {/* Left: Academic Context (Class, Teacher) */}
             <div className="flex items-center gap-3 min-w-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBack}
-                className="h-7 px-2 text-white/60 hover:text-white hover:bg-white/10"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              
-              <div className="flex items-center gap-2 min-w-0">
-                <User className="w-4 h-4 text-white/50" />
-                <span className="text-sm font-medium text-white truncate">
-                  {student.fullName}
-                </span>
-                <Badge className={`${statusColor} border text-xs`}>
-                  {statusText}
-                </Badge>
-              </div>
-            </div>
-
-            {/* Separator */}
-            <span className="hidden lg:block text-white/20">|</span>
-
-            {/* Center: Context info (Class, Teacher, Discount, Balance) */}
-            <div className="flex flex-wrap items-center gap-3 flex-1 text-sm text-white/70">
               {/* Class info */}
               <div className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-white/50" />
-                <span>
+                <span className="text-white/40 text-sm">Class:</span>
+                <span className="text-sm">
                   {studentClass ? (
                     <Link 
                       to={`/classes/${studentClass.id}`}
@@ -188,20 +150,58 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
                 <>
                   <span className="text-white/20">|</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-white/40">Teacher:</span>
-                    <span>{studentClass.teacher?.name || student.currentTeacherName || 'N/A'}</span>
+                    <span className="text-white/40 text-sm">Teacher:</span>
+                    <span className="text-sm text-white/70">{studentClass.teacher?.name || student.currentTeacherName || 'N/A'}</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Separator */}
+            <span className="hidden lg:block text-white/20">|</span>
+
+            {/* Center: Contact Info (Guardian, Student Contact, Age) */}
+            <div className="flex flex-wrap items-center gap-3 flex-1 text-sm text-white/70">
+              {/* Guardian info */}
+              {student.parentContact && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-white/40">Guardian:</span>
+                  <span>{student.parentContact}</span>
+                </div>
+              )}
+
+              {/* Student Contact */}
+              {student.phone && (
+                <>
+                  {student.parentContact && <span className="text-white/20">|</span>}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-white/40">Contact:</span>
+                    <span>{student.phone}</span>
                   </div>
                 </>
               )}
               
-              {/* Discount badge */}
+              {/* Age */}
+              {student.dateOfBirth && (
+                <>
+                  {(student.parentContact || student.phone) && <span className="text-white/20">|</span>}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-white/40">Age:</span>
+                    <span>
+                      {new Date().getFullYear() - new Date(student.dateOfBirth).getFullYear()}
+                    </span>
+                  </div>
+                </>
+              )}
+
+              {/* Compact discount badge */}
               {discountLabel && (
                 <>
-                  <span className="text-white/20">|</span>
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-yellow-500/15 border border-yellow-500/20 rounded-md">
-                    <Percent className="w-3.5 h-3.5 text-yellow-400" />
-                    <span className="text-yellow-300 font-medium text-xs">{discountLabel}</span>
-                  </div>
+                  {(student.parentContact || student.phone || student.dateOfBirth) && <span className="text-white/20">|</span>}
+                  <Badge className="bg-yellow-500/15 text-yellow-300 border-yellow-500/20 text-xs px-1.5 py-0">
+                    <Percent className="w-3 h-3 mr-0.5" />
+                    {discountLabel}
+                  </Badge>
                 </>
               )}
               

@@ -50,6 +50,8 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
     error: conflictError,
     hasConflicts,
     suggestions,
+    validationWarning,
+    academicYearName,
     runCheck,
     clearConflicts,
     applySuggestion,
@@ -428,6 +430,8 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                       suggestions={suggestions}
                       checking={checkingConflicts}
                       error={conflictError}
+                      validationWarning={validationWarning}
+                      academicYearName={academicYearName}
                       onSuggestionClick={applySuggestion}
                       showProceedButton={false}
                     />

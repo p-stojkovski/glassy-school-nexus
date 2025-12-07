@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ClassScheduleSection from '@/domains/classes/components/sections/ClassScheduleSection';
 import ArchivedSchedulesSection from '@/domains/classes/components/schedule/ArchivedSchedulesSection';
-import { AddScheduleSlotDialog } from '@/domains/classes/components/schedule/AddScheduleSlotDialog';
+import { AddScheduleSlotSidebar } from '@/domains/classes/components/schedule/AddScheduleSlotSidebar';
 import { EditScheduleSlotDialog } from '@/domains/classes/components/schedule/EditScheduleSlotDialog';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
@@ -181,9 +181,9 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
         )}
       </div>
 
-      {/* Dialogs */}
-      <AddScheduleSlotDialog
-        open={showAddDialog}
+      {/* Sidebars */}
+      <AddScheduleSlotSidebar
+        isOpen={showAddDialog}
         onOpenChange={setShowAddDialog}
         classId={classData.id}
         onSuccess={handleUpdate}

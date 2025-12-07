@@ -29,6 +29,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TimeCombobox } from '@/components/common';
 import { classApiService } from '@/services/classApiService';
 import { CreateScheduleSlotRequest } from '@/types/api/scheduleSlot';
+import { ScheduleConflictPanel } from './ScheduleConflictPanel';
 import { toast } from 'sonner';
 
 interface AddScheduleSlotDialogProps {
@@ -48,9 +49,25 @@ interface FormData {
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+// Helper function to add 1 hour to a time string with end-of-day cap
+const addOneHourWithCap = (timeString: string): string => {
+  const [hours, minutes] = timeString.split(':').map(Number);
+  // If adding one hour would cross midnight, cap at 23:59 to maintain end > start on same day
+  if (hours >= 23) {
+    return '23:59';
+  }
+  const newHour = hours + 1;
+  return `${newHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
+
 export function AddScheduleSlotDialog({ open, onOpenChange, classId, onSuccess }: AddScheduleSlotDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  // Track End Time edit/auto state for UX (mirrors CreateLessonSidebar)
+  const [endTimeTouched, setEndTimeTouched] = useState(false);
+  const [endTimeAuto, setEndTimeAuto] = useState(false);
+  // Track conflict state for button disable
+  const [hasConflicts, setHasConflicts] = useState(false);
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -162,7 +179,31 @@ export function AddScheduleSlotDialog({ open, onOpenChange, classId, onSuccess }
                     <TimeCombobox
                       label="Start Time"
                       value={field.value}
-                      onChange={field.onChange}
+                      onChange={(newStart) => {
+                        field.onChange(newStart);
+
+                        const currentEnd = form.getValues('endTime');
+                        const hasEnd = !!currentEnd && currentEnd.trim().length > 0;
+                        const computedAutoEnd = addOneHourWithCap(newStart);
+
+                        const shouldAutoSet =
+                          !hasEnd ||
+                          endTimeAuto ||
+                          !endTimeTouched ||
+                          (hasEnd && currentEnd <= newStart);
+
+                        if (shouldAutoSet) {
+                          form.setValue('endTime', computedAutoEnd, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                          setEndTimeAuto(true);
+                          setEndTimeTouched(false);
+                        }
+
+                        // Clear any end time validation error when start changes (we may auto-adjust end)
+                        form.clearErrors('endTime');
+                      }}
                       placeholder="9:00 AM"
                       startHour={7}
                       endHour={21}
@@ -181,7 +222,22 @@ export function AddScheduleSlotDialog({ open, onOpenChange, classId, onSuccess }
                     <TimeCombobox
                       label="End Time"
                       value={field.value}
-                      onChange={field.onChange}
+                      onChange={(newEnd) => {
+                        const start = form.getValues('startTime');
+                        // Prevent setting end <= start to match CreateLessonSidebar behavior
+                        if (start && newEnd <= start) {
+                          form.setError('endTime', {
+                            type: 'manual',
+                            message: 'End time must be after start time',
+                          });
+                          return;
+                        }
+
+                        form.clearErrors('endTime');
+                        field.onChange(newEnd);
+                        setEndTimeTouched(true);
+                        setEndTimeAuto(false);
+                      }}
                       placeholder="10:00 AM"
                       min={form.watch('startTime')}
                       startHour={7}
@@ -193,6 +249,17 @@ export function AddScheduleSlotDialog({ open, onOpenChange, classId, onSuccess }
                 )}
               />
             </div>
+
+            {/* Conflict Check Panel - only when generateLessons is true */}
+            <ScheduleConflictPanel
+              classId={classId}
+              dayOfWeek={form.watch('dayOfWeek')}
+              startTime={form.watch('startTime')}
+              endTime={form.watch('endTime')}
+              generateLessons={form.watch('generateLessons')}
+              rangeType={form.watch('rangeType')}
+              onConflictsChange={setHasConflicts}
+            />
 
             {/* Lesson Generation */}
             <div className="border-t border-white/20 pt-4 space-y-3">
@@ -262,12 +329,12 @@ export function AddScheduleSlotDialog({ open, onOpenChange, classId, onSuccess }
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+              <Button
+                type="submit"
+                disabled={isSubmitting || hasConflicts}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Creating...' : 'Create Schedule'}
+                {isSubmitting ? 'Creating...' : hasConflicts ? 'Resolve Conflicts' : 'Create Schedule'}
               </Button>
             </DialogFooter>
           </form>

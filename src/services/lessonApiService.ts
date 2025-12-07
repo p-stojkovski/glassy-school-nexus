@@ -21,6 +21,7 @@ import {
   AcademicAwareLessonGenerationResult,
   LessonCreatedResponse,
   LessonConflict,
+  ConflictCheckResult,
   LessonNotesResponse,
   LessonApiPaths,
   LessonHttpStatus,
@@ -520,7 +521,7 @@ return await apiService.post<LessonGenerationResult>(LessonApiPaths.GENERATE, re
     startTime: string, 
     endTime: string, 
     excludeLessonId?: string
-  ): Promise<LessonConflict[]> {
+  ): Promise<ConflictCheckResult> {
     try {
       const qs = new URLSearchParams();
       if (classId) qs.append('classId', classId);
@@ -531,7 +532,14 @@ return await apiService.post<LessonGenerationResult>(LessonApiPaths.GENERATE, re
 
       const endpoint = `${LessonApiPaths.CONFLICTS}?${qs.toString()}`;
       
-return await apiService.get<LessonConflict[]>(endpoint);
+      const result = await apiService.get<ConflictCheckResult>(endpoint);
+      
+      // Ensure conflicts is always an array
+      if (!result.conflicts) {
+        result.conflicts = [];
+      }
+      
+      return result;
     } catch (error: any) {
       if (error.status === LessonHttpStatus.UNAUTHORIZED) {
         throw makeApiError(error, 'Authentication required to check conflicts');

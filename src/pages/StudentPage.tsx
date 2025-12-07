@@ -227,8 +227,6 @@ const StudentPage: React.FC = () => {
             student={student}
             overviewData={overviewData}
             overviewLoading={overviewLoading}
-            payments={payments}
-            outstandingBalance={outstandingBalance}
             onEditSection={handleEditSection}
           />
         </TabsContent>

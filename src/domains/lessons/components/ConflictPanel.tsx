@@ -29,6 +29,8 @@ interface ConflictPanelProps {
   suggestions: ConflictSuggestion[];
   checking: boolean;
   error: string | null;
+  validationWarning?: string | null;
+  academicYearName?: string | null;
   className?: string;
   onSuggestionClick: (suggestion: ConflictSuggestion) => void;
   onProceedAnyway?: () => void;
@@ -40,6 +42,8 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
   suggestions,
   checking,
   error,
+  validationWarning,
+  academicYearName,
   className = '',
   onSuggestionClick,
   onProceedAnyway,
@@ -112,20 +116,20 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
         role="alert"
         aria-live="polite"
       >
-        <div className={`backdrop-blur-sm rounded-lg p-4 ${
-          hasConflicts || hasError 
-            ? 'bg-gradient-to-br from-red-900/20 via-orange-900/15 to-amber-900/20 border border-red-500/30'
+        <div className={`rounded-lg p-4 ${
+          hasConflicts || hasError
+            ? 'bg-orange-500/10 border border-orange-500/20'
             : checking
-              ? 'bg-gradient-to-br from-amber-900/20 via-yellow-900/15 to-orange-900/20 border border-amber-500/30'
-              : 'bg-gradient-to-br from-green-900/20 via-emerald-900/15 to-teal-900/20 border border-green-500/30'
+              ? 'bg-orange-500/10 border border-orange-500/20'
+              : 'bg-green-500/10 border border-green-500/20'
         }`}>
           {/* Checking State */}
           {checking && (
             <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 text-amber-400 animate-spin flex-shrink-0" />
+              <Loader2 className="w-5 h-5 text-orange-400 animate-spin flex-shrink-0" />
               <div>
-                <p className="text-amber-200 font-medium text-sm">Checking for conflicts...</p>
-                <p className="text-amber-200/60 text-xs">Verifying teacher and classroom availability</p>
+                <p className="text-orange-200 font-medium text-sm">Checking for conflicts...</p>
+                <p className="text-orange-200/60 text-xs">Verifying teacher and classroom availability</p>
               </div>
             </div>
           )}
@@ -133,31 +137,26 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
           {/* Error State */}
           {hasError && !checking && (
             <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0" />
               <div>
-                <p className="text-red-200 font-medium text-sm">Unable to check conflicts</p>
-                <p className="text-red-200/70 text-xs">{error}</p>
+                <p className="text-orange-200 font-medium text-sm">Unable to check conflicts</p>
+                <p className="text-orange-200/70 text-xs">{error}</p>
               </div>
             </div>
           )}
 
           {/* Conflicts Display */}
           {hasConflicts && !checking && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Header */}
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0" />
-                <div>
-                  <p className="text-orange-200 font-semibold text-sm">
-                    {conflicts.length === 1 ? 'Schedule Conflict Detected' : `${conflicts.length} Schedule Conflicts Detected`}
-                  </p>
-                  <p className="text-orange-200/70 text-xs">
-                    The selected time slot has scheduling conflicts
-                  </p>
-                </div>
+                <p className="text-orange-200 font-semibold text-sm">
+                  {conflicts.length === 1 ? '1 Conflict Detected' : `${conflicts.length} Conflicts Detected`}
+                </p>
               </div>
 
-              {/* Conflicts List */}
+              {/* Conflicts List - Compact */}
               <div className="space-y-2">
                 {conflicts.slice(0, 3).map((conflict, index) => (
                   <motion.div
@@ -165,35 +164,29 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="bg-white/5 border border-white/10 rounded-md p-3"
+                    className="bg-white/5 border border-white/10 rounded-md p-2.5 flex items-start gap-2.5"
                   >
-                    <div className="flex items-start gap-3">
-                      {getConflictIcon(conflict.conflictType)}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge 
-                            variant="outline" 
-                            className="bg-red-500/20 text-red-300 border-red-500/30 text-xs"
-                          >
-                            {getConflictTypeLabel(conflict.conflictType)}
-                          </Badge>
-                        </div>
-                        <p className="text-white/90 text-sm font-medium mb-1">
+                    {getConflictIcon(conflict.conflictType)}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                        <Badge 
+                          variant="outline" 
+                          className="bg-red-500/20 text-red-300 border-red-500/30 text-xs py-0 px-1.5"
+                        >
+                          {getConflictTypeLabel(conflict.conflictType)}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-white/80 text-xs font-medium leading-snug">
                           {conflict.conflictingClassName && conflict.conflictingClassName.trim().length > 0
                             ? conflict.conflictingClassName
                             : conflict.conflictType === 'teacher_conflict'
-                              ? 'Teacher already scheduled'
-                              : conflict.conflictType === 'classroom_conflict'
-                                ? 'Classroom already occupied'
-                                : 'Conflicting lesson'}
+                              ? 'Teacher unavailable'
+                              : 'Classroom occupied'}
                         </p>
-                        <div className="flex items-center gap-1 text-white/60 text-xs">
-                          <Clock className="w-3 h-3" />
-                          <span>{formatConflictTime(conflict)}</span>
-                        </div>
-                        {conflict.conflictDetails && (
-                          <p className="text-white/50 text-xs mt-1 leading-relaxed">
-                            {conflict.conflictDetails}
+                        {(conflict.startTime || conflict.endTime) && (
+                          <p className="text-white/60 text-xs whitespace-nowrap">
+                            {conflict.startTime} - {conflict.endTime}
                           </p>
                         )}
                       </div>
@@ -203,10 +196,8 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
 
                 {/* Show "and more" indicator if there are additional conflicts */}
                 {conflicts.length > 3 && (
-                  <div className="text-center">
-                    <Badge variant="outline" className="bg-orange-500/20 text-orange-300 border-orange-500/30 text-xs">
-                      +{conflicts.length - 3} more conflicts
-                    </Badge>
+                  <div className="text-xs text-orange-300/70 px-2">
+                    +{conflicts.length - 3} more
                   </div>
                 )}
               </div>
@@ -276,9 +267,44 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
               <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
               <div>
                 <p className="text-green-200 font-semibold text-sm">No conflicts detected</p>
-                <p className="text-green-200/70 text-xs">This time slot is available - ready to create lesson</p>
+                <p className="text-green-200/70 text-xs">
+                  {academicYearName 
+                    ? `No conflicts detected in ${academicYearName}` 
+                    : 'This time slot is available - ready to create lesson'}
+                </p>
               </div>
             </div>
+          )}
+
+          {/* Validation Warning - Display when no active academic year */}
+          {validationWarning && !checking && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="border-t border-white/10 pt-3 mt-3"
+            >
+              <div className="flex items-start gap-2 bg-orange-500/10 border border-orange-500/20 rounded-md p-2.5">
+                <AlertCircle className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
+                <p className="text-orange-200 text-xs leading-relaxed">
+                  {validationWarning}
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Academic Year Context */}
+          {academicYearName && !validationWarning && !checking && hasChecked && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="border-t border-white/10 pt-3 mt-3"
+            >
+              <p className="text-white/60 text-xs text-center">
+                Checking conflicts for <span className="font-semibold text-white/80">{academicYearName}</span>
+              </p>
+            </motion.div>
           )}
         </div>
       </motion.div>

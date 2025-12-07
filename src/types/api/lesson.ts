@@ -227,7 +227,7 @@ export interface LessonSummary {
 
 // Conflict detection result
 export interface LessonConflict {
-  conflictType: 'teacher_conflict' | 'classroom_conflict';
+  conflictType: 'teacher_conflict' | 'classroom_conflict' | 'existing_lesson';
   conflictingLessonId: string;  // GUID
   conflictDetails: string;
   conflictingClassName: string;
@@ -235,6 +235,14 @@ export interface LessonConflict {
   scheduledDate: string;        // ISO date
   startTime: string;            // "HH:mm"
   endTime: string;              // "HH:mm"
+}
+
+// Conflict check result with academic context
+export interface ConflictCheckResult {
+  hasConflicts: boolean;
+  conflicts: LessonConflict[];
+  academicContext?: AcademicContext | null;
+  validationWarning?: string | null;
 }
 
 // API paths

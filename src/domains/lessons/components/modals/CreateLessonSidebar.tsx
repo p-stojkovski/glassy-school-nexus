@@ -59,6 +59,8 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
     error: conflictError,
     hasConflicts,
     suggestions,
+    validationWarning,
+    academicYearName,
     runCheck,
     clearConflicts,
     applySuggestion,
@@ -305,6 +307,8 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
               suggestions={suggestions}
               checking={checkingConflicts}
               error={conflictError}
+              validationWarning={validationWarning}
+              academicYearName={academicYearName}
               onSuggestionClick={applySuggestion}
               showProceedButton={false}
             />

@@ -256,7 +256,7 @@ const TimeCombobox: React.FC<TimeComboboxProps> = ({
               "hover:bg-white/15 hover:border-yellow-400/50",
               "focus-within:ring-2 focus-within:ring-yellow-400/50 focus-within:border-yellow-400",
               "transition-all duration-200 h-10",
-              error && "border-red-400 focus-within:ring-red-400/50",
+              error && "border-orange-400 focus-within:ring-orange-400/50",
               disabled && "opacity-50 cursor-not-allowed hover:bg-white/10 hover:border-white/20",
             )}
           >
@@ -329,7 +329,7 @@ const TimeCombobox: React.FC<TimeComboboxProps> = ({
       </Popover>
 
       {error && (
-        <p className="mt-1 text-sm text-red-400">{error}</p>
+        <p className="mt-1 text-sm text-orange-400">{error}</p>
       )}
     </div>
   );

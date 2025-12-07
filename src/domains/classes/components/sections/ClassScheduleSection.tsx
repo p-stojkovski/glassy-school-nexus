@@ -48,7 +48,7 @@ const ClassScheduleSection: React.FC<ClassScheduleSectionProps> = ({
               className="text-white hover:bg-white/10"
             >
               <Plus className="w-4 h-4 mr-1" />
-              Add
+              Add Schedule
             </Button>
           )}
         </div>

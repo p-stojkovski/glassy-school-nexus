@@ -138,6 +138,8 @@ export interface AttendanceOverview {
   absentCount: number;
   lateCount: number;
   attendanceRate: number;  // Percentage (0-100)
+  status: AttendanceStatus;
+  trendDescription?: string | null;
 }
 
 export interface HomeworkOverview {
@@ -145,10 +147,16 @@ export interface HomeworkOverview {
   completedCount: number;
   missingCount: number;
   completionRate: number;  // Percentage (0-100)
+  status: HomeworkStatus;
+  nextDueTitle?: string | null;
+  nextDueDate?: string | null;
 }
 
 export interface GradesOverview {
   totalAssessments: number;
+  currentAverage?: number | null;
+  classAverage?: number | null;
+  status: PerformanceStatus;
 }
 
 export interface BillingOverview {
@@ -157,6 +165,31 @@ export interface BillingOverview {
   hasDiscount: boolean;
   discountTypeName?: string;
   discountAmount?: number;
+  status: BillingStatus;
+}
+
+// Status enums matching backend
+export enum AttendanceStatus {
+  OnTrack = 'OnTrack',
+  Warning = 'Warning',
+  Critical = 'Critical'
+}
+
+export enum PerformanceStatus {
+  NotAvailable = 'NotAvailable',
+  OnTrack = 'OnTrack',
+  NeedsSupport = 'NeedsSupport'
+}
+
+export enum HomeworkStatus {
+  Ok = 'Ok',
+  MissingWork = 'MissingWork'
+}
+
+export enum BillingStatus {
+  NotImplemented = 'NotImplemented',
+  Clear = 'Clear',
+  Owes = 'Owes'
 }
 
 // API Error Codes (based on business rules)

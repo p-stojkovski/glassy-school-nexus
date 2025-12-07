@@ -8,6 +8,8 @@ export interface ScheduleValidationRequest {
     startTime: string;
     endTime: string;
   }>;
+  rangeType?: 'UntilYearEnd' | 'UntilSemesterEnd' | 'Custom';
+  customEndDate?: string;
 }
 
 export interface ScheduleValidationResponse {

@@ -451,15 +451,6 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
           <Calendar className="w-12 h-12 text-white/40 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-white mb-2">{emptyMessage}</h3>
           <p className="text-white/60 text-sm mb-4 max-w-md mx-auto">{emptyDescription}</p>
-          {onScheduleTabClick && (
-            <Button
-              onClick={onScheduleTabClick}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              Go to Schedule tab
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          )}
         </GlassCard>
       );
     }
@@ -541,7 +532,6 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
             onGenerateLessons={() => setIsAcademicGenerationOpen(true)}
             generateDisabled={!scheduleAvailable}
             disabledTooltip={scheduleWarning || undefined}
-            hasLessons={lessons.length > 0}
           />
         </div>
       )}

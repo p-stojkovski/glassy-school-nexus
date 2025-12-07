@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { FileText, Edit2 } from 'lucide-react';
+import { FileText, Edit2, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
@@ -209,35 +209,46 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
 
     return (
       <GlassCard className="p-3">
-        {/* Header with Edit Button */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <h3 className="text-lg font-semibold text-white">Class details</h3>
+        {/* Header with Edit Button - only show when there is content */}
+        {hasAnyContent && (
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <h3 className="text-lg font-semibold text-white">Class details</h3>
+            </div>
+            <Button
+              onClick={handleEdit}
+              size="sm"
+              variant="ghost"
+              className="text-white hover:bg-white/10"
+            >
+              <Edit2 className="w-4 h-4 mr-1" />
+              Edit
+            </Button>
           </div>
-          <Button
-            onClick={handleEdit}
-            size="sm"
-            variant="ghost"
-            className="text-white hover:bg-white/10"
-          >
-            <Edit2 className="w-4 h-4 mr-1" />
-            {hasAnyContent ? 'Edit' : 'Add Details'}
-          </Button>
-        </div>
+        )}
+        
+        {/* Header for empty state with Add Details button */}
+        {!hasAnyContent && (
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-white">Class details</h3>
+            <Button
+              onClick={handleEdit}
+              size="sm"
+              variant="ghost"
+              className="text-white hover:bg-white/10"
+            >
+              <Plus className="w-4 h-4" />
+              Add Details
+            </Button>
+          </div>
+        )}
 
         {!hasAnyContent ? (
           <div className="text-center py-8">
             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/5 mb-3">
               <FileText className="w-5 h-5 text-white/40" />
             </div>
-            <h3 className="text-base font-semibold text-white mb-1">No details added yet</h3>
-            <Button
-              onClick={handleEdit}
-              variant="ghost"
-              className="mt-2 text-white/60 hover:text-white hover:bg-white/5"
-            >
-              + Add Details
-            </Button>
+            <h3 className="text-base font-semibold text-white">No details added yet</h3>
           </div>
         ) : (
           <Accordion type="multiple" defaultValue={defaultOpenSections} className="space-y-1">

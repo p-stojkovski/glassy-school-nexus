@@ -47,6 +47,8 @@ const RescheduleLessonModal: React.FC<RescheduleLessonModalProps> = ({
     error: conflictError,
     hasConflicts,
     suggestions,
+    validationWarning,
+    academicYearName,
     runCheck,
     clearConflicts,
     applySuggestion,
@@ -387,6 +389,8 @@ const RescheduleLessonModal: React.FC<RescheduleLessonModalProps> = ({
                 suggestions={suggestions}
                 checking={checkingConflicts}
                 error={conflictError}
+                validationWarning={validationWarning}
+                academicYearName={academicYearName}
                 onSuggestionClick={applySuggestion}
                 showProceedButton={false}
               />
