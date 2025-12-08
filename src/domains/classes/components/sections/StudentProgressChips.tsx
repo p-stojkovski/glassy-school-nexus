@@ -18,29 +18,29 @@ const StudentProgressChips: React.FC<StudentProgressChipsProps> = ({
   homework,
 }) => {
   if (totalLessons === 0) {
-    return <span className="text-white/40 text-sm">—</span>;
+    return <span className="text-white/50 text-sm">—</span>;
   }
 
   const negativeStats: string[] = [];
 
   // Add absences if any
   if (attendance.absent > 0) {
-    negativeStats.push(`${attendance.absent} absent`);
+    negativeStats.push(`${attendance.absent} absence${attendance.absent !== 1 ? 's' : ''}`);
   }
 
   // Add late if any
   if (attendance.late > 0) {
-    negativeStats.push(`${attendance.late} late`);
+    negativeStats.push(`${attendance.late} late arrival${attendance.late !== 1 ? 's' : ''}`);
   }
 
   // Add missing homework if any
   if (homework.missing > 0) {
-    negativeStats.push(`${homework.missing} hw missing`);
+    negativeStats.push(`${homework.missing} hw not submitted`);
   }
 
   // Add partial homework if any
   if (homework.partial > 0) {
-    negativeStats.push(`${homework.partial} hw partial`);
+    negativeStats.push(`${homework.partial} hw incomplete`);
   }
 
   // Build the display string
@@ -59,7 +59,7 @@ const StudentProgressChips: React.FC<StudentProgressChipsProps> = ({
   return (
     <div className="text-sm text-white/80">
       {lessonText} <span className="text-white/50">·</span>{' '}
-      <span className="text-amber-400">{negativeStats.join(' · ')}</span>
+      <span className="text-amber-400/80">{negativeStats.join(' · ')}</span>
     </div>
   );
 };

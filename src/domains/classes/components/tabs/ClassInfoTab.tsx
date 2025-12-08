@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { FileText, Edit2, Plus } from 'lucide-react';
+import { Edit2, Plus, FileText, ListChecks, FolderOpen, BookOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import GlassCard from '@/components/common/GlassCard';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
@@ -32,6 +33,13 @@ interface AdditionalDetailsFormData {
   materials: string[];
 }
 
+const EMPTY_SECTION_PROMPTS: Record<'description' | 'objectives' | 'requirements' | 'materials', string> = {
+  description: 'Share a brief overview so students know what this class covers.',
+  objectives: 'List 2-3 learning goals to set expectations for progress.',
+  requirements: 'Outline prerequisites, supplies, or skills needed to participate.',
+  materials: 'Attach links or handouts students should review before class.',
+};
+
 const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
   classData,
   onUpdate,
@@ -47,6 +55,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
   const [mode, setMode] = React.useState<'view' | 'edit'>('view');
   const [isSaving, setIsSaving] = React.useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+  const [showCancelDialog, setShowCancelDialog] = React.useState(false);
 
   // Fetch additional details on mount (lazy loading)
   useEffect(() => {
@@ -122,17 +131,24 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
 
   const handleCancel = useCallback(() => {
     if (hasUnsavedChanges) {
-      if (window.confirm('You have unsaved changes. Are you sure you want to discard them?')) {
-        setMode('view');
-        form.reset(detailsData);
-        setHasUnsavedChanges(false);
-        onUnsavedChangesChange?.(false);
-      }
+      setShowCancelDialog(true);
     } else {
       setMode('view');
       form.reset(detailsData);
     }
-  }, [hasUnsavedChanges, form, detailsData, onUnsavedChangesChange]);
+  }, [hasUnsavedChanges, form, detailsData]);
+
+  const handleConfirmCancel = useCallback(() => {
+    setShowCancelDialog(false);
+    setMode('view');
+    form.reset(detailsData);
+    setHasUnsavedChanges(false);
+    onUnsavedChangesChange?.(false);
+  }, [form, detailsData, onUnsavedChangesChange]);
+
+  const handleDismissCancelDialog = useCallback(() => {
+    setShowCancelDialog(false);
+  }, []);
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -193,220 +209,326 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
   }
 
   if (mode === 'view') {
-    // Check if there's any content to show
+    // Section presence
     const hasDescription = !!additionalDetails.description;
-    const hasObjectives = additionalDetails.objectives && Array.isArray(additionalDetails.objectives) && additionalDetails.objectives.length > 0;
+    const hasObjectives =
+      additionalDetails.objectives &&
+      Array.isArray(additionalDetails.objectives) &&
+      additionalDetails.objectives.length > 0;
     const hasRequirements = !!additionalDetails.requirements;
-    const hasMaterials = additionalDetails.materials && Array.isArray(additionalDetails.materials) && additionalDetails.materials.length > 0;
+    const hasMaterials =
+      additionalDetails.materials &&
+      Array.isArray(additionalDetails.materials) &&
+      additionalDetails.materials.length > 0;
     const hasAnyContent = hasDescription || hasObjectives || hasRequirements || hasMaterials;
 
-    // Only open sections that have content by default
+    // Default open sections
     const defaultOpenSections: string[] = [];
     if (hasDescription) defaultOpenSections.push('description');
     if (hasObjectives) defaultOpenSections.push('objectives');
     if (hasRequirements) defaultOpenSections.push('requirements');
     if (hasMaterials) defaultOpenSections.push('materials');
 
+    const emptySections: string[] = [];
+    if (!hasDescription) emptySections.push('description');
+    if (!hasObjectives) emptySections.push('objectives');
+    if (!hasRequirements) emptySections.push('requirements');
+    if (!hasMaterials) emptySections.push('materials');
+
+    const sectionsToOpen = [...defaultOpenSections];
+    const firstIncompleteSection = emptySections[0];
+    if (firstIncompleteSection && !sectionsToOpen.includes(firstIncompleteSection)) {
+      sectionsToOpen.push(firstIncompleteSection);
+    }
+
+    const accordionDefaultValue = sectionsToOpen.length > 0 ? sectionsToOpen : ['description'];
+    const accordionKey = accordionDefaultValue.join('|');
+
+    const objectivesCount = hasObjectives ? additionalDetails.objectives!.length : 0;
+    const materialsCount = hasMaterials ? additionalDetails.materials!.length : 0;
+
     return (
-      <GlassCard className="p-3">
-        {/* Header with Edit Button - only show when there is content */}
-        {hasAnyContent && (
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <h3 className="text-lg font-semibold text-white">Class details</h3>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-4 md:gap-6 p-3 bg-white/[0.02] rounded-lg border border-white/10">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-white/60" />
+            <div className="text-sm text-white/80">
+              <span className="font-semibold text-white">Class details</span>
+              <span className="ml-1 text-white/60">overview</span>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-white/60" />
+            <span className="text-sm text-white/80">
+              {hasDescription ? (
+                <>
+                  <span className="font-semibold text-white">Description ready</span>
+                </>
+              ) : (
+                <span className="text-white/70">Add description</span>
+              )}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ListChecks className="w-4 h-4 text-white/60" />
+            <span className="text-sm text-white/80">
+              <span className="font-semibold text-white">{objectivesCount}</span>{' '}
+              {objectivesCount === 1 ? 'objective' : 'objectives'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <FolderOpen className="w-4 h-4 text-white/60" />
+            <span className="text-sm text-white/80">
+              <span className="font-semibold text-white">{materialsCount}</span>{' '}
+              {materialsCount === 1 ? 'material' : 'materials'}
+            </span>
+          </div>
+          <div className="ml-auto w-full md:w-auto md:ml-auto">
             <Button
               onClick={handleEdit}
-              size="sm"
-              variant="ghost"
-              className="text-white hover:bg-white/10"
+              size="default"
+              variant="outline"
+              className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium gap-2"
             >
-              <Edit2 className="w-4 h-4 mr-1" />
-              Edit
+              {hasAnyContent ? (
+                <>
+                  <Edit2 className="w-4 h-4" />
+                  Edit details
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Add details
+                </>
+              )}
             </Button>
           </div>
-        )}
-        
-        {/* Header for empty state with Add Details button */}
-        {!hasAnyContent && (
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-white">Class details</h3>
-            <Button
-              onClick={handleEdit}
-              size="sm"
-              variant="ghost"
-              className="text-white hover:bg-white/10"
-            >
-              <Plus className="w-4 h-4" />
-              Add Details
-            </Button>
-          </div>
-        )}
+        </div>
 
-        {!hasAnyContent ? (
-          <div className="text-center py-8">
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/5 mb-3">
-              <FileText className="w-5 h-5 text-white/40" />
-            </div>
-            <h3 className="text-base font-semibold text-white">No details added yet</h3>
-          </div>
-        ) : (
-          <Accordion type="multiple" defaultValue={defaultOpenSections} className="space-y-1">
-            {/* Description */}
-            <AccordionItem value="description" className={`border-white/10 rounded-lg ${hasDescription ? 'bg-white/5' : 'bg-white/[0.02]'}`}>
-              <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-lg [&[data-state=open]]:rounded-b-none">
-                <div className="flex items-center gap-2">
-                  <span className={hasDescription ? '' : 'text-white/60'}>Description</span>
-                  {!hasDescription && (
-                    <span className="text-xs text-white/40">– none</span>
-                  )}
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                {hasDescription ? (
-                  <p className="text-white/80 leading-relaxed">{additionalDetails.description}</p>
-                ) : (
+        <Accordion
+          key={accordionKey}
+          type="multiple"
+          defaultValue={accordionDefaultValue}
+          className="space-y-3"
+        >
+          {/* Description */}
+          <AccordionItem
+            value="description"
+            className={`rounded-2xl border border-white/10 transition-colors ${
+              hasDescription ? 'bg-white/[0.07]' : 'bg-white/[0.03]'
+            }`}
+          >
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-2xl [&[data-state=open]]:rounded-b-none">
+              <div className="flex flex-col text-left sm:flex-row sm:items-center sm:gap-2">
+                <span className="font-medium">Description</span>
+                {!hasDescription && (
+                  <span className="text-xs text-white/60">
+                    Add a short overview so families can quickly scan the class.
+                  </span>
+                )}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              {hasDescription ? (
+                <p className="text-white/90 leading-relaxed">{additionalDetails.description}</p>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-white/20 bg-white/[0.02] p-4">
+                  <p className="text-sm text-white/70 mb-3">{EMPTY_SECTION_PROMPTS.description}</p>
                   <Button
                     onClick={handleEdit}
+                    size="sm"
                     variant="ghost"
-                    className="text-white/50 hover:text-white hover:bg-white/5 h-auto p-1 text-sm"
+                    className="h-8 px-3 text-sm font-semibold text-white bg-white/10 border border-white/25 hover:bg-white/20"
                   >
-                    + Add description
+                    <Plus className="w-4 h-4" />
+                    Add description
                   </Button>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Learning Objectives */}
-            <AccordionItem value="objectives" className={`border-white/10 rounded-lg ${hasObjectives ? 'bg-white/5' : 'bg-white/[0.02]'}`}>
-              <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-lg [&[data-state=open]]:rounded-b-none">
-                <div className="flex items-center gap-2">
-                  <span className={hasObjectives ? '' : 'text-white/60'}>Learning Objectives</span>
-                  {hasObjectives && (
-                    <Badge variant="secondary" className="ml-2 bg-white/10 text-white/70 text-xs">
-                      {additionalDetails.objectives!.length}
-                    </Badge>
-                  )}
-                  {!hasObjectives && (
-                    <span className="text-xs text-white/40">– none</span>
-                  )}
                 </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
+              )}
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Learning Objectives */}
+          <AccordionItem
+            value="objectives"
+            className={`rounded-2xl border border-white/10 transition-colors ${
+              hasObjectives ? 'bg-white/[0.07]' : 'bg-white/[0.03]'
+            }`}
+          >
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-2xl [&[data-state=open]]:rounded-b-none">
+              <div className="flex flex-col text-left gap-1 sm:flex-row sm:items-center sm:gap-2">
+                <span className="font-medium">Learning objectives</span>
                 {hasObjectives ? (
-                  <div className="space-y-2">
-                    {additionalDetails.objectives!.map((objective, index) => (
-                      <div key={index} className="flex items-start gap-3">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full mt-1.5 flex-shrink-0" />
-                        <span className="text-white/80">{objective}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <span className="text-xs font-semibold text-white/80 bg-white/10 border border-white/20 px-2 py-0.5 rounded-full">
+                    {additionalDetails.objectives!.length}{' '}
+                    {additionalDetails.objectives!.length === 1 ? 'item' : 'items'}
+                  </span>
                 ) : (
+                  <span className="text-xs text-white/60">
+                    Clarify 2-3 goals to guide instruction and communication.
+                  </span>
+                )}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              {hasObjectives ? (
+                <div className="space-y-3">
+                  {additionalDetails.objectives!.map((objective, index) => (
+                    <div key={index} className="flex items-start gap-3 rounded-xl bg-white/[0.02] p-3">
+                      <div className="w-2.5 h-2.5 mt-1.5 rounded-full bg-purple-400 flex-shrink-0" />
+                      <span className="text-white/90">{objective}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-white/20 bg-white/[0.02] p-4">
+                  <p className="text-sm text-white/70 mb-3">{EMPTY_SECTION_PROMPTS.objectives}</p>
                   <Button
                     onClick={handleEdit}
+                    size="sm"
                     variant="ghost"
-                    className="text-white/50 hover:text-white hover:bg-white/5 h-auto p-1 text-sm"
+                    className="h-8 px-3 text-sm font-semibold text-white bg-white/10 border border-white/25 hover:bg-white/20"
                   >
-                    + Add objectives
+                    <Plus className="w-4 h-4" />
+                    Add objectives
                   </Button>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Requirements */}
-            <AccordionItem value="requirements" className={`border-white/10 rounded-lg ${hasRequirements ? 'bg-white/5' : 'bg-white/[0.02]'}`}>
-              <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-lg [&[data-state=open]]:rounded-b-none">
-                <div className="flex items-center gap-2">
-                  <span className={hasRequirements ? '' : 'text-white/60'}>Requirements</span>
-                  {!hasRequirements && (
-                    <span className="text-xs text-white/40">– none</span>
-                  )}
                 </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                {hasRequirements ? (
-                  <p className="text-white/80 leading-relaxed">{additionalDetails.requirements}</p>
-                ) : (
+              )}
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Requirements */}
+          <AccordionItem
+            value="requirements"
+            className={`rounded-2xl border border-white/10 transition-colors ${
+              hasRequirements ? 'bg-white/[0.07]' : 'bg-white/[0.03]'
+            }`}
+          >
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-2xl [&[data-state=open]]:rounded-b-none">
+              <div className="flex flex-col text-left sm:flex-row sm:items-center sm:gap-2">
+                <span className="font-medium">Requirements</span>
+                {!hasRequirements && (
+                  <span className="text-xs text-white/60">
+                    List prerequisites, supplies, or expectations here.
+                  </span>
+                )}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              {hasRequirements ? (
+                <p className="text-white/90 leading-relaxed whitespace-pre-line">
+                  {additionalDetails.requirements}
+                </p>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-white/20 bg-white/[0.02] p-4">
+                  <p className="text-sm text-white/70 mb-3">{EMPTY_SECTION_PROMPTS.requirements}</p>
                   <Button
                     onClick={handleEdit}
+                    size="sm"
                     variant="ghost"
-                    className="text-white/50 hover:text-white hover:bg-white/5 h-auto p-1 text-sm"
+                    className="h-8 px-3 text-sm font-semibold text-white bg-white/10 border border-white/25 hover:bg-white/20"
                   >
-                    + Add requirements
+                    <Plus className="w-4 h-4" />
+                    Add requirements
                   </Button>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Materials */}
-            <AccordionItem value="materials" className={`border-white/10 rounded-lg ${hasMaterials ? 'bg-white/5' : 'bg-white/[0.02]'}`}>
-              <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-lg [&[data-state=open]]:rounded-b-none">
-                <div className="flex items-center gap-2">
-                  <span className={hasMaterials ? '' : 'text-white/60'}>Materials</span>
-                  {hasMaterials && (
-                    <Badge variant="secondary" className="ml-2 bg-white/10 text-white/70 text-xs">
-                      {additionalDetails.materials!.length}
-                    </Badge>
-                  )}
-                  {!hasMaterials && (
-                    <span className="text-xs text-white/40">– none</span>
-                  )}
                 </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
+              )}
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Materials */}
+          <AccordionItem
+            value="materials"
+            className={`rounded-2xl border border-white/10 transition-colors ${
+              hasMaterials ? 'bg-white/[0.07]' : 'bg-white/[0.03]'
+            }`}
+          >
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline hover:bg-white/5 rounded-t-2xl [&[data-state=open]]:rounded-b-none">
+              <div className="flex flex-col text-left gap-1 sm:flex-row sm:items-center sm:gap-2">
+                <span className="font-medium">Materials</span>
                 {hasMaterials ? (
-                  <div className="flex flex-wrap gap-2">
-                    {additionalDetails.materials!.map((material, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-white border-green-400/30"
-                      >
-                        {material}
-                      </Badge>
-                    ))}
-                  </div>
+                  <span className="text-xs font-semibold text-white/80 bg-emerald-400/15 border border-emerald-300/30 px-2 py-0.5 rounded-full">
+                    View {additionalDetails.materials!.length}{' '}
+                    {additionalDetails.materials!.length === 1 ? 'file' : 'files'}
+                  </span>
                 ) : (
+                  <span className="text-xs text-white/60">
+                    Attach resources, slide decks, or helpful links.
+                  </span>
+                )}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              {hasMaterials ? (
+                <div className="flex flex-wrap gap-2">
+                  {additionalDetails.materials!.map((material, index) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+                    >
+                      {material}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-white/20 bg-white/[0.02] p-4">
+                  <p className="text-sm text-white/70 mb-3">{EMPTY_SECTION_PROMPTS.materials}</p>
                   <Button
                     onClick={handleEdit}
+                    size="sm"
                     variant="ghost"
-                    className="text-white/50 hover:text-white hover:bg-white/5 h-auto p-1 text-sm"
+                    className="h-8 px-3 text-sm font-semibold text-white bg-white/10 border border-white/25 hover:bg-white/20"
                   >
-                    + Add materials
+                    <Plus className="w-4 h-4" />
+                    Add materials
                   </Button>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        )}
-      </GlassCard>
+                </div>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
     );
   }
 
   // Edit mode
   return (
-    <FormProvider {...form}>
-      <GlassCard className="p-3">
-        <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-              <h3 className="text-lg font-semibold text-white">
-                Edit details
-              </h3>
+    <>
+      <FormProvider {...form}>
+        <GlassCard className="p-3">
+          <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+                <h3 className="text-lg font-semibold text-white">
+                  Edit details
+                </h3>
+            </div>
+            <TabEditControls
+              mode="edit"
+              hasUnsavedChanges={hasUnsavedChanges}
+              isSaving={isSaving}
+              validationErrors={form.formState?.errors ? Object.values(form.formState.errors || {}).filter(Boolean) : []}
+              onEdit={handleEdit}
+              onSave={handleSave}
+              onCancel={handleCancel}
+            />
           </div>
-          <TabEditControls
-            mode="edit"
-            hasUnsavedChanges={hasUnsavedChanges}
-            isSaving={isSaving}
-            validationErrors={form.formState?.errors ? Object.values(form.formState.errors || {}).filter(Boolean) : []}
-            onEdit={handleEdit}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
-        </div>
-        <AdditionalDetailsTab form={form as any} />
-      </GlassCard>
-    </FormProvider>
+          <AdditionalDetailsTab form={form as any} />
+        </GlassCard>
+      </FormProvider>
+
+      {/* Cancel Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showCancelDialog}
+        onClose={handleDismissCancelDialog}
+        onConfirm={handleConfirmCancel}
+        title="Unsaved Changes"
+        description="You have unsaved changes that will be lost. Would you like to stay and keep editing, or discard your changes?"
+        confirmText="Discard Changes"
+        cancelText="Stay"
+        variant="warning"
+      />
+    </>
   );
 };
 

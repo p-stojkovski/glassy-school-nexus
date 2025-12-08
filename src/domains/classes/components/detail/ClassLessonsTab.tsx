@@ -463,19 +463,21 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     <div className="space-y-4">
       {/* Review Mode Banner - clear attention indicator, this should be the primary visual focus */}
       {reviewPastUnstarted && (
-        <div className="flex items-center gap-3 bg-amber-500/20 border border-amber-400/40 rounded-lg px-4 py-3 shadow-sm shadow-amber-500/10">
-          <AlertTriangle className="h-5 w-5 text-amber-400 flex-shrink-0" />
-          <span className="text-sm text-amber-100 flex-1">
-            <span className="font-semibold">Reviewing {pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'} needing documentation.</span>
-            <span className="ml-1 text-amber-200/70">
-              Document each lesson by clicking "Document Lesson" to mark attendance and status.
-            </span>
-          </span>
+        <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-400/25 rounded-lg px-4 py-3">
+          <AlertTriangle className="h-5 w-5 text-amber-400/80 flex-shrink-0" />
+          <div className="flex-1">
+            <div className="text-sm text-amber-100">
+              <span className="font-semibold">Reviewing {pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'} to document</span>
+            </div>
+            <div className="text-xs text-amber-200/60 mt-0.5">
+              Click "Document Lesson" to mark attendance and status
+            </div>
+          </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleExitReviewMode}
-            className="text-amber-100 hover:text-amber-50 hover:bg-amber-500/25 flex-shrink-0 h-7 px-3 text-xs font-medium"
+            className="text-amber-100 hover:text-amber-50 hover:bg-amber-500/20 flex-shrink-0 h-7 px-3 text-xs font-medium"
           >
             Exit review
           </Button>
@@ -484,21 +486,23 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
 
       {/* Past Unstarted Lessons Warning Banner - primary attention element on the page */}
       {!reviewPastUnstarted && pastUnstartedCount > 0 && (
-        <div className="flex items-center gap-3 bg-amber-500/15 border border-amber-400/35 rounded-lg px-4 py-3">
-          <AlertTriangle className="h-5 w-5 text-amber-400 flex-shrink-0" />
-          <span className="text-sm text-amber-100 flex-1">
-            <span className="font-semibold">{pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson needs' : 'lessons need'} documentation.</span>
-            <span className="ml-1 text-amber-200/70">
-              These past lessons were never marked as conducted, cancelled, or no-show.
-            </span>
-          </span>
+        <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-400/25 rounded-lg px-4 py-3">
+          <AlertTriangle className="h-5 w-5 text-amber-400/80 flex-shrink-0" />
+          <div className="flex-1">
+            <div className="text-sm text-amber-100">
+              <span className="font-semibold">{pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'} ready to document</span>
+            </div>
+            <div className="text-xs text-amber-200/60 mt-0.5">
+              Past lessons never marked as conducted, cancelled, or no-show
+            </div>
+          </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleReviewNow}
-            className="text-amber-200 hover:text-amber-100 hover:bg-amber-500/25 flex-shrink-0 h-7 px-3 text-xs font-medium"
+            className="text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 flex-shrink-0 h-7 px-3 text-xs font-medium"
           >
-            Review now
+            Document {pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'}
             <ArrowRight className="w-3 h-3 ml-1" />
           </Button>
         </div>

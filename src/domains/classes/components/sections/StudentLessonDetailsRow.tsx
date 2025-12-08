@@ -13,7 +13,7 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
   const getAttendanceBadge = (status?: string | null) => {
     if (!status) {
       return (
-        <Badge variant="outline" className="bg-gray-500/20 text-gray-300 border-gray-400/30 text-xs">
+        <Badge variant="outline" className="bg-gray-600/30 text-gray-200 border-gray-400/40 text-xs">
           <Circle className="w-3 h-3 mr-1" />
           Not Marked
         </Badge>
@@ -21,10 +21,10 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
     }
 
     const configs = {
-      present: { icon: CheckCircle2, color: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30', label: 'Present' },
-      absent: { icon: XCircle, color: 'bg-red-500/20 text-red-300 border-red-400/30', label: 'Absent' },
-      late: { icon: Clock, color: 'bg-amber-500/20 text-amber-300 border-amber-400/30', label: 'Late' },
-      excused: { icon: FileText, color: 'bg-blue-500/20 text-blue-300 border-blue-400/30', label: 'Excused' },
+      present: { icon: CheckCircle2, color: 'bg-emerald-500/10 text-emerald-400/80 border-emerald-400/20', label: 'Present' },
+      absent: { icon: XCircle, color: 'bg-red-500/20 text-red-300 border-red-400/40', label: 'Absent' },
+      late: { icon: Clock, color: 'bg-amber-500/15 text-amber-300 border-amber-400/25', label: 'Late' },
+      excused: { icon: FileText, color: 'bg-blue-500/15 text-blue-300 border-blue-400/25', label: 'Excused' },
     };
 
     const config = configs[status.toLowerCase() as keyof typeof configs];
@@ -42,7 +42,7 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
   const getHomeworkBadge = (status?: string | null) => {
     if (!status) {
       return (
-        <Badge variant="outline" className="bg-gray-500/20 text-gray-300 border-gray-400/30 text-xs">
+        <Badge variant="outline" className="bg-gray-600/30 text-gray-200 border-gray-400/40 text-xs">
           <Circle className="w-3 h-3 mr-1" />
           Not Checked
         </Badge>
@@ -50,9 +50,9 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
     }
 
     const configs = {
-      complete: { icon: CheckCircle2, color: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30', label: 'Complete' },
-      partial: { icon: AlertTriangle, color: 'bg-amber-500/20 text-amber-300 border-amber-400/30', label: 'Partial' },
-      missing: { icon: XCircle, color: 'bg-red-500/20 text-red-300 border-red-400/30', label: 'Missing' },
+      complete: { icon: CheckCircle2, color: 'bg-emerald-500/10 text-emerald-400/80 border-emerald-400/20', label: 'Complete' },
+      partial: { icon: AlertTriangle, color: 'bg-amber-500/15 text-amber-300 border-amber-400/25', label: 'Partial' },
+      missing: { icon: XCircle, color: 'bg-red-500/20 text-red-300 border-red-400/40', label: 'Missing' },
     };
 
     const config = configs[status.toLowerCase() as keyof typeof configs];
@@ -107,7 +107,7 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
           return (
             <div
               key={lesson.lessonId}
-              className={`py-2.5 flex items-center gap-6 text-xs ${index < lessons.length - 1 ? 'border-b border-white/5' : ''}`}
+              className={`py-3.5 flex items-center gap-6 text-xs ${index < lessons.length - 1 ? 'border-b border-white/8' : ''}`}
             >
               {/* Date & Time */}
               <div className="flex-shrink-0 w-36">
@@ -132,7 +132,7 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
                     {lesson.comments}
                   </div>
                 ) : (
-                  <span className="text-white/30">—</span>
+                  <span className="text-white/40">—</span>
                 )}
               </div>
             </div>

@@ -201,34 +201,36 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Schedule Slot?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle>Remove Schedule Slot</AlertDialogTitle>
+            <AlertDialogDescription asChild>
               {selectedSlot && (
-                <div className="space-y-3">
-                  <p>
-                    This will remove the <strong>{selectedSlot.dayOfWeek}</strong>{' '}
-                    <strong>{selectedSlot.startTime} - {selectedSlot.endTime}</strong> schedule.
+                <div className="space-y-4">
+                  <p className="text-white/70">
+                    You are removing the <span className="font-medium text-white">{selectedSlot.dayOfWeek}</span>{' '}
+                    <span className="font-medium text-white">{selectedSlot.startTime} - {selectedSlot.endTime}</span> schedule.
                   </p>
                   
-                  {/* Warning about future lessons that will be deleted */}
+                  {/* Future lessons - calm, factual messaging */}
                   {selectedSlot.futureLessonCount && selectedSlot.futureLessonCount > 0 && (
-                    <div className="rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3">
-                      <p className="font-medium text-red-700 dark:text-red-400">
-                        ⚠️ This will permanently delete {selectedSlot.futureLessonCount} future lesson(s)!
+                    <div className="rounded-lg bg-white/5 border border-white/10 p-3">
+                      <p className="text-sm text-white/80">
+                        <span className="font-medium text-amber-300">Future lessons:</span>{' '}
+                        {selectedSlot.futureLessonCount} scheduled lesson{selectedSlot.futureLessonCount !== 1 ? 's' : ''} will be removed.
                       </p>
                     </div>
                   )}
                   
-                  {/* Information about past lessons and archival */}
+                  {/* Past lessons - preserved in archive */}
                   {selectedSlot.pastLessonCount && selectedSlot.pastLessonCount > 0 ? (
-                    <div className="rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3">
-                      <p className="font-medium text-amber-700 dark:text-amber-400">
-                        📁 This schedule has {selectedSlot.pastLessonCount} past lesson(s) and will be archived to preserve history.
+                    <div className="rounded-lg bg-white/5 border border-white/10 p-3">
+                      <p className="text-sm text-white/80">
+                        <span className="font-medium text-emerald-300">Past lessons:</span>{' '}
+                        {selectedSlot.pastLessonCount} lesson{selectedSlot.pastLessonCount !== 1 ? 's' : ''} will be preserved in archived schedules.
                       </p>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
-                      This schedule has no past lessons and will be permanently deleted.
+                    <p className="text-sm text-white/50">
+                      This schedule has no past lessons and will be permanently removed.
                     </p>
                   )}
                 </div>
@@ -240,9 +242,9 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
             <AlertDialogAction
               onClick={handleConfirmDelete}
               disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-amber-600 text-white hover:bg-amber-700"
             >
-              {isDeleting ? 'Deleting...' : (selectedSlot?.pastLessonCount && selectedSlot.pastLessonCount > 0 ? 'Archive' : 'Delete')}
+              {isDeleting ? 'Removing...' : (selectedSlot?.pastLessonCount && selectedSlot.pastLessonCount > 0 ? 'Archive & Remove' : 'Remove')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

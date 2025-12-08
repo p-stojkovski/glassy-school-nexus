@@ -30,6 +30,7 @@ const ClassPage: React.FC = () => {
   
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
+  const [showBackConfirmDialog, setShowBackConfirmDialog] = useState(false);
   const [showCreateSheet, setShowCreateSheet] = useState(false); // Start closed, open via effect
   const [isLessonDetailsOpen, setIsLessonDetailsOpen] = useState(false);
   const [selectedLessonForDetails, setSelectedLessonForDetails] = useState<LessonResponse | null>(null);
@@ -110,12 +111,19 @@ const ClassPage: React.FC = () => {
 
   const handleBack = () => {
     if (hasAnyUnsavedChanges()) {
-      if (window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
-        navigate('/classes');
-      }
+      setShowBackConfirmDialog(true);
     } else {
       navigate('/classes');
     }
+  };
+
+  const handleConfirmBack = () => {
+    setShowBackConfirmDialog(false);
+    navigate('/classes');
+  };
+
+  const handleCancelBack = () => {
+    setShowBackConfirmDialog(false);
   };
 
   const handleTabChange = (newTab: string) => {
@@ -263,8 +271,9 @@ const ClassPage: React.FC = () => {
         <ErrorMessage
           title="Error Loading Class"
           message={error || 'Class not found'}
-          onRetry={() => window.location.reload()}
+          onRetry={refetchClassData}
           showRetry
+          severity="critical"
         />
       </div>
     );
@@ -363,16 +372,28 @@ const ClassPage: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Unsaved Changes Dialog */}
+      {/* Unsaved Changes Dialog - Tab Switching */}
       <ConfirmationDialog
         isOpen={showUnsavedChangesDialog}
         onClose={handleStayOnTab}
         onConfirm={handleDiscardChanges}
         title="Unsaved Changes"
-        description="You have unsaved changes in the current tab. Are you sure you want to discard them?"
+        description="You have unsaved changes that will be lost. Would you like to stay and keep editing, or discard your changes?"
         confirmText="Discard Changes"
-        cancelText="Stay on Tab"
-        variant="danger"
+        cancelText="Stay"
+        variant="warning"
+      />
+
+      {/* Unsaved Changes Dialog - Back Navigation */}
+      <ConfirmationDialog
+        isOpen={showBackConfirmDialog}
+        onClose={handleCancelBack}
+        onConfirm={handleConfirmBack}
+        title="Unsaved Changes"
+        description="You have unsaved changes that will be lost. Would you like to stay and keep editing, or discard your changes?"
+        confirmText="Discard Changes"
+        cancelText="Stay"
+        variant="warning"
       />
 
       {/* Quick Conduct Lesson Modal (from Hero Section actions) */}

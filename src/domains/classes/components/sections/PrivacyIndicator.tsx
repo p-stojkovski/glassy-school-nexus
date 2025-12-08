@@ -19,7 +19,7 @@ export const DiscountIndicator: React.FC<DiscountIndicatorProps> = ({
   if (!discount?.hasDiscount) {
     return (
       <div className={`flex justify-center ${className}`}>
-        <span className="text-white/30 text-sm">—</span>
+        <span className="text-white/40 text-sm">—</span>
       </div>
     );
   }
@@ -74,7 +74,7 @@ export const PaymentObligationIndicator: React.FC<PaymentObligationIndicatorProp
   if (!paymentObligation?.hasPendingObligations) {
     return (
       <div className={`flex justify-center ${className}`}>
-        <span className="text-white/30 text-sm">—</span>
+        <span className="text-white/40 text-sm">—</span>
       </div>
     );
   }
@@ -97,17 +97,9 @@ export const PaymentObligationIndicator: React.FC<PaymentObligationIndicatorProp
     { label: 'Total', value: formatCurrency(paymentObligation.totalPendingAmount) },
   ];
 
-  // Determine severity color based on pending count
+  // Determine severity color based on pending count (calmer, tiered approach)
   const getSeverityColor = () => {
     if (paymentObligation.pendingCount >= 3) {
-      return {
-        bg: 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20 hover:border-red-500/50',
-        icon: 'text-red-400',
-        iconHover: 'text-red-300',
-        titleColor: 'text-red-300',
-      };
-    }
-    if (paymentObligation.pendingCount >= 2) {
       return {
         bg: 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20 hover:border-amber-500/50',
         icon: 'text-amber-400',
@@ -115,11 +107,19 @@ export const PaymentObligationIndicator: React.FC<PaymentObligationIndicatorProp
         titleColor: 'text-amber-300',
       };
     }
+    if (paymentObligation.pendingCount >= 2) {
+      return {
+        bg: 'bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20 hover:border-yellow-500/50',
+        icon: 'text-yellow-400',
+        iconHover: 'text-yellow-300',
+        titleColor: 'text-yellow-300',
+      };
+    }
     return {
-      bg: 'bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20 hover:border-yellow-500/50',
-      icon: 'text-yellow-400',
-      iconHover: 'text-yellow-300',
-      titleColor: 'text-yellow-300',
+      bg: 'bg-slate-500/10 border-slate-500/30 hover:bg-slate-500/20 hover:border-slate-500/50',
+      icon: 'text-slate-400',
+      iconHover: 'text-slate-300',
+      titleColor: 'text-slate-300',
     };
   };
 
@@ -127,7 +127,7 @@ export const PaymentObligationIndicator: React.FC<PaymentObligationIndicatorProp
 
   return (
     <InfoTooltip
-      title="Pending Payments"
+      title="Payments to review"
       titleIcon={CreditCard}
       titleColor={colors.titleColor}
       items={tooltipItems}

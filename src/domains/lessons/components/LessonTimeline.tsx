@@ -150,16 +150,16 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
       lesson.scheduledDate,
       lesson.endTime
     );
-    if (isPastUnstarted) return 'bg-amber-400';
-    
+    if (isPastUnstarted) return 'bg-amber-400/60';
+
     // Timeline dots use softer colors to reduce visual noise
     switch (lesson.statusName) {
-      case 'Scheduled': return 'bg-slate-400';
-      case 'Conducted': return 'bg-emerald-400';
-      case 'Cancelled': return 'bg-rose-400';
-      case 'Make Up': return 'bg-violet-400';
-      case 'No Show': return 'bg-slate-500';
-      default: return 'bg-slate-500';
+      case 'Scheduled': return 'bg-slate-400/50';
+      case 'Conducted': return 'bg-emerald-400/50';
+      case 'Cancelled': return 'bg-rose-400/50';
+      case 'Make Up': return 'bg-violet-400/50';
+      case 'No Show': return 'bg-slate-500/50';
+      default: return 'bg-slate-500/50';
     }
   };
 
@@ -385,10 +385,10 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                     className="relative w-full"
                     data-lesson-id={lesson.id}
                   >
-                    <GlassCard 
+                    <GlassCard
                       className={`w-full py-2.5 px-3 hover:bg-white/[0.04] transition-all duration-150 cursor-pointer ${
                         isNextLesson ? 'border-l-2 border-sky-400/60 pl-2.5' : ''
-                      } ${isPastUnstarted ? 'border-l-2 border-amber-400/70 pl-2.5' : ''}`}
+                      } ${isPastUnstarted ? 'border-l-4 border-l-amber-500/40 bg-amber-500/5 pl-2.5' : ''}`}
                       onClick={() => onViewLesson?.(lesson)}
                     >
                     <div className="flex items-center justify-between">
@@ -404,21 +404,11 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                             <div className="text-white font-medium text-sm">
                               {formatLessonDateTime(lesson)}
                             </div>
-                            {/* Show warning badge for past unstarted lessons - clear attention indicator */}
-                            {isPastUnstarted && (
-                              <Badge 
-                                variant="outline" 
-                                className="bg-amber-500/25 text-amber-200 border-amber-500/35 text-xs flex items-center gap-1 font-medium"
-                              >
-                                <AlertTriangle className="w-3 h-3" />
-                                Needs Documentation
-                              </Badge>
-                            )}
-                            {/* Only show status badge for exceptions, not for regular Scheduled lessons */}
-                            {!isPastUnstarted && lesson.statusName !== 'Scheduled' && (
-                              <LessonStatusBadge 
-                                status={lesson.statusName} 
-                                size="sm" 
+                            {/* Only show status badge for exceptions, not for regular Scheduled or Conducted lessons */}
+                            {!isPastUnstarted && lesson.statusName !== 'Scheduled' && lesson.statusName !== 'Conducted' && (
+                              <LessonStatusBadge
+                                status={lesson.statusName}
+                                size="sm"
                               />
                             )}
                             {lesson.makeupLessonId && (
@@ -431,20 +421,12 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                               </Badge>
                             )}
                             {lesson.originalLessonId && (
-                              <Badge 
-                                variant="outline" 
+                              <Badge
+                                variant="outline"
                                 className="bg-violet-500/15 text-violet-300 border-violet-500/20 text-xs flex items-center gap-1"
                               >
                                 <RotateCcw className="w-3 h-3" />
                                 Makeup
-                              </Badge>
-                            )}
-                            {!isPastUnstarted && isUpcoming(lesson) && (
-                              <Badge 
-                                variant="outline" 
-                                className="bg-slate-500/15 text-slate-300 border-slate-500/20 text-xs"
-                              >
-                                Upcoming
                               </Badge>
                             )}
                           </div>
