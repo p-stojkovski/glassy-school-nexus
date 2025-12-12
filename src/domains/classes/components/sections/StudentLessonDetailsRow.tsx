@@ -1,7 +1,7 @@
 import React from 'react';
 import { StudentLessonDetail } from '@/types/api/class';
 import { Badge } from '@/components/ui/badge';
-import { Clock, CheckCircle2, XCircle, AlertTriangle, Circle, FileText } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, AlertTriangle, FileText } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
 interface StudentLessonDetailsRowProps {
@@ -12,12 +12,7 @@ interface StudentLessonDetailsRowProps {
 const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lessons, loading }) => {
   const getAttendanceBadge = (status?: string | null) => {
     if (!status) {
-      return (
-        <Badge variant="outline" className="bg-gray-600/30 text-gray-200 border-gray-400/40 text-xs">
-          <Circle className="w-3 h-3 mr-1" />
-          Not Marked
-        </Badge>
-      );
+      return <span className="text-white/40 text-xs">—</span>;
     }
 
     const configs = {
@@ -41,12 +36,7 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
 
   const getHomeworkBadge = (status?: string | null) => {
     if (!status) {
-      return (
-        <Badge variant="outline" className="bg-gray-600/30 text-gray-200 border-gray-400/40 text-xs">
-          <Circle className="w-3 h-3 mr-1" />
-          Not Checked
-        </Badge>
-      );
+      return <span className="text-white/40 text-xs">—</span>;
     }
 
     const configs = {

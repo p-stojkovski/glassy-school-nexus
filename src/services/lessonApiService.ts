@@ -168,12 +168,13 @@ return await apiService.get<LessonResponse>(LessonApiPaths.BY_ID(id));
   /** Get lessons for a specific class with optional filters */
   async getLessonsForClass(classId: string, filters?: ClassLessonFilterParams): Promise<LessonResponse[]> {
     const params: LessonSearchParams = { classId };
-    
+
     if (filters) {
       const toIsoDate = (date: Date) => {
-        const normalized = new Date(date);
-        normalized.setHours(0, 0, 0, 0);
-        return normalized.toISOString().split('T')[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
       };
 
       const today = new Date();
@@ -209,16 +210,39 @@ return await apiService.get<LessonResponse>(LessonApiPaths.BY_ID(id));
           params.startDate = toIsoDate(startDate);
         }
       }
-      
+
       // 'all' scope: no date filters applied
-      
+
       // Apply status filter if not 'all'
       if (filters.statusName && filters.statusName !== 'all') {
         params.statusName = filters.statusName;
       }
     }
-    
-    return this.getLessons(params);
+
+    const lessons = await this.getLessons(params);
+
+    // Client-side filtering: For 'upcoming' scope, filter out lessons whose end time has already passed
+    if (filters?.scope === 'upcoming') {
+      const now = Date.now();
+      return lessons.filter(lesson => {
+        // Parse the lesson's end date/time
+        const [year, month, day] = lesson.scheduledDate.split('T')[0].split('-').map(Number);
+        const [hours, minutes] = lesson.endTime.split(':').map(Number);
+
+        // Create a Date object for the lesson end time
+        const lessonEndDateTime = new Date(year, month - 1, day, hours, minutes);
+
+        // If date parsing failed, include the lesson (fail-safe)
+        if (Number.isNaN(lessonEndDateTime.getTime())) {
+          return true;
+        }
+
+        // Only include lessons whose end time hasn't passed yet
+        return lessonEndDateTime.getTime() > now;
+      });
+    }
+
+    return lessons;
   }
 
   /** Get past unstarted lessons for a class that need documentation */

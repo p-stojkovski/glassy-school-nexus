@@ -33,13 +33,6 @@ interface AdditionalDetailsFormData {
   materials: string[];
 }
 
-const EMPTY_SECTION_PROMPTS: Record<'description' | 'objectives' | 'requirements' | 'materials', string> = {
-  description: 'Share a brief overview so students know what this class covers.',
-  objectives: 'List 2-3 learning goals to set expectations for progress.',
-  requirements: 'Outline prerequisites, supplies, or skills needed to participate.',
-  materials: 'Attach links or handouts students should review before class.',
-};
-
 const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
   classData,
   onUpdate,
@@ -329,21 +322,8 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
-              {hasDescription ? (
+              {hasDescription && (
                 <p className="text-white/90 leading-relaxed">{additionalDetails.description}</p>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-white/20 bg-white/[0.02] p-4">
-                  <p className="text-sm text-white/70 mb-3">{EMPTY_SECTION_PROMPTS.description}</p>
-                  <Button
-                    onClick={handleEdit}
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 px-3 text-sm font-semibold text-white bg-white/10 border border-white/25 hover:bg-white/20"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add description
-                  </Button>
-                </div>
               )}
             </AccordionContent>
           </AccordionItem>
@@ -371,7 +351,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
-              {hasObjectives ? (
+              {hasObjectives && (
                 <div className="space-y-3">
                   {additionalDetails.objectives!.map((objective, index) => (
                     <div key={index} className="flex items-start gap-3 rounded-xl bg-white/[0.02] p-3">
@@ -379,19 +359,6 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
                       <span className="text-white/90">{objective}</span>
                     </div>
                   ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-white/20 bg-white/[0.02] p-4">
-                  <p className="text-sm text-white/70 mb-3">{EMPTY_SECTION_PROMPTS.objectives}</p>
-                  <Button
-                    onClick={handleEdit}
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 px-3 text-sm font-semibold text-white bg-white/10 border border-white/25 hover:bg-white/20"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add objectives
-                  </Button>
                 </div>
               )}
             </AccordionContent>
@@ -415,23 +382,10 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
-              {hasRequirements ? (
+              {hasRequirements && (
                 <p className="text-white/90 leading-relaxed whitespace-pre-line">
                   {additionalDetails.requirements}
                 </p>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-white/20 bg-white/[0.02] p-4">
-                  <p className="text-sm text-white/70 mb-3">{EMPTY_SECTION_PROMPTS.requirements}</p>
-                  <Button
-                    onClick={handleEdit}
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 px-3 text-sm font-semibold text-white bg-white/10 border border-white/25 hover:bg-white/20"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add requirements
-                  </Button>
-                </div>
               )}
             </AccordionContent>
           </AccordionItem>
@@ -459,7 +413,7 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
-              {hasMaterials ? (
+              {hasMaterials && (
                 <div className="flex flex-wrap gap-2">
                   {additionalDetails.materials!.map((material, index) => (
                     <Badge
@@ -470,19 +424,6 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
                       {material}
                     </Badge>
                   ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-white/20 bg-white/[0.02] p-4">
-                  <p className="text-sm text-white/70 mb-3">{EMPTY_SECTION_PROMPTS.materials}</p>
-                  <Button
-                    onClick={handleEdit}
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 px-3 text-sm font-semibold text-white bg-white/10 border border-white/25 hover:bg-white/20"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add materials
-                  </Button>
                 </div>
               )}
             </AccordionContent>

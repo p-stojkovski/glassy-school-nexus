@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { Calendar, Trash2 } from 'lucide-react';
+import { Calendar, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -26,10 +26,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { TimeCombobox } from '@/components/common';
 import { classApiService } from '@/services/classApiService';
 import { UpdateScheduleSlotRequest } from '@/types/api/scheduleSlot';
 import { ScheduleSlotDto } from '@/types/api/class';
+import { ExistingScheduleOverlapInfo, ScheduleConflictInfo } from '@/types/api/scheduleValidation';
 import { toast } from 'sonner';
 
 interface EditScheduleSlotDialogProps {
@@ -52,6 +54,9 @@ const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'S
 
 export function EditScheduleSlotDialog({ open, onOpenChange, classId, slot, onSuccess, onDelete }: EditScheduleSlotDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [conflictInfo, setConflictInfo] = useState<ScheduleConflictInfo | null>(null);
+  const [existingOverlap, setExistingOverlap] = useState<ExistingScheduleOverlapInfo | null>(null);
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -71,12 +76,66 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, slot, onSu
         endTime: slot.endTime,
         updateFutureLessons: true,
       });
+      // Clear validation state when slot changes
+      setConflictInfo(null);
+      setExistingOverlap(null);
     }
   }, [slot, form]);
 
+  const watchedDay = form.watch('dayOfWeek');
+  const watchedStart = form.watch('startTime');
+  const watchedEnd = form.watch('endTime');
+
   const timesChanged = slot
-    ? form.watch('startTime') !== slot.startTime || form.watch('endTime') !== slot.endTime
+    ? watchedStart !== slot.startTime || watchedEnd !== slot.endTime
     : false;
+
+  const dayChanged = slot ? watchedDay !== slot.dayOfWeek : false;
+  const scheduleChanged = timesChanged || dayChanged;
+
+  // Validate schedule changes when day/time changes
+  useEffect(() => {
+    if (!slot || !scheduleChanged || !open) {
+      setConflictInfo(null);
+      setExistingOverlap(null);
+      return;
+    }
+
+    const validateChanges = async () => {
+      setIsValidating(true);
+      try {
+        const response = await classApiService.validateScheduleChanges(classId, {
+          newSchedule: [{
+            dayOfWeek: watchedDay,
+            startTime: watchedStart,
+            endTime: watchedEnd,
+          }],
+        });
+
+        // Filter out overlaps that are the current slot being edited (same slotId)
+        const filteredOverlaps = response.existingScheduleOverlap?.overlaps.filter(
+          overlap => overlap.scheduleSlotId !== slot.id
+        ) || [];
+
+        setConflictInfo(response.conflictInfo);
+        setExistingOverlap(filteredOverlaps.length > 0 
+          ? { hasOverlap: true, overlaps: filteredOverlaps }
+          : null
+        );
+      } catch (error) {
+        console.error('Failed to validate schedule changes:', error);
+      } finally {
+        setIsValidating(false);
+      }
+    };
+
+    // Debounce the validation
+    const timeoutId = setTimeout(validateChanges, 500);
+    return () => clearTimeout(timeoutId);
+  }, [classId, slot, watchedDay, watchedStart, watchedEnd, scheduleChanged, open]);
+
+  const hasConflicts = conflictInfo?.hasConflicts || false;
+  const hasOverlaps = existingOverlap?.hasOverlap || false;
 
   const handleSubmit = async (data: FormData) => {
     if (!slot?.id) return;
@@ -223,6 +282,65 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, slot, onSu
                     </FormItem>
                   )}
                 />
+              </div>
+            )}
+
+            {/* Conflict Warnings */}
+            {scheduleChanged && !isValidating && (hasConflicts || hasOverlaps) && (
+              <div className="space-y-3">
+                {/* Existing Schedule Overlap Warning */}
+                {hasOverlaps && existingOverlap && (
+                  <Alert className="bg-amber-500/10 border-amber-500/30">
+                    <AlertTriangle className="h-4 w-4 text-amber-400" />
+                    <AlertDescription className="text-white/80 text-sm">
+                      <span className="font-medium text-amber-300">Schedule overlap detected:</span>
+                      {existingOverlap.overlaps.map((overlap) => (
+                        <div key={overlap.scheduleSlotId} className="mt-1">
+                          <span className="text-white/90">
+                            {overlap.dayOfWeek} {overlap.startTime} - {overlap.endTime}
+                          </span>
+                          <span className="text-xs ml-2 text-white/60">
+                            ({overlap.futureLessonCount} future lesson{overlap.futureLessonCount !== 1 ? 's' : ''})
+                          </span>
+                        </div>
+                      ))}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Teacher/Classroom/Class Conflicts */}
+                {hasConflicts && conflictInfo && (
+                  <Alert className="bg-red-500/10 border-red-500/30">
+                    <AlertTriangle className="h-4 w-4 text-red-400" />
+                    <AlertDescription className="text-white/80 text-sm">
+                      <span className="font-medium text-red-300">Scheduling conflicts found:</span>
+                      {conflictInfo.conflicts.slice(0, 3).map((conflict, index) => (
+                        <div key={index} className="mt-1">
+                          <span className="text-white/90">
+                            {conflict.conflictType === 'teacher_conflict' && 'Teacher busy'}
+                            {conflict.conflictType === 'classroom_conflict' && 'Classroom busy'}
+                            {conflict.conflictType === 'class_conflict' && 'Class conflict'}
+                          </span>
+                          <span className="text-xs ml-2 text-white/60">
+                            ({conflict.instances.length} instance{conflict.instances.length !== 1 ? 's' : ''})
+                          </span>
+                        </div>
+                      ))}
+                      {conflictInfo.conflicts.length > 3 && (
+                        <p className="text-xs text-white/50 mt-1">
+                          +{conflictInfo.conflicts.length - 3} more conflicts
+                        </p>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
+
+            {/* Validation Loading */}
+            {scheduleChanged && isValidating && (
+              <div className="text-center py-2">
+                <span className="text-sm text-white/50">Checking for conflicts...</span>
               </div>
             )}
 

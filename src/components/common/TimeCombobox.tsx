@@ -21,6 +21,7 @@ interface TimeComboboxProps {
   intervalMinutes?: number; // Time slot interval (default: 30)
   startHour?: number; // Start of available times (default: 7 = 7:00 AM)
   endHour?: number; // End of available times (default: 21 = 9:00 PM)
+  showIcon?: boolean; // Show clock icon (default: true)
 }
 
 // Generate time slots at specified intervals
@@ -119,6 +120,7 @@ const TimeCombobox: React.FC<TimeComboboxProps> = ({
   intervalMinutes = 30,
   startHour = 7,
   endHour = 21,
+  showIcon = true,
 }) => {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -260,7 +262,7 @@ const TimeCombobox: React.FC<TimeComboboxProps> = ({
               disabled && "opacity-50 cursor-not-allowed hover:bg-white/10 hover:border-white/20",
             )}
           >
-            <Clock className="w-4 h-4 text-yellow-400 mr-2 flex-shrink-0" />
+            {showIcon && <Clock className="w-4 h-4 text-yellow-400 mr-2 flex-shrink-0" />}
             <input
               ref={inputRef}
               type="text"

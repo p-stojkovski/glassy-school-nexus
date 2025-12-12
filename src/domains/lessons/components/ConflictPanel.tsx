@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertTriangle,
@@ -49,6 +49,7 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
   onProceedAnyway,
   showProceedButton = false,
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const hasConflicts = conflicts.length > 0;
   const hasError = !!error;
   const hasChecked = !checking && !hasError;
@@ -118,9 +119,9 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
       >
         <div className={`rounded-lg p-4 ${
           hasConflicts || hasError
-            ? 'bg-orange-500/10 border border-orange-500/20'
+            ? 'bg-white/10 border border-red-400/30'
             : checking
-              ? 'bg-orange-500/10 border border-orange-500/20'
+              ? 'bg-white/10 border border-orange-400/30'
               : 'bg-green-500/10 border border-green-500/20'
         }`}>
           {/* Checking State */}
@@ -148,59 +149,94 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
           {/* Conflicts Display */}
           {hasConflicts && !checking && (
             <div className="space-y-3">
-              {/* Header */}
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0" />
-                <p className="text-orange-200 font-semibold text-sm">
-                  {conflicts.length === 1 ? '1 Conflict Detected' : `${conflicts.length} Conflicts Detected`}
-                </p>
-              </div>
-
-              {/* Conflicts List - Compact */}
-              <div className="space-y-2">
-                {conflicts.slice(0, 3).map((conflict, index) => (
-                  <motion.div
-                    key={`${conflict.conflictingLessonId}-${index}`}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-white/5 border border-white/10 rounded-md p-2.5 flex items-start gap-2.5"
-                  >
-                    {getConflictIcon(conflict.conflictType)}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
-                        <Badge 
-                          variant="outline" 
-                          className="bg-red-500/20 text-red-300 border-red-500/30 text-xs py-0 px-1.5"
-                        >
-                          {getConflictTypeLabel(conflict.conflictType)}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-white/80 text-xs font-medium leading-snug">
-                          {conflict.conflictingClassName && conflict.conflictingClassName.trim().length > 0
-                            ? conflict.conflictingClassName
-                            : conflict.conflictType === 'teacher_conflict'
-                              ? 'Teacher unavailable'
-                              : 'Classroom occupied'}
-                        </p>
-                        {(conflict.startTime || conflict.endTime) && (
-                          <p className="text-white/60 text-xs whitespace-nowrap">
-                            {conflict.startTime} - {conflict.endTime}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-
-                {/* Show "and more" indicator if there are additional conflicts */}
-                {conflicts.length > 3 && (
-                  <div className="text-xs text-orange-300/70 px-2">
-                    +{conflicts.length - 3} more
+              {/* Collapsed State */}
+              {!isExpanded && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                    <p className="text-orange-200 font-semibold text-sm">
+                      {conflicts.length === 1 ? '1 conflict detected' : `${conflicts.length} conflicts detected`}
+                    </p>
                   </div>
-                )}
-              </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsExpanded(true)}
+                    className="text-xs text-orange-300 hover:text-orange-200 hover:bg-orange-500/10 h-auto py-1 px-2"
+                  >
+                    View details →
+                  </Button>
+                </div>
+              )}
+
+              {/* Expanded State */}
+              {isExpanded && (
+                <>
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                      <p className="text-orange-200 font-semibold text-sm">
+                        {conflicts.length === 1 ? '1 conflict detected' : `${conflicts.length} conflicts detected`}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsExpanded(false)}
+                      className="text-xs text-orange-300 hover:text-orange-200 hover:bg-orange-500/10 h-auto py-1 px-2"
+                    >
+                      Hide details
+                    </Button>
+                  </div>
+
+                  {/* Conflicts List - Compact */}
+                  <div className="space-y-2">
+                    {conflicts.map((conflict, index) => (
+                      <motion.div
+                        key={`${conflict.conflictingLessonId}-${index}`}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-white/5 border border-white/10 rounded-md p-2.5 flex items-start gap-2.5"
+                      >
+                        {getConflictIcon(conflict.conflictType)}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                            <Badge
+                              variant="outline"
+                              className="bg-red-500/20 text-red-300 border-red-500/30 text-xs py-0 px-1.5"
+                            >
+                              {getConflictTypeLabel(conflict.conflictType)}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-white/80 text-xs font-medium leading-snug">
+                              {conflict.conflictingClassName && conflict.conflictingClassName.trim().length > 0
+                                ? conflict.conflictingClassName
+                                : conflict.conflictType === 'teacher_conflict'
+                                  ? 'Teacher unavailable'
+                                  : 'Classroom occupied'}
+                            </p>
+                            {(conflict.startTime || conflict.endTime) && (
+                              <p className="text-white/60 text-xs whitespace-nowrap">
+                                {conflict.startTime} - {conflict.endTime}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Constructive Guidance */}
+                  <div className="bg-white/5 border border-white/10 rounded-md p-2.5">
+                    <p className="text-xs text-white/60">
+                      💡 Try a different time or day to avoid conflicts.
+                    </p>
+                  </div>
+                </>
+              )}
 
               {/* Suggestions Section */}
               {suggestions.length > 0 && (
@@ -267,11 +303,6 @@ const ConflictPanel: React.FC<ConflictPanelProps> = ({
               <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
               <div>
                 <p className="text-green-200 font-semibold text-sm">No conflicts detected</p>
-                <p className="text-green-200/70 text-xs">
-                  {academicYearName 
-                    ? `No conflicts detected in ${academicYearName}` 
-                    : 'This time slot is available - ready to create lesson'}
-                </p>
               </div>
             </div>
           )}

@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Users, Loader2, Plus } from 'lucide-react';
+import { Users, Loader2, Plus, Calendar, ListChecks, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { toast } from 'sonner';
-import GlassCard from '@/components/common/GlassCard';
 import ScheduleEnrollmentTab from '@/domains/classes/components/forms/tabs/ScheduleEnrollmentTab';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import StudentProgressTable from '@/domains/classes/components/sections/StudentProgressTable';
 import { TransferStudentDialog } from '@/domains/classes/components/dialogs/TransferStudentDialog';
-import { ClassBasicInfoResponse, ClassFormData } from '@/types/api/class';
-import { addStudentsToClass, removeStudentFromClass } from '@/services/classApiService';
+import { ClassBasicInfoResponse, ClassFormData, StudentLessonSummary } from '@/types/api/class';
+import { addStudentsToClass, removeStudentFromClass, classApiService } from '@/services/classApiService';
 
 interface ClassStudentsTabProps {
   mode: 'view' | 'edit';
@@ -41,6 +40,29 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
   const [studentToRemove, setStudentToRemove] = useState<StudentToRemove | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
   const [studentToTransfer, setStudentToTransfer] = useState<StudentToTransfer | null>(null);
+  const [studentSummaries, setStudentSummaries] = useState<StudentLessonSummary[]>([]);
+
+  // Fetch student summaries for header display
+  useEffect(() => {
+    if (!classData?.id) return;
+
+    const fetchSummaries = async () => {
+      try {
+        const data = await classApiService.getClassStudentsSummary(classData.id);
+        setStudentSummaries(data);
+      } catch (err) {
+        console.error('Error fetching student summaries for header:', err);
+      }
+    };
+
+    fetchSummaries();
+  }, [classData?.id]);
+
+  // Calculate total conducted lessons
+  const totalConductedLessons = useMemo(() => {
+    if (studentSummaries.length === 0) return 0;
+    return Math.max(...studentSummaries.map((s) => s.totalLessons));
+  }, [studentSummaries]);
 
   // Handle adding new students using the enrollment endpoint
   const handleAddStudents = async (selectedStudentIds: string[]) => {
@@ -58,10 +80,12 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
       // Use the dedicated enrollment endpoint
       const result = await addStudentsToClass(classData.id, { studentIds: selectedStudentIds });
 
-      // Refetch class data
+      // Refetch class data and summaries
       if (onRefetchClassData) {
         await onRefetchClassData();
       }
+      const summaries = await classApiService.getClassStudentsSummary(classData.id);
+      setStudentSummaries(summaries);
 
       // Show success with details from response
       const successCount = result.enrolledCount ?? selectedStudentIds.length;
@@ -92,10 +116,12 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
       // Use the dedicated enrollment endpoint
       await removeStudentFromClass(classData.id, studentToRemove.id);
 
-      // Refetch class data
+      // Refetch class data and summaries
       if (onRefetchClassData) {
         await onRefetchClassData();
       }
+      const summaries = await classApiService.getClassStudentsSummary(classData.id);
+      setStudentSummaries(summaries);
 
       toast.success('Student removed successfully');
       setStudentToRemove(null);
@@ -113,44 +139,91 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
   if (mode === 'view') {
     return (
       <div className="space-y-6">
-        {/* Student Progress Table or Empty State */}
+        {/* Unified Header - Always visible */}
+        <div className="mb-4 flex flex-wrap items-center gap-4 md:gap-6 p-3 bg-white/[0.02] rounded-lg border border-white/10">
+          {/* Student count */}
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-white/60" />
+            <span className="text-sm text-white/80">
+              <span className="font-semibold text-white">{classData.enrolledCount}</span>{' '}
+              {classData.enrolledCount === 1 ? 'student' : 'students'}
+            </span>
+          </div>
+
+          {/* Conditional metric based on enrollment state */}
+          {classData.enrolledCount > 0 ? (
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-white/60" />
+              <span className="text-sm text-white/80">
+                <span className="font-semibold text-white">{totalConductedLessons}</span>{' '}
+                {totalConductedLessons === 1 ? 'lesson' : 'lessons'} conducted
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <ListChecks className="w-4 h-4 text-white/60" />
+              <span className="text-sm text-white/80">
+                <span className="font-semibold text-white">{classData.availableSlots}</span>{' '}
+                {classData.availableSlots === 1 ? 'slot' : 'slots'} available
+              </span>
+            </div>
+          )}
+
+          {/* Capacity - always show */}
+          <div className="flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-white/60" />
+            <span className="text-sm text-white/60">
+              Capacity: <span className="font-semibold text-white/80">{classData.classroomCapacity}</span>
+            </span>
+          </div>
+
+          {/* Add Students button - right aligned */}
+          <div className="ml-auto w-full md:w-auto md:ml-auto">
+            <Button
+              onClick={() => setIsAddPanelOpen(true)}
+              disabled={isAdding}
+              size="default"
+              variant="outline"
+              className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium gap-2"
+            >
+                <Plus className="w-4 h-4" />
+                Add Students
+            </Button>
+          </div>
+        </div>
+
+        {/* Content Area - Table or Empty State */}
         {classData.enrolledCount === 0 ? (
-          <GlassCard className="p-3">
-            {/* Header with right-aligned Add Students (same as table view) */}
-            <div className="mb-3 flex items-center justify-between">
-              <div className="text-sm text-white/70">
-                {classData.availableSlots} {classData.availableSlots === 1 ? 'slot' : 'slots'} available (capacity: {classData.classroomCapacity})
+          // Empty state with unified container styling
+          <div className="border border-white/10 rounded-lg p-8 bg-white/[0.02]">
+            <div className="flex flex-col items-center text-center py-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 mb-4">
+                <Users className="w-8 h-8 text-white/40" />
               </div>
+              <h3 className="text-lg font-semibold text-white mb-2">No Students Enrolled</h3>
+              <p className="text-white/60 text-sm mb-6">
+                There are no students enrolled in this class yet.
+              </p>
               <Button
                 onClick={() => setIsAddPanelOpen(true)}
                 disabled={isAdding}
-                size="sm"
-                variant="ghost"
-                className="text-white hover:bg-white/10"
+                variant="outline"
+                className="gap-2 border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium"
               >
                 {isAdding ? (
                   <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     Adding...
                   </>
                 ) : (
                   <>
-                    <Plus className="w-3 h-3" />
-                    Add Students
+                    <Plus className="w-4 h-4" />
+                    Add Your First Student
                   </>
                 )}
               </Button>
             </div>
-
-            {/* Empty content */}
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 mb-3">
-                <Users className="w-6 h-6 text-white/40" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">No Students Enrolled</h3>
-              <p className="text-white/60 text-sm">There are no students enrolled in this class yet.</p>
-            </div>
-          </GlassCard>
+          </div>
         ) : (
           <StudentProgressTable
             classId={classData.id}
@@ -176,6 +249,12 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
           onSelectionChange={handleAddStudents}
           title="Add Students to Class"
           allowMultiple={true}
+          classData={{
+            id: classData.id,
+            enrolledCount: classData.enrolledCount,
+            classroomCapacity: classData.classroomCapacity,
+            availableSlots: classData.availableSlots,
+          }}
         />
 
         {/* Remove Student Confirmation Dialog */}

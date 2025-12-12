@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { StudentLessonSummary, StudentLessonDetail } from '@/types/api/class';
 import { classApiService } from '@/services/classApiService';
-import { ChevronDown, ChevronRight, User, AlertCircle, Loader2, MessageSquare, Plus, Users, Calendar } from 'lucide-react';
+import { ChevronDown, ChevronRight, User, AlertCircle, Loader2, MessageSquare, Plus } from 'lucide-react';
 import StudentLessonDetailsRow from './StudentLessonDetailsRow';
 import StudentProgressChips from './StudentProgressChips';
 import StudentRowActionsMenu from './StudentRowActionsMenu';
@@ -107,12 +107,6 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
     return { show: false, color: '', label: '', title: '' };
   }, []);
 
-  // Memoized total lessons count for header
-  const totalConductedLessons = useMemo(() => {
-    if (summaries.length === 0) return 0;
-    return Math.max(...summaries.map((s) => s.totalLessons));
-  }, [summaries]);
-
   // Determine if any student has billing data (discount or payment obligation)
   const hasAnyBillingData = useMemo(() => {
     return summaries.some((s) => s.discount?.hasDiscount || s.paymentObligation?.hasPendingObligations);
@@ -203,17 +197,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
               variant="outline"
               className="gap-2 border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium"
             >
-              {isAddingStudents ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Adding...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  Add Students
-                </>
-              )}
+              Add Students
             </Button>
           )}
         </div>
@@ -223,45 +207,6 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Enhanced Summary Panel */}
-      <div className="mb-4 flex flex-wrap items-center gap-4 md:gap-6 p-3 bg-white/[0.02] rounded-lg border border-white/10">
-        <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-white/60" />
-          <span className="text-sm text-white/80">
-            <span className="font-semibold text-white">{summaries.length}</span> {summaries.length === 1 ? 'student' : 'students'}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-white/60" />
-          <span className="text-sm text-white/80">
-            <span className="font-semibold text-white">{totalConductedLessons}</span> {totalConductedLessons === 1 ? 'lesson' : 'lessons'} conducted
-          </span>
-        </div>
-        <div className="ml-auto w-full md:w-auto md:ml-auto">
-          {mode === 'view' && onAddStudents && (
-            <Button
-              onClick={onAddStudents}
-              disabled={isAddingStudents}
-              size="default"
-              variant="outline"
-              className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium"
-            >
-              {isAddingStudents ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Adding...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  Add Students
-                </>
-              )}
-            </Button>
-          )}
-        </div>
-      </div>
-
       {/* Table */}
       <div className="overflow-x-auto">
         <Table>

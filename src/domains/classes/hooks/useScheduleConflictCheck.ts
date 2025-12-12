@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { LessonConflict } from '@/types/api/lesson';
-import { ScheduleConflictInfo } from '@/types/api/scheduleValidation';
+import { ScheduleConflictInfo, ExistingScheduleOverlapInfo } from '@/types/api/scheduleValidation';
 import { classApiService } from '@/services/classApiService';
 
 interface UseScheduleConflictCheckParams {
@@ -19,6 +19,7 @@ interface UseScheduleConflictCheckReturn {
   error: string | null;
   hasConflicts: boolean;
   dateRangeContext: string;
+  existingOverlap: ExistingScheduleOverlapInfo | null;
   clear: () => void;
 }
 
@@ -76,6 +77,7 @@ export const useScheduleConflictCheck = (): UseScheduleConflictCheckReturn & {
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dateRangeContext, setDateRangeContext] = useState('');
+  const [existingOverlap, setExistingOverlap] = useState<ExistingScheduleOverlapInfo | null>(null);
 
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastCheckRef = useRef<string>('');
@@ -86,6 +88,7 @@ export const useScheduleConflictCheck = (): UseScheduleConflictCheckReturn & {
     setConflicts([]);
     setError(null);
     setDateRangeContext('');
+    setExistingOverlap(null);
   }, []);
 
   // Run conflict check
@@ -155,12 +158,14 @@ export const useScheduleConflictCheck = (): UseScheduleConflictCheckReturn & {
           const mappedConflicts = mapToLessonConflicts(response.conflictInfo);
           setConflicts(mappedConflicts);
           setDateRangeContext(getDateRangeContext(rangeType, response.conflictInfo.isUsingFallbackDateRange));
+          setExistingOverlap(response.existingScheduleOverlap || null);
         }
       } catch (err: any) {
         console.error('Schedule conflict check failed:', err);
         if (lastCheckRef.current === scheduledKey) {
           setError(err.message || 'Failed to check for conflicts');
           setConflicts([]);
+          setExistingOverlap(null);
         }
       } finally {
         if (lastCheckRef.current === scheduledKey) {
@@ -188,6 +193,7 @@ export const useScheduleConflictCheck = (): UseScheduleConflictCheckReturn & {
     error,
     hasConflicts,
     dateRangeContext,
+    existingOverlap,
     runCheck,
     clear,
   };

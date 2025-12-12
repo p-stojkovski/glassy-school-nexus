@@ -137,15 +137,13 @@ export function CreateClassSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md p-0 bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"
+        className="w-full sm:max-w-md p-0 bg-white/10 backdrop-blur-md border border-white/20 text-white overflow-y-auto"
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <SheetHeader className="px-6 py-5 border-b border-white/10">
-            <SheetTitle className="flex items-center gap-3 text-white text-xl font-semibold">
-              <div className="p-2 bg-yellow-500/20 rounded-lg">
-                <GraduationCap className="w-6 h-6 text-yellow-400" />
-              </div>
+          <SheetHeader className="px-4 py-4 border-b border-white/10">
+            <SheetTitle className="flex items-center gap-2 text-white text-lg font-semibold">
+              <GraduationCap className="w-5 h-5 text-yellow-400" />
               Create New Class
             </SheetTitle>
             <SheetDescription className="text-white/70 mt-2">
@@ -180,7 +178,7 @@ export function CreateClassSheet({
 
           {/* Form Content */}
           <ScrollArea className="flex-1">
-            <div className="p-6">
+            <div className="p-4">
               {/* Show blocking message if no active year */}
               {!isLoadingYears && !hasActiveYear ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -284,7 +282,7 @@ export function CreateClassSheet({
           </ScrollArea>
 
           {/* Footer Actions */}
-          <div className="p-4 border-t border-white/10 bg-white/5">
+          <div className="p-4 border-t border-white/10">
             <div className="flex gap-3">
               {hasActiveYear ? (
                 <>
@@ -301,7 +299,7 @@ export function CreateClassSheet({
                     variant="ghost"
                     onClick={() => onOpenChange(false)}
                     disabled={isSubmitting}
-                    className="text-white/70 hover:text-white hover:bg-white/10"
+                    className="text-white hover:bg-white/10"
                   >
                     Cancel
                   </Button>
@@ -311,7 +309,7 @@ export function CreateClassSheet({
                   type="button"
                   variant="ghost"
                   onClick={() => onOpenChange(false)}
-                  className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
+                  className="flex-1 text-white hover:bg-white/10"
                 >
                   Close
                 </Button>

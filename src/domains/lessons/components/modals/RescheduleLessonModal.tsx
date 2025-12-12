@@ -323,9 +323,9 @@ const RescheduleLessonModal: React.FC<RescheduleLessonModalProps> = ({
                     size="sm"
                     variant="ghost"
                     onClick={suggestTomorrowSameTime}
-                    className="text-xs bg-white/10 hover:bg-white/20 text-white h-7 px-2"
+                    className="text-xs bg-white/10 hover:bg-blue-500/20 hover:border-blue-500/30 text-white border border-white/10 h-7 px-2"
                   >
-                    <Calendar className="w-3 h-3 mr-1" />
+                    <Calendar className="w-3 h-3 mr-1 text-blue-400" />
                     Next weekday
                   </Button>
                   <Button
@@ -333,9 +333,9 @@ const RescheduleLessonModal: React.FC<RescheduleLessonModalProps> = ({
                     size="sm"
                     variant="ghost"
                     onClick={suggestNextWeekSameTime}
-                    className="text-xs bg-white/10 hover:bg-white/20 text-white h-7 px-2"
+                    className="text-xs bg-white/10 hover:bg-blue-500/20 hover:border-blue-500/30 text-white border border-white/10 h-7 px-2"
                   >
-                    <Calendar className="w-3 h-3 mr-1" />
+                    <Calendar className="w-3 h-3 mr-1 text-blue-400" />
                     Next week
                   </Button>
                 </div>

@@ -309,11 +309,11 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
             {/* Makeup Lesson Option */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Checkbox 
+                <Checkbox
                   id="create-makeup"
                   checked={createMakeup}
                   onCheckedChange={setCreateMakeup}
-                  className="border-white/20 data-[state=checked]:bg-purple-600 h-5 w-5"
+                  className="border-white/20 data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500 h-5 w-5"
                 />
                 <Label 
                   htmlFor="create-makeup" 
@@ -344,7 +344,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                           size="sm"
                           variant="ghost"
                           onClick={suggestNextAvailableDay}
-                          className="text-xs bg-white/10 hover:bg-white/20 text-white h-7 px-2"
+                          className="text-xs bg-white/10 hover:bg-yellow-500/20 hover:border-yellow-500/30 text-white border border-white/10 h-7 px-2"
                         >
                           <Plus className="w-3 h-3 mr-1" />
                           Next weekday
@@ -354,7 +354,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
                           size="sm"
                           variant="ghost"
                           onClick={suggestNextWeekSameTime}
-                          className="text-xs bg-white/10 hover:bg-white/20 text-white h-7 px-2"
+                          className="text-xs bg-white/10 hover:bg-yellow-500/20 hover:border-yellow-500/30 text-white border border-white/10 h-7 px-2"
                         >
                           <Calendar className="w-3 h-3 mr-1" />
                           Next week
@@ -448,7 +448,7 @@ const QuickCancelLessonModal: React.FC<QuickCancelLessonModalProps> = ({
             <Button
               onClick={handleConfirm}
               disabled={loading || !isReasonValid || (createMakeup && (!makeupData.scheduledDate || !makeupData.startTime || !makeupData.endTime || hasConflicts))}
-              className="flex-1 bg-white/20 hover:bg-white/30 text-white border border-white/30 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <div className="flex items-center gap-2">

@@ -57,3 +57,24 @@ export interface ConflictSummary {
   conflictType: string; // "teacher" | "classroom" | "class"
   conflictingClassName?: string;
 }
+
+// Time Suggestions (Phase 5)
+export interface SuggestAvailableTimeSlotsRequest {
+  preferredDayOfWeek?: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  preferredStartTime?: string; // "HH:mm"
+  duration: number; // minutes
+  rangeType: 'UntilYearEnd' | 'UntilSemesterEnd';
+  maxSuggestions?: number;
+}
+
+export interface SuggestAvailableTimeSlotsResponse {
+  suggestions: TimeSlotSuggestion[];
+  totalChecked: number;
+  totalAvailable: number;
+}
+
+export interface TimeSlotSuggestion {
+  dayOfWeek: string;
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+}

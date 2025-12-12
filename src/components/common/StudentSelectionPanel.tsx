@@ -20,6 +20,7 @@ import { Student } from '@/domains/students/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
 import { cn } from '@/lib/utils';
 import { studentApiService } from '@/services/studentApiService';
+import { CapacityValidationPanel } from '@/domains/classes/components/students/CapacityValidationPanel';
 
 interface StudentSelectionPanelProps {
   students?: Student[]; // Made optional since we'll load them independently
@@ -34,6 +35,12 @@ interface StudentSelectionPanelProps {
   allowMultiple?: boolean;
   maxSelections?: number;
   className?: string;
+  classData?: {
+    id: string;
+    enrolledCount: number;
+    classroomCapacity: number;
+    availableSlots: number;
+  };
 }
 
 const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
@@ -49,6 +56,7 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   allowMultiple = true,
   maxSelections,
   className,
+  classData,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [tempSelectedIds, setTempSelectedIds] =
@@ -106,22 +114,6 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
     }
   }, [isOpen, studentsError]);
 
-  // Handle escape key
-  useEffect(() => {
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscapeKey);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [isOpen, onClose]);
   // Filter students based on search query and exclusions
   const filteredStudents = useMemo(() => {
     // Ensure students is an array before filtering
@@ -160,6 +152,13 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   const selectedStudents = useMemo(() => {
     return students.filter((student) => tempSelectedIds.includes(student.id));
   }, [students, tempSelectedIds]);
+
+  // Capacity validation
+  const hasCapacityIssue = useMemo(() => {
+    if (!classData) return false;
+    const totalAfterAdd = classData.enrolledCount + tempSelectedIds.length;
+    return totalAfterAdd > classData.classroomCapacity;
+  }, [classData, tempSelectedIds.length]);
 
   const handleSelect = (student: Student) => {
     const isSelected = tempSelectedIds.includes(student.id);
@@ -220,27 +219,63 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   const clearSearch = () => {
     setSearchQuery('');
   };
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isOpen) return;
+
+      // Escape to close
+      if (event.key === 'Escape') {
+        onClose();
+      }
+
+      // Ctrl+Enter to apply (if valid)
+      if (event.key === 'Enter' && event.ctrlKey) {
+        if (tempSelectedIds.length > 0 && !isLoadingStudents && !studentsError && !hasCapacityIssue) {
+          handleApply();
+        }
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose, tempSelectedIds.length, isLoadingStudents, studentsError, hasCapacityIssue, handleApply]);
+
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md p-0 bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"
+        className="w-full sm:max-w-md p-0 bg-white/10 backdrop-blur-md border border-white/20 text-white overflow-y-auto"
       >
         <div className="flex flex-col h-full">
           {/* Header */}
           <SheetHeader className="px-4 py-4 border-b border-white/10">
             <SheetTitle className="flex items-center gap-2 text-white text-lg font-semibold">
-              <Users className="w-5 h-5 text-blue-400" />
+              <Users className="w-5 h-5 text-yellow-400" />
               {title}
             </SheetTitle>
           </SheetHeader>
 
           {/* Search Section */}
           <div className="p-4 border-b border-white/10">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-white/70">Search Students</h3>
+              {!isLoadingStudents && !studentsError && (
+                <span className="text-xs text-white/50">
+                  {filteredStudents.length} {filteredStudents.length === 1 ? 'student' : 'students'} available
+                </span>
+              )}
+            </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40 w-4 h-4" />
               <Input
-                placeholder="Search students..."
+                placeholder="Search by name, email, or phone..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 h-10"
@@ -255,6 +290,18 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
               )}
             </div>
           </div>
+
+          {/* Capacity Validation Panel - Shows when classData provided and selections exist */}
+          {classData && tempSelectedIds.length > 0 && (
+            <div className="py-3">
+              <CapacityValidationPanel
+                selectedCount={tempSelectedIds.length}
+                currentEnrolled={classData.enrolledCount}
+                capacity={classData.classroomCapacity}
+                availableSlots={classData.availableSlots}
+              />
+            </div>
+          )}
 
           {/* Selected Students Section - Always visible when selections exist */}
           {tempSelectedIds.length > 0 && (
@@ -369,8 +416,10 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                   <p className="text-sm font-medium text-white/70">
                     {searchQuery ? 'No students match your search' : 'No students available'}
                   </p>
-                  {searchQuery && (
-                    <p className="text-xs text-white/40 mt-1">Try a different search term</p>
+                  {searchQuery ? (
+                    <p className="text-xs text-white/40 mt-1">Try different keywords or check if students are already enrolled</p>
+                  ) : (
+                    <p className="text-xs text-white/40 mt-1 text-center max-w-xs">All active students are already enrolled in classes</p>
                   )}
                 </div>
               ) : (
@@ -430,20 +479,41 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
             </div>
           </ScrollArea>
 
+          {/* Quick Stats Summary - Shows when students selected and no capacity issues */}
+          {tempSelectedIds.length > 0 && classData && !hasCapacityIssue && (
+            <div className="px-4 py-3 bg-white/5 border-t border-white/10">
+              <div className="flex items-center gap-2 text-sm text-white/70">
+                <Check className="w-4 h-4 text-green-400" />
+                <span>
+                  Adding <strong className="text-white">{tempSelectedIds.length}</strong> student{tempSelectedIds.length !== 1 ? 's' : ''}
+                  {' • '}
+                  <strong className="text-white">
+                    {classData.classroomCapacity - classData.enrolledCount - tempSelectedIds.length}
+                  </strong>{' '}
+                  slot{classData.classroomCapacity - classData.enrolledCount - tempSelectedIds.length !== 1 ? 's' : ''} will remain
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Footer Actions */}
-          <div className="p-4 border-t border-white/10 bg-white/5">
+          <div className="p-4 border-t border-white/10">
             <div className="flex gap-3">
               <Button
                 onClick={handleApply}
-                disabled={isLoadingStudents || studentsError !== null}
-                className="flex-1 bg-white/20 hover:bg-white/30 text-white border border-white/30 font-semibold"
+                disabled={tempSelectedIds.length === 0 || isLoadingStudents || studentsError !== null || hasCapacityIssue}
+                className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Apply ({tempSelectedIds.length})
+                {tempSelectedIds.length === 0
+                  ? 'Select Students'
+                  : hasCapacityIssue
+                  ? 'Exceeds Capacity'
+                  : `Add ${tempSelectedIds.length} Student${tempSelectedIds.length !== 1 ? 's' : ''}`}
               </Button>
               <Button
                 variant="ghost"
                 onClick={handleCancel}
-                className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
+                className="flex-1 text-white hover:bg-white/10"
               >
                 Cancel
               </Button>

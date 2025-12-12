@@ -16,6 +16,7 @@ export interface ScheduleValidationResponse {
   isValid: boolean;
   modificationImpact: ScheduleModificationImpact;
   conflictInfo: ScheduleConflictInfo;
+  existingScheduleOverlap?: ExistingScheduleOverlapInfo;
 }
 
 export interface ScheduleModificationImpact {
@@ -51,4 +52,25 @@ export interface ConflictInstance {
   date: string;
   conflictingClassName: string;
   conflictingLessonId: string;
+}
+
+/**
+ * Information about existing schedule slots that overlap with the proposed schedule.
+ */
+export interface ExistingScheduleOverlapInfo {
+  hasOverlap: boolean;
+  overlaps: ExistingScheduleOverlap[];
+}
+
+/**
+ * Details of an existing schedule slot that overlaps with the proposed time.
+ */
+export interface ExistingScheduleOverlap {
+  scheduleSlotId: string;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  overlapType: 'exact' | 'partial';
+  futureLessonCount: number;
+  pastLessonCount: number;
 }

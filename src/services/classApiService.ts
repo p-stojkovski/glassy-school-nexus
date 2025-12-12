@@ -42,6 +42,8 @@ import {
   UpdateScheduleSlotRequest,
   UpdateScheduleSlotResponse,
   DeleteScheduleSlotResponse,
+  SuggestAvailableTimeSlotsRequest,
+  SuggestAvailableTimeSlotsResponse,
 } from '@/types/api/scheduleSlot';
 
 // Preserve status/details when rethrowing with a custom message
@@ -457,6 +459,35 @@ await apiService.delete<void>(ClassApiPaths.BY_ID(id));
     }
   }
 
+  /**
+   * Suggest available time slots (Phase 5: Intelligent Time Suggestions)
+   *
+   * Endpoint: POST /api/classes/{classId}/schedule-slots/suggest-available
+   * See: /think-english-api/API_SPEC_TIME_SUGGESTIONS.md
+   *
+   * Analyzes teacher and classroom availability to suggest alternative time slots when conflicts are detected.
+   */
+  async suggestAvailableTimeSlots(
+    classId: string,
+    request: SuggestAvailableTimeSlotsRequest
+  ): Promise<SuggestAvailableTimeSlotsResponse> {
+    try {
+      const endpoint = `/api/classes/${classId}/schedule-slots/suggest-available`;
+      return await apiService.post<SuggestAvailableTimeSlotsResponse>(endpoint, request);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid request parameters');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to suggest time slots');
+      }
+      throw makeApiError(error, `Failed to suggest time slots: ${error.message || 'Unknown error'}`);
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // ENROLLMENT MANAGEMENT
   // ═══════════════════════════════════════════════════════════════════════════
@@ -565,6 +596,8 @@ export const updateScheduleSlot = (classId: string, slotId: string, request: Upd
   classApiService.updateScheduleSlot(classId, slotId, request);
 export const deleteScheduleSlot = (classId: string, slotId: string) =>
   classApiService.deleteScheduleSlot(classId, slotId);
+export const suggestAvailableTimeSlots = (classId: string, request: SuggestAvailableTimeSlotsRequest) =>
+  classApiService.suggestAvailableTimeSlots(classId, request);
 
 // Enrollment management
 export const addStudentsToClass = (classId: string, request: AddStudentsRequest) =>

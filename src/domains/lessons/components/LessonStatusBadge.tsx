@@ -27,27 +27,27 @@ const statusConfig = {
   'Scheduled': {
     icon: Calendar,
     label: 'Scheduled',
-    colorClasses: 'bg-slate-500/15 text-slate-300 border-slate-500/20',
+    colorClasses: 'bg-slate-500/20 text-slate-300 border-slate-500/25',
   },
   'Conducted': {
     icon: CheckCircle,
     label: 'Conducted',
-    colorClasses: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
+    colorClasses: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/25',
   },
   'Cancelled': {
     icon: XCircle,
     label: 'Cancelled',
-    colorClasses: 'bg-rose-500/20 text-rose-300 border-rose-500/25',
+    colorClasses: 'bg-rose-500/25 text-rose-300 border-rose-500/30',
   },
   'Make Up': {
     icon: RotateCcw,
     label: 'Make Up',
-    colorClasses: 'bg-violet-500/15 text-violet-300 border-violet-500/20',
+    colorClasses: 'bg-violet-500/20 text-violet-300 border-violet-500/25',
   },
   'No Show': {
     icon: UserX,
     label: 'No Show',
-    colorClasses: 'bg-slate-500/15 text-slate-400 border-slate-500/20',
+    colorClasses: 'bg-slate-500/20 text-slate-400 border-slate-500/25',
   },
 } as const;
 

@@ -57,10 +57,10 @@ const QuickConductLessonModal: React.FC<QuickConductLessonModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gradient-to-br from-gray-900/95 via-green-900/90 to-emerald-900/95 backdrop-blur-xl border-white/20 text-white max-w-md">
+      <DialogContent className="bg-white/10 backdrop-blur-md border border-white/20 text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-400" />
+            <CheckCircle className="w-5 h-5 text-emerald-400" />
             Mark Lesson as Conducted
           </DialogTitle>
           <DialogDescription className="text-white/70">
@@ -77,24 +77,25 @@ const QuickConductLessonModal: React.FC<QuickConductLessonModalProps> = ({
           <div className="bg-white/5 p-4 rounded-lg border border-white/10">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-white">{lesson.className}</h4>
+                <h4 className="font-semibold text-white text-base">{lesson.className}</h4>
                 <LessonStatusBadge status={lesson.statusName} size="sm" />
               </div>
-              
-              <div className="flex items-center gap-2 text-sm text-white/70">
-                <Calendar className="w-4 h-4" />
-                <span>{formatLessonDateTime(lesson)}</span>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm text-white/70">
-                <div className="flex items-center gap-2">
-                  <User className="w-3 h-3" />
-                  <span className="truncate">{lesson.teacherName}</span>
+
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-white/70">
+                  <Calendar className="w-4 h-4 text-white/50" />
+                  <span>{formatLessonDateTime(lesson)}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-3 h-3" />
-                  <span className="truncate">{lesson.classroomName}</span>
+                <div className="flex items-center gap-2 text-white/70">
+                  <User className="w-4 h-4 text-white/50" />
+                  <span>{lesson.teacherName}</span>
                 </div>
+                {lesson.classroomName && (
+                  <div className="flex items-center gap-2 text-white/70">
+                    <MapPin className="w-4 h-4 text-white/50" />
+                    <span>{lesson.classroomName}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -109,7 +110,7 @@ const QuickConductLessonModal: React.FC<QuickConductLessonModalProps> = ({
               placeholder="Add any notes about how the lesson went..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="bg-white/5 border-white/20 text-white placeholder:text-white/50 resize-none"
+              className="bg-white/5 border-white/20 text-white placeholder:text-white/50 resize-none focus:border-emerald-400 focus:ring-emerald-400/50"
               rows={3}
               maxLength={500}
             />
@@ -131,7 +132,7 @@ const QuickConductLessonModal: React.FC<QuickConductLessonModalProps> = ({
             <Button
               onClick={handleConfirm}
               disabled={loading}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold"
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold disabled:opacity-50"
             >
               {loading ? (
                 <div className="flex items-center gap-2">
