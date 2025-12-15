@@ -440,9 +440,6 @@ const ClassInfoTab: React.FC<ClassInfoTabProps> = ({
         <GlassCard className="p-3">
           <div className="mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-                <h3 className="text-lg font-semibold text-white">
-                  Edit details
-                </h3>
             </div>
             <TabEditControls
               mode="edit"
