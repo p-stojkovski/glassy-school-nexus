@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { CalendarDays, Settings, BookOpen, AlertTriangle, CheckCircle, XCircle, Clock, Sparkles } from 'lucide-react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import YearsDropdown from '@/components/common/YearsDropdown';
 import SemestersDropdown from '@/components/common/SemestersDropdown';
 import { Switch } from '@/components/ui/switch';
@@ -16,7 +17,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import GlassCard from '@/components/common/GlassCard';
 import { NativeDateInput } from '@/components/common';
 import { useLessons } from '@/domains/lessons/hooks/useLessons';
 import { AcademicYear, Semester } from '@/domains/settings/types/academicCalendarTypes';
@@ -325,103 +325,104 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
   const isDateFieldDisabled = formData.generationMode === 'Semester' || formData.generationMode === 'FullYear' || formData.generationMode === 'Month';
 
   const renderFormStep = () => (
-    <div className="space-y-6">
+    <form id="lesson-generation-form" className="space-y-4">
       {/* Generation Mode Selection */}
-      <GlassCard className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Settings className="w-5 h-5 text-blue-400" />
-          <h3 className="text-lg font-semibold text-white">Generation Mode</h3>
+      <div>
+        <Label className="text-white text-sm font-medium flex items-center gap-2">
+          <Settings className="w-4 h-4 text-purple-400" />
+          Generation Mode
+        </Label>
+        <div className="mt-1">
+          <Select
+            value={formData.generationMode}
+            onValueChange={(value: GenerationMode) => handleInputChange('generationMode', value)}
+          >
+            <SelectTrigger className="bg-white/5 border-white/20 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="CustomRange">Custom Date Range</SelectItem>
+              <SelectItem value="Month">Current Month</SelectItem>
+              <SelectItem value="Semester">Semester</SelectItem>
+              <SelectItem value="FullYear">Full Academic Year</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select
-          value={formData.generationMode}
-          onValueChange={(value: GenerationMode) => handleInputChange('generationMode', value)}
-        >
-          <SelectTrigger className="bg-white/5 border-white/20 text-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="CustomRange">Custom Date Range</SelectItem>
-            <SelectItem value="Month">Current Month</SelectItem>
-            <SelectItem value="Semester">Semester</SelectItem>
-            <SelectItem value="FullYear">Full Academic Year</SelectItem>
-          </SelectContent>
-        </Select>
-      </GlassCard>
+      </div>
 
       {/* Academic Context */}
       {(formData.generationMode === 'Semester' || formData.generationMode === 'FullYear') && (
-        <GlassCard className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <BookOpen className="w-5 h-5 text-green-400" />
-            <h3 className="text-lg font-semibold text-white">Academic Context</h3>
+        <div className="space-y-4 p-3 rounded-lg bg-white/5 border border-white/10">
+          <div className="flex items-center gap-2 text-sm text-white/80">
+            <BookOpen className="w-4 h-4 text-green-400" />
+            <span className="font-medium">Academic Context</span>
           </div>
-          <div className="space-y-4">
-            {/* Academic Year Selection */}
+
+          {/* Academic Year Selection */}
+          <div>
+            <Label className="text-white text-sm font-medium">Academic Year *</Label>
+            <div className="mt-1">
+              <YearsDropdown
+                value={formData.academicYearId || ''}
+                onValueChange={(value) => handleInputChange('academicYearId', value)}
+                placeholder="Select academic year"
+                disabled={loadingData}
+                showActiveIndicator={true}
+                onLoaded={(years) => {
+                  setAcademicYears(years);
+                  if (!formData.academicYearId && years && years.length > 0) {
+                    const active = years.find(y => y.isActive);
+                    const targetId = active?.id || years[0].id;
+                    setFormData(prev => ({ ...prev, academicYearId: targetId }));
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Semester Selection */}
+          {formData.generationMode === 'Semester' && (
             <div>
-              <Label className="text-white text-sm font-medium">Academic Year</Label>
+              <Label className="text-white text-sm font-medium">Semester *</Label>
               <div className="mt-1">
-                <YearsDropdown
-                  value={formData.academicYearId || ''}
-                  onValueChange={(value) => handleInputChange('academicYearId', value)}
-                  placeholder="Select academic year"
-                  disabled={loadingData}
-                  showActiveIndicator={true}
-                  onLoaded={(years) => {
-                    setAcademicYears(years);
-                    if (!formData.academicYearId && years && years.length > 0) {
-                      const active = years.find(y => y.isActive);
-                      const targetId = active?.id || years[0].id;
-                      setFormData(prev => ({ ...prev, academicYearId: targetId }));
+                <SemestersDropdown
+                  academicYearId={formData.academicYearId}
+                  value={formData.semesterId || ''}
+                  onValueChange={(id) => handleInputChange('semesterId', id)}
+                  disabled={loadingData || !formData.academicYearId}
+                  placeholder="Select semester"
+                  showDateRangeInfo={true}
+                  onLoaded={(loaded) => {
+                    setSemesters(loaded);
+                    if (formData.generationMode === 'Semester' && !formData.semesterId && loaded.length > 0) {
+                      const first = loaded[0];
+                      setFormData(prev => ({ ...prev, semesterId: first.id }));
                     }
+                  }}
+                  onError={(message) => {
+                    setError(message);
                   }}
                 />
               </div>
             </div>
-
-{/* Semester Selection */}
-            {formData.generationMode === 'Semester' && (
-              <div>
-                <Label className="text-white text-sm font-medium">Semester</Label>
-                <div className="mt-1">
-                  <SemestersDropdown
-                    academicYearId={formData.academicYearId}
-                    value={formData.semesterId || ''}
-                    onValueChange={(id) => handleInputChange('semesterId', id)}
-                    disabled={loadingData || !formData.academicYearId}
-                    placeholder="Select semester"
-                    showDateRangeInfo={true}
-                    onLoaded={(loaded) => {
-                      // Keep local semesters for date auto-fill logic elsewhere in the modal
-                      setSemesters(loaded);
-                      // Auto-select first semester if none chosen
-                      if (formData.generationMode === 'Semester' && !formData.semesterId && loaded.length > 0) {
-                        const first = loaded[0];
-                        setFormData(prev => ({ ...prev, semesterId: first.id }));
-                      }
-                    }}
-                    onError={(message) => {
-                      setError(message);
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </GlassCard>
+          )}
+        </div>
       )}
 
       {/* Date Range */}
-      <GlassCard className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <CalendarDays className="w-5 h-5 text-purple-400" />
-          <h3 className="text-lg font-semibold text-white">Date Range</h3>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Label className="text-white text-sm font-medium flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-purple-400" />
+            Date Range
+          </Label>
           {isDateFieldDisabled && (
-            <Badge variant="outline" className="text-yellow-400 border-yellow-400/50">
-              Auto-set by mode
+            <Badge variant="outline" className="text-xs text-yellow-400 border-yellow-400/50">
+              Auto-set
             </Badge>
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <NativeDateInput
             label="Start Date"
             value={formData.startDate}
@@ -441,19 +442,19 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
             required
           />
         </div>
-      </GlassCard>
+      </div>
 
       {/* Academic Calendar Options */}
-      <GlassCard className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle className="w-5 h-5 text-yellow-400" />
-          <h3 className="text-lg font-semibold text-white">Academic Calendar Options</h3>
+      <div className="space-y-3 p-3 rounded-lg bg-white/5 border border-white/10">
+        <div className="flex items-center gap-2 text-sm text-white/80">
+          <AlertTriangle className="w-4 h-4 text-yellow-400" />
+          <span className="font-medium">Calendar Options</span>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-white text-sm font-medium">Respect Teaching Breaks</Label>
-              <p className="text-white/60 text-xs mt-1">Skip lesson generation during teaching breaks</p>
+              <p className="text-white/50 text-xs mt-0.5">Skip during teaching breaks</p>
             </div>
             <Switch
               checked={formData.respectBreaks}
@@ -463,7 +464,7 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-white text-sm font-medium">Respect Public Holidays</Label>
-              <p className="text-white/60 text-xs mt-1">Skip lesson generation on public holidays</p>
+              <p className="text-white/50 text-xs mt-0.5">Skip on public holidays</p>
             </div>
             <Switch
               checked={formData.respectHolidays}
@@ -471,7 +472,7 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
             />
           </div>
         </div>
-      </GlassCard>
+      </div>
 
       {/* Error Display */}
       {error && (
@@ -482,36 +483,7 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
           </AlertDescription>
         </Alert>
       )}
-
-      {/* Action Buttons */}
-      <div className="flex gap-3 pt-4 border-t border-white/10">
-        <Button
-          variant="ghost"
-          onClick={handleClose}
-          disabled={loading}
-          className="flex-1 text-white hover:bg-white/10"
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleGenerate}
-          disabled={loading || loadingData}
-          className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold"
-        >
-          {loading ? (
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              Generating...
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              Generate Lessons
-            </div>
-          )}
-        </Button>
-      </div>
-    </div>
+    </form>
   );
 
   const renderGeneratingStep = () => (
@@ -531,13 +503,24 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
     if (!result) return null;
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Enhanced Results Component */}
         <EnhancedLessonGenerationResults result={result} />
-        
-        {/* Action Buttons */}
-        <div className="flex gap-3 pt-4 border-t border-white/10">
+      </div>
+    );
+  };
+
+  // Render footer buttons based on current step
+  const renderFooterButtons = () => {
+    if (step === 'generating') {
+      return null; // No footer during generation
+    }
+
+    if (step === 'results') {
+      return (
+        <div className="flex gap-3">
           <Button
+            type="button"
             variant="ghost"
             onClick={handleStartOver}
             className="flex-1 text-white hover:bg-white/10"
@@ -545,6 +528,7 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
             Generate More
           </Button>
           <Button
+            type="button"
             onClick={handleClose}
             className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold"
           >
@@ -554,38 +538,88 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
             </div>
           </Button>
         </div>
+      );
+    }
+
+    // Form step
+    return (
+      <div className="flex gap-3">
+        <Button
+          type="button"
+          onClick={handleGenerate}
+          disabled={loading || loadingData}
+          className="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              Generating...
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Generate Lessons
+            </div>
+          )}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleClose}
+          disabled={loading}
+          className="flex-1 text-white hover:bg-white/10"
+        >
+          Cancel
+        </Button>
       </div>
     );
   };
 
   return (
-    <Dialog open={open} onOpenChange={(newOpen) => {
+    <Sheet open={open} onOpenChange={(newOpen) => {
       // Only allow closing if we're not in the generating step
       if (step === 'generating') {
         return; // Prevent closing during generation
       }
       onOpenChange(newOpen);
     }}>
-      <DialogContent className="bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-3">
-            <div className="flex items-center gap-3">
-              <Sparkles className="w-6 h-6 text-purple-400" />
-              <span className="text-xl">Intelligent Lesson Generation</span>
-            </div>
-          </DialogTitle>
-          <p className="text-white/60 text-sm mt-2">
-            Generate lessons for {className} with academic calendar awareness
-          </p>
-        </DialogHeader>
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-lg p-0 bg-white/10 backdrop-blur-md border border-white/20 text-white"
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <SheetHeader className="px-4 py-4 border-b border-white/10">
+            <SheetTitle className="flex items-center gap-2 text-white text-lg font-semibold">
+              <Sparkles className="w-5 h-5 text-purple-400" />
+              {step === 'results' ? 'Generation Results' : 'Generate Lessons'}
+            </SheetTitle>
+            <p className="text-white/60 text-sm mt-1">
+              {step === 'results'
+                ? `Successfully processed lessons for ${className}`
+                : `Generate lessons for ${className} with calendar awareness`
+              }
+            </p>
+          </SheetHeader>
 
-        <div className="mt-6">
-          {step === 'form' && renderFormStep()}
-          {step === 'generating' && renderGeneratingStep()}
-          {step === 'results' && renderResultsStep()}
+          {/* Scrollable Content */}
+          <ScrollArea className="flex-1">
+            <div className="p-4">
+              {step === 'form' && renderFormStep()}
+              {step === 'generating' && renderGeneratingStep()}
+              {step === 'results' && renderResultsStep()}
+            </div>
+          </ScrollArea>
+
+          {/* Footer Actions - Pinned at bottom */}
+          {step !== 'generating' && (
+            <div className="p-4 border-t border-white/10">
+              {renderFooterButtons()}
+            </div>
+          )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 };
 

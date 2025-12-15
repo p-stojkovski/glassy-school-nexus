@@ -5,10 +5,20 @@ type ClassDataWithOptionalSchedule = ClassResponse | ClassBasicInfoResponse | (C
 
 /**
  * Checks if a class has at least one active (non-archived) schedule
- * Works with both full ClassResponse and ClassBasicInfoResponse (with optional schedule)
+ * Works with both full ClassResponse and ClassBasicInfoResponse
+ *
+ * For ClassBasicInfoResponse, uses the hasActiveSchedule flag from the API
+ * For ClassResponse (with full schedule), checks the schedule array
  */
 export const hasActiveSchedules = (classData?: ClassDataWithOptionalSchedule): boolean => {
   if (!classData) return false;
+
+  // For ClassBasicInfoResponse, use the hasActiveSchedule flag from the API
+  if ('hasActiveSchedule' in classData) {
+    return classData.hasActiveSchedule;
+  }
+
+  // For ClassResponse with full schedule data, check the schedule array
   const schedule = 'schedule' in classData ? classData.schedule : undefined;
   if (!schedule || schedule.length === 0) {
     return false;
@@ -44,9 +54,18 @@ export const getScheduleWarningMessage = (classData?: ClassDataWithOptionalSched
   if (!classData) {
     return 'No schedule defined. Please add a schedule in the Schedule tab before creating lessons.';
   }
-  
+
+  // For ClassBasicInfoResponse, use the hasActiveSchedule flag from the API
+  if ('hasActiveSchedule' in classData && !('schedule' in classData)) {
+    if (!classData.hasActiveSchedule) {
+      return 'No active schedule defined. Please add a schedule in the Schedule tab before generating lessons.';
+    }
+    return null; // Has active schedule
+  }
+
+  // For ClassResponse with full schedule data
   const schedule = 'schedule' in classData ? classData.schedule : undefined;
-  
+
   if (!schedule) {
     // If schedule is not loaded yet (lazy loading), don't show warning
     return null;
@@ -57,7 +76,7 @@ export const getScheduleWarningMessage = (classData?: ClassDataWithOptionalSched
   }
 
   const hasActive = hasActiveSchedules(classData);
-  
+
   if (!hasActive) {
     const archivedCount = getArchivedScheduleCount(classData);
     if (archivedCount > 0) {

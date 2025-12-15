@@ -1,22 +1,13 @@
 import React, { useMemo } from 'react';
 import { ScheduleSlotDto } from '@/types/api/class';
 import { cn } from '@/lib/utils';
+import { DAYS_OF_WEEK, DAY_ABBREVIATIONS } from '@/constants/schedule';
 
 interface WeeklyScheduleGridProps {
   schedules: ScheduleSlotDto[];
   onSlotClick?: (slot: ScheduleSlotDto) => void;
 }
 
-const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
-const DAY_ABBREVIATIONS: Record<string, string> = {
-  Monday: 'Mon',
-  Tuesday: 'Tue',
-  Wednesday: 'Wed',
-  Thursday: 'Thu',
-  Friday: 'Fri',
-  Saturday: 'Sat',
-  Sunday: 'Sun',
-};
 
 // Default time range: 7 AM to 10 PM (15 hours)
 const DEFAULT_START_HOUR = 7;

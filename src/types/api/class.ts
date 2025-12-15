@@ -101,6 +101,8 @@ export interface ClassBasicInfoResponse {
   createdAt: string;
   updatedAt: string;
   lessonSummary: LessonSummaryDto;
+  /** Indicates whether this class has at least one active (non-obsolete) schedule */
+  hasActiveSchedule: boolean;
 }
 
 /** Response for class schedule data (lazy loading - loaded when Schedule tab is viewed) */

@@ -1,19 +1,18 @@
 import React from 'react';
-import { 
-  CalendarDays, 
-  Clock, 
-  AlertTriangle, 
-  CheckCircle, 
-  XCircle, 
+import {
+  CalendarDays,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
   MapPin,
   User,
   BookOpen,
   Coffee,
   Gift,
-  AlertOctagon 
+  AlertOctagon
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import GlassCard from '@/components/common/GlassCard';
 import { EnhancedLessonGenerationResult, EnhancedSkippedLesson } from '@/types/api/lesson-generation-enhanced';
 
 interface EnhancedResultsProps {
@@ -207,49 +206,48 @@ const EnhancedLessonGenerationResults: React.FC<EnhancedResultsProps> = ({ resul
   const hasDetailedSkips = result.skippedLessons && result.skippedLessons.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <GlassCard className="p-4 text-center">
-          <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-white">{result.generatedCount}</div>
-          <div className="text-white/60 text-sm">Generated</div>
-        </GlassCard>
-        <GlassCard className="p-4 text-center">
-          <Clock className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-white">{result.skippedCount}</div>
-          <div className="text-white/60 text-sm">Skipped</div>
-        </GlassCard>
-        <GlassCard className="p-4 text-center">
-          <Gift className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-white">{result.publicHolidaySkips}</div>
-          <div className="text-white/60 text-sm">Holidays</div>
-        </GlassCard>
-        <GlassCard className="p-4 text-center">
-          <Coffee className="w-8 h-8 text-green-400 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-white">{result.teachingBreakSkips}</div>
-          <div className="text-white/60 text-sm">Breaks</div>
-        </GlassCard>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-3 text-center rounded-lg bg-white/5 border border-white/10">
+          <CheckCircle className="w-6 h-6 text-green-400 mx-auto mb-1" />
+          <div className="text-xl font-bold text-white">{result.generatedCount}</div>
+          <div className="text-white/60 text-xs">Generated</div>
+        </div>
+        <div className="p-3 text-center rounded-lg bg-white/5 border border-white/10">
+          <Clock className="w-6 h-6 text-yellow-400 mx-auto mb-1" />
+          <div className="text-xl font-bold text-white">{result.skippedCount}</div>
+          <div className="text-white/60 text-xs">Skipped</div>
+        </div>
+        <div className="p-3 text-center rounded-lg bg-white/5 border border-white/10">
+          <Gift className="w-6 h-6 text-blue-400 mx-auto mb-1" />
+          <div className="text-xl font-bold text-white">{result.publicHolidaySkips}</div>
+          <div className="text-white/60 text-xs">Holidays</div>
+        </div>
+        <div className="p-3 text-center rounded-lg bg-white/5 border border-white/10">
+          <Coffee className="w-6 h-6 text-green-400 mx-auto mb-1" />
+          <div className="text-xl font-bold text-white">{result.teachingBreakSkips}</div>
+          <div className="text-white/60 text-xs">Breaks</div>
+        </div>
       </div>
 
       {/* Generation Summary */}
-      <GlassCard className="p-4">
-        <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-          <CalendarDays className="w-5 h-5 text-purple-400" />
-          Generation Summary
+      <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+        <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+          <CalendarDays className="w-4 h-4 text-purple-400" />
+          Summary
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div className="space-y-1 text-sm">
           <div>
             <span className="text-white/60">Period:</span>
             <span className="text-white ml-2">
               {new Date(result.generationStartDate).toLocaleDateString('en-US', {
-                year: 'numeric',
                 month: 'short',
                 day: 'numeric'
               })} - {new Date(result.generationEndDate).toLocaleDateString('en-US', {
-                year: 'numeric',
                 month: 'short',
-                day: 'numeric'
+                day: 'numeric',
+                year: 'numeric'
               })}
             </span>
           </div>
@@ -258,73 +256,67 @@ const EnhancedLessonGenerationResults: React.FC<EnhancedResultsProps> = ({ resul
             <span className="text-white ml-2">{result.generationMode}</span>
           </div>
         </div>
-      </GlassCard>
+      </div>
 
       {/* Detailed Skip Information */}
       {hasDetailedSkips && (
-        <GlassCard className="p-4">
-          <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-400" />
-            Skipped Lessons & Reasons
+        <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+          <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-yellow-400" />
+            Skipped Lessons
           </h4>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {result.skippedLessons.map((lesson, index) => (
-              <SkippedLessonDetails 
-                key={`${lesson.scheduledDate}-${lesson.startTime}`} 
-                skippedLesson={lesson} 
+              <SkippedLessonDetails
+                key={`${lesson.scheduledDate}-${lesson.startTime}`}
+                skippedLesson={lesson}
                 index={index}
               />
             ))}
           </div>
-        </GlassCard>
+        </div>
       )}
 
       {/* Generated Lessons Preview (if any) */}
       {result.generatedLessons && result.generatedLessons.length > 0 && (
-        <GlassCard className="p-4">
-          <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-400" />
+        <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+          <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-green-400" />
             Generated Lessons
           </h4>
-          <div className="space-y-3">
-            {result.generatedLessons.slice(0, 5).map((lesson, index) => (
-              <div key={lesson.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0">
-                    <CalendarDays className="w-4 h-4 text-green-400" />
-                  </div>
+          <div className="space-y-2">
+            {result.generatedLessons.slice(0, 5).map((lesson) => (
+              <div key={lesson.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="w-3 h-3 text-green-400 flex-shrink-0" />
                   <div>
-                    <div className="text-white text-sm">
+                    <div className="text-white text-xs">
                       {new Date(lesson.scheduledDate + 'T00:00:00').toLocaleDateString('en-US', {
                         weekday: 'short',
                         month: 'short',
                         day: 'numeric'
-                      })} ({lesson.dayOfWeek})
+                      })}
                     </div>
-                    <div className="text-white/60 text-xs">
+                    <div className="text-white/50 text-xs">
                       {lesson.startTime.slice(0, 5)} - {lesson.endTime.slice(0, 5)}
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-2 text-white/60 text-xs">
-                    <User className="w-3 h-3" />
-                    {lesson.teacherName}
+                {(lesson.teacherName || lesson.classroomName) && (
+                  <div className="text-right text-xs text-white/50">
+                    {lesson.teacherName && <div>{lesson.teacherName}</div>}
+                    {lesson.classroomName && <div>{lesson.classroomName}</div>}
                   </div>
-                  <div className="flex items-center gap-2 text-white/60 text-xs mt-1">
-                    <MapPin className="w-3 h-3" />
-                    {lesson.classroomName}
-                  </div>
-                </div>
+                )}
               </div>
             ))}
             {result.generatedLessons.length > 5 && (
-              <div className="text-center text-white/60 text-sm py-2">
-                ... and {result.generatedLessons.length - 5} more lessons
+              <div className="text-center text-white/50 text-xs py-1">
+                +{result.generatedLessons.length - 5} more lessons
               </div>
             )}
           </div>
-        </GlassCard>
+        </div>
       )}
     </div>
   );

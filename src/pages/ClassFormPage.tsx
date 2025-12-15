@@ -17,7 +17,6 @@ const ClassFormPage: React.FC = () => {
   const navigate = useNavigate();
   const isEditMode = Boolean(classId);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [formData, setFormData] = useState<ClassFormData | null>(null);
   const formRef = useRef<ClassFormRef>(null);
 
   const {
@@ -134,13 +133,13 @@ const ClassFormPage: React.FC = () => {
           ref={formRef}
           classItem={classItem}
           onSubmit={(data) => {
-            setFormData(data);
+            
             setHasUnsavedChanges(false);
             handleSubmit(data);
           }}
           onCancel={() => navigateWithWarning('/classes')}
           onFormChange={(data) => {
-            setFormData(data);
+            
             setHasUnsavedChanges(true);
           }}
         />

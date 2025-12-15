@@ -7,7 +7,7 @@ import { ClassResponse } from '@/types/api/class';
 
 export const useClassFormPage = (classId?: string) => {
   const navigate = useNavigate();
-  const { classes, loadClasses, create, update } = useClassesApi();
+  const { create, update } = useClassesApi();
 
   const [loading, setLoading] = useState(false);
   const [error, setFormError] = useState<string | null>(null);

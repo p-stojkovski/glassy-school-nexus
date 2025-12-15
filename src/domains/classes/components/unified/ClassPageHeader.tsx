@@ -4,6 +4,7 @@ import { User, MapPin, Edit2, Trash2, Info, MoreVertical, Archive, Play, Clock, 
 import { LessonResponse } from '@/types/api/lesson';
 import { UseClassLessonContextResult } from '@/domains/classes/hooks/useClassLessonContext';
 import { formatTimeRangeWithoutSeconds } from '@/utils/timeFormatUtils';
+import { formatRelativeDate } from '@/utils/dateFormatUtils';
 import { AppBreadcrumb } from '@/components/navigation';
 import { buildClassBreadcrumbs } from '@/domains/classes/utils/classBreadcrumbs';
 import { Button } from '@/components/ui/button';
@@ -19,8 +20,7 @@ import { EditClassInfoDialog } from '@/domains/classes/components/dialogs/EditCl
 import { DisableClassDialog } from '@/domains/classes/components/dialogs/DisableClassDialog';
 import { EnableClassDialog } from '@/domains/classes/components/dialogs/EnableClassDialog';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { useAppDispatch } from '@/store/hooks';
-import { deleteClass } from '@/domains/classes/classesSlice';
+import { useClassesApi } from '@/domains/classesApi/hooks/useClassesApi';
 import { toast } from '@/hooks/use-toast';
 
 interface ClassPageHeaderProps {
@@ -43,7 +43,7 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
   onCancelLesson,
 }) => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+  const { remove } = useClassesApi();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDisableDialog, setShowDisableDialog] = useState(false);
   const [showEnableDialog, setShowEnableDialog] = useState(false);
@@ -85,12 +85,7 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
     try {
-      dispatch(deleteClass(classData.id));
-      toast({
-        title: 'Class Deleted',
-        description: `${classData.name} has been successfully deleted.`,
-        variant: 'default',
-      });
+      await remove(classData.id, classData.name);
       setShowDeleteDialog(false);
       navigate('/classes');
     } catch (error) {
@@ -119,28 +114,10 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
     return formatTimeRangeWithoutSeconds(lesson.startTime, lesson.endTime);
   };
 
-  // Format lesson date (e.g., "Mon, Dec 1" or "Today" / "Tomorrow")
+  // Format lesson date using shared utility
   const formatLessonDate = () => {
     if (!lesson) return null;
-    const lessonDate = new Date(lesson.scheduledDate);
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    // Check if it's today
-    if (lessonDate.toDateString() === today.toDateString()) {
-      return 'Today';
-    }
-    // Check if it's tomorrow
-    if (lessonDate.toDateString() === tomorrow.toDateString()) {
-      return 'Tomorrow';
-    }
-    // Otherwise format as "Mon, Dec 1"
-    return lessonDate.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    return formatRelativeDate(lesson.scheduledDate);
   };
 
   // Get status indicator
