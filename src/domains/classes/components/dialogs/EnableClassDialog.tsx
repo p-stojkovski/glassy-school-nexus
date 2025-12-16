@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useClassesApi } from '@/domains/classesApi/hooks/useClassesApi';
+import { useClasses } from '@/domains/classes/hooks/useClasses';
 import { ClassBasicInfoResponse } from '@/types/api/class';
 
 interface EnableClassDialogProps {
@@ -25,7 +25,7 @@ export const EnableClassDialog: React.FC<EnableClassDialogProps> = ({
   classData,
   onSuccess,
 }) => {
-  const { enable } = useClassesApi();
+  const { enable } = useClasses();
   const [isEnabling, setIsEnabling] = useState(false);
 
   const handleConfirm = async () => {

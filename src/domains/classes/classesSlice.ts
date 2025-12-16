@@ -1,93 +1,162 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { loadFromStorage } from '@/lib/storage';
-import { mockDataService } from '@/data/MockDataService';
+import { ClassResponse } from '@/types/api/class';
+import { ClassSearchParams } from '@/types/api/class';
 
-export interface Class {
-  id: string;
-  name: string;
-  teacher: {
-    id: string;
-    name: string;
-    avatar?: string;
-    subject: string;
-  };
-  room: string;
-  roomId?: string; // Store reference to classroom ID
-  schedule: {
-    day: string;
-    startTime: string;
-    endTime: string;
-  }[];
-  students: number;
-  studentIds: string[]; // Store assigned student IDs
-  subject: string;
-  description: string;
-  requirements: string;
-  objectives: string[];
-  materials: string[];
-  createdAt: string;
-  updatedAt: string;
+export type ClassItem = ClassResponse;
+
+export interface LoadingStates {
+  fetching: boolean;
+  creating: boolean;
+  updating: boolean;
+  deleting: boolean;
+  searching: boolean;
+}
+
+export interface ErrorStates {
+  fetch: string | null;
+  create: string | null;
+  update: string | null;
+  delete: string | null;
+  search: string | null;
 }
 
 interface ClassesState {
-  classes: Class[];
-  loading: boolean;
-  selectedClass: Class | null;
+  classes: ClassItem[];
+  searchResults: ClassItem[];
+  selectedClass: ClassItem | null;
+  loading: LoadingStates;
+  errors: ErrorStates;
+  searchQuery: string;
+  searchParams: ClassSearchParams;
+  isSearchMode: boolean;
 }
 
-// Load initial class data from localStorage if available
-const loadInitialClasses = (): Class[] =>
-  loadFromStorage<Class[]>('classes') || [];
+const initialLoading: LoadingStates = {
+  fetching: false,
+  creating: false,
+  updating: false,
+  deleting: false,
+  searching: false,
+};
+
+const initialErrors: ErrorStates = {
+  fetch: null,
+  create: null,
+  update: null,
+  delete: null,
+  search: null,
+};
 
 const initialState: ClassesState = {
-  classes: loadInitialClasses(),
-  loading: false,
+  classes: [],
+  searchResults: [],
   selectedClass: null,
+  loading: initialLoading,
+  errors: initialErrors,
+  searchQuery: '',
+  searchParams: {},
+  isSearchMode: false,
 };
 
 const classesSlice = createSlice({
   name: 'classes',
   initialState,
   reducers: {
-    setClasses: (state, action: PayloadAction<Class[]>) => {
+    // data
+    setClasses(state, action: PayloadAction<ClassItem[]>) {
       state.classes = action.payload;
-      mockDataService.saveDomainData('classes', state.classes).catch((e) => {
-        console.error('Failed to save classes to localStorage', e);
-      });
+      state.errors.fetch = null;
     },
-    addClass: (state, action: PayloadAction<Class>) => {
-      state.classes.push(action.payload);
-      mockDataService.saveDomainData('classes', state.classes).catch((e) => {
-        console.error('Failed to save classes to localStorage', e);
-      });
-    },
-    updateClass: (
-      state,
-      action: PayloadAction<{ id: string; updates: Partial<Class> }>
-    ) => {
-      const index = state.classes.findIndex((c) => c.id === action.payload.id);
-      if (index !== -1) {
-        state.classes[index] = {
-          ...state.classes[index],
-          ...action.payload.updates,
-        };
-        mockDataService.saveDomainData('classes', state.classes).catch((e) => {
-          console.error('Failed to save classes to localStorage', e);
-        });
+    addClass(state, action: PayloadAction<ClassItem>) {
+      state.classes.unshift(action.payload);
+      if (state.isSearchMode) {
+        state.searchResults.unshift(action.payload);
       }
     },
-    deleteClass: (state, action: PayloadAction<string>) => {
-      state.classes = state.classes.filter((c) => c.id !== action.payload);
-      mockDataService.saveDomainData('classes', state.classes).catch((e) => {
-        console.error('Failed to save classes to localStorage', e);
-      });
+    updateClass(state, action: PayloadAction<ClassItem>) {
+      const idx = state.classes.findIndex(c => c.id === action.payload.id);
+      if (idx !== -1) state.classes[idx] = action.payload;
+      const sidx = state.searchResults.findIndex(c => c.id === action.payload.id);
+      if (sidx !== -1) state.searchResults[sidx] = action.payload;
+      if (state.selectedClass?.id === action.payload.id) {
+        state.selectedClass = action.payload;
+      }
     },
-    setSelectedClass: (state, action: PayloadAction<Class | null>) => {
+    disableClass(state, action: PayloadAction<string>) {
+      const idx = state.classes.findIndex(c => c.id === action.payload);
+      if (idx !== -1) {
+        state.classes[idx] = { ...state.classes[idx], isActive: false };
+      }
+      const sidx = state.searchResults.findIndex(c => c.id === action.payload);
+      if (sidx !== -1) {
+        state.searchResults[sidx] = { ...state.searchResults[sidx], isActive: false };
+      }
+      if (state.selectedClass?.id === action.payload) {
+        state.selectedClass = { ...state.selectedClass, isActive: false };
+      }
+    },
+    enableClass(state, action: PayloadAction<string>) {
+      const idx = state.classes.findIndex(c => c.id === action.payload);
+      if (idx !== -1) {
+        state.classes[idx] = { ...state.classes[idx], isActive: true };
+      }
+      const sidx = state.searchResults.findIndex(c => c.id === action.payload);
+      if (sidx !== -1) {
+        state.searchResults[sidx] = { ...state.searchResults[sidx], isActive: true };
+      }
+      if (state.selectedClass?.id === action.payload) {
+        state.selectedClass = { ...state.selectedClass, isActive: true };
+      }
+    },
+    deleteClass(state, action: PayloadAction<string>) {
+      state.classes = state.classes.filter(c => c.id !== action.payload);
+      state.searchResults = state.searchResults.filter(c => c.id !== action.payload);
+      if (state.selectedClass?.id === action.payload) {
+        state.selectedClass = null;
+      }
+    },
+    setSelectedClass(state, action: PayloadAction<ClassItem | null>) {
       state.selectedClass = action.payload;
     },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
+
+    // loading
+    setLoadingState(state, action: PayloadAction<{ operation: keyof LoadingStates; loading: boolean }>) {
+      const { operation, loading } = action.payload;
+      state.loading[operation] = loading;
     },
+
+    // errors
+    setError(state, action: PayloadAction<{ operation: keyof ErrorStates; error: string | null }>) {
+      const { operation, error } = action.payload;
+      state.errors[operation] = error;
+    },
+    clearError(state, action: PayloadAction<keyof ErrorStates>) {
+      state.errors[action.payload] = null;
+    },
+    clearAllErrors(state) {
+      Object.keys(state.errors).forEach(k => (state.errors as any)[k] = null);
+    },
+
+    // search
+    setSearchResults(state, action: PayloadAction<ClassItem[]>) {
+      state.searchResults = action.payload;
+      state.errors.search = null;
+    },
+    setSearchQuery(state, action: PayloadAction<string>) {
+      state.searchQuery = action.payload;
+    },
+    setSearchParams(state, action: PayloadAction<ClassSearchParams>) {
+      state.searchParams = action.payload;
+    },
+    setSearchMode(state, action: PayloadAction<boolean>) {
+      state.isSearchMode = action.payload;
+      if (!action.payload) {
+        state.searchResults = [];
+        state.searchQuery = '';
+        state.searchParams = {};
+      }
+    },
+    resetClassesState: () => initialState,
   },
 });
 
@@ -95,9 +164,19 @@ export const {
   setClasses,
   addClass,
   updateClass,
+  disableClass,
+  enableClass,
   deleteClass,
   setSelectedClass,
-  setLoading,
+  setLoadingState,
+  setError,
+  clearError,
+  clearAllErrors,
+  setSearchResults,
+  setSearchQuery,
+  setSearchParams,
+  setSearchMode,
+  resetClassesState,
 } = classesSlice.actions;
-export default classesSlice.reducer;
 
+export default classesSlice.reducer;

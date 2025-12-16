@@ -17,7 +17,6 @@ export const store = configureStore({
     auth: authReducer,
     ui: uiReducer,
     classes: classesReducer,
-    classesApi: (await import('@/domains/classesApi/classesApiSlice')).default,
     students: studentsReducer,
     teachers: teachersReducer,
     classrooms: classroomsReducer,

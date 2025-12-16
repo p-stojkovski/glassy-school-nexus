@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ThemeProvider } from 'next-themes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { unstable_HistoryRouter as HistoryRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { store } from './store';
 import { RootState } from './store';
 import { DataProvider } from '@/app/providers/DataProvider';
@@ -31,6 +31,7 @@ import StudentFormPage from './pages/StudentFormPage';
 import StudentPage from './pages/StudentPage';
 import SettingsPage from './pages/SettingsPage';
 import NotFound from './pages/NotFound';
+import { appHistory } from '@/router/history';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -122,9 +123,9 @@ const App = () => (
         <TooltipProvider>
           <DataProvider>
             <Toaster />
-            <BrowserRouter>
+            <HistoryRouter history={appHistory}>
               <AppContent />
-            </BrowserRouter>
+            </HistoryRouter>
           </DataProvider>
         </TooltipProvider>
       </QueryClientProvider>

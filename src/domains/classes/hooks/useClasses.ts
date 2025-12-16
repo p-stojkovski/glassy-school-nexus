@@ -16,16 +16,16 @@ import {
   setSearchQuery,
   setSearchParams,
   setSearchMode,
-} from '@/domains/classesApi/classesApiSlice';
+} from '@/domains/classes/classesSlice';
 import { classApiService, getAllClasses, searchClasses, createClass, updateClass, disableClass, enableClass, deleteClass } from '@/services/classApiService';
 import { ClassResponse, ClassSearchParams, CreateClassRequest, UpdateClassRequest } from '@/types/api/class';
 import { showSuccessMessage, ClassErrorHandlers } from '@/utils/apiErrorHandler';
 import { validateAndPrepareClassData, ClassFormData } from '@/utils/validation/classValidators';
 import { useCallback } from 'react';
 
-export const useClassesApi = () => {
+export const useClasses = () => {
   const dispatch = useAppDispatch();
-  const state = useAppSelector((s: RootState) => s.classesApi);
+  const state = useAppSelector((s: RootState) => s.classes);
 
   const loadClasses = useCallback(async () => {
     dispatch(clearError('fetch'));
@@ -168,4 +168,3 @@ export const useClassesApi = () => {
     clearAllErrors: () => dispatch(clearAllErrors()),
   };
 };
-

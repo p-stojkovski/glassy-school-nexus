@@ -36,15 +36,15 @@ const StudentOverview: React.FC<StudentOverviewProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Row 1: Key Cards - Attendance + Performance */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <AttendanceCard attendance={overviewData.attendance} />
         <PerformanceCard grades={overviewData.grades} />
       </div>
 
       {/* Row 2: Secondary Cards - Homework + Billing (conditional) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <HomeworkCard homework={overviewData.homework} />
         <BillingCard billing={overviewData.billing} />
       </div>

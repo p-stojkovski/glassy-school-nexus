@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useClassesApi } from '@/domains/classesApi/hooks/useClassesApi';
+import { useClasses } from '@/domains/classes/hooks/useClasses';
 import { classApiService } from '@/services/classApiService';
 import { ClassFormData } from '@/types/api/class';
 import { ClassResponse } from '@/types/api/class';
 
 export const useClassFormPage = (classId?: string) => {
   const navigate = useNavigate();
-  const { create, update } = useClassesApi();
+  const { create, update } = useClasses();
 
   const [loading, setLoading] = useState(false);
   const [error, setFormError] = useState<string | null>(null);

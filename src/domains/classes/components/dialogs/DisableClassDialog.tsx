@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useClassesApi } from '@/domains/classesApi/hooks/useClassesApi';
+import { useClasses } from '@/domains/classes/hooks/useClasses';
 import { ClassBasicInfoResponse } from '@/types/api/class';
 
 interface DisableClassDialogProps {
@@ -25,7 +25,7 @@ export const DisableClassDialog: React.FC<DisableClassDialogProps> = ({
   classData,
   onSuccess,
 }) => {
-  const { disable } = useClassesApi();
+  const { disable } = useClasses();
   const [isDisabling, setIsDisabling] = useState(false);
 
   const handleConfirm = async () => {

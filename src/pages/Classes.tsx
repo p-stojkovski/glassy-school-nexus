@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/common/GlassCard';
-import ClassTable from '@/domains/classesApi/components/ClassTable';
-import ClassGrid from '@/domains/classesApi/components/ClassGrid';
+import ClassTable from '@/domains/classes/components/list/ClassTable';
+import ClassGrid from '@/domains/classes/components/list/ClassGrid';
 import ClassFilters, { ClassViewMode } from '@/domains/classes/components/filters/ClassFilters';
 import ClassLoading from '@/domains/classes/components/state/ClassLoading';
-import { useClassesApi } from '@/domains/classesApi/hooks/useClassesApi';
+import { useClasses } from '@/domains/classes/hooks/useClasses';
 import { classApiService } from '@/services/classApiService';
 import { ClassResponse } from '@/types/api/class';
 import { AcademicYear } from '@/domains/settings/types/academicCalendarTypes';
 
 const ClassesPage: React.FC = () => {
   const navigate = useNavigate();
-  const { classes, loadClasses, search, setSearchQuery, setSearchMode, isSearchMode } = useClassesApi();
+  const { classes, loadClasses, search, setSearchQuery, setSearchMode, isSearchMode } = useClasses();
   const [searchTerm, setSearchTerm] = useState('');
   const [academicYearFilter, setAcademicYearFilter] = useState<'all' | string>('all');
   const [subjectFilter, setSubjectFilter] = useState<'all' | string>('all');

@@ -146,6 +146,127 @@ export const updateStudentSchema = createStudentSchema; // Same validation rules
 export type CreateStudentFormData = z.infer<typeof createStudentSchema>;
 export type UpdateStudentFormData = z.infer<typeof updateStudentSchema>;
 
+// =============================================================================
+// Section-Specific Schemas (for independent section editing)
+// =============================================================================
+
+/**
+ * Student Information (Personal) section schema
+ * Fields: firstName, lastName, email, phone, dateOfBirth, placeOfBirth, enrollmentDate, isActive, notes
+ */
+export const personalInfoSchema = z.object({
+  firstName: z
+    .string()
+    .min(1, 'First name is required.')
+    .max(StudentValidationRules.FIRST_NAME.MAX_LENGTH, `First name must not exceed ${StudentValidationRules.FIRST_NAME.MAX_LENGTH} characters.`)
+    .regex(StudentValidationRules.FIRST_NAME.PATTERN, StudentValidationRules.FIRST_NAME.ERROR_MESSAGE),
+  
+  lastName: z
+    .string()
+    .min(1, 'Last name is required.')
+    .max(StudentValidationRules.LAST_NAME.MAX_LENGTH, `Last name must not exceed ${StudentValidationRules.LAST_NAME.MAX_LENGTH} characters.`)
+    .regex(StudentValidationRules.LAST_NAME.PATTERN, StudentValidationRules.LAST_NAME.ERROR_MESSAGE),
+  
+  email: z
+    .string()
+    .min(1, 'Email address is required.')
+    .max(StudentValidationRules.EMAIL.MAX_LENGTH, `Email must not exceed ${StudentValidationRules.EMAIL.MAX_LENGTH} characters.`)
+    .email('Email must be a valid email address.')
+    .toLowerCase(),
+  
+  phone: z
+    .string()
+    .max(StudentValidationRules.PHONE.MAX_LENGTH, `Phone must not exceed ${StudentValidationRules.PHONE.MAX_LENGTH} characters.`)
+    .regex(StudentValidationRules.PHONE.PATTERN, StudentValidationRules.PHONE.ERROR_MESSAGE)
+    .optional()
+    .or(z.literal('')),
+
+  dateOfBirth: z
+    .string()
+    .optional()
+    .refine((date) => {
+      if (!date || date === '') return true;
+      const birthDate = new Date(date);
+      const today = new Date();
+      return birthDate <= today;
+    }, 'Date of birth cannot be in the future'),
+  
+  placeOfBirth: z
+    .string()
+    .optional()
+    .or(z.literal('')),
+  
+  enrollmentDate: z
+    .string()
+    .min(1, 'Enrollment date is required.')
+    .refine((date) => {
+      const enrollDate = new Date(date);
+      const today = new Date();
+      return enrollDate <= today;
+    }, 'Enrollment date cannot be in the future'),
+  
+  isActive: z.boolean(),
+  
+  notes: z
+    .string()
+    .max(StudentValidationRules.NOTES.MAX_LENGTH, `Notes must not exceed ${StudentValidationRules.NOTES.MAX_LENGTH} characters.`)
+    .optional()
+    .or(z.literal('')),
+});
+
+export type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
+
+/**
+ * Parent/Guardian Information section schema
+ * Fields: parentContact, parentEmail
+ */
+export const guardianInfoSchema = z.object({
+  parentContact: z
+    .string()
+    .min(1, 'Parent/guardian contact is required.'),
+    
+  parentEmail: z
+    .string()
+    .min(1, 'Parent email is required.')
+    .email('Parent email must be a valid email address.')
+    .toLowerCase(),
+});
+
+export type GuardianInfoFormData = z.infer<typeof guardianInfoSchema>;
+
+/**
+ * Financial Information section schema
+ * Fields: hasDiscount, discountTypeId, discountAmount
+ */
+export const financialInfoSchema = z.object({
+  hasDiscount: z.boolean(),
+  
+  discountTypeId: z
+    .string()
+    .regex(StudentValidationRules.DISCOUNT_TYPE_ID.PATTERN, StudentValidationRules.DISCOUNT_TYPE_ID.ERROR_MESSAGE)
+    .optional()
+    .or(z.literal('')),
+  
+  discountAmount: z
+    .number()
+    .min(0, 'Discount amount must be positive.')
+    .default(0),
+}).refine(
+  (data) => {
+    // If discount is enabled, discountTypeId is required
+    if (data.hasDiscount && (!data.discountTypeId || data.discountTypeId === '')) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: 'When discount is enabled, discount type must be selected.',
+    path: ['discountTypeId'],
+  }
+);
+
+export type FinancialInfoFormData = z.infer<typeof financialInfoSchema>;
+
 /**
  * Validation helper function
  * Validates student form data and returns structured errors
@@ -446,15 +567,25 @@ export const validateAndPrepareStudentData = (
   };
 };
 
+const getUnknownErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error) {
+    const maybeMessage = (error as { message?: unknown }).message;
+    if (typeof maybeMessage === 'string') return maybeMessage;
+  }
+  return 'Unknown error';
+};
+
 // Add to the error handlers
 export const StudentErrorHandlers = {
-  fetchAll: (error: any) => `Failed to fetch students: ${error?.message || 'Unknown error'}`,
-  fetchById: (error: any) => `Failed to fetch student: ${error?.message || 'Unknown error'}`,
-  create: (error: any) => `Failed to create student: ${error?.message || 'Unknown error'}`,
-  update: (error: any) => `Failed to update student: ${error?.message || 'Unknown error'}`,
-  delete: (error: any) => `Failed to delete student: ${error?.message || 'Unknown error'}`,
-  search: (error: any) => `Failed to search students: ${error?.message || 'Unknown error'}`,
-  fetchDiscountTypes: (error: any) => `Failed to fetch discount types: ${error?.message || 'Unknown error'}`,
+  fetchAll: (error: unknown) => `Failed to fetch students: ${getUnknownErrorMessage(error)}`,
+  fetchById: (error: unknown) => `Failed to fetch student: ${getUnknownErrorMessage(error)}`,
+  create: (error: unknown) => `Failed to create student: ${getUnknownErrorMessage(error)}`,
+  update: (error: unknown) => `Failed to update student: ${getUnknownErrorMessage(error)}`,
+  delete: (error: unknown) => `Failed to delete student: ${getUnknownErrorMessage(error)}`,
+  search: (error: unknown) => `Failed to search students: ${getUnknownErrorMessage(error)}`,
+  fetchDiscountTypes: (error: unknown) => `Failed to fetch discount types: ${getUnknownErrorMessage(error)}`,
 };
 
 export default {

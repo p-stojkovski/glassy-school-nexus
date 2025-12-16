@@ -40,12 +40,12 @@ const ClassLessonSummary: React.FC<{ lessonSummary: ClassResponse['lessonSummary
 
 
 const ClassTable: React.FC<Props> = React.memo(({ classes, onView }) => {
-  
+
   return (
-    <motion.div 
-      layout 
-      initial={{ opacity: 0, y: 20 }} 
-      animate={{ opacity: 1, y: 0 }} 
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
       className="space-y-4"
@@ -156,4 +156,3 @@ const ClassTable: React.FC<Props> = React.memo(({ classes, onView }) => {
 ClassTable.displayName = 'ClassTable';
 
 export default ClassTable;
-

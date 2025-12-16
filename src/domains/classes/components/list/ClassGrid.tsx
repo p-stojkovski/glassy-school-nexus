@@ -28,7 +28,7 @@ const ClassGrid: React.FC<Props> = React.memo(({ classes, onView }) => {
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
         >
-          <GlassCard 
+          <GlassCard
             className="p-6 hover:bg-white/10 transition-all duration-300 cursor-pointer group"
             onClick={() => onView(classItem)}
           >
@@ -106,4 +106,3 @@ const ClassGrid: React.FC<Props> = React.memo(({ classes, onView }) => {
 ClassGrid.displayName = 'ClassGrid';
 
 export default ClassGrid;
-

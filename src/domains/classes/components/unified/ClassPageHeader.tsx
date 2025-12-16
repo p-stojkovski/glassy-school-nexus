@@ -20,7 +20,7 @@ import { EditClassInfoDialog } from '@/domains/classes/components/dialogs/EditCl
 import { DisableClassDialog } from '@/domains/classes/components/dialogs/DisableClassDialog';
 import { EnableClassDialog } from '@/domains/classes/components/dialogs/EnableClassDialog';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { useClassesApi } from '@/domains/classesApi/hooks/useClassesApi';
+import { useClasses } from '@/domains/classes/hooks/useClasses';
 import { toast } from '@/hooks/use-toast';
 
 interface ClassPageHeaderProps {
@@ -43,7 +43,7 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
   onCancelLesson,
 }) => {
   const navigate = useNavigate();
-  const { remove } = useClassesApi();
+  const { remove } = useClasses();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDisableDialog, setShowDisableDialog] = useState(false);
   const [showEnableDialog, setShowEnableDialog] = useState(false);
