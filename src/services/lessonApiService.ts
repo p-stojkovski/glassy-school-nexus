@@ -68,6 +68,7 @@ export class LessonApiService {
       if (params.classroomId) qs.append('classroomId', params.classroomId);
       if (params.statusId) qs.append('statusId', params.statusId);
       if (params.statusName) qs.append('statusName', params.statusName);
+      if (params.semesterId) qs.append('semesterId', params.semesterId);
       // Backend expects fromDate/toDate, but frontend uses startDate/endDate
       if (params.startDate) qs.append('fromDate', params.startDate);
       if (params.endDate) qs.append('toDate', params.endDate);
@@ -216,6 +217,11 @@ return await apiService.get<LessonResponse>(LessonApiPaths.BY_ID(id));
       // Apply status filter if not 'all'
       if (filters.statusName && filters.statusName !== 'all') {
         params.statusName = filters.statusName;
+      }
+
+      // Apply semester filter if provided
+      if (filters.semesterId) {
+        params.semesterId = filters.semesterId;
       }
     }
 
@@ -611,13 +617,23 @@ return await apiService.post<LessonGenerationResult>(LessonApiPaths.GENERATE, re
     return this.getLessons({ statusName: statusName as any });
   }
 
+  /** Get lessons by semester */
+  async getLessonsBySemester(semesterId: string): Promise<LessonResponse[]> {
+    return this.getLessons({ semesterId });
+  }
+
+  /** Get lessons by class with optional semester filter */
+  async getLessonsByClass(classId: string, semesterId?: string): Promise<LessonResponse[]> {
+    return this.getLessons({ classId, semesterId });
+  }
+
   /** Get lessons in date range */
   async getLessonsInRange(startDate: string, endDate: string, classId?: string): Promise<LessonResponse[]> {
-    return this.getLessons({ 
-      startDate, 
-      endDate, 
+    return this.getLessons({
+      startDate,
+      endDate,
       classId,
-      includeHistory: true 
+      includeHistory: true
     });
   }
 
@@ -697,6 +713,8 @@ export const searchLessons = (params?: {
 }) => lessonApiService.searchLessons(params);
 export const getLessonById = (id: string) => lessonApiService.getLessonById(id);
 export const getLessonsForClass = (classId: string, filters?: ClassLessonFilterParams) => lessonApiService.getLessonsForClass(classId, filters);
+export const getLessonsByClass = (classId: string, semesterId?: string) => lessonApiService.getLessonsByClass(classId, semesterId);
+export const getLessonsBySemester = (semesterId: string) => lessonApiService.getLessonsBySemester(semesterId);
 export const getPastUnstartedLessons = (classId: string) => lessonApiService.getPastUnstartedLessons(classId);
 export const createLesson = (request: CreateLessonRequest) => lessonApiService.createLesson(request);
 export const cancelLesson = (id: string, request: CancelLessonRequest) => lessonApiService.cancelLesson(id, request);

@@ -459,6 +459,33 @@ await apiService.delete<void>(ClassApiPaths.BY_ID(id));
     }
   }
 
+  /** Get schedule slots filtered by semester */
+  async getScheduleSlotsBySemester(
+    classId: string,
+    semesterId?: string | null
+  ): Promise<ClassScheduleResponse> {
+    try {
+      const qs = new URLSearchParams();
+      if (semesterId) {
+        qs.append('semesterId', semesterId);
+      }
+
+      const endpoint = qs.toString()
+        ? `${ClassApiPaths.SCHEDULE(classId)}?${qs.toString()}`
+        : ClassApiPaths.SCHEDULE(classId);
+
+      return await apiService.get<ClassScheduleResponse>(endpoint);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to view schedule');
+      }
+      throw makeApiError(error, `Failed to fetch schedule slots: ${error.message || 'Unknown error'}`);
+    }
+  }
+
   /**
    * Suggest available time slots (Phase 5: Intelligent Time Suggestions)
    *
@@ -596,6 +623,8 @@ export const updateScheduleSlot = (classId: string, slotId: string, request: Upd
   classApiService.updateScheduleSlot(classId, slotId, request);
 export const deleteScheduleSlot = (classId: string, slotId: string) =>
   classApiService.deleteScheduleSlot(classId, slotId);
+export const getScheduleSlotsBySemester = (classId: string, semesterId?: string | null) =>
+  classApiService.getScheduleSlotsBySemester(classId, semesterId);
 export const suggestAvailableTimeSlots = (classId: string, request: SuggestAvailableTimeSlotsRequest) =>
   classApiService.suggestAvailableTimeSlots(classId, request);
 

@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import LabeledSelect from '@/components/common/LabeledSelect';
 import { LessonStatusName, LessonTimeWindow } from '@/types/api/lesson';
+import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
 import { ScopeFilter } from '@/domains/lessons/utils/lessonFilters';
 
 type LessonFilter = 'all' | LessonStatusName;
@@ -13,6 +15,11 @@ interface LessonsEnhancedFiltersProps {
   timeWindow: LessonTimeWindow;
   onTimeWindowChange: (value: LessonTimeWindow) => void;
   compact?: boolean;
+  // Semester filter (optional)
+  semesters?: AcademicSemesterResponse[];
+  selectedSemesterId?: string;
+  onSemesterChange?: (value: string) => void;
+  loadingSemesters?: boolean;
 }
 
 const LessonsEnhancedFilters: React.FC<LessonsEnhancedFiltersProps> = ({
@@ -23,6 +30,11 @@ const LessonsEnhancedFilters: React.FC<LessonsEnhancedFiltersProps> = ({
   timeWindow,
   onTimeWindowChange,
   compact = false,
+  // Semester props
+  semesters = [],
+  selectedSemesterId = 'all',
+  onSemesterChange,
+  loadingSemesters = false,
 }) => {
   const windowOptions = useMemo(() => {
     if (scopeFilter === 'upcoming') {
@@ -125,6 +137,34 @@ const LessonsEnhancedFilters: React.FC<LessonsEnhancedFiltersProps> = ({
         </SelectContent>
         </Select>
       </div>
+
+      {/* Semester Filter (optional) */}
+      {/**
+       * If semesters are provided, render a semester select to allow filtering.
+       * Props: semesters, selectedSemesterId, onSemesterChange, loadingSemesters
+       */}
+      {/**
+       * Note: This keeps state in the parent `ClassLessonsTab` and only renders
+       * the control here for consistent layout with other filters.
+       */}
+      {semesters.length > 0 && (
+        <LabeledSelect label="Semester:" labelId="lessons-semester-label">
+          <Select value={selectedSemesterId} onValueChange={(value) => onSemesterChange?.(value)} disabled={loadingSemesters}>
+            <SelectTrigger aria-labelledby="lessons-semester-label" className={`${compact ? 'w-[140px]' : 'w-[200px]'} bg-white/10 border-white/20 text-white h-9`}>
+              <SelectValue placeholder="All Semesters" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-900/95 border-white/20">
+              <SelectItem value="all" className="text-white focus:bg-white/10">All Semesters</SelectItem>
+              {semesters.map((semester) => (
+                <SelectItem key={semester.id} value={semester.id} className="text-white focus:bg-white/10">
+                  {semester.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </LabeledSelect>
+      )}
+
     </div>
   );
 };

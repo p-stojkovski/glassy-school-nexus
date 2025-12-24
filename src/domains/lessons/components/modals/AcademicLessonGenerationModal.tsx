@@ -19,7 +19,8 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { NativeDateInput } from '@/components/common';
 import { useLessons } from '@/domains/lessons/hooks/useLessons';
-import { AcademicYear, Semester } from '@/domains/settings/types/academicCalendarTypes';
+import { AcademicYear } from '@/domains/settings/types/academicCalendarTypes';
+import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
 import EnhancedLessonGenerationResults from '../EnhancedLessonGenerationResults';
 import { 
   GenerationMode, 
@@ -98,7 +99,7 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
   
   // Academic years are provided by YearsDropdown; keep local copy for date auto-fill
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
-  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [semesters, setSemesters] = useState<AcademicSemesterResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -393,9 +394,11 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
                   placeholder="Select semester"
                   showDateRangeInfo={true}
                   onLoaded={(loaded) => {
-                    setSemesters(loaded);
-                    if (formData.generationMode === 'Semester' && !formData.semesterId && loaded.length > 0) {
-                      const first = loaded[0];
+                    // Filter out deleted semesters
+                    const activeSemesters = loaded.filter((s) => !s.isDeleted);
+                    setSemesters(activeSemesters);
+                    if (formData.generationMode === 'Semester' && !formData.semesterId && activeSemesters.length > 0) {
+                      const first = activeSemesters[0];
                       setFormData(prev => ({ ...prev, semesterId: first.id }));
                     }
                   }}
@@ -442,6 +445,20 @@ const AcademicLessonGenerationModal: React.FC<AcademicLessonGenerationModalProps
             required
           />
         </div>
+
+        {/* Semester Info Helper Text */}
+        {formData.generationMode === 'Semester' && formData.semesterId && formData.startDate && formData.endDate && (
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+            <BookOpen className="w-4 h-4 text-blue-400 flex-shrink-0" />
+            <span className="text-sm text-blue-200">
+              Dates auto-filled from{' '}
+              <span className="font-semibold">
+                {semesters.find(s => s.id === formData.semesterId)?.name || 'selected semester'}
+              </span>
+              {' '}({formatDateForDisplay(formData.startDate)} - {formatDateForDisplay(formData.endDate)})
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Academic Calendar Options */}

@@ -255,6 +255,17 @@ const EnhancedLessonGenerationResults: React.FC<EnhancedResultsProps> = ({ resul
             <span className="text-white/60">Mode:</span>
             <span className="text-white ml-2">{result.generationMode}</span>
           </div>
+          {result.academicContext?.semesterName && (
+            <div>
+              <span className="text-white/60">Semester:</span>
+              <span className="text-white ml-2">
+                {result.academicContext.semesterName}
+                <Badge variant="outline" className="ml-2 text-xs text-blue-400 border-blue-400/50">
+                  {result.academicContext.academicYearName}
+                </Badge>
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

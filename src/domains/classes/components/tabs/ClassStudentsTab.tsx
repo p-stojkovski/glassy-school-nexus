@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Users, Loader2, Plus, Calendar, ListChecks, Building2 } from 'lucide-react';
+import { Users, Loader2, Plus, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { toast } from 'sonner';
 import ScheduleEnrollmentTab from '@/domains/classes/components/forms/tabs/ScheduleEnrollmentTab';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import StudentProgressTable from '@/domains/classes/components/sections/StudentProgressTable';
 import { TransferStudentDialog } from '@/domains/classes/components/dialogs/TransferStudentDialog';
-import { ClassBasicInfoResponse, ClassFormData, StudentLessonSummary } from '@/types/api/class';
-import { addStudentsToClass, removeStudentFromClass, classApiService } from '@/services/classApiService';
+import StudentFilters from '@/domains/classes/components/filters/StudentFilters';
+import { ClassBasicInfoResponse, ClassFormData } from '@/types/api/class';
+import { addStudentsToClass, removeStudentFromClass } from '@/services/classApiService';
+import { StudentFilter } from '@/domains/classes/utils/studentFilters';
 
 interface ClassStudentsTabProps {
   mode: 'view' | 'edit';
@@ -40,29 +43,8 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
   const [studentToRemove, setStudentToRemove] = useState<StudentToRemove | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
   const [studentToTransfer, setStudentToTransfer] = useState<StudentToTransfer | null>(null);
-  const [studentSummaries, setStudentSummaries] = useState<StudentLessonSummary[]>([]);
-
-  // Fetch student summaries for header display
-  useEffect(() => {
-    if (!classData?.id) return;
-
-    const fetchSummaries = async () => {
-      try {
-        const data = await classApiService.getClassStudentsSummary(classData.id);
-        setStudentSummaries(data);
-      } catch (err) {
-        console.error('Error fetching student summaries for header:', err);
-      }
-    };
-
-    fetchSummaries();
-  }, [classData?.id]);
-
-  // Calculate total conducted lessons
-  const totalConductedLessons = useMemo(() => {
-    if (studentSummaries.length === 0) return 0;
-    return Math.max(...studentSummaries.map((s) => s.totalLessons));
-  }, [studentSummaries]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [studentFilter, setStudentFilter] = useState<StudentFilter>('all');
 
   // Handle adding new students using the enrollment endpoint
   const handleAddStudents = async (selectedStudentIds: string[]) => {
@@ -80,12 +62,10 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
       // Use the dedicated enrollment endpoint
       const result = await addStudentsToClass(classData.id, { studentIds: selectedStudentIds });
 
-      // Refetch class data and summaries
+      // Refetch class data
       if (onRefetchClassData) {
         await onRefetchClassData();
       }
-      const summaries = await classApiService.getClassStudentsSummary(classData.id);
-      setStudentSummaries(summaries);
 
       // Show success with details from response
       const successCount = result.enrolledCount ?? selectedStudentIds.length;
@@ -116,12 +96,10 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
       // Use the dedicated enrollment endpoint
       await removeStudentFromClass(classData.id, studentToRemove.id);
 
-      // Refetch class data and summaries
+      // Refetch class data
       if (onRefetchClassData) {
         await onRefetchClassData();
       }
-      const summaries = await classApiService.getClassStudentsSummary(classData.id);
-      setStudentSummaries(summaries);
 
       toast.success('Student removed successfully');
       setStudentToRemove(null);
@@ -138,58 +116,58 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
 
   if (mode === 'view') {
     return (
-      <div className="space-y-6">
-        {/* Unified Header - Always visible */}
-        <div className="mb-4 flex flex-wrap items-center gap-4 md:gap-6 p-3 bg-white/[0.02] rounded-lg border border-white/10">
-          {/* Student count */}
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-white/60" />
-            <span className="text-sm text-white/80">
-              <span className="font-semibold text-white">{classData.enrolledCount}</span>{' '}
-              {classData.enrolledCount === 1 ? 'student' : 'students'}
-            </span>
+      <div className="space-y-4">
+        {/* Filters and Actions - following Lessons tab pattern */}
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          {/* Left: Search and Filters */}
+          <div className="flex flex-wrap items-end gap-3">
+            {/* Search Bar - first and wider - only show when there are students */}
+            {classData.enrolledCount > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs text-white/50 font-medium">Search:</span>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+                  <Input
+                    type="text"
+                    placeholder="Search students by name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-10 w-[340px] bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/30 h-9"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Student Filter */}
+            {classData.enrolledCount > 0 && (
+              <StudentFilters
+                filter={studentFilter}
+                onFilterChange={setStudentFilter}
+                compact={true}
+              />
+            )}
           </div>
 
-          {/* Conditional metric based on enrollment state */}
-          {classData.enrolledCount > 0 ? (
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-white/60" />
-              <span className="text-sm text-white/80">
-                <span className="font-semibold text-white">{totalConductedLessons}</span>{' '}
-                {totalConductedLessons === 1 ? 'lesson' : 'lessons'} conducted
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <ListChecks className="w-4 h-4 text-white/60" />
-              <span className="text-sm text-white/80">
-                <span className="font-semibold text-white">{classData.availableSlots}</span>{' '}
-                {classData.availableSlots === 1 ? 'slot' : 'slots'} available
-              </span>
-            </div>
-          )}
-
-          {/* Capacity - always show */}
-          <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-white/60" />
-            <span className="text-sm text-white/60">
-              Capacity: <span className="font-semibold text-white/80">{classData.classroomCapacity}</span>
-            </span>
-          </div>
-
-          {/* Add Students button - right aligned */}
-          <div className="ml-auto w-full md:w-auto md:ml-auto">
-            <Button
-              onClick={() => setIsAddPanelOpen(true)}
-              disabled={isAdding}
-              size="default"
-              variant="outline"
-              className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium gap-2"
-            >
-                <Plus className="w-4 h-4" />
-                Add Students
-            </Button>
-          </div>
+          {/* Right: Add Students button */}
+          <Button
+            onClick={() => setIsAddPanelOpen(true)}
+            disabled={isAdding}
+            size="default"
+            variant="outline"
+            className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium gap-2 shrink-0 h-9"
+          >
+            <Plus className="w-4 h-4" />
+            Add Students
+          </Button>
         </div>
 
         {/* Content Area - Table or Empty State */}
@@ -200,15 +178,16 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 mb-4">
                 <Users className="w-8 h-8 text-white/40" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">No Students Enrolled</h3>
-              <p className="text-white/60 text-sm mb-6">
+              <h3 className="text-xl font-semibold text-white mb-2">No Students Enrolled</h3>
+              <p className="text-white/70 mb-6">
                 There are no students enrolled in this class yet.
               </p>
               <Button
                 onClick={() => setIsAddPanelOpen(true)}
                 disabled={isAdding}
+                size="default"
                 variant="outline"
-                className="gap-2 border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium"
+                className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium gap-2"
               >
                 {isAdding ? (
                   <>
@@ -236,6 +215,9 @@ const ClassStudentsTab: React.FC<ClassStudentsTabProps> = ({
             onTransferStudent={(studentId, studentName) => {
               setStudentToTransfer({ id: studentId, name: studentName });
             }}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            studentFilter={studentFilter}
           />
         )}
 

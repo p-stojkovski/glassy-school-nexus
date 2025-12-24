@@ -2,14 +2,16 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { StudentLessonSummary, StudentLessonDetail } from '@/types/api/class';
 import { classApiService } from '@/services/classApiService';
-import { ChevronDown, ChevronRight, User, AlertCircle, Loader2, MessageSquare, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, User, AlertCircle, Loader2, MessageSquare, Plus, Search, X } from 'lucide-react';
 import StudentLessonDetailsRow from './StudentLessonDetailsRow';
 import StudentProgressChips from './StudentProgressChips';
 import StudentRowActionsMenu from './StudentRowActionsMenu';
 import { DiscountIndicator, PaymentObligationIndicator } from './PrivacyIndicator';
 import { toast } from 'sonner';
+import { StudentFilter, applyStudentFilter } from '@/domains/classes/utils/studentFilters';
 
 interface StudentProgressTableProps {
   classId: string;
@@ -18,6 +20,9 @@ interface StudentProgressTableProps {
   onAddStudents?: () => void;
   onRemoveStudent?: (studentId: string, studentName: string, hasAttendance: boolean) => void;
   onTransferStudent?: (studentId: string, studentName: string) => void;
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
+  studentFilter?: StudentFilter;
 }
 
 const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
@@ -27,6 +32,9 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
   onAddStudents,
   onRemoveStudent,
   onTransferStudent,
+  searchQuery: externalSearchQuery,
+  onSearchQueryChange,
+  studentFilter = 'all',
 }) => {
   const navigate = useNavigate();
   const [summaries, setSummaries] = useState<StudentLessonSummary[]>([]);
@@ -35,6 +43,11 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
   const [loadingDetails, setLoadingDetails] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Use external search query if provided, otherwise maintain internal state
+  const [internalSearchQuery, setInternalSearchQuery] = useState<string>('');
+  const searchQuery = externalSearchQuery ?? internalSearchQuery;
+  const setSearchQuery = onSearchQueryChange ?? setInternalSearchQuery;
 
   // Fetch summary data on mount
   useEffect(() => {
@@ -90,6 +103,22 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
     }
   }, [classId, expandedStudents, lessonDetails]);
 
+  // Filter summaries based on search query and student filter
+  const filteredSummaries = useMemo(() => {
+    // First, apply the student filter
+    let filtered = applyStudentFilter(summaries, { filter: studentFilter });
+
+    // Then, apply the search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((s) =>
+        s.studentName.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [summaries, searchQuery, studentFilter]);
+
   // Calculate attention indicators (calmer language focused on support, not alarm)
   const getAtRiskIndicator = useCallback((summary: StudentLessonSummary) => {
     const hasHighAbsences = summary.attendance.absent >= 3;
@@ -109,13 +138,13 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
 
   // Determine if any student has billing data (discount or payment obligation)
   const hasAnyBillingData = useMemo(() => {
-    return summaries.some((s) => s.discount?.hasDiscount || s.paymentObligation?.hasPendingObligations);
-  }, [summaries]);
+    return filteredSummaries.some((s) => s.discount?.hasDiscount || s.paymentObligation?.hasPendingObligations);
+  }, [filteredSummaries]);
 
   // Determine if any student has comments
   const hasAnyComments = useMemo(() => {
-    return summaries.some((s) => s.commentsCount > 0);
-  }, [summaries]);
+    return filteredSummaries.some((s) => s.commentsCount > 0);
+  }, [filteredSummaries]);
 
   // Calculate column count for expanded row colspan
   const getColSpan = () => {
@@ -182,20 +211,19 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
     );
   }
 
-  // Empty state
+  // Empty state - no students at all
   if (summaries.length === 0) {
     return (
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-center">
         <div className="py-4">
           <User className="w-12 h-12 mx-auto mb-3 text-white/40" />
           <h3 className="text-lg font-semibold text-white mb-2">No Students Enrolled</h3>
-          <p className="text-white/60 text-sm mb-4">There are no students enrolled in this class yet.</p>
+          <p className="text-white/70 text-sm mb-4">There are no students enrolled in this class yet.</p>
           {mode === 'view' && onAddStudents && (
             <Button
               onClick={onAddStudents}
               disabled={isAddingStudents}
-              variant="outline"
-              className="gap-2 border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium"
+              className="glass-button-primary gap-2"
             >
               Add Students
             </Button>
@@ -207,9 +235,28 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* No results state - filtered out by search */}
+      {summaries.length > 0 && filteredSummaries.length === 0 && (
+        <div className="rounded-lg border border-white/10 bg-white/[0.02] p-8 text-center">
+          <Search className="w-12 h-12 mx-auto mb-3 text-white/40" />
+          <h3 className="text-lg font-semibold text-white mb-2">No students found</h3>
+          <p className="text-white/70 text-sm mb-4">
+            No students match "{searchQuery}". Try a different search term.
+          </p>
+          <Button
+            onClick={() => setSearchQuery('')}
+            variant="outline"
+            className="border-white/20 text-white hover:bg-white/10"
+          >
+            Clear search
+          </Button>
+        </div>
+      )}
+
       {/* Table */}
-      <div className="overflow-x-auto">
-        <Table>
+      {filteredSummaries.length > 0 && (
+        <div className="overflow-x-auto">
+          <Table>
           <TableHeader>
             <TableRow className="border-white/20 hover:bg-transparent">
               <TableHead className="text-white/90 font-semibold w-8"></TableHead>
@@ -227,7 +274,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {summaries.map((summary) => {
+            {filteredSummaries.map((summary) => {
               const isExpanded = expandedStudents.has(summary.studentId);
               const isLoadingDetails = loadingDetails.has(summary.studentId);
               const details = lessonDetails[summary.studentId] || [];
@@ -238,7 +285,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
               return (
                 <React.Fragment key={summary.studentId}>
                   {/* Main row */}
-                  <TableRow className="border-white/10 hover:bg-white/5 transition-colors bg-white/[0.02]">
+                  <TableRow className="border-white/10 group hover:bg-white/5 focus-within:bg-white/6 hover:shadow-sm transition-all duration-150 bg-white/[0.02]">
                     {/* Expand button */}
                     <TableCell className="py-3">
                       <Button
@@ -247,6 +294,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
                         onClick={() => toggleRow(summary.studentId)}
                         className="h-8 w-8 p-0 hover:bg-white/10 transition-colors"
                         aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+                        aria-expanded={isExpanded}
                       >
                         {isExpanded ? (
                           <ChevronDown className="h-5 w-5 text-white/70" />
@@ -257,14 +305,13 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
                     </TableCell>
 
                     {/* Student name with risk indicator */}
-                    <TableCell className="font-medium py-2">
+                    <TableCell className="font-medium py-3">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => navigate(`/students/${summary.studentId}`)}
-                          className="text-blue-300 hover:text-blue-200 hover:underline cursor-pointer transition-colors text-base font-bold"
-                        >
-                          {summary.studentName}
-                        </button>
+                        <Button asChild variant="link" className="p-0 text-base font-bold text-blue-300 hover:text-blue-200 hover:underline">
+                          <button onClick={() => navigate(`/students/${summary.studentId}`)}>
+                            {summary.studentName}
+                          </button>
+                        </Button>
                         {riskIndicator.show && (
                           <div
                             className={`w-2 h-2 rounded-full ${riskIndicator.color} transition-transform hover:scale-125`}
@@ -275,7 +322,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
                     </TableCell>
 
                     {/* Progress: Combined Lessons + Attendance + Homework */}
-                    <TableCell className="py-2">
+                    <TableCell className="py-3">
                       <StudentProgressChips
                         totalLessons={summary.totalLessons}
                         attendance={summary.attendance}
@@ -285,35 +332,35 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
 
                     {/* Billing: Combined Discounts + Payments - only shown if any student has data */}
                     {hasAnyBillingData && (
-                      <TableCell className="hidden md:table-cell text-center py-2">
+                      <TableCell className="hidden md:table-cell text-center py-3">
                         {summary.discount?.hasDiscount || summary.paymentObligation?.hasPendingObligations ? (
                           <div className="flex items-center justify-center gap-1">
                             {summary.discount && <DiscountIndicator discount={summary.discount} />}
                             {summary.paymentObligation && <PaymentObligationIndicator paymentObligation={summary.paymentObligation} />}
                           </div>
                         ) : (
-                          <span className="text-white/40 text-sm">—</span>
+                          <span className="text-white/60 text-sm">—</span>
                         )}
                       </TableCell>
                     )}
 
                     {/* Notes: Simplified count badge - only shown if any student has comments */}
                     {hasAnyComments && (
-                      <TableCell className="hidden lg:table-cell text-center py-2">
+                      <TableCell className="hidden lg:table-cell text-center py-3">
                         {summary.commentsCount > 0 ? (
                           <div className="flex items-center justify-center gap-1 text-white/70 text-xs">
                             <MessageSquare className="w-3 h-3" />
                             <span>{summary.commentsCount}</span>
                           </div>
                         ) : (
-                          <span className="text-white/40 text-xs">—</span>
+                          <span className="text-white/60 text-xs">—</span>
                         )}
                       </TableCell>
                     )}
 
                     {/* Actions: Dropdown Menu */}
                     {mode === 'view' && (onRemoveStudent || onTransferStudent) && (
-                      <TableCell className="text-center py-2">
+                      <TableCell className="text-center py-3">
                         <div className="flex items-center justify-center">
                           <StudentRowActionsMenu
                             studentId={summary.studentId}
@@ -329,7 +376,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
 
                   {/* Expandable details row */}
                   {isExpanded && (
-                    <TableRow className="border-white/10">
+                    <TableRow className="border-white/10 transition-opacity duration-200">
                       <TableCell
                         colSpan={getColSpan()}
                         className="p-0 bg-white/[0.02]"
@@ -347,6 +394,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
           </TableBody>
         </Table>
       </div>
+      )}
     </div>
   );
 };

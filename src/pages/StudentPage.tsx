@@ -104,11 +104,6 @@ const StudentPage: React.FC = () => {
     dispatch(updateStudentInStore(updatedStudent));
   }, [dispatch]);
 
-  // Handle edit button from header - navigate to Details tab
-  const handleHeaderEdit = useCallback(() => {
-    setActiveTab('details');
-  }, [setActiveTab]);
-
   // Create mode
   if (isCreateMode) {
     return (
@@ -175,7 +170,6 @@ const StudentPage: React.FC = () => {
         student={student}
         studentClass={studentClass}
         outstandingBalance={outstandingBalance}
-        onEdit={handleHeaderEdit}
         onToggleStatus={handleToggleStatus}
         onDelete={handleDelete}
         isDeleting={isDeleting}

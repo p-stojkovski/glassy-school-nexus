@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AlertCircle, AlertTriangle, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
 import { ClassBasicInfoResponse } from '@/types/api/class';
 import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData, ClassLessonFilterParams, LessonTimeWindow } from '@/types/api/lesson';
+import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
 import { useLessonsForClass, useLessons } from '@/domains/lessons/hooks/useLessons';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
 import LessonTimeline from '@/domains/lessons/components/LessonTimeline';
@@ -21,6 +23,7 @@ import GlassCard from '@/components/common/GlassCard';
 import { hasActiveSchedules, getScheduleWarningMessage } from '@/domains/classes/utils/scheduleValidationUtils';
 import { ScopeFilter } from '@/domains/lessons/utils/lessonFilters';
 import { loadFromStorage, saveToStorage } from '@/lib/storage';
+import { academicCalendarApiService } from '@/services/academicCalendarApiService';
 
 interface ClassLessonsTabProps {
   classData: ClassBasicInfoResponse;
@@ -58,7 +61,12 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   const navigate = useNavigate();
   const { lessons, pastUnstartedLessons, loading, loadLessons, loadPastUnstartedLessons } = useLessonsForClass(classData.id);
   const [statusFilter, setStatusFilter] = useState<LessonFilter>('all');
-  
+
+  // Semester filtering state
+  const [semesters, setSemesters] = useState<AcademicSemesterResponse[]>([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState<string>('all');
+  const [loadingSemesters, setLoadingSemesters] = useState(false);
+
   // Scope filter - default to 'upcoming' to show what matters most
   const storageKey = `class-lessons-time-filter-${classData.id}`;
   const loadStoredTimeFilters = useCallback((): TimeFilterState => {
@@ -112,6 +120,30 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
   // Lesson creation from useLessons hook
   const { addLesson, creatingLesson, createMakeup, loadLessonById } = useLessons();
 
+  // Fetch semesters for the class's academic year
+  useEffect(() => {
+    const fetchSemesters = async () => {
+      if (!classData?.academicYearId) return;
+
+      setLoadingSemesters(true);
+      try {
+        const semestersList = await academicCalendarApiService.getSemestersForYear(
+          classData.academicYearId
+        );
+        // Filter out deleted semesters
+        const activeSemesters = semestersList.filter((s) => !s.isDeleted);
+        setSemesters(activeSemesters);
+      } catch (err) {
+        console.error('Failed to load semesters:', err);
+        // Don't show error toast - semesters are optional
+      } finally {
+        setLoadingSemesters(false);
+      }
+    };
+
+    fetchSemesters();
+  }, [classData?.academicYearId]);
+
   // Persist time filters per class (session-level)
   useEffect(() => {
     saveToStorage(storageKey, { scope: scopeFilter, timeWindow });
@@ -122,6 +154,8 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     const stored = loadStoredTimeFilters();
     setScopeFilter(stored.scope);
     setTimeWindow(stored.timeWindow);
+    // Reset semester filter when switching classes
+    setSelectedSemesterId('all');
   }, [classData.id, loadStoredTimeFilters]);
 
   const handleScopeChange = useCallback((value: ScopeFilter) => {
@@ -136,7 +170,8 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
     scope: scopeFilter,
     statusName: statusFilter,
     timeWindow,
-  }), [scopeFilter, statusFilter, timeWindow]);
+    ...(selectedSemesterId !== 'all' && { semesterId: selectedSemesterId }),
+  }), [scopeFilter, statusFilter, timeWindow, selectedSemesterId]);
 
   // Compute next lesson from the current lessons list
   const nextLesson = useMemo(() => {
@@ -431,8 +466,8 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
           <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
             <Calendar className="w-6 h-6 text-green-400" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">{emptyMessage}</h3>
-          <p className="text-white/60 text-sm mb-4">{emptyDescription}</p>
+          <h3 className="text-xl font-semibold text-white mb-2">{emptyMessage}</h3>
+          <p className="text-white/70 mb-4">{emptyDescription}</p>
           <Button
             variant="outline"
             onClick={handleExitReviewMode}
@@ -449,8 +484,8 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
       return (
         <GlassCard className="p-8 text-center">
           <Calendar className="w-12 h-12 text-white/40 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">{emptyMessage}</h3>
-          <p className="text-white/60 text-sm mb-4 max-w-md mx-auto">{emptyDescription}</p>
+          <h3 className="text-xl font-semibold text-white mb-2">{emptyMessage}</h3>
+          <p className="text-white/70 mb-4 max-w-md mx-auto">{emptyDescription}</p>
         </GlassCard>
       );
     }
@@ -466,10 +501,10 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-400/25 rounded-lg px-4 py-3">
           <AlertTriangle className="h-5 w-5 text-amber-400/80 flex-shrink-0" />
           <div className="flex-1">
-            <div className="text-sm text-amber-100">
-              <span className="font-semibold">Reviewing {pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'} to document</span>
+            <div className="text-sm font-semibold text-amber-100">
+              Reviewing {pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'} to document
             </div>
-            <div className="text-xs text-amber-200/60 mt-0.5">
+            <div className="text-sm text-amber-200/70 mt-0.5">
               Click "Document Lesson" to mark attendance and status
             </div>
           </div>
@@ -477,7 +512,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
             variant="ghost"
             size="sm"
             onClick={handleExitReviewMode}
-            className="text-amber-100 hover:text-amber-50 hover:bg-amber-500/20 flex-shrink-0 h-7 px-3 text-xs font-medium"
+            className="text-amber-100 hover:text-amber-50 hover:bg-amber-500/20 flex-shrink-0 h-7 px-3 text-sm font-medium"
           >
             Exit review
           </Button>
@@ -489,10 +524,10 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-400/25 rounded-lg px-4 py-3">
           <AlertTriangle className="h-5 w-5 text-amber-400/80 flex-shrink-0" />
           <div className="flex-1">
-            <div className="text-sm text-amber-100">
-              <span className="font-semibold">{pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'} ready to document</span>
+            <div className="text-sm font-semibold text-amber-100">
+              {pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'} ready to document
             </div>
-            <div className="text-xs text-amber-200/60 mt-0.5">
+            <div className="text-sm text-amber-200/70 mt-0.5">
               Past lessons never marked as conducted, cancelled, or no-show
             </div>
           </div>
@@ -500,7 +535,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
             variant="ghost"
             size="sm"
             onClick={handleReviewNow}
-            className="text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 flex-shrink-0 h-7 px-3 text-xs font-medium"
+            className="text-amber-200 hover:text-amber-100 hover:bg-amber-500/20 flex-shrink-0 h-7 px-3 text-sm font-medium"
           >
             Document {pastUnstartedCount} {pastUnstartedCount === 1 ? 'lesson' : 'lessons'}
             <ArrowRight className="w-3 h-3 ml-1" />
@@ -516,6 +551,8 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
         </div>
       )}
 
+
+
       {/* Enhanced Filters and Actions - hide when in review mode */}
       {!reviewPastUnstarted && (
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -528,6 +565,10 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
             timeWindow={timeWindow}
             onTimeWindowChange={setTimeWindow}
             compact={true}
+            semesters={semesters}
+            selectedSemesterId={selectedSemesterId}
+            onSemesterChange={setSelectedSemesterId}
+            loadingSemesters={loadingSemesters}
           />
 
           {/* Right: Action Buttons */}
@@ -552,6 +593,7 @@ const ClassLessonsTab: React.FC<ClassLessonsTabProps> = ({
           sortDirection={timelineSortDirection}
           nextLesson={nextLesson}
           showTeacherName={false} // Teacher is already shown in the class header
+          showSemesterBadge={false}
           onViewLesson={handleLessonDetails}
           onStartTeaching={handleStartTeaching}
           onQuickConduct={openConductModal}

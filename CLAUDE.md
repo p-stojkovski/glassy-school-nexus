@@ -15,9 +15,17 @@
 
 ## Domain-Specific Documentation
 
+**MANDATORY RULE: When working on any domain, FIRST read the domain's CLAUDE.md file.**
+
 For detailed domain-specific patterns, components, and workflows, see:
 
 - **[Class Management](src/domains/classes/CLAUDE.md)** - Classes, schedules, enrollment, student progress tracking
+
+**When working in a domain:**
+1. **FIRST STEP:** Read `src/domains/{domain}/CLAUDE.md` (if it exists)
+2. Use domain-specific patterns, components, and workflows documented there
+3. Follow domain-specific anti-patterns and validation rules
+4. Reference domain-specific file paths and component structures
 
 **When to consult domain docs:**
 - Before implementing features in that domain

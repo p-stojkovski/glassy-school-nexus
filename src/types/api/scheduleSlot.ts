@@ -7,6 +7,7 @@ export interface CreateScheduleSlotRequest {
   dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
   startTime: string; // "HH:mm"
   endTime: string;   // "HH:mm"
+  semesterId?: string | null;  // Optional semester assignment (NULL = global)
   generateLessons?: boolean;
   generationOptions?: LessonGenerationOptions;
 }
@@ -15,6 +16,7 @@ export interface UpdateScheduleSlotRequest {
   dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
   startTime: string; // "HH:mm"
   endTime: string;   // "HH:mm"
+  semesterId?: string | null;  // Optional semester assignment (NULL = global)
   updateFutureLessons?: boolean;
 }
 

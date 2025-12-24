@@ -21,6 +21,7 @@ export interface CreateLessonRequest {
   scheduledDate: string;        // required, ISO date "YYYY-MM-DD"
   startTime: string;            // required, "HH:mm"
   endTime: string;              // required, "HH:mm"
+  semesterId?: string | null;   // optional, GUID - semester assignment
   notes?: string | null;        // optional
 }
 
@@ -137,6 +138,17 @@ export interface LessonResponse {
   subjectName: string;
   classroomId: string;          // GUID (from class)
   classroomName: string;
+
+  // Academic year tracking
+  academicYearId?: string | null;
+  academicYearName?: string | null;
+
+  // Semester tracking
+  semesterId?: string | null;
+  semesterName?: string | null;
+  semesterNumber?: number | null;
+  semesterDeleted?: boolean | null;  // True if semester was soft-deleted
+
   scheduledDate: string;        // ISO date "YYYY-MM-DD"
   startTime: string;            // "HH:mm"
   endTime: string;              // "HH:mm"
@@ -148,12 +160,12 @@ export interface LessonResponse {
   originalLessonId?: string | null; // GUID, present if this is a makeup lesson
   notes: string | null;
   generationSource: 'manual' | 'automatic' | 'makeup';
-  
+
   // Historical snapshots (preserved at creation)
   teacherNameSnapshot: string;
   subjectNameSnapshot: string;
   classroomNameSnapshot: string;
-  
+
   createdAt: string;            // ISO 8601
   updatedAt: string;            // ISO 8601
 }
@@ -184,6 +196,7 @@ export interface LessonSearchParams {
   classroomId?: string;         // GUID - filter by classroom
   statusId?: string;            // GUID - filter by status
   statusName?: LessonStatusName; // filter by status name (takes precedence over statusId on backend)
+  semesterId?: string;          // GUID - filter by semester
   startDate?: string;           // ISO date - filter from this date (maps to fromDate on backend)
   endDate?: string;             // ISO date - filter until this date (maps to toDate on backend)
   generationSource?: 'manual' | 'automatic' | 'makeup';
@@ -211,6 +224,8 @@ export interface ClassLessonFilterParams {
    * - 'all' -> full history/future for the selected scope
    */
   timeWindow?: LessonTimeWindow;
+  /** Semester filter: filter lessons by semester ID */
+  semesterId?: string;
 }
 
 // Lesson summary for class overview

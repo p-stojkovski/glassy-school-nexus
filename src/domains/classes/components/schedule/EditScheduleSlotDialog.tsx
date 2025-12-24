@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { Calendar, Trash2, AlertTriangle } from 'lucide-react';
+import { Calendar, Trash2, AlertTriangle, Info } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -28,16 +29,20 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { TimeCombobox } from '@/components/common';
+import SemestersDropdown from '@/components/common/SemestersDropdown';
 import { classApiService } from '@/services/classApiService';
+import { academicCalendarApiService } from '@/services/academicCalendarApiService';
 import { UpdateScheduleSlotRequest } from '@/types/api/scheduleSlot';
-import { ScheduleSlotDto } from '@/types/api/class';
+import { ScheduleSlotDto, ClassBasicInfoResponse } from '@/types/api/class';
 import { ExistingScheduleOverlapInfo, ScheduleConflictInfo } from '@/types/api/scheduleValidation';
+import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
 import { toast } from 'sonner';
 
 interface EditScheduleSlotDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   classId: string;
+  classData: ClassBasicInfoResponse;
   slot: ScheduleSlotDto | null;
   onSuccess: () => void;
   onDelete?: (slot: ScheduleSlotDto) => void;
@@ -48,15 +53,21 @@ interface FormData {
   startTime: string;
   endTime: string;
   updateFutureLessons: boolean;
+  semesterId: string | null;
 }
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-export function EditScheduleSlotDialog({ open, onOpenChange, classId, slot, onSuccess, onDelete }: EditScheduleSlotDialogProps) {
+export function EditScheduleSlotDialog({ open, onOpenChange, classId, classData, slot, onSuccess, onDelete }: EditScheduleSlotDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [conflictInfo, setConflictInfo] = useState<ScheduleConflictInfo | null>(null);
   const [existingOverlap, setExistingOverlap] = useState<ExistingScheduleOverlapInfo | null>(null);
+  
+  // Semester state
+  const [semesters, setSemesters] = useState<AcademicSemesterResponse[]>([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState<string | null>(null);
+  const [loadingSemesters, setLoadingSemesters] = useState(false);
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -64,6 +75,7 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, slot, onSu
       startTime: '09:00',
       endTime: '10:00',
       updateFutureLessons: true,
+      semesterId: null,
     },
   });
 
@@ -75,12 +87,42 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, slot, onSu
         startTime: slot.startTime,
         endTime: slot.endTime,
         updateFutureLessons: true,
+        semesterId: slot.semesterId || null,
       });
+      setSelectedSemesterId(slot.semesterId || null);
       // Clear validation state when slot changes
       setConflictInfo(null);
       setExistingOverlap(null);
     }
   }, [slot, form]);
+
+  // Fetch semesters for the class's academic year
+  useEffect(() => {
+    if (!classData?.academicYearId || !open) return;
+
+    const fetchSemesters = async () => {
+      setLoadingSemesters(true);
+      try {
+        const semestersList = await academicCalendarApiService.getSemestersForYear(
+          classData.academicYearId
+        );
+        // Filter out deleted semesters
+        const activeSemesters = semestersList.filter((s) => !s.isDeleted);
+        setSemesters(activeSemesters);
+      } catch (err) {
+        console.error('Failed to load semesters:', err);
+      } finally {
+        setLoadingSemesters(false);
+      }
+    };
+
+    fetchSemesters();
+  }, [classData?.academicYearId, open]);
+
+  // Sync selectedSemesterId with form
+  useEffect(() => {
+    form.setValue('semesterId', selectedSemesterId);
+  }, [selectedSemesterId, form]);
 
   const watchedDay = form.watch('dayOfWeek');
   const watchedStart = form.watch('startTime');
@@ -147,6 +189,7 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, slot, onSu
         dayOfWeek: data.dayOfWeek as any,
         startTime: data.startTime,
         endTime: data.endTime,
+        semesterId: data.semesterId || null,
         updateFutureLessons: data.updateFutureLessons,
       };
 
@@ -185,6 +228,8 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, slot, onSu
             Update the schedule slot details
           </DialogDescription>
         </DialogHeader>
+
+
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -254,6 +299,61 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, slot, onSu
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Semester Assignment */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-white text-sm font-medium">Change Semester Assignment</FormLabel>
+                {selectedSemesterId ? (
+                  <Badge variant="outline" className="text-xs text-blue-400 border-blue-400/50">
+                    {semesters.find(s => s.id === selectedSemesterId)?.name || 'Semester'}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-xs text-purple-400 border-purple-400/50">
+                    All Semesters
+                  </Badge>
+                )}
+              </div>
+              <SemestersDropdown
+                academicYearId={classData?.academicYearId}
+                value={selectedSemesterId || ''}
+                onValueChange={(id) => setSelectedSemesterId(id || null)}
+                placeholder="All semesters (Global)"
+                disabled={loadingSemesters || !classData?.academicYearId}
+                showDateRangeInfo={true}
+                onError={(message) => {
+                  console.error('Failed to load semesters:', message);
+                }}
+              />
+              {!classData?.academicYearId && (
+                <div className="text-xs text-red-300 mt-2">
+                  This class has no academic year. Semester selection is disabled.
+                </div>
+              )}
+              {classData?.academicYearId && !loadingSemesters && semesters.length === 0 && (
+                <div className="text-xs text-white/60 mt-2">
+                  No semesters defined for this academic year. Create semesters in Academic Calendar settings.
+                </div>
+              )}
+              {selectedSemesterId && selectedSemesterId !== (slot?.semesterId || null) && (
+                <div className="text-xs text-amber-300 flex items-start gap-2 mt-2">
+                  <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>This schedule will no longer apply to other semesters</span>
+                </div>
+              )}
+              {!selectedSemesterId && (slot?.semesterId || null) && (
+                <div className="text-xs text-amber-300 flex items-start gap-2 mt-2">
+                  <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>This schedule will apply to all semesters</span>
+                </div>
+              )}
+              {!!slot?.pastLessonCount && slot.pastLessonCount > 0 && (
+                <div className="text-xs text-white/60 flex items-start gap-2 mt-1">
+                  <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>{slot.pastLessonCount} past lesson{slot.pastLessonCount !== 1 ? 's' : ''} will remain associated with their original semester</span>
+                </div>
+              )}
             </div>
 
             {/* Update Future Lessons Option */}

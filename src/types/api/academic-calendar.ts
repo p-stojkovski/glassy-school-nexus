@@ -65,6 +65,7 @@ export interface AcademicSemesterResponse {
   semesterNumber: number;
   startDate: string;      // ISO 8601 date
   endDate: string;        // ISO 8601 date
+  isDeleted: boolean;     // Soft delete flag
   createdAt: string;      // ISO 8601 datetime
   updatedAt: string;      // ISO 8601 datetime
 }
@@ -304,6 +305,7 @@ export function isAcademicSemesterResponse(obj: any): obj is AcademicSemesterRes
     typeof obj.semesterNumber === 'number' &&
     typeof obj.startDate === 'string' &&
     typeof obj.endDate === 'string' &&
+    typeof obj.isDeleted === 'boolean' &&
     typeof obj.createdAt === 'string' &&
     typeof obj.updatedAt === 'string'
   );

@@ -122,7 +122,7 @@ export const EditableSectionWrapper: React.FC<EditableSectionWrapperProps> = ({
                 size="sm"
                 onClick={onSave}
                 disabled={isSaving}
-                className="bg-primary hover:bg-primary/90 text-white gap-1"
+                className="bg-blue-600 hover:bg-blue-700 text-white gap-1"
               >
                 {isSaving ? (
                   <>

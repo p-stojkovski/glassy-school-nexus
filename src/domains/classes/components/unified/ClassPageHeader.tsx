@@ -204,6 +204,13 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
                   )}
                 </span>
               </div>
+
+              <span className="text-white/20">|</span>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-white/40">Lessons:</span>
+                <span>{conductedLessons}/{totalLessons}</span>
+              </div>
             </div>
 
             {/* Right: Actions only (teacher moved to left) */}

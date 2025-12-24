@@ -9,6 +9,12 @@ export interface ScheduleSlotDto {
   dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
   startTime: string; // "HH:mm"
   endTime: string;   // "HH:mm"
+
+  // Semester-specific scheduling
+  semesterId?: string | null;  // NULL = global (all semesters)
+  semesterName?: string | null;
+  isGlobal: boolean;           // Computed: true when semesterId is null
+
   isObsolete?: boolean;  // Optional: true for archived schedules
   pastLessonCount?: number;  // Optional: count of past lessons (scheduled_date < today)
   futureLessonCount?: number;  // Optional: count of future lessons (scheduled_date > today) that will be deleted

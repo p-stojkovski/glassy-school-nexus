@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import {
   User,
   MoreVertical,
-  Edit2,
   Trash2,
   Power,
   PowerOff,
@@ -44,7 +43,6 @@ interface StudentPageHeaderProps {
   student: Student;
   studentClass?: ClassInfo;
   outstandingBalance?: number;
-  onEdit: () => void;
   onToggleStatus: () => void;
   onDelete: () => void;
   isDeleting?: boolean;
@@ -56,7 +54,6 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
   student,
   studentClass,
   outstandingBalance = 0,
-  onEdit,
   onToggleStatus,
   onDelete,
   isDeleting = false,
@@ -231,19 +228,10 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
                     <MoreVertical className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
+                <DropdownMenuContent
+                  align="end"
                   className="w-48 bg-gray-900/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl p-1.5"
                 >
-                  {/* Edit Option */}
-                  <DropdownMenuItem
-                    onClick={onEdit}
-                    className="gap-2.5 cursor-pointer text-white hover:text-white focus:text-white focus:bg-white/10 rounded-lg px-3 py-2.5 transition-all duration-200"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                    <span className="font-medium">Edit Student</span>
-                  </DropdownMenuItem>
-
                   {/* Activate/Deactivate Option */}
                   <DropdownMenuItem
                     onClick={handleStatusClick}

@@ -95,7 +95,7 @@ export function EditClassInfoDialog({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md p-0 bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-xl border-white/20 text-white overflow-y-auto"
+        className="w-full sm:max-w-md p-0 bg-white/10 backdrop-blur-md border border-white/20 text-white overflow-y-auto"
       >
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -126,7 +126,7 @@ export function EditClassInfoDialog({
                           <Input
                             {...field}
                             placeholder="Enter class name"
-                            className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+                          className="bg-white/5 border-white/10 text-white placeholder:text-white/50"
                           />
                         </FormControl>
                         <FormMessage />
@@ -147,7 +147,7 @@ export function EditClassInfoDialog({
                             value={field.value}
                             onValueChange={field.onChange}
                             placeholder="Select subject"
-                            className="bg-white/5 border-white/20"
+                            className="bg-white/5 border-white/10"
                           />
                         </FormControl>
                         <FormMessage />
@@ -168,7 +168,7 @@ export function EditClassInfoDialog({
                             value={field.value}
                             onValueChange={field.onChange}
                             placeholder="Select teacher"
-                            className="bg-white/5 border-white/20"
+                            className="bg-white/5 border-white/10"
                             includeSubjectInfo={true}
                           />
                         </FormControl>
@@ -190,7 +190,7 @@ export function EditClassInfoDialog({
                             value={field.value}
                             onValueChange={field.onChange}
                             placeholder="Select classroom"
-                            className="bg-white/5 border-white/20"
+                            className="bg-white/5 border-white/10"
                           />
                         </FormControl>
                         <FormMessage />
@@ -209,7 +209,7 @@ export function EditClassInfoDialog({
                 type="submit"
                 form="edit-class-info-form"
                 disabled={isSubmitting}
-                className="flex-1 bg-white/20 hover:bg-white/30 text-white border border-white/30 font-semibold"
+                className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
@@ -218,7 +218,7 @@ export function EditClassInfoDialog({
                 variant="ghost"
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
-                className="flex-1 text-white/70 hover:text-white hover:bg-white/10"
+                className="flex-1 text-white hover:bg-white/10"
               >
                 Cancel
               </Button>

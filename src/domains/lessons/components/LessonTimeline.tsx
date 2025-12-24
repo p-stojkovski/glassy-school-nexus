@@ -57,7 +57,12 @@ interface LessonTimelineProps {
    * @default true
    */
   showTeacherName?: boolean;
-  onViewLesson?: (lesson: LessonResponse) => void;
+  /**
+   * Whether to show the semester badge on each lesson row.
+   * Defaults to true; the Class Lessons tab hides it by passing false.
+   */
+  showSemesterBadge?: boolean;
+  onViewLesson?: (lesson: LessonResponse) => void; 
   onConductLesson?: (lesson: LessonResponse) => void;
   onCancelLesson?: (lesson: LessonResponse) => void;
   onCreateMakeup?: (lesson: LessonResponse) => void;
@@ -70,6 +75,34 @@ interface LessonTimelineProps {
   sortDirection?: 'asc' | 'desc';
 }
 
+/**
+ * Renders a semester badge with context-aware styling.
+ */
+const SemesterBadge: React.FC<{ lesson: LessonResponse }> = ({ lesson }) => {
+  if (lesson.semesterDeleted) {
+    return (
+      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
+        {lesson.semesterName} (Deleted)
+      </span>
+    );
+  }
+
+  if (lesson.semesterId && lesson.semesterName) {
+    return (
+      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30">
+        {lesson.semesterName}
+      </span>
+    );
+  }
+
+  // Unassigned or outside semester dates
+  return (
+    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-white/5 text-white/40 border border-white/10">
+      -
+    </span>
+  );
+};
+
 const LessonTimeline: React.FC<LessonTimelineProps> = ({
   lessons,
   loading = false,
@@ -80,6 +113,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
   emptyDescription = "There are no lessons to display in the timeline.",
   nextLesson = null,
   showTeacherName = true,
+  showSemesterBadge = true,
   onViewLesson,
   onConductLesson,
   onCancelLesson,
@@ -404,6 +438,8 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                             <div className="text-white font-medium text-sm">
                               {formatLessonDateTime(lesson)}
                             </div>
+                            {/* Semester badge */}
+                            {showSemesterBadge && <SemesterBadge lesson={lesson} /> }
                             {/* Only show status badge for exceptions, not for regular Scheduled or Conducted lessons */}
                             {!isPastUnstarted && lesson.statusName !== 'Scheduled' && lesson.statusName !== 'Conducted' && (
                               <LessonStatusBadge
@@ -412,8 +448,8 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
                               />
                             )}
                             {lesson.makeupLessonId && (
-                              <Badge 
-                                variant="outline" 
+                              <Badge
+                                variant="outline"
                                 className="bg-violet-500/15 text-violet-300 border-violet-500/20 text-xs flex items-center gap-1"
                               >
                                 <Repeat className="w-3 h-3" />

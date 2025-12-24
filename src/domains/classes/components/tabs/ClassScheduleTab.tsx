@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ClassScheduleSection from '@/domains/classes/components/sections/ClassScheduleSection';
 import ArchivedSchedulesSection from '@/domains/classes/components/schedule/ArchivedSchedulesSection';
 import { AddScheduleSlotSidebar } from '@/domains/classes/components/schedule/AddScheduleSlotSidebar';
@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ClassBasicInfoResponse, ScheduleSlotDto } from '@/types/api/class';
 import { classApiService } from '@/services/classApiService';
+import { academicCalendarApiService } from '@/services/academicCalendarApiService';
+import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
 import { toast } from 'sonner';
 
 interface ClassScheduleTabProps {
@@ -48,12 +50,56 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
 
+  // Semester filtering state
+  const [semesters, setSemesters] = useState<AcademicSemesterResponse[]>([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState<string>('all');
+  const [loadingSemesters, setLoadingSemesters] = useState(false);
+
   // Dialog state
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<ScheduleSlotDto | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Filter schedules by selected semester
+  const filteredSchedule = useMemo(() => {
+    if (selectedSemesterId === 'all') {
+      return schedule;
+    }
+    return schedule.filter((slot) => {
+      // Show global schedules (no semester assigned) in all views
+      if (slot.isGlobal || !slot.semesterId) {
+        return true;
+      }
+      // Show semester-specific schedules only when that semester is selected
+      return slot.semesterId === selectedSemesterId;
+    });
+  }, [schedule, selectedSemesterId]);
+
+  // Fetch semesters for the class's academic year
+  useEffect(() => {
+    const fetchSemesters = async () => {
+      if (!classData?.academicYearId) return;
+
+      setLoadingSemesters(true);
+      try {
+        const semestersList = await academicCalendarApiService.getSemestersForYear(
+          classData.academicYearId
+        );
+        // Filter out deleted semesters
+        const activeSemesters = semestersList.filter((s) => !s.isDeleted);
+        setSemesters(activeSemesters);
+      } catch (err) {
+        console.error('Failed to load semesters:', err);
+        // Don't show error toast - semesters are optional
+      } finally {
+        setLoadingSemesters(false);
+      }
+    };
+
+    fetchSemesters();
+  }, [classData?.academicYearId]);
 
   // Fetch schedule data on mount (lazy loading)
   useEffect(() => {
@@ -154,10 +200,10 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
     );
   }
 
-  // Create a classData-like object with schedule for ClassScheduleSection
+  // Create a classData-like object with filtered schedule for ClassScheduleSection
   const classDataWithSchedule = {
     ...classData,
-    schedule,
+    schedule: filteredSchedule,
   };
 
   return (
@@ -168,6 +214,10 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
           onEdit={handleEdit}
           onDelete={handleDelete}
           onAddSchedule={() => setShowAddDialog(true)}
+          semesters={semesters}
+          selectedSemesterId={selectedSemesterId}
+          onSemesterChange={setSelectedSemesterId}
+          loadingSemesters={loadingSemesters}
         />
 
         {/* Archived schedules section */}
@@ -186,6 +236,8 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
         isOpen={showAddDialog}
         onOpenChange={setShowAddDialog}
         classId={classData.id}
+        classData={classData}
+        initialSemesterId={selectedSemesterId === 'all' ? null : selectedSemesterId}
         onSuccess={handleUpdate}
       />
 
@@ -193,6 +245,7 @@ const ClassScheduleTab: React.FC<ClassScheduleTabProps> = ({
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
         classId={classData.id}
+        classData={classData}
         slot={selectedSlot}
         onSuccess={handleUpdate}
         onDelete={handleDelete}

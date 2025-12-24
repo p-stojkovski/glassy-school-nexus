@@ -212,10 +212,24 @@ const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
                     )}
                     style={getSlotStyle(slot)}
                     onClick={() => onSlotClick?.(slot)}
-                    title={`${slot.dayOfWeek} ${slot.startTime} - ${slot.endTime}`}
+                    title={`${slot.dayOfWeek} ${slot.startTime} - ${slot.endTime}${
+                      slot.semesterName ? ` (${slot.semesterName})` : ' (All Semesters)'
+                    }`}
                   >
                     <div className="text-sm text-white font-semibold truncate">
                       {slot.startTime} - {slot.endTime}
+                    </div>
+                    {/* Semester badge */}
+                    <div className="text-[10px] text-white/80 truncate mt-0.5">
+                      {slot.isGlobal || !slot.semesterName ? (
+                        <span className="inline-block px-1.5 py-0.5 rounded bg-white/20 font-medium">
+                          All Semesters
+                        </span>
+                      ) : (
+                        <span className="inline-block px-1.5 py-0.5 rounded bg-white/30 font-medium">
+                          {slot.semesterName}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}

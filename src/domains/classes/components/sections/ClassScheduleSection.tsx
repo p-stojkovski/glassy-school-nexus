@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ClassBasicInfoResponse, ScheduleSlotDto } from '@/types/api/class';
 import WeeklyScheduleGrid from '@/domains/classes/components/schedule/WeeklyScheduleGrid';
 import { sortSchedulesByDay } from '@/domains/classes/utils/scheduleUtils';
+import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
 
 // Extended type that includes schedule data
 type ClassDataWithSchedule = ClassBasicInfoResponse & { schedule: ScheduleSlotDto[] };
@@ -13,6 +14,11 @@ interface ClassScheduleSectionProps {
   onEdit?: (slot: ScheduleSlotDto) => void;
   onDelete?: (slot: ScheduleSlotDto) => void;
   onAddSchedule?: () => void;
+  // Semester filter props (optional)
+  semesters?: AcademicSemesterResponse[];
+  selectedSemesterId?: string;
+  onSemesterChange?: (value: string) => void;
+  loadingSemesters?: boolean;
 }
 
 const ClassScheduleSection: React.FC<ClassScheduleSectionProps> = ({
@@ -20,6 +26,10 @@ const ClassScheduleSection: React.FC<ClassScheduleSectionProps> = ({
   onEdit,
   onDelete,
   onAddSchedule,
+  semesters = [],
+  selectedSemesterId = 'all',
+  onSemesterChange,
+  loadingSemesters = false,
 }) => {
   const sortedSchedules = useMemo(
     () => (classData.schedule ? sortSchedulesByDay(classData.schedule) : []),
@@ -83,6 +93,7 @@ const ClassScheduleSection: React.FC<ClassScheduleSectionProps> = ({
             {scheduleStats.daysCount === 1 ? 'day' : 'days'} active
           </span>
         </div>
+
         {onAddSchedule && (
           <div className="ml-auto w-full md:w-auto md:ml-auto">
             <Button

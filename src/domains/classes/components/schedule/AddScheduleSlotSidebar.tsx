@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Calendar, X, Info, Lightbulb } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -38,10 +39,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { TimeCombobox } from '@/components/common';
+import SemestersDropdown from '@/components/common/SemestersDropdown';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { classApiService } from '@/services/classApiService';
+import { academicCalendarApiService } from '@/services/academicCalendarApiService';
 import { CreateScheduleSlotRequest, TimeSlotSuggestion } from '@/types/api/scheduleSlot';
 import { ExistingScheduleOverlapInfo } from '@/types/api/scheduleValidation';
+import { ClassBasicInfoResponse } from '@/types/api/class';
+import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
 import { ScheduleConflictPanel } from './ScheduleConflictPanel';
 import { toast } from 'sonner';
 
@@ -49,6 +54,8 @@ interface AddScheduleSlotSidebarProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   classId: string;
+  classData: ClassBasicInfoResponse;
+  initialSemesterId?: string | null;
   onSuccess: () => void;
 }
 
@@ -58,6 +65,7 @@ interface FormData {
   endTime: string;
   generateLessons: boolean;
   rangeType: 'UntilYearEnd' | 'UntilSemesterEnd' | 'Custom';
+  semesterId: string | null;
 }
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -71,7 +79,7 @@ const addOneHourWithCap = (timeString: string): string => {
   return `${newHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 };
 
-export function AddScheduleSlotSidebar({ isOpen, onOpenChange, classId, onSuccess }: AddScheduleSlotSidebarProps) {
+export function AddScheduleSlotSidebar({ isOpen, onOpenChange, classId, classData, initialSemesterId = null, onSuccess }: AddScheduleSlotSidebarProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [endTimeTouched, setEndTimeTouched] = useState(false);
   const [endTimeAuto, setEndTimeAuto] = useState(false);
@@ -82,15 +90,12 @@ export function AddScheduleSlotSidebar({ isOpen, onOpenChange, classId, onSucces
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState<number | null>(null);
 
-  const handleExistingOverlapChange = useCallback((overlap: ExistingScheduleOverlapInfo | null) => {
-    setExistingOverlap(overlap);
-  }, []);
+  // Semester state
+  const [semesters, setSemesters] = useState<AcademicSemesterResponse[]>([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState<string | null>(null);
+  const [loadingSemesters, setLoadingSemesters] = useState(false);
 
-  // Check if there's any overlap (exact or partial) - both block creation
-  // Teacher and classroom are occupied during any overlapping time
-  const hasAnyOverlap = existingOverlap?.hasOverlap ?? false;
-  const hasExactOverlap = existingOverlap?.overlaps.some(o => o.overlapType === 'exact') ?? false;
-
+  // Form must be initialized before effects that reference it
   const form = useForm<FormData>({
     defaultValues: {
       dayOfWeek: 'Monday',
@@ -98,8 +103,55 @@ export function AddScheduleSlotSidebar({ isOpen, onOpenChange, classId, onSucces
       endTime: '10:00',
       generateLessons: false,
       rangeType: 'UntilYearEnd',
+      semesterId: null,
     },
   });
+
+  const handleExistingOverlapChange = useCallback((overlap: ExistingScheduleOverlapInfo | null) => {
+    setExistingOverlap(overlap);
+  }, []);
+
+  // Fetch semesters for the class's academic year (on mount)
+  useEffect(() => {
+    if (!classData?.academicYearId || !isOpen) return;
+
+    const fetchSemesters = async () => {
+      setLoadingSemesters(true);
+      try {
+        const semestersList = await academicCalendarApiService.getSemestersForYear(
+          classData.academicYearId
+        );
+        // Filter out deleted semesters
+        const activeSemesters = semestersList.filter((s) => !s.isDeleted);
+        setSemesters(activeSemesters);
+      } catch (err) {
+        console.error('Failed to load semesters:', err);
+      } finally {
+        setLoadingSemesters(false);
+      }
+    };
+
+    fetchSemesters();
+  }, [classData?.academicYearId, isOpen]);
+
+  // Sync selectedSemesterId with form
+  useEffect(() => {
+    form.setValue('semesterId', selectedSemesterId);
+  }, [selectedSemesterId, form]);
+
+  // Prefill semester when opening from filtered context
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedSemesterId(initialSemesterId ?? null);
+      form.setValue('semesterId', initialSemesterId ?? null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // Check if there's any overlap (exact or partial) - both block creation
+  // Teacher and classroom are occupied during any overlapping time
+  const hasAnyOverlap = existingOverlap?.hasOverlap ?? false;
+  const hasExactOverlap = existingOverlap?.overlaps.some(o => o.overlapType === 'exact') ?? false;
 
   const generateLessons = form.watch('generateLessons');
 
@@ -111,6 +163,7 @@ export function AddScheduleSlotSidebar({ isOpen, onOpenChange, classId, onSucces
         dayOfWeek: data.dayOfWeek as any,
         startTime: data.startTime,
         endTime: data.endTime,
+        semesterId: data.semesterId || null,
         generateLessons: data.generateLessons,
         generationOptions: data.generateLessons
           ? {
@@ -159,6 +212,7 @@ export function AddScheduleSlotSidebar({ isOpen, onOpenChange, classId, onSucces
       setShowSuggestions(false);
       setSuggestions([]);
       setSelectedSuggestionIndex(null);
+      setSelectedSemesterId(null);
     }
     onOpenChange(open);
   };
@@ -333,6 +387,34 @@ export function AddScheduleSlotSidebar({ isOpen, onOpenChange, classId, onSucces
                   </div>
                 </div>
 
+                {/* Semester Selection */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-white text-sm font-medium">Semester (Optional)</FormLabel>
+                  </div>
+                  <SemestersDropdown
+                    academicYearId={classData?.academicYearId}
+                    value={selectedSemesterId || ''}
+                    onValueChange={(id) => setSelectedSemesterId(id || null)}
+                    placeholder="All semesters (Global)"
+                    disabled={loadingSemesters || !classData?.academicYearId}
+                    showDateRangeInfo={true}
+                    onError={(message) => {
+                      console.error('Failed to load semesters:', message);
+                    }}
+                  />
+                  {!classData?.academicYearId && (
+                    <div className="text-xs text-red-300 mt-2">
+                      This class has no academic year. Semester selection is disabled.
+                    </div>
+                  )}
+                  {classData?.academicYearId && !loadingSemesters && semesters.length === 0 && (
+                    <div className="text-xs text-white/60 mt-2">
+                      No semesters defined for this academic year. Create semesters in Academic Calendar settings.
+                    </div>
+                  )}
+                </div>
+
                 {/* Conflict Check Panel */}
                 <div className="my-6">
                   <ScheduleConflictPanel
@@ -450,15 +532,7 @@ export function AddScheduleSlotSidebar({ isOpen, onOpenChange, classId, onSucces
                 onClick={() => form.handleSubmit(handleSubmit)()}
                 className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting 
-                  ? 'Creating...' 
-                  : hasExactOverlap 
-                    ? 'Schedule Already Exists' 
-                    : hasAnyOverlap 
-                      ? 'Time Overlaps Existing' 
-                      : hasConflicts 
-                        ? 'Resolve Conflicts' 
-                        : 'Create Schedule'}
+               Create Schedule
               </Button>
               <Button
                 type="button"
