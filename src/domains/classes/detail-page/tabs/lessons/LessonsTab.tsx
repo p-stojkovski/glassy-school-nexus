@@ -1,0 +1,527 @@
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { AlertCircle, Calendar } from 'lucide-react';
+
+import { ClassBasicInfoResponse } from '@/types/api/class';
+import { LessonResponse, LessonStatusName, CreateLessonRequest, MakeupLessonFormData, ClassLessonFilterParams, LessonTimeWindow } from '@/types/api/lesson';
+import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
+import { useLessonsForClass, useLessons } from '@/domains/lessons/hooks/useLessons';
+import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
+import LessonTimeline from '@/domains/lessons/components/LessonTimeline';
+import LessonsEnhancedFilters from '@/domains/lessons/components/LessonsEnhancedFilters';
+import CreateLessonSidebar from '@/domains/lessons/components/modals/CreateLessonSidebar';
+import QuickConductLessonModal from '@/domains/lessons/components/modals/QuickConductLessonModal';
+import QuickCancelLessonModal from '@/domains/lessons/components/modals/QuickCancelLessonModal';
+import RescheduleLessonModal from '@/domains/lessons/components/modals/RescheduleLessonModal';
+import LessonDetailsSheet from '@/domains/lessons/components/sheets/LessonDetailsSheet';
+import AcademicLessonGenerationModal from '@/domains/lessons/components/modals/AcademicLessonGenerationModal';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import LessonActionButtons from '@/domains/lessons/components/LessonActionButtons';
+import GlassCard from '@/components/common/GlassCard';
+import { hasActiveSchedules, getScheduleWarningMessage } from '@/domains/classes/_shared/utils/scheduleValidationUtils';
+import { ScopeFilter } from '@/domains/lessons/utils/lessonFilters';
+import { loadFromStorage, saveToStorage } from '@/lib/storage';
+import { academicCalendarApiService } from '@/services/academicCalendarApiService';
+
+interface LessonsTabProps {
+  classData: ClassBasicInfoResponse;
+  onScheduleTabClick?: () => void;
+  /** Callback when lessons are created/updated - used to refresh hero section */
+  onLessonsUpdated?: () => void;
+  /** External control of lesson details sheet - open state */
+  externalLessonDetailsOpen?: boolean;
+  /** External control of lesson details sheet - selected lesson */
+  externalSelectedLesson?: LessonResponse | null;
+  /** Callback to update external lesson details open state */
+  onExternalLessonDetailsChange?: (open: boolean) => void;
+  /** Callback to update external selected lesson */
+  onExternalSelectedLessonChange?: (lesson: LessonResponse | null) => void;
+}
+
+type LessonFilter = 'all' | LessonStatusName;
+type TimeFilterState = {
+  scope: ScopeFilter;
+  timeWindow: LessonTimeWindow;
+};
+
+const DEFAULT_SCOPE: ScopeFilter = 'upcoming';
+const DEFAULT_TIME_WINDOW: LessonTimeWindow = 'month';
+
+const LessonsTab: React.FC<LessonsTabProps> = ({
+  classData,
+  onScheduleTabClick,
+  onLessonsUpdated,
+  externalLessonDetailsOpen,
+  externalSelectedLesson,
+  onExternalLessonDetailsChange,
+  onExternalSelectedLessonChange,
+}) => {
+  const navigate = useNavigate();
+  const { lessons, loading, loadLessons } = useLessonsForClass(classData.id);
+  const [statusFilter, setStatusFilter] = useState<LessonFilter>('all');
+
+  // Semester filtering state
+  const [semesters, setSemesters] = useState<AcademicSemesterResponse[]>([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState<string>('all');
+  const [loadingSemesters, setLoadingSemesters] = useState(false);
+
+  // Scope filter - default to 'upcoming' to show what matters most
+  const storageKey = `class-lessons-time-filter-${classData.id}`;
+  const loadStoredTimeFilters = useCallback((): TimeFilterState => {
+    const stored = loadFromStorage<Partial<TimeFilterState>>(storageKey);
+    return {
+      scope: stored?.scope ?? DEFAULT_SCOPE,
+      timeWindow: stored?.timeWindow ?? DEFAULT_TIME_WINDOW,
+    };
+  }, [storageKey]);
+
+  const initialTimeFilters = loadStoredTimeFilters();
+  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>(initialTimeFilters.scope);
+  const [timeWindow, setTimeWindow] = useState<LessonTimeWindow>(initialTimeFilters.timeWindow);
+  const [isCreateLessonOpen, setIsCreateLessonOpen] = useState(false);
+  const [isAcademicGenerationOpen, setIsAcademicGenerationOpen] = useState(false);
+
+  // Internal state for lesson details
+  const [internalIsLessonDetailsOpen, setInternalIsLessonDetailsOpen] = useState(false);
+  const [internalSelectedLessonIdForDetails, setInternalSelectedLessonIdForDetails] = useState<string | null>(null);
+  const [makeupLesson, setMakeupLesson] = useState<LessonResponse | null>(null);
+
+  // Determine effective state - use external if provided, otherwise internal
+  const isLessonDetailsOpen = externalLessonDetailsOpen !== undefined
+    ? externalLessonDetailsOpen
+    : internalIsLessonDetailsOpen;
+
+  const selectedLessonForDetails = externalSelectedLesson !== undefined
+    ? externalSelectedLesson
+    : lessons.find(lesson => lesson.id === internalSelectedLessonIdForDetails) || null;
+
+  // Quick actions hook
+  const {
+    modals,
+    openConductModal,
+    closeConductModal,
+    openCancelModal,
+    closeCancelModal,
+    openRescheduleModal,
+    closeRescheduleModal,
+    handleQuickConduct: originalQuickConduct,
+    handleQuickCancel: originalQuickCancel,
+    handleReschedule: originalReschedule,
+    conductingLesson,
+    cancellingLesson,
+    reschedulingLesson,
+  } = useQuickLessonActions();
+
+  // Lesson creation from useLessons hook
+  const { addLesson, creatingLesson, createMakeup, loadLessonById } = useLessons();
+
+  // Fetch semesters for the class's academic year
+  useEffect(() => {
+    const fetchSemesters = async () => {
+      if (!classData?.academicYearId) return;
+
+      setLoadingSemesters(true);
+      try {
+        const semestersList = await academicCalendarApiService.getSemestersForYear(
+          classData.academicYearId
+        );
+        // Filter out deleted semesters
+        const activeSemesters = semestersList.filter((s) => !s.isDeleted);
+        setSemesters(activeSemesters);
+      } catch (err) {
+        console.error('Failed to load semesters:', err);
+        // Don't show error toast - semesters are optional
+      } finally {
+        setLoadingSemesters(false);
+      }
+    };
+
+    fetchSemesters();
+  }, [classData?.academicYearId]);
+
+  // Persist time filters per class (session-level)
+  useEffect(() => {
+    saveToStorage(storageKey, { scope: scopeFilter, timeWindow });
+  }, [scopeFilter, timeWindow, storageKey]);
+
+  // Reload stored filters when switching classes
+  useEffect(() => {
+    const stored = loadStoredTimeFilters();
+    setScopeFilter(stored.scope);
+    setTimeWindow(stored.timeWindow);
+    // Reset semester filter when switching classes
+    setSelectedSemesterId('all');
+  }, [classData.id, loadStoredTimeFilters]);
+
+  const handleScopeChange = useCallback((value: ScopeFilter) => {
+    setScopeFilter(value);
+    if (value === 'all') {
+      setTimeWindow('all');
+    }
+  }, []);
+
+  // Build current filter params for API calls
+  const currentFilters = useMemo((): ClassLessonFilterParams => ({
+    scope: scopeFilter,
+    statusName: statusFilter,
+    timeWindow,
+    ...(selectedSemesterId !== 'all' && { semesterId: selectedSemesterId }),
+  }), [scopeFilter, statusFilter, timeWindow, selectedSemesterId]);
+
+  // Compute next lesson from the current lessons list
+  const nextLesson = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const upcoming = lessons
+      .filter(l => {
+        const lessonDate = new Date(l.scheduledDate);
+        lessonDate.setHours(0, 0, 0, 0);
+        return l.statusName === 'Scheduled' && lessonDate >= today;
+      })
+      .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
+    return upcoming[0] || null;
+  }, [lessons]);
+
+  // Load lessons with server-side filtering when filters change
+  useEffect(() => {
+    loadLessons(currentFilters);
+  }, [loadLessons, currentFilters]);
+
+  // Wrapper for quick conduct that refreshes with current filters
+  const handleQuickConduct = useCallback(async (lessonId: string, notes?: string) => {
+    try {
+      await originalQuickConduct(lessonId, notes);
+      await loadLessons(currentFilters);
+      onLessonsUpdated?.();
+    } catch {
+      // Error already handled/toasted by the hook
+    }
+  }, [originalQuickConduct, loadLessons, currentFilters, onLessonsUpdated]);
+
+  // Wrapper for quick cancel that refreshes with current filters
+  const handleQuickCancel = useCallback(async (lessonId: string, reason: string, makeupData?: MakeupLessonFormData) => {
+    try {
+      await originalQuickCancel(lessonId, reason, makeupData);
+      await loadLessons(currentFilters);
+      onLessonsUpdated?.();
+    } catch {
+      // Error already handled/toasted by the hook
+    }
+  }, [originalQuickCancel, loadLessons, currentFilters, onLessonsUpdated]);
+
+  // Wrapper for reschedule that refreshes with current filters
+  const handleReschedule = useCallback(async (lessonId: string, request: Parameters<typeof originalReschedule>[1]) => {
+    try {
+      await originalReschedule(lessonId, request);
+      await loadLessons(currentFilters);
+      onLessonsUpdated?.();
+    } catch {
+      // Error already handled/toasted by the hook
+    }
+  }, [originalReschedule, loadLessons, currentFilters, onLessonsUpdated]);
+
+  // Handle lesson creation
+  const handleCreateLesson = async (lessonData: CreateLessonRequest) => {
+    try {
+      // Use unwrap() to properly await the thunk and catch errors
+      await addLesson(lessonData).unwrap();
+      setIsCreateLessonOpen(false);
+      // Reload lessons with current filters to show the new one
+      await loadLessons(currentFilters);
+      // Notify parent to refresh hero section (lesson context)
+      onLessonsUpdated?.();
+      toast.success('Lesson created successfully');
+    } catch (error: unknown) {
+      console.error('Failed to create lesson:', error);
+      toast.error((error as Error)?.message || 'Failed to create lesson');
+    }
+  };
+
+  // Handle opening lesson details
+  const handleLessonDetails = async (lesson: LessonResponse) => {
+    setInternalSelectedLessonIdForDetails(lesson.id);
+    onExternalSelectedLessonChange?.(lesson);
+
+    // Load makeup lesson if exists
+    if (lesson.makeupLessonId) {
+      try {
+        const makeup = lessons.find(l => l.id === lesson.makeupLessonId);
+        if (makeup) {
+          setMakeupLesson(makeup);
+        }
+      } catch (error) {
+        console.error('Failed to load makeup lesson:', error);
+      }
+    } else {
+      setMakeupLesson(null);
+    }
+
+    setInternalIsLessonDetailsOpen(true);
+    onExternalLessonDetailsChange?.(true);
+  };
+
+  // Handle closing lesson details sheet
+  const handleLessonDetailsClose = (open: boolean) => {
+    setInternalIsLessonDetailsOpen(open);
+    onExternalLessonDetailsChange?.(open);
+    if (!open) {
+      setInternalSelectedLessonIdForDetails(null);
+      onExternalSelectedLessonChange?.(null);
+    }
+  };
+
+  // Handle viewing makeup lesson (opens that lesson's details)
+  const handleViewMakeupLesson = async (lessonId: string) => {
+    const makeupLesson = lessons.find(l => l.id === lessonId);
+    if (makeupLesson) {
+      setInternalSelectedLessonIdForDetails(makeupLesson.id);
+      onExternalSelectedLessonChange?.(makeupLesson);
+      setMakeupLesson(null); // Clear previous makeup reference
+      // Note: This makeup lesson might itself have an original lesson, but we'll keep it simple for now
+    }
+  };
+
+  // Handle creating makeup lesson from details modal
+  const handleCreateMakeupFromDetails = async (originalLessonId: string, makeupData: MakeupLessonFormData) => {
+    try {
+      // Call the createMakeup API
+      await createMakeup(originalLessonId, makeupData);
+
+      // Reload lessons with current filters
+      await loadLessons(currentFilters);
+      // Notify parent to refresh hero section
+      onLessonsUpdated?.();
+
+      // Update the current lesson details if it's still selected
+      const currentSelectedLessonId =
+        externalSelectedLesson?.id ?? internalSelectedLessonIdForDetails;
+      if (currentSelectedLessonId === originalLessonId) {
+        const updatedLesson = lessons.find(l => l.id === originalLessonId);
+        if (updatedLesson) {
+          // Load the newly created makeup lesson
+          if (updatedLesson.makeupLessonId) {
+            const newMakeupLesson = lessons.find(l => l.id === updatedLesson.makeupLessonId);
+            if (newMakeupLesson) {
+              setMakeupLesson(newMakeupLesson);
+            }
+          }
+        }
+      }
+
+      const makeupDate = new Date(makeupData.scheduledDate).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      });
+      toast.success(`Makeup lesson created for ${makeupDate}`);
+    } catch (error: unknown) {
+      console.error('Failed to create makeup lesson:', error);
+      toast.error((error as Error)?.message || 'Failed to create makeup lesson');
+    }
+  };
+
+  // Handle academic lesson generation success
+  const handleAcademicGenerationSuccess = async (result: { generatedCount: number; skippedCount?: number }) => {
+    // Reload lessons with current filters to show the newly generated ones
+    await loadLessons(currentFilters);
+    // Notify parent to refresh hero section
+    onLessonsUpdated?.();
+    setIsAcademicGenerationOpen(false);
+
+    const message = `Generated ${result.generatedCount} lessons`;
+    const details = result.skippedCount && result.skippedCount > 0 ? ` (${result.skippedCount} skipped)` : '';
+    toast.success(message + details);
+  };
+
+  // Display lessons in descending order by date for all scopes
+  const timelineSortDirection = 'desc';
+
+  // Schedule validation
+  const scheduleAvailable = hasActiveSchedules(classData);
+  const scheduleWarning = getScheduleWarningMessage(classData);
+
+  // Handler to navigate to teaching mode / edit lesson details
+  const handleEditLessonDetails = useCallback((lesson: LessonResponse) => {
+    navigate(`/classes/${classData.id}/teach/${lesson.id}`);
+  }, [navigate, classData.id]);
+
+  // Handler to start teaching (navigate to teaching mode)
+  const handleStartTeaching = useCallback((lesson: LessonResponse) => {
+    navigate(`/classes/${classData.id}/teach/${lesson.id}`);
+  }, [navigate, classData.id]);
+
+  if (loading && lessons.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  // Empty state message based on filters
+  const getEmptyMessage = () => {
+    if (lessons.length === 0) {
+      return "No lessons yet";
+    }
+    if (scopeFilter === 'upcoming' && lessons.length === 0) {
+      return "No upcoming lessons scheduled";
+    }
+    if (scopeFilter !== 'all' || statusFilter !== 'all') {
+      return "No lessons found matching your filters";
+    }
+    return "No lessons available";
+  };
+
+  const getEmptyDescription = () => {
+    if (lessons.length === 0) {
+      if (!scheduleAvailable) {
+        return "To create lessons for this class, first add a weekly schedule in the Schedule tab, then return here and use Generate from schedule to create lessons for the term.";
+      }
+      return "Use Generate from schedule to create lessons for the upcoming period, or add a single lesson manually.";
+    }
+    if (scopeFilter === 'upcoming' && lessons.length === 0) {
+      return "Use Generate from schedule to create lessons for the upcoming period, or add a single lesson manually.";
+    }
+    return "There are no lessons to display with the current filters.";
+  };
+
+  // Render empty state with improved guidance
+  const renderEmptyState = () => {
+    const emptyMessage = getEmptyMessage();
+    const emptyDescription = getEmptyDescription();
+
+    // If no lessons and no schedule, guide to schedule tab
+    if (lessons.length === 0 && !scheduleAvailable) {
+      return (
+        <GlassCard className="p-8 text-center">
+          <Calendar className="w-12 h-12 text-white/40 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">{emptyMessage}</h3>
+          <p className="text-white/70 mb-4 max-w-md mx-auto">{emptyDescription}</p>
+        </GlassCard>
+      );
+    }
+
+    // Default empty state - handled by LessonTimeline
+    return null;
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Schedule Warning Banner */}
+      {!scheduleAvailable && scheduleWarning && (
+        <div className="flex items-center gap-3 bg-slate-500/10 border border-slate-500/20 rounded-lg px-4 py-2.5">
+          <AlertCircle className="h-4 w-4 text-slate-400 flex-shrink-0" />
+          <span className="text-sm text-slate-300">{scheduleWarning}</span>
+        </div>
+      )}
+
+      {/* Enhanced Filters and Actions */}
+      <div className="flex flex-wrap items-end justify-between gap-3 p-3 bg-white/[0.02] rounded-lg border border-white/10">
+        {/* Left: Enhanced Filters */}
+        <LessonsEnhancedFilters
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          scopeFilter={scopeFilter}
+          onScopeChange={handleScopeChange}
+          timeWindow={timeWindow}
+          onTimeWindowChange={setTimeWindow}
+          compact={true}
+          semesters={semesters}
+          selectedSemesterId={selectedSemesterId}
+          onSemesterChange={setSelectedSemesterId}
+          loadingSemesters={loadingSemesters}
+        />
+
+        {/* Right: Action Buttons */}
+        <LessonActionButtons
+          onCreateLesson={() => setIsCreateLessonOpen(true)}
+          onGenerateLessons={() => setIsAcademicGenerationOpen(true)}
+          generateDisabled={!scheduleAvailable}
+          disabledTooltip={scheduleWarning || undefined}
+        />
+      </div>
+
+      {/* Custom Empty State or Timeline View */}
+      {lessons.length === 0 && !scheduleAvailable ? (
+        renderEmptyState()
+      ) : (
+        <LessonTimeline
+          lessons={lessons}
+          loading={loading}
+          groupByMonth={true}
+          showActions={true}
+          showPrimaryCTA={false}
+          sortDirection={timelineSortDirection}
+          nextLesson={nextLesson}
+          showTeacherName={false} // Teacher is already shown in the class header
+          showSemesterBadge={false}
+          onViewLesson={handleLessonDetails}
+          onStartTeaching={handleStartTeaching}
+          onQuickConduct={openConductModal}
+          onQuickCancel={openCancelModal}
+          onQuickReschedule={openRescheduleModal}
+          emptyMessage={getEmptyMessage()}
+          emptyDescription={getEmptyDescription()}
+        />
+      )}
+
+      {/* Quick Action Modals */}
+      <QuickConductLessonModal
+        lesson={modals.conduct.lesson}
+        open={modals.conduct.open}
+        onOpenChange={closeConductModal}
+        onConfirm={handleQuickConduct}
+        loading={conductingLesson}
+      />
+
+      <QuickCancelLessonModal
+        lesson={modals.cancel.lesson}
+        open={modals.cancel.open}
+        onOpenChange={closeCancelModal}
+        onConfirm={handleQuickCancel}
+        loading={cancellingLesson}
+      />
+
+      <RescheduleLessonModal
+        lesson={modals.reschedule.lesson}
+        open={modals.reschedule.open}
+        onOpenChange={closeRescheduleModal}
+        onConfirm={handleReschedule}
+        loading={reschedulingLesson}
+      />
+
+      {/* Academic Lesson Generation Modal */}
+      <AcademicLessonGenerationModal
+        open={isAcademicGenerationOpen}
+        onOpenChange={setIsAcademicGenerationOpen}
+        classId={classData.id}
+        className={classData.name}
+        onSuccess={handleAcademicGenerationSuccess}
+      />
+
+      {/* Create Lesson Sidebar */}
+      <CreateLessonSidebar
+        open={isCreateLessonOpen}
+        onOpenChange={setIsCreateLessonOpen}
+        onSubmit={handleCreateLesson}
+        classId={classData.id}
+        className={classData.name}
+        loading={creatingLesson}
+      />
+
+      {/* Lesson Details Sheet */}
+      <LessonDetailsSheet
+        lesson={selectedLessonForDetails}
+        open={isLessonDetailsOpen}
+        onOpenChange={handleLessonDetailsClose}
+        onConduct={openConductModal}
+        onCancel={openCancelModal}
+        onReschedule={openRescheduleModal}
+        onEditLessonDetails={handleEditLessonDetails}
+      />
+    </div>
+  );
+};
+
+export default LessonsTab;

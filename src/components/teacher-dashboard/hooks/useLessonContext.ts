@@ -119,9 +119,10 @@ export const useLessonContext = (
       // Call both endpoints in parallel for efficiency
       // 1. Get current active lesson (authoritative server-side determination)
       // 2. Get next scheduled lesson (for dashboard display when no active lesson)
+      const fromDate = getCurrentDate();
       const [currentLessonResult, nextLessonResult] = await Promise.allSettled([
         lessonApiService.getCurrentLesson(classItem.id),
-        lessonApiService.getNextLesson(classItem.id)
+        lessonApiService.getNextLesson(classItem.id, fromDate, 1)
       ]);
 
       // Handle current lesson result

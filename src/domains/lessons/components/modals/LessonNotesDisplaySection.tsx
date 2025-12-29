@@ -3,17 +3,20 @@ import { StickyNote } from 'lucide-react';
 import { useLessonNotesDisplay } from '../../hooks/useLessonNotesDisplay';
 
 /**
- * System-generated note that should be hidden from UI display.
- * This note is auto-created when ending a lesson via teaching mode without explicit notes.
+ * System-generated notes that should be hidden from UI display.
+ * These notes are auto-created when ending a lesson via teaching mode or teacher dashboard without explicit notes.
  */
-const SYSTEM_TEACHING_MODE_NOTE = 'Lesson completed via teaching mode';
+const SYSTEM_NOTES_TO_HIDE = [
+  'Lesson completed via teaching mode',
+  'Lesson completed via teacher dashboard',
+];
 
 /**
  * Checks if a note is a system-generated technical note that should be hidden.
  * These notes don't provide meaningful content for teachers.
  */
 const isSystemTeachingModeNote = (note?: string | null): boolean =>
-  note?.trim() === SYSTEM_TEACHING_MODE_NOTE;
+  note?.trim() ? SYSTEM_NOTES_TO_HIDE.includes(note.trim()) : false;
 
 interface LessonNotesDisplaySectionProps {
   lessonId: string;

@@ -80,6 +80,7 @@ export interface ClassResponse {
   schedule: ScheduleSlotDto[];  // filled on GetById; empty for list/search
   studentIds: string[];         // filled on GetById; empty for list/search
   lessonSummary: LessonSummaryDto;
+  hasActiveSchedule?: boolean;  // Optional: only in ClassBasicInfoResponse, not in update responses
   generatedLessonsInfo?: NewScheduleSlotGenerationInfo[];  // only populated during updates with new schedule slots
   lessonGenerationWarnings?: string[]; // warnings from lesson generation for new schedule slots
 }
@@ -343,6 +344,11 @@ export interface RemoveStudentResponse {
 // Validation constants
 export const ClassValidationRules = {
   NAME: { MAX_LENGTH: 100 },
+  DESCRIPTION: { MAX_LENGTH: 2000 },
+  REQUIREMENTS: { MAX_LENGTH: 2000 },
+  OBJECTIVES: { MAX_COUNT: 20, MAX_LENGTH: 500 },
+  MATERIALS: { MAX_COUNT: 50, MAX_LENGTH: 200 },
+  SCHEDULE: { MAX_SLOTS: 20 },
   GUID: {
     PATTERN: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     ERROR_MESSAGE: 'Value must be a valid GUID.',

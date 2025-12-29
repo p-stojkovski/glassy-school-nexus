@@ -6,6 +6,7 @@ import {
   fetchLessonById,
   fetchLessonsForClass,
   fetchPastUnstartedLessons,
+  fetchPastUnstartedCount,
   createLesson,
   cancelLesson,
   conductLesson,
@@ -47,7 +48,9 @@ import {
   selectLessonCounts,
   selectIsAnyLessonLoading,
   selectPastUnstartedLessons,
+  selectPastUnstartedCount,
   selectFetchingPastUnstarted,
+  selectFetchingPastUnstartedCount,
 } from '../lessonsSlice';
   import { 
   LessonSearchParams,
@@ -292,9 +295,11 @@ export const useLessonsForClass = (classId: string) => {
   const dispatch = useAppDispatch();
   const lessons = useAppSelector(selectLessonsForClass(classId));
   const pastUnstartedLessons = useAppSelector(selectPastUnstartedLessons);
+  const pastUnstartedCount = useAppSelector(selectPastUnstartedCount);
   const summary = useAppSelector(selectLessonSummaryForClass(classId));
   const loading = useAppSelector(selectLessonsLoading);
   const loadingPastUnstarted = useAppSelector(selectFetchingPastUnstarted);
+  const loadingPastUnstartedCount = useAppSelector(selectFetchingPastUnstartedCount);
 
   /**
    * Load lessons for the class with optional server-side filters.
@@ -308,8 +313,16 @@ export const useLessonsForClass = (classId: string) => {
   );
 
   /**
-   * Load past unstarted lessons for the class (for documentation banner).
-   * These are lessons that need to be documented (conduct, cancel, or no-show).
+   * Load count of past unstarted lessons (lightweight endpoint for banner).
+   * Use this for initial page load when only the count is needed.
+   */
+  const loadPastUnstartedCount = useCallback(() => {
+    return dispatch(fetchPastUnstartedCount(classId));
+  }, [dispatch, classId]);
+
+  /**
+   * Load full past unstarted lessons for the class (for review mode).
+   * Use this when user enters review mode and needs to see all lesson details.
    */
   const loadPastUnstartedLessons = useCallback(() => {
     return dispatch(fetchPastUnstartedLessons(classId));
@@ -318,10 +331,13 @@ export const useLessonsForClass = (classId: string) => {
   return {
     lessons,
     pastUnstartedLessons,
+    pastUnstartedCount,
     summary,
     loading,
     loadingPastUnstarted,
+    loadingPastUnstartedCount,
     loadLessons,
+    loadPastUnstartedCount,
     loadPastUnstartedLessons,
   };
 };

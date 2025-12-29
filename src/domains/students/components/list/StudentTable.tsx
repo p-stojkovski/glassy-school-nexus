@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormatters';
 import { formatSchedule } from '@/utils/scheduleFormatter';
-import { DiscountIndicator, PaymentObligationIndicator } from '@/domains/classes/components/sections/PrivacyIndicator';
+import { DiscountIndicator, PaymentObligationIndicator } from '@/domains/classes/detail-page/tabs/students';
 import {
   selectObligationsByStudentId,
   selectStudentOutstandingBalance,

@@ -4,21 +4,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
-import ClassPageHeader from '@/domains/classes/components/unified/ClassPageHeader';
-import CreateClassHeader from '@/domains/classes/components/unified/CreateClassHeader';
-import { CreateClassSheet } from '@/domains/classes/components/dialogs/CreateClassSheet';
-import ClassLessonsTab from '@/domains/classes/components/detail/ClassLessonsTab';
-import ClassInfoTab from '@/domains/classes/components/tabs/ClassInfoTab';
+import ClassPageHeader from '@/domains/classes/detail-page/layout/ClassPageHeader';
+import { CreateClassHeader } from '@/domains/classes/form-page';
+import { CreateClassSheet } from '@/domains/classes/list-page/dialogs/CreateClassSheet';
+import ClassLessonsTab from '@/domains/classes/detail-page/tabs/lessons/LessonsTab';
+import ClassInfoTab from '@/domains/classes/detail-page/tabs/info/InfoTab';
 import { LessonResponse } from '@/types/api/lesson';
-import ClassScheduleTab from '@/domains/classes/components/tabs/ClassScheduleTab';
-import ClassStudentsTab from '@/domains/classes/components/tabs/ClassStudentsTab';
+import ClassScheduleTab from '@/domains/classes/detail-page/tabs/schedule/ScheduleTab';
+import ClassStudentsTab from '@/domains/classes/detail-page/tabs/students/StudentsTab';
 import QuickConductLessonModal from '@/domains/lessons/components/modals/QuickConductLessonModal';
 import QuickCancelLessonModal from '@/domains/lessons/components/modals/QuickCancelLessonModal';
 import RescheduleLessonModal from '@/domains/lessons/components/modals/RescheduleLessonModal';
 import LessonDetailsSheet from '@/domains/lessons/components/sheets/LessonDetailsSheet';
-import { useClassPage } from '@/domains/classes/hooks/useClassPage';
-import { useClassLessonContext } from '@/domains/classes/hooks/useClassLessonContext';
+import { useClassPage } from '@/domains/classes/detail-page/useClassPage';
+import { useClassLessonContext } from '@/domains/classes/detail-page/useClassLessonContext';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
+
+type TabId = 'lessons' | 'students' | 'schedule' | 'info';
 
 const ClassPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +31,7 @@ const ClassPage: React.FC = () => {
   const isCreateMode = id === 'new' || location.pathname.endsWith('/classes/new');
   
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
-  const [pendingTab, setPendingTab] = useState<string | null>(null);
+  const [pendingTab, setPendingTab] = useState<TabId | null>(null);
   const [showBackConfirmDialog, setShowBackConfirmDialog] = useState(false);
   const [showCreateSheet, setShowCreateSheet] = useState(false); // Start closed, open via effect
   const [isLessonDetailsOpen, setIsLessonDetailsOpen] = useState(false);
@@ -63,8 +65,11 @@ const ClassPage: React.FC = () => {
     refreshArchivedSchedules,
   } = useClassPage(isCreateMode ? '' : (id || ''));
 
-  // Lesson context for hero section CTA
-  const lessonContext = useClassLessonContext(isCreateMode ? null : (id || null));
+  // Lesson context for hero section CTA (lazy load - only fetch when Lessons tab active)
+  const lessonContext = useClassLessonContext(
+    isCreateMode ? null : (id || null),
+    activeTab === 'lessons' // Only fetch when Lessons tab is active
+  );
 
   // Quick lesson actions for the dashboard widget
   const {
@@ -83,8 +88,8 @@ const ClassPage: React.FC = () => {
     reschedulingLesson,
   } = useQuickLessonActions();
 
-  // Memoize refetchClassData to prevent tab prop changes triggering re-renders
-  const memoizedRefetchClassData = useCallback(() => refetchClassData(), [refetchClassData]);
+  // Note: refetchClassData from useClassPage is already memoized with [classId] dependency
+  // No need for additional wrapper - use it directly
 
   const handleInfoUnsavedChanges = useCallback(
     (hasChanges: boolean) => registerTabUnsavedChanges('info', hasChanges),
@@ -134,7 +139,7 @@ const ClassPage: React.FC = () => {
         setActiveTab(newTab as typeof tabs[number]);
       } else {
         // Show unsaved changes dialog
-        setPendingTab(newTab);
+        setPendingTab(newTab as TabId);
         setShowUnsavedChangesDialog(true);
       }
     }
@@ -143,7 +148,7 @@ const ClassPage: React.FC = () => {
   const handleDiscardChanges = () => {
     setShowUnsavedChangesDialog(false);
     if (pendingTab) {
-      setActiveTab(pendingTab as any);
+      setActiveTab(pendingTab);
       setPendingTab(null);
     }
   };
@@ -191,14 +196,13 @@ const ClassPage: React.FC = () => {
   }, [handleQuickConduct, lessonContext, refetchClassData]);
 
   // Wrapped quick cancel handler that also refreshes lesson context
-  const handleQuickCancelWithRefresh = useCallback(async (lessonId: string, reason: string, makeupData?: any) => {
+  const handleQuickCancelWithRefresh = useCallback(async (lessonId: string, reason: string, makeupData?: unknown) => {
     await handleQuickCancel(lessonId, reason, makeupData);
     lessonContext.refreshLessons();
     refetchClassData();
   }, [handleQuickCancel, lessonContext, refetchClassData]);
 
-  // Wrapped reschedule handler that also refreshes lesson context
-  const handleRescheduleWithRefresh = useCallback(async (lessonId: string, request: any) => {
+  const handleRescheduleWithRefresh = useCallback(async (lessonId: string, request: unknown) => {
     await handleReschedule(lessonId, request);
     lessonContext.refreshLessons();
     refetchClassData();
@@ -284,7 +288,7 @@ const ClassPage: React.FC = () => {
       {/* Unified Header (includes class info + progress + next lesson) */}
       <ClassPageHeader
         classData={classData}
-        onUpdate={memoizedRefetchClassData}
+        onUpdate={refetchClassData}
         lessonContext={lessonContext}
         onStartTeaching={handleHeroStartTeaching}
         onConductLesson={handleHeroConductLesson}
@@ -327,7 +331,7 @@ const ClassPage: React.FC = () => {
         </TabsList>
 
         {/* Lessons Tab */}
-        <TabsContent value="lessons" className="mt-6">
+        <TabsContent value="lessons" className="mt-6" forceMount>
           <ClassLessonsTab 
             classData={classData}
             onScheduleTabClick={() => handleTabChange('schedule')}
@@ -349,10 +353,11 @@ const ClassPage: React.FC = () => {
         </TabsContent>
 
         {/* Schedule Tab */}
-        <TabsContent value="schedule" className="mt-6">
+        <TabsContent value="schedule" className="mt-6" forceMount>
           <ClassScheduleTab
             classData={classData}
-            onUpdate={memoizedRefetchClassData}
+            onUpdate={refetchClassData}
+            isActive={activeTab === 'schedule'}
             onUnsavedChangesChange={handleScheduleUnsavedChanges}
             archivedSchedules={archivedSchedules}
             loadingArchived={loadingArchived}
@@ -363,10 +368,11 @@ const ClassPage: React.FC = () => {
         </TabsContent>
 
         {/* Info Tab */}
-        <TabsContent value="info" className="mt-6">
+        <TabsContent value="info" className="mt-6" forceMount>
           <ClassInfoTab
             classData={classData}
-            onUpdate={memoizedRefetchClassData}
+            onUpdate={refetchClassData}
+            isActive={activeTab === 'info'}
             onUnsavedChangesChange={handleInfoUnsavedChanges}
           />
         </TabsContent>

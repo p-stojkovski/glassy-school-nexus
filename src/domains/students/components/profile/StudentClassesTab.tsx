@@ -4,8 +4,7 @@ import { ChevronDown, ChevronRight, BookOpen, User, Calendar } from 'lucide-reac
 import GlassCard from '@/components/common/GlassCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import StudentProgressChips from '@/domains/classes/components/sections/StudentProgressChips';
-import StudentLessonDetailsRow from '@/domains/classes/components/sections/StudentLessonDetailsRow';
+import { StudentProgressChips, StudentLessonDetailsRow } from '@/domains/classes/detail-page/tabs/students';
 import { StudentClassEnrollment } from '@/types/api/student';
 import { StudentLessonDetail } from '@/types/api/class';
 import { studentApiService } from '@/services/studentApiService';

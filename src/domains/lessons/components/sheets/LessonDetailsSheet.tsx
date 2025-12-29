@@ -228,7 +228,7 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
                     <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                     <div className="flex-1">
                       <h4 className="text-sm font-semibold text-emerald-300 mb-1">
-                        Lesson Completed
+                        Completed
                       </h4>
                       <p className="text-xs text-emerald-200/80">
                         Conducted on {lesson.conductedAt && new Date(lesson.conductedAt).toLocaleString()}
@@ -245,7 +245,7 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
                     <XCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />
                     <div className="flex-1">
                       <h4 className="text-sm font-semibold text-rose-300 mb-1">
-                        Lesson Cancelled
+                        Cancellation reason
                       </h4>
                       <p className="text-xs text-rose-200/80 leading-relaxed">
                         {lesson.cancellationReason}

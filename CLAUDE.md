@@ -21,6 +21,8 @@ For detailed domain-specific patterns, components, and workflows, see:
 
 - **[Class Management](src/domains/classes/CLAUDE.md)** - Classes, schedules, enrollment, student progress tracking
 
+> **Classes Domain Agent:** For any work in `src/domains/classes/`, use the `classes-domain-specialist` agent instead of `frontend-specialist`. This agent has full-stack context including backend endpoints, API contracts, and business rules. It supersedes both `frontend-specialist` and `backend-specialist` for Classes domain work.
+
 **When working in a domain:**
 1. **FIRST STEP:** Read `src/domains/{domain}/CLAUDE.md` (if it exists)
 2. Use domain-specific patterns, components, and workflows documented there
@@ -50,16 +52,35 @@ Each major domain should have a `CLAUDE.md` file following the Class Management 
 ```
 src/
 ├── domains/                        # Feature-based organization
-│   ├── student/                   # Student management domain
+│   ├── students/                  # Student management domain
 │   │   ├── components/           # Domain-specific components
 │   │   │   ├── StudentForm.tsx   # Form components
 │   │   │   ├── StudentList.tsx   # List/table components
 │   │   │   └── StudentDialog.tsx # Modal/dialog components
 │   │   ├── hooks/                # Custom hooks for domain
 │   │   │   └── useStudentForm.ts # Form logic abstraction
-│   │   └── studentSlice.ts       # Redux slice
-│   ├── class/                    # Class management
-│   ├── teacher/                  # Teacher management
+│   │   └── studentsSlice.ts      # Redux slice
+│   ├── classes/                  # Class management (FLOW-BASED STRUCTURE)
+│   │   ├── _shared/              # Shared across all pages
+│   │   │   ├── components/       # Shared components
+│   │   │   ├── hooks/            # Shared hooks (useClasses, etc.)
+│   │   │   └── utils/            # Shared utilities
+│   │   ├── list-page/            # /classes route
+│   │   │   ├── components/       # List page components
+│   │   │   └── dialogs/          # List page dialogs
+│   │   ├── detail-page/          # /classes/:id route
+│   │   │   ├── layout/           # Page header, layout
+│   │   │   ├── dialogs/          # Page-level dialogs
+│   │   │   └── tabs/             # Tab components
+│   │   │       ├── lessons/      # Lessons tab
+│   │   │       ├── students/     # Students tab
+│   │   │       ├── schedule/     # Schedule tab
+│   │   │       └── info/         # Info tab
+│   │   ├── form-page/            # /classes/new, /classes/:id/edit
+│   │   │   └── tabs/             # Form tabs
+│   │   ├── schemas/              # Validation schemas
+│   │   └── classesSlice.ts       # Redux slice
+│   ├── teachers/                 # Teacher management
 │   └── [domain]/                 # Other domains follow same pattern
 ├── components/                    # Shared components
 │   ├── ui/                       # ShadCN primitives (DO NOT EDIT)
@@ -105,6 +126,20 @@ src/
 ├── main.tsx                       # Entry point
 └── routes.tsx                     # Route configuration
 ```
+
+### Flow-Based vs Type-Based Organization
+
+The Classes domain uses **flow-based organization** (organized by user flow/route) rather than type-based organization (organized by file type). This improves navigability for developers:
+
+| Aspect | Type-Based (old) | Flow-Based (new) |
+|--------|------------------|------------------|
+| **Folder names** | `components/`, `hooks/`, `utils/` | `list-page/`, `detail-page/`, `form-page/` |
+| **Finding files** | Search by type, then find relevant | Navigate to route, all files together |
+| **Junior dev experience** | Harder to understand flow | Matches mental model of routes |
+| **Co-location** | Related files scattered | Related files grouped by feature |
+
+**When to use flow-based:** Complex domains with multiple pages/routes (like Classes).
+**When to use type-based:** Simpler domains with single page (like Settings).
 
 ## Redux Toolkit Patterns
 
@@ -657,23 +692,32 @@ npm run dev
 
 ### Adding a New Domain
 
+**For simple domains (single page):**
 ```bash
-# 1. Create directory structure
+# Type-based structure
 mkdir -p src/domains/newdomain/components
 mkdir -p src/domains/newdomain/hooks
-
-# 2. Create files
 touch src/domains/newdomain/newdomainSlice.ts
-touch src/types/api/newdomain.ts
-touch src/services/newdomainService.ts
-touch src/utils/validation/newdomainSchemas.ts
+```
 
-# 3. Implement in order:
-# - types/api/newdomain.ts (DTOs matching backend)
-# - services/newdomainService.ts (API calls)
-# - utils/validation/newdomainSchemas.ts (Zod schemas)
-# - domains/newdomain/newdomainSlice.ts (Redux slice)
-# - domains/newdomain/components/ (UI components)
+**For complex domains (multiple pages/routes) - use flow-based:**
+```bash
+# Flow-based structure (like Classes domain)
+mkdir -p src/domains/newdomain/_shared/{components,hooks,utils}
+mkdir -p src/domains/newdomain/list-page/{components,dialogs}
+mkdir -p src/domains/newdomain/detail-page/{layout,dialogs,tabs}
+mkdir -p src/domains/newdomain/form-page/tabs
+mkdir -p src/domains/newdomain/schemas
+touch src/domains/newdomain/newdomainSlice.ts
+```
+
+**Implementation order for both:**
+```bash
+# 1. types/api/newdomain.ts (DTOs matching backend)
+# 2. services/newdomainService.ts (API calls)
+# 3. schemas/ or utils/validation/ (Zod schemas)
+# 4. domains/newdomain/newdomainSlice.ts (Redux slice)
+# 5. Page components (organized by route for flow-based)
 ```
 
 ### Adding a New ShadCN Component

@@ -178,6 +178,10 @@ export interface LessonNotesResponse {
   notes?: string | null;        // Teacher notes for the lesson
 }
 
+export interface PastUnstartedCountResponse {
+  count: number;
+}
+
 export interface LessonGenerationResult {
   lessonsCreated: number;
   conflictsSkipped: number;
@@ -267,6 +271,7 @@ export const LessonApiPaths = {
   CURRENT: '/api/lessons/current',
   NEXT: '/api/lessons/next',
   PAST_UNSTARTED: '/api/lessons/past-unstarted',
+  PAST_UNSTARTED_COUNT: '/api/lessons/past-unstarted/count',
   CANCEL: (id: string) => `/api/lessons/${id}/cancel`,
   CONDUCT: (id: string) => `/api/lessons/${id}/conduct`,
   RESCHEDULE: (id: string) => `/api/lessons/${id}/reschedule`,

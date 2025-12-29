@@ -20,7 +20,7 @@ import { Student } from '@/domains/students/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
 import { cn } from '@/lib/utils';
 import { studentApiService } from '@/services/studentApiService';
-import { CapacityValidationPanel } from '@/domains/classes/components/students/CapacityValidationPanel';
+import { CapacityValidationPanel } from '@/domains/classes/detail-page/tabs/students';
 
 interface StudentSelectionPanelProps {
   students?: Student[]; // Made optional since we'll load them independently

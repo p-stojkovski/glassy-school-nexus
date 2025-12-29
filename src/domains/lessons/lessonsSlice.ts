@@ -29,13 +29,15 @@ interface LessonsState {
   lessons: Lesson[];
   selectedLesson: Lesson | null;
   pastUnstartedLessons: Lesson[];
-  
+  pastUnstartedCount: number;
+
   // Loading states
   loading: boolean;
   loadingStates: {
     fetchingLessons: boolean;
     fetchingLesson: boolean;
     fetchingPastUnstarted: boolean;
+    fetchingPastUnstartedCount: boolean;
     creatingLesson: boolean;
     updatingLesson: boolean;
     cancellingLesson: boolean;
@@ -68,11 +70,13 @@ const initialState: LessonsState = {
   lessons: [],
   selectedLesson: null,
   pastUnstartedLessons: [],
+  pastUnstartedCount: 0,
   loading: false,
   loadingStates: {
     fetchingLessons: false,
     fetchingLesson: false,
     fetchingPastUnstarted: false,
+    fetchingPastUnstartedCount: false,
     creatingLesson: false,
     updatingLesson: false,
     cancellingLesson: false,
@@ -122,6 +126,13 @@ export const fetchPastUnstartedLessons = createAsyncThunk(
   }
 );
 
+export const fetchPastUnstartedCount = createAsyncThunk(
+  'lessons/fetchPastUnstartedCount',
+  async (classId: string) => {
+    const response = await lessonApiService.getPastUnstartedCount(classId);
+    return response.count;
+  }
+);
 
 export const createLesson = createAsyncThunk(
   'lessons/createLesson',
@@ -346,6 +357,8 @@ const lessonsSlice = createSlice({
       .addCase(fetchPastUnstartedLessons.fulfilled, (state, action) => {
         state.loadingStates.fetchingPastUnstarted = false;
         state.pastUnstartedLessons = action.payload;
+        // Also update the count to stay in sync
+        state.pastUnstartedCount = action.payload.length;
       })
       .addCase(fetchPastUnstartedLessons.rejected, (state, action) => {
         state.loadingStates.fetchingPastUnstarted = false;
@@ -353,6 +366,19 @@ const lessonsSlice = createSlice({
         console.error('Failed to fetch past unstarted lessons:', action.error.message);
       });
 
+    // Fetch past unstarted count (lightweight endpoint for banner)
+    builder
+      .addCase(fetchPastUnstartedCount.pending, (state) => {
+        state.loadingStates.fetchingPastUnstartedCount = true;
+      })
+      .addCase(fetchPastUnstartedCount.fulfilled, (state, action) => {
+        state.loadingStates.fetchingPastUnstartedCount = false;
+        state.pastUnstartedCount = action.payload;
+      })
+      .addCase(fetchPastUnstartedCount.rejected, (state, action) => {
+        state.loadingStates.fetchingPastUnstartedCount = false;
+        console.error('Failed to fetch past unstarted count:', action.error.message);
+      });
 
     // Create lesson
     builder
@@ -551,7 +577,9 @@ export const {
 export const selectLessons = (state: RootState) => state.lessons.lessons;
 export const selectSelectedLesson = (state: RootState) => state.lessons.selectedLesson;
 export const selectPastUnstartedLessons = (state: RootState) => state.lessons.pastUnstartedLessons;
+export const selectPastUnstartedCount = (state: RootState) => state.lessons.pastUnstartedCount;
 export const selectFetchingPastUnstarted = (state: RootState) => state.lessons.loadingStates.fetchingPastUnstarted;
+export const selectFetchingPastUnstartedCount = (state: RootState) => state.lessons.loadingStates.fetchingPastUnstartedCount;
 
 // Memoized selector factories for class-specific data
 // Using a cache to ensure same classId returns same memoized selector

@@ -41,6 +41,22 @@ import useConflictPrecheck from '@/domains/lessons/hooks/useConflictPrecheck';
 import ConflictPanel from '@/domains/lessons/components/ConflictPanel';
 import { DEFAULT_CONDUCT_GRACE_MINUTES, canConductLesson as canConductLessonNow, getCannotConductReason } from '../../lessonMode';
 
+/**
+ * System-generated notes that should be hidden from UI display.
+ * These notes are auto-created when ending a lesson via teaching mode or teacher dashboard without explicit notes.
+ */
+const SYSTEM_NOTES_TO_HIDE = [
+  'Lesson completed via teaching mode',
+  'Lesson completed via teacher dashboard',
+];
+
+/**
+ * Checks if a note is a system-generated technical note that should be hidden.
+ * These notes don't provide meaningful content for teachers.
+ */
+const isSystemNote = (note?: string | null): boolean =>
+  note?.trim() ? SYSTEM_NOTES_TO_HIDE.includes(note.trim()) : false;
+
 interface LessonDetailsModalProps {
   lesson: LessonResponse | null;
   makeupLesson?: LessonResponse | null;
@@ -400,8 +416,8 @@ const LessonDetailsModal: React.FC<LessonDetailsModalProps> = ({
               </div>
             </div>
 
-            {/* Notes */}
-            {lesson.notes && (
+            {/* Notes - hide system-generated notes */}
+            {lesson.notes && !isSystemNote(lesson.notes) && (
               <>
                 <Separator className="bg-white/10" />
                 <div>

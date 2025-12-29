@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 interface SearchInputProps {
@@ -11,6 +11,7 @@ interface SearchInputProps {
   className?: string;
   showStatusText?: boolean;
   statusText?: string;
+  clearable?: boolean;
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
@@ -22,7 +23,9 @@ const SearchInput: React.FC<SearchInputProps> = ({
   className = '',
   showStatusText = true,
   statusText = 'Searching...',
+  clearable = false,
 }) => {
+  const showClearButton = clearable && value && !isSearching;
   return (
     <div className="relative">
       <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
@@ -45,12 +48,23 @@ const SearchInput: React.FC<SearchInputProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className={`pl-10 pr-4 bg-white/10 border-white/20 text-white placeholder:text-white/60 transition-all duration-200 ${
+        className={`pl-10 ${showClearButton ? 'pr-10' : 'pr-4'} bg-white/10 border-white/20 text-white placeholder:text-white/60 transition-all duration-200 ${
           isSearching
             ? 'border-blue-400/50 bg-white/5'
             : 'hover:border-white/30 focus:border-white/40'
         } ${className}`}
       />
+
+      {showClearButton && (
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+          aria-label="Clear search"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
 
       {isSearching && showStatusText && (
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">

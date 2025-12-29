@@ -30,23 +30,28 @@ import LessonStatusChips from './LessonStatusChips';
 import LessonRowActionsMenu from './LessonRowActionsMenu';
 
 /**
- * System-generated note that should be hidden from UI display.
- * This note is auto-created when ending a lesson via teaching mode without explicit notes.
+ * System-generated notes that should be hidden from UI display.
+ * These notes are auto-created when ending a lesson via teaching mode or teacher dashboard without explicit notes.
  */
-const SYSTEM_TEACHING_MODE_NOTE = 'Lesson completed via teaching mode';
+const SYSTEM_NOTES_TO_HIDE = [
+  'Lesson completed via teaching mode',
+  'Lesson completed via teacher dashboard',
+];
 
 /**
  * Checks if a note is a system-generated technical note that should be hidden.
  * These notes don't provide meaningful content for teachers.
  */
 const isSystemTeachingModeNote = (note?: string | null): boolean =>
-  note?.trim() === SYSTEM_TEACHING_MODE_NOTE;
+  note?.trim() ? SYSTEM_NOTES_TO_HIDE.includes(note.trim()) : false;
 
 interface LessonTimelineProps {
   lessons: LessonResponse[];
   loading?: boolean;
   groupByMonth?: boolean;
   showActions?: boolean;
+  /** When false, hide the per-row primary CTA button (row click remains the primary interaction). */
+  showPrimaryCTA?: boolean;
   maxItems?: number;
   emptyMessage?: string;
   emptyDescription?: string;
@@ -108,6 +113,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
   loading = false,
   groupByMonth = true,
   showActions = true,
+  showPrimaryCTA = true,
   maxItems,
   emptyMessage = "No lessons available",
   emptyDescription = "There are no lessons to display in the timeline.",
@@ -297,7 +303,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
   };
 
   const renderPrimaryCTA = (lesson: LessonResponse) => {
-    if (!showActions) return null;
+    if (!showActions || !showPrimaryCTA) return null;
     
     const cta = getPrimaryCTA(lesson);
     const Icon = cta.icon;
@@ -502,7 +508,7 @@ const LessonTimeline: React.FC<LessonTimelineProps> = ({
 
                           {lesson.cancellationReason && (
                             <p className="text-sm text-red-300 mt-2">
-                              <span className="font-medium">Cancelled:</span> {lesson.cancellationReason}
+                              <span className="font-medium">Reason:</span> {lesson.cancellationReason}
                             </p>
                           )}
 

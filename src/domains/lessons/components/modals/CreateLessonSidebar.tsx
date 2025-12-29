@@ -152,6 +152,12 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
 
   // Auto-check conflicts whenever date/start/end change and are valid
   useEffect(() => {
+    // Don't precheck conflicts when the sidebar is closed
+    if (!open) {
+      clearConflicts();
+      return;
+    }
+
     const { classId: cid, scheduledDate, startTime, endTime } = formData;
     // Incomplete inputs: clear conflicts and skip
     if (!cid || !scheduledDate || !startTime || !endTime) {
@@ -170,7 +176,7 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
       startTime,
       endTime,
     });
-  }, [formData.classId, formData.scheduledDate, formData.startTime, formData.endTime, runCheck, clearConflicts]);
+  }, [open, formData.classId, formData.scheduledDate, formData.startTime, formData.endTime, runCheck, clearConflicts]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};

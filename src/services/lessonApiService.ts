@@ -26,7 +26,8 @@ import {
   LessonApiPaths,
   LessonHttpStatus,
   RescheduleLessonRequest,
-  ClassLessonFilterParams
+  ClassLessonFilterParams,
+  PastUnstartedCountResponse
 } from '@/types/api/lesson';
 import { EnhancedLessonGenerationResult } from '@/types/api/lesson-generation-enhanced';
 // Preserve status/details when rethrowing with a custom message
@@ -55,6 +56,32 @@ function normalizeListResponse<T>(raw: any): T[] {
     }
   }
   return [] as T[];
+}
+
+function formatProblemDetails(details: any): string | null {
+  if (!details || typeof details !== 'object') return null;
+
+  // RFC7807: { title, detail, status, errors? }
+  const detail = typeof details.detail === 'string' ? details.detail : null;
+  if (detail && detail.trim()) return detail;
+
+  const title = typeof details.title === 'string' ? details.title : null;
+  const errors = (details as any).errors;
+
+  if (errors && typeof errors === 'object') {
+    const parts: string[] = [];
+    for (const [key, value] of Object.entries(errors)) {
+      if (Array.isArray(value)) {
+        const messages = value.filter(v => typeof v === 'string' && v.trim());
+        if (messages.length) parts.push(`${key}: ${messages.join(', ')}`);
+      } else if (typeof value === 'string' && value.trim()) {
+        parts.push(`${key}: ${value}`);
+      }
+    }
+    if (parts.length) return parts.join(' | ');
+  }
+
+  return title && title.trim() ? title : null;
 }
 
 export class LessonApiService {
@@ -269,6 +296,23 @@ return await apiService.get<LessonResponse>(LessonApiPaths.BY_ID(id));
     }
   }
 
+  /** Get count of past unstarted lessons for a class (lightweight endpoint for banner) */
+  async getPastUnstartedCount(classId: string): Promise<PastUnstartedCountResponse> {
+    try {
+      const endpoint = `${LessonApiPaths.PAST_UNSTARTED_COUNT}?classId=${classId}`;
+      return await apiService.get<PastUnstartedCountResponse>(endpoint);
+    } catch (error: unknown) {
+      const err = error as { status?: number };
+      if (err.status === LessonHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access past unstarted lessons count');
+      }
+      if (err.status === LessonHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid request for past unstarted lessons count');
+      }
+      throw makeApiError(error, `Failed to fetch past unstarted lessons count: ${(error as Error).message || 'Unknown error'}`);
+    }
+  }
+
   /** Get the current active lesson for a class (authoritative server-side determination) */
   async getCurrentLesson(classId: string): Promise<LessonResponse> {
     try {
@@ -300,7 +344,8 @@ return await apiService.get<LessonResponse>(LessonApiPaths.BY_ID(id));
         throw makeApiError(error, 'No future lessons scheduled for this class');
       }
       if (error.status === LessonHttpStatus.BAD_REQUEST) {
-        throw makeApiError(error, 'Invalid parameters for next lesson query');
+        const detail = formatProblemDetails(error.details);
+        throw makeApiError(error, detail || 'Invalid parameters for next lesson query');
       }
       if (error.status === LessonHttpStatus.UNAUTHORIZED) {
         throw makeApiError(error, 'Authentication required to access next lesson');
@@ -716,6 +761,7 @@ export const getLessonsForClass = (classId: string, filters?: ClassLessonFilterP
 export const getLessonsByClass = (classId: string, semesterId?: string) => lessonApiService.getLessonsByClass(classId, semesterId);
 export const getLessonsBySemester = (semesterId: string) => lessonApiService.getLessonsBySemester(semesterId);
 export const getPastUnstartedLessons = (classId: string) => lessonApiService.getPastUnstartedLessons(classId);
+export const getPastUnstartedCount = (classId: string) => lessonApiService.getPastUnstartedCount(classId);
 export const createLesson = (request: CreateLessonRequest) => lessonApiService.createLesson(request);
 export const cancelLesson = (id: string, request: CancelLessonRequest) => lessonApiService.cancelLesson(id, request);
 export const conductLesson = (id: string, request?: MarkLessonConductedRequest) => lessonApiService.conductLesson(id, request);
