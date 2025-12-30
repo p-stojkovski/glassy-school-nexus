@@ -283,8 +283,20 @@ export const selectSearchParams = (state: { students: StudentsState }) => state.
 export const selectIsSearchMode = (state: { students: StudentsState }) => state.students.isSearchMode;
 
 // Display data selector (search results if in search mode, otherwise all students)
-export const selectDisplayStudents = (state: { students: StudentsState }) => 
+export const selectDisplayStudents = (state: { students: StudentsState }) =>
   state.students.isSearchMode ? state.students.searchResults : state.students.students;
+
+// Computed pagination selector
+export const selectTotalPages = (state: { students: StudentsState }) =>
+  Math.ceil(state.students.totalCount / state.students.pageSize) || 1;
+
+// Pagination object selector (for components that need all pagination info)
+export const selectPagination = (state: { students: StudentsState }) => ({
+  totalCount: state.students.totalCount,
+  currentPage: state.students.currentPage,
+  pageSize: state.students.pageSize,
+  totalPages: Math.ceil(state.students.totalCount / state.students.pageSize) || 1,
+});
 
 // Legacy selectors (for backward compatibility)
 export const selectLoading = (state: { students: StudentsState }) => state.students.loading.fetching;

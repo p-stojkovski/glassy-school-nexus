@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { RootState } from '..';
 import { loadFromStorage, saveToStorage } from '@/lib/storage';
 import { AttendanceStatus } from '@/types/enums';
@@ -242,6 +242,14 @@ export const selectCurrentRecord = (state: RootState) =>
   state.attendance.currentRecord;
 export const selectSelectedDate = (state: RootState) =>
   state.attendance.selectedDate;
+// Memoized selector factory for class-specific attendance
+export const makeSelectAttendanceByClassId = () =>
+  createSelector(
+    [selectAllAttendanceRecords, (_state: RootState, classId: string) => classId],
+    (records, classId) => records.filter((record) => record.classId === classId)
+  );
+
+// Non-memoized version for backward compatibility
 export const selectAttendanceByClassId = (state: RootState, classId: string) =>
   state.attendance.attendanceRecords.filter(
     (record) => record.classId === classId

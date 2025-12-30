@@ -1,5 +1,5 @@
 import { RootState } from '@/store';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 
 // Define the types for our data
 export type AssessmentType =
@@ -197,6 +197,14 @@ export const selectGradesByAssessmentId = (
   assessmentId: string
 ) => state.grades.grades.filter((grade) => grade.assessmentId === assessmentId);
 
+// Memoized selector factory for student-specific grades
+export const makeSelectGradesByStudentId = () =>
+  createSelector(
+    [selectAllGrades, (_state: RootState, studentId: string) => studentId],
+    (grades, studentId) => grades.filter((grade) => grade.studentId === studentId)
+  );
+
+// Non-memoized version for backward compatibility
 export const selectGradesByStudentId = (state: RootState, studentId: string) =>
   state.grades.grades.filter((grade) => grade.studentId === studentId);
 

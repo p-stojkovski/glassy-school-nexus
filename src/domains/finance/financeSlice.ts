@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { RootState } from '@/store';
 import { loadFromStorage, saveToStorage } from '@/lib/storage';
 import { ObligationStatus, PaymentMethod } from '@/types/enums';
@@ -294,6 +294,22 @@ export const selectSelectedPeriod = (state: RootState) =>
 export const selectSelectedStudentId = (state: RootState) =>
   state.finance.selectedStudentId;
 
+// Memoized selector factories for student-specific data
+export const makeSelectObligationsByStudentId = () =>
+  createSelector(
+    [selectAllObligations, (_state: RootState, studentId: string) => studentId],
+    (obligations, studentId) =>
+      obligations.filter((obligation) => obligation.studentId === studentId)
+  );
+
+export const makeSelectPaymentsByStudentId = () =>
+  createSelector(
+    [selectAllPayments, (_state: RootState, studentId: string) => studentId],
+    (payments, studentId) =>
+      payments.filter((payment) => payment.studentId === studentId)
+  );
+
+// Non-memoized versions for backward compatibility (use memoized versions in components)
 export const selectObligationsByStudentId = (
   state: RootState,
   studentId: string

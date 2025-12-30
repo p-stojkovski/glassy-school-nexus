@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   FileText,
-  CheckCircle,
   XCircle,
   RotateCcw,
   AlertCircle,
@@ -215,23 +214,6 @@ const LessonDetailsSheet: React.FC<LessonDetailsSheetProps> = ({
                         {canConductLesson
                           ? "Ready to start - click 'Start Teaching' to begin."
                           : conductDisabledReason || "Teaching mode will be available closer to lesson time."}
-                      </p>
-                    </div>
-                  </div>
-                </GlassCard>
-              )}
-
-              {/* Conducted Status */}
-              {isConducted && (
-                <GlassCard className="p-4 border-emerald-500/20 bg-emerald-500/10">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-emerald-300 mb-1">
-                        Completed
-                      </h4>
-                      <p className="text-xs text-emerald-200/80">
-                        Conducted on {lesson.conductedAt && new Date(lesson.conductedAt).toLocaleString()}
                       </p>
                     </div>
                   </div>

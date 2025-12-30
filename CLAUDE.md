@@ -20,8 +20,13 @@
 For detailed domain-specific patterns, components, and workflows, see:
 
 - **[Class Management](src/domains/classes/CLAUDE.md)** - Classes, schedules, enrollment, student progress tracking
+- **[Student Management](src/domains/students/CLAUDE.md)** - Student profiles, guardians, financial info, discounts
 
-> **Classes Domain Agent:** For any work in `src/domains/classes/`, use the `classes-domain-specialist` agent instead of `frontend-specialist`. This agent has full-stack context including backend endpoints, API contracts, and business rules. It supersedes both `frontend-specialist` and `backend-specialist` for Classes domain work.
+> **Domain-Specific Agents:** For domain work, use the specialized agent instead of `frontend-specialist`:
+> - **Classes Domain:** Use `classes-domain-specialist` for any work in `src/domains/classes/`
+> - **Students Domain:** Use `students-domain-specialist` for any work in `src/domains/students/`
+>
+> These agents have full-stack context including backend endpoints, API contracts, and business rules. They supersede both `frontend-specialist` and `backend-specialist` for their respective domains.
 
 **When working in a domain:**
 1. **FIRST STEP:** Read `src/domains/{domain}/CLAUDE.md` (if it exists)
@@ -52,13 +57,22 @@ Each major domain should have a `CLAUDE.md` file following the Class Management 
 ```
 src/
 ├── domains/                        # Feature-based organization
-│   ├── students/                  # Student management domain
-│   │   ├── components/           # Domain-specific components
-│   │   │   ├── StudentForm.tsx   # Form components
-│   │   │   ├── StudentList.tsx   # List/table components
-│   │   │   └── StudentDialog.tsx # Modal/dialog components
-│   │   ├── hooks/                # Custom hooks for domain
-│   │   │   └── useStudentForm.ts # Form logic abstraction
+│   ├── students/                  # Student management (FLOW-BASED STRUCTURE)
+│   │   ├── _shared/              # Shared across all pages
+│   │   │   ├── components/       # StudentLoading, StudentEmptyState
+│   │   │   └── hooks/            # useStudents, useStudentFilters
+│   │   ├── list-page/            # /students route
+│   │   │   ├── components/       # Filters, headers, cells
+│   │   │   └── dialogs/          # CreateStudentSheet
+│   │   ├── detail-page/          # /students/:id route
+│   │   │   ├── layout/           # Headers, basic info
+│   │   │   ├── dialogs/          # EditStudentSheet
+│   │   │   └── tabs/             # Overview, Details, Classes, etc.
+│   │   │       ├── overview/     # 5 profile cards
+│   │   │       └── details/      # Section-based editing
+│   │   ├── form-page/            # /students/new, /students/:id/edit
+│   │   │   └── forms/tabs/       # Form tabs
+│   │   ├── schemas/              # Validation schemas
 │   │   └── studentsSlice.ts      # Redux slice
 │   ├── classes/                  # Class management (FLOW-BASED STRUCTURE)
 │   │   ├── _shared/              # Shared across all pages
@@ -129,7 +143,7 @@ src/
 
 ### Flow-Based vs Type-Based Organization
 
-The Classes domain uses **flow-based organization** (organized by user flow/route) rather than type-based organization (organized by file type). This improves navigability for developers:
+The Classes and Students domains use **flow-based organization** (organized by user flow/route) rather than type-based organization (organized by file type). This improves navigability for developers:
 
 | Aspect | Type-Based (old) | Flow-Based (new) |
 |--------|------------------|------------------|
@@ -138,7 +152,7 @@ The Classes domain uses **flow-based organization** (organized by user flow/rout
 | **Junior dev experience** | Harder to understand flow | Matches mental model of routes |
 | **Co-location** | Related files scattered | Related files grouped by feature |
 
-**When to use flow-based:** Complex domains with multiple pages/routes (like Classes).
+**When to use flow-based:** Complex domains with multiple pages/routes (like Classes, Students).
 **When to use type-based:** Simpler domains with single page (like Settings).
 
 ## Redux Toolkit Patterns

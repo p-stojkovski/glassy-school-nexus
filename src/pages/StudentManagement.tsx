@@ -1,10 +1,11 @@
 import React from 'react';
-import StudentHeader from '@/domains/students/components/layout/StudentHeader';
-import StudentFilters from '@/domains/students/components/filters/StudentFilters';
-import StudentTable from '@/domains/students/components/list/StudentTable';
-import StudentEmptyState from '@/domains/students/components/state/StudentEmptyState';
-import StudentLoading from '@/domains/students/components/state/StudentLoading';
-import { useStudentManagementWithNavigation } from '@/domains/students/hooks/useStudentManagementWithNavigation';
+import { StudentHeader } from '@/domains/students/detail-page';
+import {
+  StudentFilters,
+  StudentTable,
+  useStudentsListPage,
+} from '@/domains/students/list-page';
+import { StudentEmptyState, StudentLoading } from '@/domains/students/_shared';
 
 const StudentManagement: React.FC = () => {
   const {
@@ -30,7 +31,7 @@ const StudentManagement: React.FC = () => {
     handleAddStudent,
     handleViewStudent,
     handlePageChange,
-  } = useStudentManagementWithNavigation();
+  } = useStudentsListPage();
 
   // Show loading spinner while data is being initialized
   if (!isInitialized) {

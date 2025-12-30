@@ -7,7 +7,7 @@ import { buildClassBreadcrumbs } from '@/domains/classes/_shared/utils/classBrea
 import ClassFormContent from './ClassFormContent';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import { useClassFormPage } from './useClassFormPage';
-import { useUnsavedChangesWarning } from '@/domains/students/hooks/useUnsavedChangesWarning';
+import { useUnsavedChangesWarning } from '@/domains/students/_shared';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { ClassFormData } from '@/types/api/class';
 import { ClassFormRef } from './ClassFormContent';

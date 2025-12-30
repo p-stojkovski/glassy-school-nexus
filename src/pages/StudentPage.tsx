@@ -4,18 +4,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import PaymentSidebar from '@/domains/finance/components/payments/PaymentSidebar';
-import StudentPageHeader from '@/domains/students/components/unified/StudentPageHeader';
-import CreateStudentHeader from '@/domains/students/components/unified/CreateStudentHeader';
-import CreateStudentSheet from '@/domains/students/components/sheets/CreateStudentSheet';
-import StudentOverview from '@/domains/students/components/profile/StudentOverview';
-import StudentClassesTab from '@/domains/students/components/profile/StudentClassesTab';
-import StudentGradesTab from '@/domains/students/components/profile/StudentGradesTab';
-import StudentPaymentsTab from '@/domains/students/components/profile/StudentPaymentsTab';
-import StudentDetailsTab, { StudentDetailSection } from '@/domains/students/components/profile/StudentDetailsTab';
-import { useStudentPage } from '@/domains/students/hooks/useStudentPage';
+import { StudentPageHeader, CreateStudentSheet } from '@/domains/students/list-page';
+import { CreateStudentHeader } from '@/domains/students/form-page';
+import {
+  StudentOverview,
+  StudentClassesTab,
+  StudentGradesTab,
+  StudentPaymentsTab,
+  StudentDetailsTab,
+  useStudentPage,
+} from '@/domains/students/detail-page';
+import type { StudentDetailSection } from '@/domains/students/detail-page';
 import { useAppDispatch } from '@/store/hooks';
-import { updateStudent as updateStudentInStore } from '@/domains/students/studentsSlice';
-import { Student } from '@/domains/students/studentsSlice';
+import { updateStudent as updateStudentInStore, Student } from '@/domains/students/studentsSlice';
 
 /**
  * Unified Student Details Page

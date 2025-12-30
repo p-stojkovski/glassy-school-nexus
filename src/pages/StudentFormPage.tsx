@@ -10,14 +10,12 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
-import StudentFormContent from '@/domains/students/components/forms/StudentFormContent';
-import StudentLoading from '@/domains/students/components/state/StudentLoading';
+import { StudentFormContent, useStudentFormPage } from '@/domains/students/form-page';
+import type { StudentFormRef } from '@/domains/students/form-page';
+import { StudentLoading, useUnsavedChangesWarning } from '@/domains/students/_shared';
 import ErrorMessage from '@/components/common/ErrorMessage';
-import { useStudentFormPage } from '@/domains/students/hooks/useStudentFormPage';
-import { useUnsavedChangesWarning } from '@/domains/students/hooks/useUnsavedChangesWarning';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { StudentFormData } from '@/types/api/student';
-import { StudentFormRef } from '@/domains/students/components/forms/StudentFormContent';
 
 const StudentFormPage: React.FC = () => {
   const { studentId } = useParams<{ studentId: string }>();
