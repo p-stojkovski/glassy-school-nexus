@@ -8,7 +8,7 @@
 |----------|---------|
 | **Agent:** `classes-domain-specialist` | Full-stack investigation, troubleshooting, implementation |
 | **Skill:** `classes-domain-reference` | Auto-injected quick reference during active work |
-| **Backend:** `think-english-api/src/Api/Features/Classes/` | 24 endpoints + 13 shared contract files |
+| **Backend:** `think-english-api/src/Api/Features/Classes/` | 21 endpoints + 13 shared contract files |
 
 ## Domain Purpose
 
@@ -20,27 +20,38 @@ Manages classes, schedules, student enrollments, lesson tracking, and student pr
 
 ## Directory Structure
 
+Uses **flow-based organization** (by route/page) for better navigability.
+
 ```
 classes/
 ├── CLAUDE.md                    # This file (orientation)
 ├── classesSlice.ts              # Redux slice (dual-state pattern)
-├── hooks/
-│   ├── useClasses.ts            # Primary Redux hook
-│   ├── useClassPage.ts          # Detail page state
-│   ├── useClassFormPage.ts      # Form page state
-│   └── useClassLessonContext.ts # Lesson context (current/next)
-├── components/
-│   ├── list/                    # ClassTable, ClassGrid
-│   ├── forms/                   # ClassFormContent + tabs/
-│   ├── tabs/                    # Detail page tabs
-│   ├── detail/                  # ClassLessonsTab
-│   ├── hero/                    # ClassHeroSection
-│   ├── schedule/                # WeeklyScheduleGrid, dialogs
-│   ├── sections/                # StudentProgressTable, etc.
-│   ├── dialogs/                 # CreateClassSheet, DisableClassDialog, etc.
-│   ├── filters/                 # ClassFilters
-│   └── students/                # CapacityValidationPanel
-└── utils/                       # scheduleUtils, classBreadcrumbs
+├── _shared/                     # Shared across all pages
+│   ├── components/              # ClassLoading, ScheduleConflictPanel, ActiveFilterChips
+│   ├── hooks/                   # useClasses, useScheduleConflictCheck, useStudentProgressData
+│   └── utils/                   # scheduleUtils, classBreadcrumbs, scheduleValidationUtils
+├── list-page/                   # /classes route
+│   ├── ClassesPage.tsx          # Main list page
+│   ├── components/              # ClassTable, ClassGrid, ClassFilters
+│   └── dialogs/                 # CreateClassSheet, DisableClassDialog, EnableClassDialog
+├── detail-page/                 # /classes/:id route
+│   ├── useClassPage.ts          # Detail page state management
+│   ├── useClassLessonContext.ts # Current/next lesson determination
+│   ├── layout/                  # ClassPageHeader
+│   ├── dialogs/                 # EditClassInfoDialog, EditClassDetailsSheet
+│   ├── tabs/
+│   │   ├── students/            # StudentsTab, StudentProgressTable, CapacityValidationPanel
+│   │   ├── schedule/            # ScheduleTab, WeeklyScheduleGrid, ArchivedSchedulesSection
+│   │   ├── lessons/             # LessonsTab
+│   │   └── info/                # InfoTab, ReadOnly* components
+│   └── teaching/                # TeachingModePage
+├── form-page/                   # /classes/new, /classes/:id/edit routes
+│   ├── ClassFormPage.tsx        # Form page container
+│   ├── ClassFormContent.tsx     # Form layout
+│   ├── useClassFormPage.ts      # Form state management
+│   └── tabs/                    # BasicInfoTab, ScheduleEnrollmentTab, AdditionalDetailsTab
+└── schemas/                     # Zod validation schemas
+    └── classValidators.ts
 ```
 
 ## Key Files
@@ -48,10 +59,13 @@ classes/
 | Purpose | Path |
 |---------|------|
 | Redux Slice | `classesSlice.ts` |
-| Primary Hook | `hooks/useClasses.ts` |
+| Primary Hook | `_shared/hooks/useClasses.ts` |
+| Detail Page Hook | `detail-page/useClassPage.ts` |
+| Form Page Hook | `form-page/useClassFormPage.ts` |
+| Student Data Hook | `_shared/hooks/useStudentProgressData.ts` |
 | API Service | `../../services/classApiService.ts` |
 | Types | `../../types/api/class.ts` |
-| Validation | `../../utils/validation/classValidators.ts` |
+| Validation | `schemas/classValidators.ts` |
 
 ## Key Conventions
 
@@ -108,10 +122,11 @@ Track unsaved changes across tabs with `registerTabUnsavedChanges()` to prevent 
 | Task | Where to Start |
 |------|----------------|
 | Add new class field | Use `classes-domain-specialist` agent |
-| Fix schedule conflict | `schedule/ScheduleConflictPanel.tsx`, `scheduleValidationUtils.ts` |
-| Update student progress display | `sections/StudentProgressTable.tsx` |
+| Fix schedule conflict | `_shared/components/ScheduleConflictPanel.tsx`, `_shared/utils/scheduleValidationUtils.ts` |
+| Update student progress display | `detail-page/tabs/students/StudentProgressTable.tsx` |
 | Modify enrollment logic | Backend: `ManageEnrollmentsEndpoint.cs` |
-| Add/edit form validation | `../../utils/validation/classValidators.ts` |
+| Add/edit form validation | `schemas/classValidators.ts` |
+| Add schedule slot | `detail-page/tabs/schedule/dialogs/AddScheduleSlotSidebar.tsx` |
 
 ## Verification
 
@@ -134,4 +149,4 @@ grep -r ": any" --include="*.ts" src/domains/classes
 
 ---
 
-*Last updated: 2025-12-25*
+*Last updated: 2025-12-30*

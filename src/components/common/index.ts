@@ -3,6 +3,8 @@ export { default as ClearFiltersButton } from './ClearFiltersButton';
 export { default as ConfirmDialog } from './ConfirmDialog';
 export { default as DatePicker } from './DatePicker';
 export { default as DemoNotice } from './DemoNotice';
+export { default as EmptyState } from './EmptyState';
+export type { EmptyStateProps, EmptyStateAction } from './EmptyState';
 export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as ErrorMessage } from './ErrorMessage';
 export { default as FormButtons } from './FormButtons';
