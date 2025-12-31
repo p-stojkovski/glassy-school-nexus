@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { motion } from 'framer-motion';
 import {
   Table,
   TableBody,
@@ -18,59 +17,39 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import GlassCard from '@/components/common/GlassCard';
 import { Teacher } from '../teachersSlice';
-import { MoreVertical, Edit, Trash2, Eye } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
+import { formatDate } from '@/utils/dateFormatters';
 
 interface TeacherTableProps {
   teachers: Teacher[];
-  onEdit: (teacher: Teacher) => void;
-  onDelete: (teacher: Teacher) => void;
-  isDeleting?: boolean;
+  totalCount: number;
+  currentPage: number;
+  pageSize: number;
+  onView: (teacher: Teacher) => void;
+  onPageChange: (page: number) => void;
 }
 
-const ITEMS_PER_PAGE = 10;
-
-const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete, isDeleting = false }) => {
-  const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const totalPages = Math.ceil(teachers.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedTeachers = teachers.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+const TeacherTable: React.FC<TeacherTableProps> = ({
+  teachers,
+  totalCount,
+  currentPage,
+  pageSize,
+  onView,
+  onPageChange,
+}) => {
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   const renderPaginationItems = () => {
-    const items = [] as JSX.Element[];
+    const items = [];
     const maxVisiblePages = 5;
-
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         items.push(
           <PaginationItem key={i}>
             <PaginationLink
-              onClick={() => handlePageChange(i)}
+              onClick={() => onPageChange(i)}
               isActive={currentPage === i}
               className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
@@ -80,11 +59,10 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
         );
       }
     } else {
-      // Show first page
       items.push(
         <PaginationItem key={1}>
           <PaginationLink
-            onClick={() => handlePageChange(1)}
+            onClick={() => onPageChange(1)}
             isActive={currentPage === 1}
             className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
           >
@@ -93,7 +71,6 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
         </PaginationItem>
       );
 
-      // Show ellipsis if needed
       if (currentPage > 3) {
         items.push(
           <PaginationItem key="ellipsis1">
@@ -102,7 +79,6 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
         );
       }
 
-      // Show current page and surrounding pages
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
 
@@ -110,7 +86,7 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
         items.push(
           <PaginationItem key={i}>
             <PaginationLink
-              onClick={() => handlePageChange(i)}
+              onClick={() => onPageChange(i)}
               isActive={currentPage === i}
               className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
@@ -120,7 +96,6 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
         );
       }
 
-      // Show ellipsis if needed
       if (currentPage < totalPages - 2) {
         items.push(
           <PaginationItem key="ellipsis2">
@@ -129,12 +104,11 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
         );
       }
 
-      // Show last page
       if (totalPages > 1) {
         items.push(
           <PaginationItem key={totalPages}>
             <PaginationLink
-              onClick={() => handlePageChange(totalPages)}
+              onClick={() => onPageChange(totalPages)}
               isActive={currentPage === totalPages}
               className="cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
@@ -148,9 +122,25 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
     return items;
   };
 
+  // Calculate years of experience from joinDate
+  const calculateExperience = (joinDate: string): number => {
+    const join = new Date(joinDate);
+    const now = new Date();
+    const years = now.getFullYear() - join.getFullYear();
+    const monthDiff = now.getMonth() - join.getMonth();
+    return monthDiff < 0 || (monthDiff === 0 && now.getDate() < join.getDate()) ? years - 1 : years;
+  };
+
   return (
-    <div className="space-y-4">
-      <GlassCard className="overflow-hidden">
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-4"
+    >
+      <GlassCard className="overflow-visible">
         <Table>
           <TableHeader>
             <TableRow className="border-white/20 hover:bg-white/5">
@@ -158,108 +148,103 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
                 Teacher
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
-                Contact
+                Professional
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
-                Subject
+                Contact
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
                 Classes
               </TableHead>
               <TableHead className="text-white/90 font-semibold">
-                Join Date
+                Notes
               </TableHead>
-              <TableHead className="text-white/90 font-semibold text-right">
-                Actions
+              <TableHead className="w-12">
+                {/* Navigation indicator column */}
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedTeachers.map((teacher) => (
-              <TableRow
-                key={teacher.id}
-                className="border-white/10 hover:bg-white/5"
-              >
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <button
-                        onClick={() => navigate(`/teachers/${teacher.id}`)}
-                        className="font-medium text-white hover:text-blue-400 transition-colors text-left"
-                      >
-                        {teacher.name}
-                      </button>
+            {teachers.map((teacher) => {
+              const yearsExperience = calculateExperience(teacher.joinDate);
+              return (
+                <TableRow
+                  key={teacher.id}
+                  onClick={() => onView(teacher)}
+                  className="border-white/10 hover:bg-white/10 cursor-pointer transition-colors group"
+                >
+                  {/* Teacher name + email + join date */}
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-white">
+                          {teacher.name}
+                        </span>
+                        {!teacher.isActive && (
+                          <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded">
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-white/70">
+                        {teacher.email}
+                      </span>
+                      <span className="text-xs text-white/50">
+                        Joined {formatDate(teacher.joinDate)}
+                      </span>
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm">
-                    <div className="text-white/80">{teacher.email}</div>
-                    {teacher.phone && (
-                      <div className="text-white/60">{teacher.phone}</div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm text-white/80">{teacher.subjectName}</div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm text-white/80">
-                    {teacher.classCount} class
-                    {teacher.classCount !== 1 ? 'es' : ''}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm text-white/80">
-                    {formatDate(teacher.joinDate)}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-end">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8 p-0"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="bg-gray-900/95 border-white/20 text-white"
-                      >
-                        <DropdownMenuItem
-                          onClick={() => navigate(`/teachers/${teacher.id}`)}
-                          className="text-white/70 focus:text-white focus:bg-white/10 cursor-pointer"
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Profile
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onEdit(teacher)}
-                          className="text-white/70 focus:text-white focus:bg-white/10 cursor-pointer"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit Teacher
-                        </DropdownMenuItem>
+                  </TableCell>
 
-                        <DropdownMenuSeparator className="bg-white/20" />
+                  {/* Professional: Subject and class count */}
+                  <TableCell>
+                    <div className="text-sm space-y-1">
+                      <span className="text-white/80">{teacher.subjectName}</span>
+                      <span className="text-white/60 text-xs block">
+                        {teacher.classCount} {teacher.classCount === 1 ? 'class' : 'classes'}
+                      </span>
+                    </div>
+                  </TableCell>
 
-                        <DropdownMenuItem
-                          onClick={() => onDelete(teacher)}
-                          className="text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          {isDeleting ? 'Deleting...' : 'Delete Teacher'}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                  {/* Contact: Phone */}
+                  <TableCell>
+                    <div className="text-sm">
+                      {teacher.phone ? (
+                        <span className="text-white/70">{teacher.phone}</span>
+                      ) : (
+                        <span className="text-white/40">—</span>
+                      )}
+                    </div>
+                  </TableCell>
+
+                  {/* Classes: Display count */}
+                  <TableCell>
+                    <div className="text-sm text-white/80">
+                      {teacher.classCount} {teacher.classCount === 1 ? 'class' : 'classes'}
+                    </div>
+                  </TableCell>
+
+                  {/* Notes: Truncated or empty */}
+                  <TableCell>
+                    <div className="text-sm">
+                      {teacher.notes ? (
+                        <span className="text-white/70 truncate max-w-[150px] block">
+                          {teacher.notes}
+                        </span>
+                      ) : (
+                        <span className="text-white/40">—</span>
+                      )}
+                    </div>
+                  </TableCell>
+
+                  {/* Navigation chevron */}
+                  <TableCell>
+                    <div className="flex justify-end">
+                      <ChevronRight className="h-5 w-5 text-white/40 group-hover:text-white/70 transition-colors" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </GlassCard>
@@ -271,7 +256,7 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() =>
-                    currentPage > 1 && handlePageChange(currentPage - 1)
+                    currentPage > 1 && onPageChange(currentPage - 1)
                   }
                   className={`cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10 ${
                     currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
@@ -283,7 +268,7 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
                 <PaginationNext
                   onClick={() =>
                     currentPage < totalPages &&
-                    handlePageChange(currentPage + 1)
+                    onPageChange(currentPage + 1)
                   }
                   className={`cursor-pointer bg-white/5 border-white/10 text-white hover:bg-white/10 ${
                     currentPage === totalPages
@@ -298,11 +283,9 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
       )}
 
       <div className="text-center text-white/60 text-sm">
-        Showing {startIndex + 1} to{' '}
-        {Math.min(startIndex + ITEMS_PER_PAGE, teachers.length)} of{' '}
-        {teachers.length} teachers
+        {totalCount} {totalCount === 1 ? 'teacher' : 'teachers'}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

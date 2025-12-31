@@ -76,3 +76,23 @@ export interface SettingsBreadcrumbContext {
   /** Optional active tab name */
   activeTab?: string;
 }
+
+/**
+ * Page types for the teacher domain
+ */
+export type TeacherPageType =
+  | 'list'    // /teachers
+  | 'details' // /teachers/:teacherId
+  | 'create'  // /teachers/new
+  | 'edit';   // /teachers/:teacherId/edit
+
+/**
+ * Context data for teacher-related breadcrumbs
+ */
+export interface TeacherBreadcrumbContext {
+  teacherData?: {
+    id: number;
+    name: string;
+  } | null;
+  pageType: TeacherPageType;
+}

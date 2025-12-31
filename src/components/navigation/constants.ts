@@ -32,6 +32,13 @@ export const BASE_BREADCRUMBS = {
     href: '/settings',
     icon: Settings,
   } satisfies BreadcrumbItemConfig,
+
+  /** Teachers list segment */
+  teachers: {
+    label: 'Teachers',
+    href: '/teachers',
+    icon: Users,
+  } satisfies BreadcrumbItemConfig,
 } as const;
 
 /**

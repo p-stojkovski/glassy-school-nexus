@@ -1,12 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TeacherHeader, TeacherEmptyState } from '@/domains/teachers/list-page';
-import {
-  TeacherFilters,
-  TeacherTable,
-} from '@/domains/teachers/list-page';
-import { TeacherLoading, useTeacherManagement } from '@/domains/teachers/_shared';
-import { CreateTeacherSheet } from '@/domains/teachers/list-page';
+import { useTeacherManagement } from '../_shared/hooks/useTeacherManagement';
+import { TeacherHeader, TeacherFilters, TeacherEmptyState } from './components';
+import TeacherTable from './TeacherTable';
+import { CreateTeacherSheet } from './dialogs';
+import { TeacherLoading } from '../_shared/components';
 
 const Teachers: React.FC = () => {
   const navigate = useNavigate();
@@ -16,13 +14,13 @@ const Teachers: React.FC = () => {
     totalCount,
     currentPage,
     pageSize,
+    loading,
+    isInitialized,
     searchTerm,
     statusFilter,
     subjectFilter,
     experienceFilter,
     hasActiveFilters,
-    isInitialized,
-    loading,
     isFormOpen,
     setSearchTerm,
     setStatusFilter,
@@ -38,14 +36,16 @@ const Teachers: React.FC = () => {
     navigate(`/teachers/${teacher.id}`);
   };
 
-  // Show loading spinner while data is being initialized
   if (!isInitialized) {
     return <TeacherLoading />;
   }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <TeacherHeader onAddTeacher={handleAddTeacher} />
+
+      {/* Filters */}
       <TeacherFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -61,7 +61,8 @@ const Teachers: React.FC = () => {
         isSearching={loading.searching}
       />
 
-      {!teachers || teachers.length === 0 ? (
+      {/* Table or Empty State */}
+      {teachers.length === 0 ? (
         <TeacherEmptyState
           hasActiveFilters={hasActiveFilters}
           onAddTeacher={handleAddTeacher}

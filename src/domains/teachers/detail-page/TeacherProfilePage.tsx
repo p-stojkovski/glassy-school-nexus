@@ -1,9 +1,11 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { User, BookOpen, Calendar, Users, Pencil, FileText } from 'lucide-react';
+import { User, BookOpen, Calendar, Users, FileText } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
-import { TeacherProfileHeader, TeacherBasicInfo } from './layout';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { AppBreadcrumb } from '@/components/navigation';
+import { buildTeacherBreadcrumbs } from '@/domains/teachers/_shared/utils/teacherBreadcrumbs';
+import { TeacherPageHeader } from './layout';
 import { useTeacherProfile } from './useTeacherProfile';
 import { EditTeacherSheet } from './dialogs';
 import { TeacherOverview } from './tabs/overview';
@@ -26,18 +28,17 @@ const TeacherProfilePage: React.FC = () => {
     handleCloseEditSheet,
     handleEditSuccess,
     handleTeacherUpdate,
-    handleBack,
   } = useTeacherProfile();
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <TeacherProfileHeader onBack={handleBack} />
-        <GlassCard className="p-6">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-white/70">Loading teacher...</div>
-          </div>
-        </GlassCard>
+        <AppBreadcrumb
+          items={buildTeacherBreadcrumbs({ pageType: 'details' })}
+        />
+        <div className="flex items-center justify-center min-h-[200px]">
+          <LoadingSpinner size="md" />
+        </div>
       </div>
     );
   }
@@ -45,7 +46,9 @@ const TeacherProfilePage: React.FC = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <TeacherProfileHeader onBack={handleBack} />
+        <AppBreadcrumb
+          items={buildTeacherBreadcrumbs({ pageType: 'details' })}
+        />
         <GlassCard className="p-6">
           <div className="flex items-center justify-center py-12">
             <div className="text-red-400">{error}</div>
@@ -61,19 +64,10 @@ const TeacherProfilePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <TeacherProfileHeader onBack={handleBack} />
-        <Button
-          onClick={handleOpenEditSheet}
-          className="bg-white/10 hover:bg-white/20 text-white border-white/20"
-          variant="outline"
-        >
-          <Pencil className="w-4 h-4 mr-2" />
-          Edit Teacher
-        </Button>
-      </div>
-
-      <TeacherBasicInfo teacher={teacher} />
+      <TeacherPageHeader
+        teacher={teacher}
+        onEdit={handleOpenEditSheet}
+      />
 
       <Tabs
         value={activeTab}

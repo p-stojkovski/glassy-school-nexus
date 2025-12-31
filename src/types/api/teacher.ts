@@ -31,6 +31,7 @@ export interface TeacherResponse {
   joinDate: string;       // ISO 8601 date string
   notes?: string;         // Additional notes
   classCount: number;     // Number of assigned classes
+  isActive: boolean;      // Whether the teacher is active
 }
 
 export interface TeacherCreatedResponse {

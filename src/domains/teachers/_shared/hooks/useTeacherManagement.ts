@@ -61,19 +61,68 @@ export const useTeacherManagement = () => {
   } = useTeachers();
 
   // Local UI state
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTermState] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [subjectFilter, setSubjectFilter] = useState<string>('all');
+  const [experienceFilter, setExperienceFilter] = useState<'all' | '0-2' | '3-5' | '5+'>('all');
   const [viewMode, setViewMode] = useState<TeacherViewMode>('table');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [teacherToDelete, setTeacherToDelete] = useState<Teacher | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
 
-  // Display filtered teachers from API - no local filtering
+  // Calculate years of experience from joinDate
+  const calculateExperience = useCallback((joinDate: string): number => {
+    const join = new Date(joinDate);
+    const now = new Date();
+    const years = now.getFullYear() - join.getFullYear();
+    const monthDiff = now.getMonth() - join.getMonth();
+    return monthDiff < 0 || (monthDiff === 0 && now.getDate() < join.getDate()) ? years - 1 : years;
+  }, []);
+
+  // Apply local filters to teachers
   const filteredTeachers = useMemo(() => {
-    return displayTeachers;
-  }, [displayTeachers]);
+    if (isSearchMode) {
+      return searchResults || [];
+    }
+
+    let filtered = displayTeachers;
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(t => statusFilter === 'active' ? t.isActive : !t.isActive);
+    }
+
+    // Subject filter
+    if (subjectFilter !== 'all') {
+      filtered = filtered.filter(t => t.subjectId === subjectFilter);
+    }
+
+    // Experience filter
+    if (experienceFilter !== 'all') {
+      filtered = filtered.filter(t => {
+        const years = calculateExperience(t.joinDate);
+        if (experienceFilter === '0-2') return years >= 0 && years <= 2;
+        if (experienceFilter === '3-5') return years >= 3 && years <= 5;
+        if (experienceFilter === '5+') return years > 5;
+        return true;
+      });
+    }
+
+    // Search term filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(t =>
+        t.name.toLowerCase().includes(term) ||
+        t.email.toLowerCase().includes(term)
+      );
+    }
+
+    return filtered;
+  }, [displayTeachers, searchResults, isSearchMode, statusFilter, subjectFilter, experienceFilter, searchTerm, calculateExperience]);
 
   // Load all teachers with optional filters (loading handled by global interceptor)
   const loadTeachers = useCallback(async (params?: TeacherSearchParams) => {
@@ -260,12 +309,21 @@ export const useTeacherManagement = () => {
   }, [teacherToDelete, deleteTeacherApi]);
 
   const clearFilters = useCallback(() => {
-    setSearchTerm('');
+    setSearchTermState('');
+    setStatusFilter('all');
     setSubjectFilter('all');
+    setExperienceFilter('all');
     setSearchQuery('');
+    setSearchMode(false);
     // Reload all teachers without filters
     loadTeachers();
-  }, [loadTeachers]); // Redux dispatch functions are stable, no dependencies needed
+  }, [loadTeachers, setSearchQuery, setSearchMode]); // Redux dispatch functions are stable, no dependencies needed
+
+  // Wrapper for setSearchTerm to update both local state and Redux
+  const setSearchTerm = useCallback((term: string) => {
+    setSearchTermState(term);
+    setSearchQuery(term);
+  }, [setSearchQuery]);
 
   // Filter handlers - now using loadTeachers with params
   const handleSearchChange = useCallback((term: string) => {
@@ -340,15 +398,35 @@ export const useTeacherManagement = () => {
   }, []);
 
   // Check if any filters are active
-  const hasActiveFilters = searchTerm !== '' || subjectFilter !== 'all';
+  const hasActiveFilters = searchTerm !== '' || statusFilter !== 'all' || subjectFilter !== 'all' || experienceFilter !== 'all';
+
+  // Pagination
+  const totalCount = filteredTeachers.length;
+  const paginatedTeachers = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredTeachers.slice(startIndex, startIndex + pageSize);
+  }, [filteredTeachers, currentPage, pageSize]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, subjectFilter, experienceFilter, searchTerm]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
 
   return {
     // Data
-    teachers: displayTeachers,
+    teachers: paginatedTeachers,
+    allTeachers: displayTeachers,
     subjects,
     filteredTeachers,
     searchResults,
     isSearchMode,
+    totalCount,
+    currentPage,
+    pageSize,
 
     // Loading states (only form-related, global loading handled by interceptor)
     loading,
@@ -360,7 +438,9 @@ export const useTeacherManagement = () => {
 
     // Filter state
     searchTerm,
+    statusFilter,
     subjectFilter,
+    experienceFilter,
     hasActiveFilters,
     searchParams,
 
@@ -393,10 +473,13 @@ export const useTeacherManagement = () => {
     clearFilters,
     handleSearchChange,
     handleAdvancedSearch,
+    handlePageChange,
 
     // Filter handlers
-    setSearchTerm: handleSearchChange,
-    setSubjectFilter: handleSubjectFilterChange,
+    setSearchTerm,
+    setStatusFilter,
+    setSubjectFilter,
+    setExperienceFilter,
 
     // State setters
     setIsFormOpen,

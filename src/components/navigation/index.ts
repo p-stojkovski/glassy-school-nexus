@@ -10,6 +10,8 @@ export type {
   StudentBreadcrumbContext,
   SettingsPageType,
   SettingsBreadcrumbContext,
+  TeacherPageType,
+  TeacherBreadcrumbContext,
 } from './types';
 
 // Constants
