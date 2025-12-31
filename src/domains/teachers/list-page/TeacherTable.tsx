@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -25,8 +26,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import GlassCard from '@/components/common/GlassCard';
-import { Teacher } from '@/domains/teachers/teachersSlice';
-import { MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Teacher } from '../teachersSlice';
+import { MoreVertical, Edit, Trash2, Eye } from 'lucide-react';
 
 interface TeacherTableProps {
   teachers: Teacher[];
@@ -38,6 +39,7 @@ interface TeacherTableProps {
 const ITEMS_PER_PAGE = 10;
 
 const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete, isDeleting = false }) => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(teachers.length / ITEMS_PER_PAGE);
@@ -181,9 +183,12 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div>
-                      <div className="font-medium text-white">
+                      <button
+                        onClick={() => navigate(`/teachers/${teacher.id}`)}
+                        className="font-medium text-white hover:text-blue-400 transition-colors text-left"
+                      >
                         {teacher.name}
-                      </div>
+                      </button>
                     </div>
                   </div>
                 </TableCell>
@@ -225,6 +230,13 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
                         align="end"
                         className="bg-gray-900/95 border-white/20 text-white"
                       >
+                        <DropdownMenuItem
+                          onClick={() => navigate(`/teachers/${teacher.id}`)}
+                          className="text-white/70 focus:text-white focus:bg-white/10 cursor-pointer"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Profile
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => onEdit(teacher)}
                           className="text-white/70 focus:text-white focus:bg-white/10 cursor-pointer"
@@ -295,4 +307,3 @@ const TeacherTable: React.FC<TeacherTableProps> = ({ teachers, onEdit, onDelete,
 };
 
 export default TeacherTable;
-

@@ -380,6 +380,59 @@ export const debouncedValidators = {
   notes: createDebouncedValidator(validateTeacherNotes, 300),
 };
 
+/**
+ * Section-specific schemas for Teacher Details Tab inline editing
+ */
+
+/**
+ * Personal Info Section Schema (name, email, phone, subject)
+ * Used for inline editing in TeacherDetailsTab
+ */
+export const teacherPersonalInfoSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Teacher name is required.')
+    .max(TeacherValidationRules.NAME.MAX_LENGTH, `Name must not exceed ${TeacherValidationRules.NAME.MAX_LENGTH} characters.`)
+    .regex(TeacherValidationRules.NAME.PATTERN, TeacherValidationRules.NAME.ERROR_MESSAGE),
+
+  email: z
+    .string()
+    .min(1, 'Email address is required.')
+    .max(TeacherValidationRules.EMAIL.MAX_LENGTH, `Email must not exceed ${TeacherValidationRules.EMAIL.MAX_LENGTH} characters.`)
+    .email('Email must be a valid email address.')
+    .toLowerCase(),
+
+  phone: z
+    .string()
+    .max(TeacherValidationRules.PHONE.MAX_LENGTH, `Phone must not exceed ${TeacherValidationRules.PHONE.MAX_LENGTH} characters.`)
+    .regex(TeacherValidationRules.PHONE.PATTERN, TeacherValidationRules.PHONE.ERROR_MESSAGE)
+    .optional()
+    .or(z.literal('')),
+
+  subjectId: z
+    .string()
+    .min(1, 'Subject selection is required.')
+    .regex(TeacherValidationRules.SUBJECT_ID.PATTERN, TeacherValidationRules.SUBJECT_ID.ERROR_MESSAGE),
+});
+
+/**
+ * Bio Section Schema (notes field displayed as "About")
+ * Used for inline editing in TeacherDetailsTab
+ */
+export const teacherBioSchema = z.object({
+  notes: z
+    .string()
+    .max(TeacherValidationRules.NOTES.MAX_LENGTH, `Bio must not exceed ${TeacherValidationRules.NOTES.MAX_LENGTH} characters.`)
+    .optional()
+    .or(z.literal('')),
+});
+
+/**
+ * Type definitions for section form data
+ */
+export type TeacherPersonalInfoFormData = z.infer<typeof teacherPersonalInfoSchema>;
+export type TeacherBioFormData = z.infer<typeof teacherBioSchema>;
+
 export default {
   validateTeacherForm,
   validateTeacherName,
@@ -397,5 +450,8 @@ export default {
   // Zod schemas
   createTeacherSchema,
   updateTeacherSchema,
+  // Section-specific schemas
+  teacherPersonalInfoSchema,
+  teacherBioSchema,
 };
 

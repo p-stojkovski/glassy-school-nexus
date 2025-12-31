@@ -49,4 +49,3 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
 };
 
 export default TeacherFilters;
-

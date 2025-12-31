@@ -21,6 +21,7 @@ import ClassPage from './pages/ClassPage';
 import { TeachingModePage } from '@/domains/classes/detail-page/teaching';
 import Teachers from './pages/Teachers';
 import TeacherDashboard from './pages/TeacherDashboard';
+import TeacherPage from './pages/TeacherPage';
 import AttendanceManagement from './pages/AttendanceManagement';
 import GradesManagement from './pages/GradesManagement';
 import FinancialManagement from './pages/FinancialManagement';
@@ -99,7 +100,8 @@ const AppContent: React.FC = () => {
         <Route path="/classes/edit/:classId" element={<ClassFormPage />} />
         <Route path="/classes/:id" element={<ClassPage />} />
         <Route path="/classes/:classId/teach/:lessonId" element={<TeachingModePage />} />
-        <Route path="/teachers" element={<Teachers />} />{' '}
+        <Route path="/teachers" element={<Teachers />} />
+        <Route path="/teachers/:teacherId" element={<TeacherPage />} />
         <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
         <Route path="/attendance" element={<AttendanceManagement />} />
         <Route path="/grades" element={<GradesManagement />} />

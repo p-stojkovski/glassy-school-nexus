@@ -7,6 +7,16 @@ import apiService from './api';
 import {
   TeacherResponse,
   TeacherCreatedResponse,
+  TeacherOverviewResponse,
+  TeacherClassDto,
+  TeacherClassesResponse,
+  TeacherClassesParams,
+  TeacherScheduleResponse,
+  TeacherScheduleSlotDto,
+  TeacherScheduleParams,
+  TeacherStudentsResponse,
+  TeacherStudentDto,
+  TeacherStudentsParams,
   SubjectDto,
   CreateTeacherRequest,
   UpdateTeacherRequest,
@@ -87,7 +97,7 @@ const raw = await apiService.get<any>(endpoint);
    */
   async getTeacherById(id: string): Promise<TeacherResponse> {
     try {
-      
+
 const teacher = await apiService.get<TeacherResponse>(TeacherApiPaths.BY_ID(id));
       return teacher;
     } catch (error: any) {
@@ -98,6 +108,125 @@ const teacher = await apiService.get<TeacherResponse>(TeacherApiPaths.BY_ID(id))
         throw makeApiError(error, 'Authentication required to access teacher details');
       }
       throw makeApiError(error, `Failed to fetch teacher: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get teacher overview data (aggregated metrics for profile Overview tab)
+   * @param id - Teacher ID (UUID format)
+   * @returns Promise<TeacherOverviewResponse>
+   */
+  async getTeacherOverview(id: string): Promise<TeacherOverviewResponse> {
+    try {
+      const overview = await apiService.get<TeacherOverviewResponse>(TeacherApiPaths.OVERVIEW(id));
+      return overview;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
+      }
+      if (error.status === TeacherHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access teacher overview');
+      }
+      throw makeApiError(error, `Failed to fetch teacher overview: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get classes assigned to a teacher
+   * @param id - Teacher ID (UUID format)
+   * @param params - Optional filter parameters (academicYearId, isActive)
+   * @returns Promise<TeacherClassDto[]>
+   */
+  async getTeacherClasses(id: string, params?: TeacherClassesParams): Promise<TeacherClassDto[]> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params?.academicYearId) {
+        queryParams.append('academicYearId', params.academicYearId);
+      }
+      if (params?.isActive !== undefined) {
+        queryParams.append('isActive', String(params.isActive));
+      }
+
+      const queryString = queryParams.toString();
+      const endpoint = queryString
+        ? `${TeacherApiPaths.CLASSES(id)}?${queryString}`
+        : TeacherApiPaths.CLASSES(id);
+
+      const response = await apiService.get<TeacherClassesResponse>(endpoint);
+      return response.classes || [];
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
+      }
+      if (error.status === TeacherHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access teacher classes');
+      }
+      throw makeApiError(error, `Failed to fetch teacher classes: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get teacher's weekly teaching schedule (all classes aggregated)
+   * @param id - Teacher ID (UUID format)
+   * @param params - Optional filter parameters (activeClassesOnly)
+   * @returns Promise<TeacherScheduleResponse>
+   */
+  async getTeacherSchedule(id: string, params?: TeacherScheduleParams): Promise<TeacherScheduleResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params?.activeClassesOnly !== undefined) {
+        queryParams.append('activeClassesOnly', String(params.activeClassesOnly));
+      }
+
+      const queryString = queryParams.toString();
+      const endpoint = queryString
+        ? `${TeacherApiPaths.SCHEDULE(id)}?${queryString}`
+        : TeacherApiPaths.SCHEDULE(id);
+
+      const response = await apiService.get<TeacherScheduleResponse>(endpoint);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
+      }
+      if (error.status === TeacherHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access teacher schedule');
+      }
+      throw makeApiError(error, `Failed to fetch teacher schedule: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get students taught by a teacher across all their classes
+   * @param id - Teacher ID (UUID format)
+   * @param params - Optional filter parameters (classId, activeEnrollmentsOnly)
+   * @returns Promise<TeacherStudentsResponse>
+   */
+  async getTeacherStudents(id: string, params?: TeacherStudentsParams): Promise<TeacherStudentsResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params?.classId) {
+        queryParams.append('classId', params.classId);
+      }
+      if (params?.activeEnrollmentsOnly !== undefined) {
+        queryParams.append('activeEnrollmentsOnly', String(params.activeEnrollmentsOnly));
+      }
+
+      const queryString = queryParams.toString();
+      const endpoint = queryString
+        ? `${TeacherApiPaths.STUDENTS(id)}?${queryString}`
+        : TeacherApiPaths.STUDENTS(id);
+
+      const response = await apiService.get<TeacherStudentsResponse>(endpoint);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
+      }
+      if (error.status === TeacherHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access teacher students');
+      }
+      throw makeApiError(error, `Failed to fetch teacher students: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -306,6 +435,11 @@ export const teacherApiService = new TeacherApiService();
 export const getAllTeachers = (searchParams?: TeacherSearchParams) => teacherApiService.getAllTeachers(searchParams);
 
 export const getTeacherById = (id: string) => teacherApiService.getTeacherById(id);
+
+export const getTeacherOverview = (id: string) => teacherApiService.getTeacherOverview(id);
+
+export const getTeacherClasses = (id: string, params?: TeacherClassesParams) =>
+  teacherApiService.getTeacherClasses(id, params);
 
 export const searchTeachers = (
   searchTerm?: string,

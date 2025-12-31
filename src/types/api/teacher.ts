@@ -95,6 +95,10 @@ export enum TeacherHttpStatus {
 export const TeacherApiPaths = {
   BASE: '/api/teachers',
   BY_ID: (id: string) => `/api/teachers/${id}`,
+  OVERVIEW: (id: string) => `/api/teachers/${id}/overview`,
+  CLASSES: (id: string) => `/api/teachers/${id}/classes`,
+  SCHEDULE: (id: string) => `/api/teachers/${id}/schedule`,
+  STUDENTS: (id: string) => `/api/teachers/${id}/students`,
   SEARCH: '/api/teachers/search',
   SUBJECTS: '/api/subjects',
   EMAIL_AVAILABLE: '/api/teachers/email-available',
@@ -107,6 +111,131 @@ export interface TeacherFormData {
   phone?: string;
   subjectId: string;
   notes?: string;
+}
+
+// Overview Response Models (for Teacher Profile Overview tab)
+export interface TeacherOverviewResponse {
+  teacherId: string;
+  classes: ClassesOverview;
+  students: StudentsOverview;
+  schedule: ScheduleOverview;
+}
+
+export interface ClassesOverview {
+  totalClasses: number;
+  activeClasses: number;
+  inactiveClasses: number;
+  mostRecentClassName?: string | null;
+}
+
+export interface StudentsOverview {
+  totalStudents: number;
+  activeStudents: number;
+  inactiveStudents: number;
+}
+
+export interface ScheduleOverview {
+  upcomingSessionsThisWeek: number;
+  weeklyHours: number;
+  totalScheduleSlots: number;
+  nextSession?: NextSession | null;
+}
+
+export interface NextSession {
+  className: string;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+}
+
+// Teacher Classes Response Models (for Teacher Profile Classes tab)
+export interface TeacherClassesResponse {
+  classes: TeacherClassDto[];
+}
+
+export interface TeacherClassDto {
+  classId: string;
+  className: string;
+  academicYearId: string;
+  academicYearName: string;
+  subjectId: string;
+  subjectName: string;
+  isActive: boolean;
+  enrolledCount: number;
+  classroomCapacity: number;
+  createdAt: string;
+  scheduleSlots: TeacherClassScheduleSlot[];
+}
+
+export interface TeacherClassScheduleSlot {
+  dayOfWeek: number;
+  dayName: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface TeacherClassesParams {
+  academicYearId?: string;
+  isActive?: boolean;
+}
+
+// Teacher Schedule Response Models (for Teacher Profile Schedule tab)
+export interface TeacherScheduleResponse {
+  slots: TeacherScheduleSlotDto[];
+  stats: TeacherScheduleStats;
+}
+
+export interface TeacherScheduleSlotDto {
+  slotId: string;
+  classId: string;
+  className: string;
+  subjectId: string;
+  subjectName: string;
+  dayOfWeek: number;
+  dayName: string;
+  startTime: string;
+  endTime: string;
+  isClassActive: boolean;
+}
+
+export interface TeacherScheduleStats {
+  totalSlots: number;
+  weeklyHours: number;
+  activeDays: number;
+  activeClasses: number;
+}
+
+export interface TeacherScheduleParams {
+  activeClassesOnly?: boolean;
+}
+
+// Teacher Students Response Models (for Teacher Profile Students tab)
+export interface TeacherStudentsResponse {
+  students: TeacherStudentDto[];
+  stats: TeacherStudentsStats;
+}
+
+export interface TeacherStudentDto {
+  studentId: string;
+  studentName: string;
+  email?: string | null;
+  isStudentActive: boolean;
+  classId: string;
+  className: string;
+  enrollmentStatus: string;
+  enrollmentDate: string;
+}
+
+export interface TeacherStudentsStats {
+  totalStudents: number;
+  activeEnrollments: number;
+  uniqueStudents: number;
+  uniqueClasses: number;
+}
+
+export interface TeacherStudentsParams {
+  classId?: string;
+  activeEnrollmentsOnly?: boolean;
 }
 
 // Validation constraints (matching backend validation)

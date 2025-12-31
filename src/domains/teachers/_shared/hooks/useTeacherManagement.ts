@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTeachers } from './useTeachers';
-import { Teacher } from '../teachersSlice';
+import { Teacher } from '../../teachersSlice';
 import {
   teacherApiService,
   getAllTeachers,
@@ -78,11 +78,11 @@ export const useTeacherManagement = () => {
   // Load all teachers with optional filters (loading handled by global interceptor)
   const loadTeachers = useCallback(async (params?: TeacherSearchParams) => {
     clearError('fetch');
-    
+
     try {
       const teachersData = await getAllTeachers(params);
       setTeachers(teachersData);
-      
+
       // If we have filters, set search mode
       if (params && (params.searchTerm || params.subjectId)) {
         setSearchMode(true);
@@ -98,7 +98,7 @@ export const useTeacherManagement = () => {
   // Load all subjects (loading handled by global interceptor)
   const loadSubjects = useCallback(async () => {
     clearError('fetchSubjects');
-    
+
     try {
       const subjectsData = await getAllSubjects();
       setSubjects(subjectsData);
@@ -112,7 +112,7 @@ export const useTeacherManagement = () => {
   const searchTeachersApi = useCallback(async (params: TeacherSearchParams) => {
     clearError('search');
     setSearchParams(params);
-    
+
     try {
       const results = await searchTeachers(
         params.searchTerm,
@@ -130,21 +130,21 @@ export const useTeacherManagement = () => {
   const createTeacherApi = useCallback(async (data: TeacherFormData) => {
     setLoadingState('creating', true);
     clearError('create');
-    
+
     try {
       // Validate and prepare data
       const validation = validateAndPrepareTeacherData(data, false);
       if (!validation.isValid) {
         throw new Error(Object.values(validation.errors)[0] || 'Validation failed');
       }
-      
+
       const request = validation.data as CreateTeacherRequest;
       const createdResponse = await createTeacher(request);
-      
+
       // Fetch the created teacher to get full data
       const createdTeacher = await teacherApiService.getTeacherById(createdResponse.id);
       addTeacher(createdTeacher);
-      
+
       // Clear teachers cache so other components refresh on next mount
       clearCache('teachers');
 
@@ -163,21 +163,21 @@ export const useTeacherManagement = () => {
   const updateTeacherApi = useCallback(async (id: string, data: TeacherFormData) => {
     setLoadingState('updating', true);
     clearError('update');
-    
+
     try {
       // Validate and prepare data
       const validation = validateAndPrepareTeacherData(data, true);
       if (!validation.isValid) {
         throw new Error(Object.values(validation.errors)[0] || 'Validation failed');
       }
-      
+
       const request = validation.data as UpdateTeacherRequest;
       const updatedTeacher = await updateTeacher(id, request);
       updateTeacherInStore(updatedTeacher);
-      
+
       // Clear teachers cache so other components refresh on next mount
       clearCache('teachers');
-      
+
       showSuccessMessage(`Teacher Updated`, `${data.name} has been successfully updated.`);
       return updatedTeacher;
     } catch (error) {
@@ -193,14 +193,14 @@ export const useTeacherManagement = () => {
   const deleteTeacherApi = useCallback(async (id: string, name: string) => {
     setLoadingState('deleting', true);
     clearError('delete');
-    
+
     try {
       await deleteTeacher(id);
       deleteTeacherFromStore(id);
-      
+
       // Clear teachers cache so other components refresh on next mount
       clearCache('teachers');
-      
+
       showSuccessMessage(`Teacher Deleted`, `${name} has been successfully removed from the system.`);
     } catch (error) {
       const errorMessage = TeacherErrorHandlers.delete(error);
@@ -271,13 +271,13 @@ export const useTeacherManagement = () => {
   const handleSearchChange = useCallback((term: string) => {
     setSearchTerm(term);
     setSearchQuery(term);
-    
+
     // Call loadTeachers with filters
     const params: TeacherSearchParams = {
       searchTerm: term.trim() || undefined,
       subjectId: subjectFilter !== 'all' ? subjectFilter : undefined
     };
-    
+
     // If no filters active, load all teachers
     if (!params.searchTerm && !params.subjectId) {
       loadTeachers();
@@ -285,16 +285,16 @@ export const useTeacherManagement = () => {
       loadTeachers(params);
     }
   }, [subjectFilter, loadTeachers]); // Keep only necessary dependencies
-  
+
   const handleSubjectFilterChange = useCallback((subjectId: string) => {
     setSubjectFilter(subjectId);
-    
+
     // Call loadTeachers with filters
     const params: TeacherSearchParams = {
       searchTerm: searchTerm.trim() || undefined,
       subjectId: subjectId !== 'all' ? subjectId : undefined
     };
-    
+
     // If no filters active, load all teachers
     if (!params.searchTerm && !params.subjectId) {
       loadTeachers();
@@ -310,14 +310,14 @@ export const useTeacherManagement = () => {
   // Auto-load teachers and subjects from API on mount
   useEffect(() => {
     let mounted = true;
-    
+
     const initializeTeachers = async () => {
       console.log('🚀 TeacherManagement hook mounted, initializing data...');
-      
+
       // Disable global loading for all teacher operations to use page-specific loading states
       const { teacherApiService } = await import('@/services/teacherApiService');
       teacherApiService
-      
+
       try {
         await Promise.all([loadTeachers(), loadSubjects()]);
         if (mounted) {
@@ -349,31 +349,31 @@ export const useTeacherManagement = () => {
     filteredTeachers,
     searchResults,
     isSearchMode,
-    
+
     // Loading states (only form-related, global loading handled by interceptor)
     loading,
     isLoading: loading.creating || loading.updating || loading.deleting,
     isInitialized,
-    
+
     // Error states
     errors,
-    
+
     // Filter state
     searchTerm,
     subjectFilter,
     hasActiveFilters,
     searchParams,
-    
+
     // View state
     viewMode,
     setViewMode,
-    
+
     // UI state
     isFormOpen,
     isConfirmOpen,
     selectedTeacher,
     teacherToDelete,
-    
+
     // API functions
     loadTeachers,
     loadSubjects,
@@ -381,7 +381,7 @@ export const useTeacherManagement = () => {
     updateTeacher: updateTeacherApi,
     deleteTeacher: deleteTeacherApi,
     searchTeachers: searchTeachersApi,
-    
+
     // UI handlers
     handleAddTeacher,
     handleEditTeacher,
@@ -393,14 +393,13 @@ export const useTeacherManagement = () => {
     clearFilters,
     handleSearchChange,
     handleAdvancedSearch,
-    
+
     // Filter handlers
     setSearchTerm: handleSearchChange,
     setSubjectFilter: handleSubjectFilterChange,
-    
+
     // State setters
     setIsFormOpen,
     setIsConfirmOpen,
   };
 };
-
