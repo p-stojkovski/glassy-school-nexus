@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, BookOpen, Calendar, Users, FileText } from 'lucide-react';
+import { User, BookOpen, Calendar, Users, FileText, ClipboardList, DollarSign } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { AppBreadcrumb } from '@/components/navigation';
@@ -13,6 +13,8 @@ import { TeacherDetailsTab } from './tabs/details';
 import { TeacherClassesTab } from './tabs/classes';
 import { TeacherScheduleTab } from './tabs/schedule';
 import { TeacherStudentsTab } from './tabs/students';
+import { TeacherLessonsTab } from './tabs/lessons';
+import { TeacherSalaryTab } from './tabs/salary';
 
 const TeacherProfilePage: React.FC = () => {
   const {
@@ -104,6 +106,20 @@ const TeacherProfilePage: React.FC = () => {
             Schedule
           </TabsTrigger>
           <TabsTrigger
+            value="lessons"
+            className="data-[state=active]:bg-white/20 text-white"
+          >
+            <ClipboardList className="w-4 h-4 mr-2" />
+            Lessons
+          </TabsTrigger>
+          <TabsTrigger
+            value="salary"
+            className="data-[state=active]:bg-white/20 text-white"
+          >
+            <DollarSign className="w-4 h-4 mr-2" />
+            Salary
+          </TabsTrigger>
+          <TabsTrigger
             value="students"
             className="data-[state=active]:bg-white/20 text-white"
           >
@@ -134,6 +150,16 @@ const TeacherProfilePage: React.FC = () => {
         <TabsContent value="schedule">
           <GlassCard className="p-6">
             <TeacherScheduleTab teacherId={teacher.id} />
+          </GlassCard>
+        </TabsContent>
+
+        <TabsContent value="lessons">
+          <TeacherLessonsTab teacherId={teacher.id} />
+        </TabsContent>
+
+        <TabsContent value="salary">
+          <GlassCard className="p-0 overflow-hidden">
+            <TeacherSalaryTab />
           </GlassCard>
         </TabsContent>
 

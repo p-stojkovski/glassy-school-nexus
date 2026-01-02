@@ -120,6 +120,8 @@ export interface TeacherOverviewResponse {
   classes: ClassesOverview;
   students: StudentsOverview;
   schedule: ScheduleOverview;
+  lessons: LessonsOverview;
+  salary: SalaryOverview;
 }
 
 export interface ClassesOverview {
@@ -147,6 +149,25 @@ export interface NextSession {
   dayOfWeek: string;
   startTime: string;
   endTime: string;
+}
+
+export interface LessonsOverview {
+  totalLessonsThisMonth: number;
+  conductedThisMonth: number;
+  cancelledThisMonth: number;
+  makeupThisMonth: number;
+  lastConductedDate: string | null;
+  nextScheduledDate: string | null;
+}
+
+export interface SalaryOverview {
+  lessonsTotal: number;
+  totalBonuses: number;
+  totalDeductions: number;
+  netTotal: number;
+  conductedLessonsThisMonth: number;
+  lastMonthNetTotal: number | null;
+  lastMonthName: string | null;
 }
 
 // Teacher Classes Response Models (for Teacher Profile Classes tab)

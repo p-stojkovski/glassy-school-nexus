@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Users, Calendar, ChevronRight, AlertCircle } from 'lucide-react';
+import { BookOpen, Users, Calendar, ChevronRight, AlertCircle, DollarSign, Edit2 } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTeacherClasses } from './useTeacherClasses';
+import { useTeacherPaymentRates } from './useTeacherPaymentRates';
+import { SetPaymentRateDialog } from '../../dialogs/SetPaymentRateDialog';
 import { TeacherClassDto, TeacherClassScheduleSlot } from '@/types/api/teacher';
 
 interface TeacherClassesTabProps {
@@ -49,8 +51,11 @@ function formatSchedule(slots: TeacherClassScheduleSlot[]): string {
  */
 const ClassCard: React.FC<{
   classData: TeacherClassDto;
+  teacherId: string;
   onNavigate: (classId: string) => void;
-}> = ({ classData, onNavigate }) => {
+  paymentRate?: { id: string; rate: number };
+  onEditRate: (classId: string, className: string) => void;
+}> = ({ classData, teacherId, onNavigate, paymentRate, onEditRate }) => {
   const capacityPercentage = classData.classroomCapacity > 0
     ? Math.round((classData.enrolledCount / classData.classroomCapacity) * 100)
     : 0;
@@ -58,10 +63,19 @@ const ClassCard: React.FC<{
   const isNearCapacity = capacityPercentage >= 80;
   const isAtCapacity = capacityPercentage >= 100;
 
+  const handleCardClick = () => {
+    onNavigate(classData.classId);
+  };
+
+  const handleEditRate = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card navigation
+    onEditRate(classData.classId, classData.className);
+  };
+
   return (
     <GlassCard
       className="p-4 cursor-pointer transition-all hover:bg-white/5"
-      onClick={() => onNavigate(classData.classId)}
+      onClick={handleCardClick}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
@@ -99,6 +113,29 @@ const ClassCard: React.FC<{
           <span className="truncate">{formatSchedule(classData.scheduleSlots)}</span>
         </div>
 
+        {/* Payment Rate */}
+        <div className="flex items-center text-sm text-white/70 justify-between">
+          <div className="flex items-center">
+            <DollarSign className="w-4 h-4 mr-2 text-white/40" />
+            {paymentRate ? (
+              <span className="font-medium text-green-400">
+                ${paymentRate.rate.toFixed(2)}/lesson
+              </span>
+            ) : (
+              <span className="text-white/40 italic">Not set</span>
+            )}
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 px-2 text-xs text-white/60 hover:text-white hover:bg-white/10"
+            onClick={handleEditRate}
+          >
+            <Edit2 className="w-3 h-3 mr-1" />
+            {paymentRate ? 'Edit' : 'Set'}
+          </Button>
+        </div>
+
         {/* Academic year */}
         <div className="text-xs text-white/50">
           {classData.academicYearName}
@@ -130,8 +167,35 @@ const TeacherClassesTab: React.FC<TeacherClassesTabProps> = ({ teacherId }) => {
     refresh,
   } = useTeacherClasses({ teacherId });
 
+  const {
+    rates,
+    loading: ratesLoading,
+    setRate,
+    updateRate,
+    getRateForClass,
+  } = useTeacherPaymentRates({ teacherId });
+
+  const [rateDialogOpen, setRateDialogOpen] = useState(false);
+  const [selectedClass, setSelectedClass] = useState<{ id: string; name: string } | null>(null);
+
   const handleNavigateToClass = (classId: string) => {
     navigate(`/classes/${classId}`);
+  };
+
+  const handleEditRate = (classId: string, className: string) => {
+    setSelectedClass({ id: classId, name: className });
+    setRateDialogOpen(true);
+  };
+
+  const handleRateSubmit = async (request: any) => {
+    if (!selectedClass) return;
+
+    const existingRate = getRateForClass(selectedClass.id);
+    if (existingRate) {
+      await updateRate(existingRate.id, request);
+    } else {
+      await setRate(request);
+    }
   };
 
   // Loading state
@@ -165,6 +229,19 @@ const TeacherClassesTab: React.FC<TeacherClassesTabProps> = ({ teacherId }) => {
 
   return (
     <div className="space-y-4">
+      {/* Payment Rate Dialog */}
+      {selectedClass && (
+        <SetPaymentRateDialog
+          open={rateDialogOpen}
+          onOpenChange={setRateDialogOpen}
+          teacherId={teacherId}
+          classId={selectedClass.id}
+          className={selectedClass.name}
+          existingRate={getRateForClass(selectedClass.id)}
+          onSubmit={handleRateSubmit}
+        />
+      )}
+
       {/* Filters bar */}
       <GlassCard className="p-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -249,13 +326,22 @@ const TeacherClassesTab: React.FC<TeacherClassesTabProps> = ({ teacherId }) => {
       ) : (
         /* Class cards grid */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredClasses.map(classData => (
-            <ClassCard
-              key={classData.classId}
-              classData={classData}
-              onNavigate={handleNavigateToClass}
-            />
-          ))}
+          {filteredClasses.map(classData => {
+            const rate = getRateForClass(classData.classId);
+            return (
+              <ClassCard
+                key={classData.classId}
+                classData={classData}
+                teacherId={teacherId}
+                onNavigate={handleNavigateToClass}
+                paymentRate={rate ? {
+                  id: rate.id,
+                  rate: rate.ratePerLesson,
+                } : undefined}
+                onEditRate={handleEditRate}
+              />
+            );
+          })}
         </div>
       )}
     </div>

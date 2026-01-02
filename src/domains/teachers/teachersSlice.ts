@@ -227,3 +227,6 @@ export const {
 
 export default teachersSlice.reducer;
 
+// Selectors
+export const selectErrors = (state: { teachers: TeachersState }) => state.teachers.errors;
+
