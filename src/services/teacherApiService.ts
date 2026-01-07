@@ -17,6 +17,7 @@ import {
   TeacherStudentsResponse,
   TeacherStudentDto,
   TeacherStudentsParams,
+  TeacherClassPaymentSummaryResponse,
   SubjectDto,
   CreateTeacherRequest,
   UpdateTeacherRequest,
@@ -25,23 +26,18 @@ import {
   TeacherHttpStatus,
 } from '@/types/api/teacher';
 import {
-  TeacherPaymentRateResponse,
-  TeacherPaymentRatesResponse,
-  SetTeacherPaymentRateRequest,
-  UpdateTeacherPaymentRateRequest,
-  PaymentRateApiPaths,
-  PaymentRateHttpStatus,
-} from '@/types/api/teacherPaymentRate';
+  TeacherSalaryConfigResponse,
+  TeacherSalaryConfigHistoryResponse,
+  SetTeacherSalaryConfigRequest,
+  UpdateTeacherSalaryConfigRequest,
+  TeacherSalaryConfigApiPaths,
+} from '@/types/api/teacherSalaryConfig';
 import {
   TeacherLessonsResponse,
   TeacherLessonsQueryParams,
 } from '@/types/api/teacherLesson';
 import {
   TeacherSalaryResponse,
-  SalaryAdjustmentResponse,
-  SalaryAdjustmentsResponse,
-  CreateSalaryAdjustmentRequest,
-  UpdateSalaryAdjustmentRequest,
   TeacherSalaryApiPaths,
 } from '@/types/api/teacherSalary';
 
@@ -251,6 +247,28 @@ const teacher = await apiService.get<TeacherResponse>(TeacherApiPaths.BY_ID(id))
   }
 
   /**
+   * Get teacher's classes with payment summary data (mock payment data)
+   * @param id - Teacher ID (UUID format)
+   * @returns Promise<TeacherClassPaymentSummaryResponse>
+   */
+  async getTeacherClassesPaymentSummary(id: string): Promise<TeacherClassPaymentSummaryResponse> {
+    try {
+      const response = await apiService.get<TeacherClassPaymentSummaryResponse>(
+        TeacherApiPaths.CLASSES_PAYMENT_SUMMARY(id)
+      );
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
+      }
+      if (error.status === TeacherHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to access teacher class payments');
+      }
+      throw makeApiError(error, `Failed to fetch teacher class payment summary: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
    * Search for teachers by name, email, or subject
    * @param searchParams - Search parameters
    * @returns Promise<TeacherResponse[]>
@@ -448,97 +466,74 @@ const raw = await apiService.get<any>(endpoint);
   }
 
   /**
-   * Get all payment rates for a teacher
+   * Get teacher's salary configuration with history
    * @param teacherId - Teacher ID (UUID format)
-   * @param includeInactive - Whether to include inactive (historical) rates
-   * @returns Promise<TeacherPaymentRatesResponse>
+   * @returns Promise<TeacherSalaryConfigHistoryResponse>
    */
-  async getTeacherPaymentRates(
-    teacherId: string,
-    includeInactive = false
-  ): Promise<TeacherPaymentRatesResponse> {
+  async getTeacherSalaryConfig(
+    teacherId: string
+  ): Promise<TeacherSalaryConfigHistoryResponse> {
     try {
-      const endpoint = PaymentRateApiPaths.WITH_INACTIVE(teacherId, includeInactive);
-      const response = await apiService.get<TeacherPaymentRatesResponse>(endpoint);
+      const endpoint = TeacherSalaryConfigApiPaths.CONFIG(teacherId);
+      const response = await apiService.get<TeacherSalaryConfigHistoryResponse>(endpoint);
       return response;
     } catch (error: any) {
-      if (error.status === PaymentRateHttpStatus.NOT_FOUND) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Teacher not found');
       }
-      throw makeApiError(error, `Failed to fetch payment rates: ${error.message || 'Unknown error'}`);
+      throw makeApiError(error, `Failed to fetch salary configuration: ${error.message || 'Unknown error'}`);
     }
   }
 
   /**
-   * Set a new payment rate for a teacher-class combination
+   * Set a new salary configuration for a teacher
    * @param teacherId - Teacher ID (UUID format)
-   * @param request - Payment rate details
-   * @returns Promise<TeacherPaymentRateResponse>
+   * @param request - Salary configuration details
+   * @returns Promise<TeacherSalaryConfigResponse>
    */
-  async setTeacherPaymentRate(
+  async setTeacherSalaryConfig(
     teacherId: string,
-    request: SetTeacherPaymentRateRequest
-  ): Promise<TeacherPaymentRateResponse> {
+    request: SetTeacherSalaryConfigRequest
+  ): Promise<TeacherSalaryConfigResponse> {
     try {
-      const endpoint = PaymentRateApiPaths.BASE(teacherId);
-      const response = await apiService.post<TeacherPaymentRateResponse>(endpoint, request);
+      const endpoint = TeacherSalaryConfigApiPaths.CONFIG(teacherId);
+      const response = await apiService.post<TeacherSalaryConfigResponse>(endpoint, request);
       return response;
     } catch (error: any) {
-      if (error.status === PaymentRateHttpStatus.NOT_FOUND) {
-        throw makeApiError(error, 'Teacher or class not found');
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
       }
-      if (error.status === PaymentRateHttpStatus.CONFLICT) {
-        throw makeApiError(error, 'An active payment rate already exists for this class');
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid salary configuration data');
       }
-      if (error.status === PaymentRateHttpStatus.BAD_REQUEST) {
-        throw makeApiError(error, 'Invalid payment rate data');
-      }
-      throw makeApiError(error, `Failed to set payment rate: ${error.message || 'Unknown error'}`);
+      throw makeApiError(error, `Failed to set salary configuration: ${error.message || 'Unknown error'}`);
     }
   }
 
   /**
-   * Update an existing payment rate
+   * Update an existing salary configuration
    * @param teacherId - Teacher ID (UUID format)
-   * @param rateId - Payment rate ID (UUID format)
-   * @param request - Updated payment rate details
-   * @returns Promise<TeacherPaymentRateResponse>
+   * @param configId - Configuration ID (UUID format)
+   * @param request - Updated salary configuration details
+   * @returns Promise<TeacherSalaryConfigResponse>
    */
-  async updateTeacherPaymentRate(
+  async updateTeacherSalaryConfig(
     teacherId: string,
-    rateId: string,
-    request: UpdateTeacherPaymentRateRequest
-  ): Promise<TeacherPaymentRateResponse> {
+    configId: string,
+    request: UpdateTeacherSalaryConfigRequest
+  ): Promise<TeacherSalaryConfigResponse> {
     try {
-      const endpoint = PaymentRateApiPaths.BY_ID(teacherId, rateId);
-      const response = await apiService.put<TeacherPaymentRateResponse>(endpoint, request);
+      const endpoint = TeacherSalaryConfigApiPaths.CONFIG_BY_ID(teacherId, configId);
+      const response = await apiService.put<TeacherSalaryConfigResponse>(endpoint, request);
       return response;
     } catch (error: any) {
-      if (error.status === PaymentRateHttpStatus.NOT_FOUND) {
-        throw makeApiError(error, 'Payment rate not found');
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Salary configuration not found');
       }
-      if (error.status === PaymentRateHttpStatus.BAD_REQUEST) {
-        throw makeApiError(error, 'Invalid payment rate data');
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid salary configuration data');
       }
-      throw makeApiError(error, `Failed to update payment rate: ${error.message || 'Unknown error'}`);
-    }
-  }
-
-  /**
-   * Delete (deactivate) a payment rate
-   * @param teacherId - Teacher ID (UUID format)
-   * @param rateId - Payment rate ID (UUID format)
-   * @returns Promise<void>
-   */
-  async deleteTeacherPaymentRate(teacherId: string, rateId: string): Promise<void> {
-    try {
-      const endpoint = PaymentRateApiPaths.BY_ID(teacherId, rateId);
-      await apiService.delete(endpoint);
-    } catch (error: any) {
-      if (error.status === PaymentRateHttpStatus.NOT_FOUND) {
-        throw makeApiError(error, 'Payment rate not found');
-      }
-      throw makeApiError(error, `Failed to delete payment rate: ${error.message || 'Unknown error'}`);
+      throw makeApiError(error, `Failed to update salary configuration: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -554,12 +549,15 @@ const raw = await apiService.get<any>(endpoint);
   ): Promise<TeacherLessonsResponse> {
     try {
       const queryParams = new URLSearchParams();
-      
+
       if (params.status?.length) {
         params.status.forEach(s => queryParams.append('status', s));
       }
       if (params.classId) {
         queryParams.append('classId', params.classId);
+      }
+      if (params.academicYearId) {
+        queryParams.append('academicYearId', params.academicYearId);
       }
       if (params.fromDate) {
         queryParams.append('fromDate', params.fromDate);
@@ -593,19 +591,17 @@ const raw = await apiService.get<any>(endpoint);
   }
 
   /**
-   * Get teacher's monthly salary breakdown
+   * Get teacher's salary breakdown for an academic year
    * @param teacherId - Teacher ID (UUID format)
-   * @param year - Year (4-digit)
-   * @param month - Month (1-12)
+   * @param academicYearId - Academic Year ID (UUID format)
    * @returns Promise<TeacherSalaryResponse>
    */
   async getTeacherSalary(
     teacherId: string,
-    year: number,
-    month: number
+    academicYearId: string
   ): Promise<TeacherSalaryResponse> {
     try {
-      const endpoint = `${TeacherSalaryApiPaths.SALARY(teacherId)}?year=${year}&month=${month}`;
+      const endpoint = `${TeacherSalaryApiPaths.SALARY(teacherId)}?academicYearId=${academicYearId}`;
       const response = await apiService.get<TeacherSalaryResponse>(endpoint);
       return response;
     } catch (error: any) {
@@ -613,108 +609,19 @@ const raw = await apiService.get<any>(endpoint);
         throw makeApiError(error, 'Teacher not found');
       }
       if (error.status === TeacherHttpStatus.BAD_REQUEST) {
-        throw makeApiError(error, 'Invalid year or month');
+        const errorType = (error.details?.type || error.details?.Type || '') as string;
+        if (errorType.includes('NoSalaryConfigured')) {
+          throw makeApiError(error, 'No salary configuration found for this teacher. Please set up a gross salary first.');
+        }
+        if (errorType.includes('InvalidAcademicYear')) {
+          throw makeApiError(error, 'Invalid academic year specified');
+        }
+        throw makeApiError(error, 'Invalid request');
       }
       throw makeApiError(error, `Failed to fetch teacher salary: ${error.message || 'Unknown error'}`);
     }
   }
 
-  /**
-   * Get salary adjustments for a teacher in a specific month
-   * @param teacherId - Teacher ID (UUID format)
-   * @param year - Year (4-digit)
-   * @param month - Month (1-12)
-   * @returns Promise<SalaryAdjustmentsResponse>
-   */
-  async getSalaryAdjustments(
-    teacherId: string,
-    year: number,
-    month: number
-  ): Promise<SalaryAdjustmentsResponse> {
-    try {
-      const endpoint = `${TeacherSalaryApiPaths.ADJUSTMENTS(teacherId)}?year=${year}&month=${month}`;
-      const response = await apiService.get<SalaryAdjustmentsResponse>(endpoint);
-      return response;
-    } catch (error: any) {
-      if (error.status === TeacherHttpStatus.NOT_FOUND) {
-        throw makeApiError(error, 'Teacher not found');
-      }
-      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
-        throw makeApiError(error, 'Invalid year or month');
-      }
-      throw makeApiError(error, `Failed to fetch salary adjustments: ${error.message || 'Unknown error'}`);
-    }
-  }
-
-  /**
-   * Create a new salary adjustment (bonus or deduction)
-   * @param teacherId - Teacher ID (UUID format)
-   * @param request - Adjustment data
-   * @returns Promise<SalaryAdjustmentResponse>
-   */
-  async createSalaryAdjustment(
-    teacherId: string,
-    request: CreateSalaryAdjustmentRequest
-  ): Promise<SalaryAdjustmentResponse> {
-    try {
-      const endpoint = TeacherSalaryApiPaths.ADJUSTMENTS(teacherId);
-      const response = await apiService.post<SalaryAdjustmentResponse>(endpoint, request);
-      return response;
-    } catch (error: any) {
-      if (error.status === TeacherHttpStatus.NOT_FOUND) {
-        throw makeApiError(error, 'Teacher not found');
-      }
-      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
-        throw makeApiError(error, 'Invalid adjustment data');
-      }
-      throw makeApiError(error, `Failed to create salary adjustment: ${error.message || 'Unknown error'}`);
-    }
-  }
-
-  /**
-   * Update an existing salary adjustment
-   * @param teacherId - Teacher ID (UUID format)
-   * @param adjustmentId - Adjustment ID (UUID format)
-   * @param request - Updated adjustment data
-   * @returns Promise<SalaryAdjustmentResponse>
-   */
-  async updateSalaryAdjustment(
-    teacherId: string,
-    adjustmentId: string,
-    request: UpdateSalaryAdjustmentRequest
-  ): Promise<SalaryAdjustmentResponse> {
-    try {
-      const endpoint = TeacherSalaryApiPaths.ADJUSTMENT_BY_ID(teacherId, adjustmentId);
-      const response = await apiService.put<SalaryAdjustmentResponse>(endpoint, request);
-      return response;
-    } catch (error: any) {
-      if (error.status === TeacherHttpStatus.NOT_FOUND) {
-        throw makeApiError(error, 'Salary adjustment not found');
-      }
-      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
-        throw makeApiError(error, 'Invalid adjustment data');
-      }
-      throw makeApiError(error, `Failed to update salary adjustment: ${error.message || 'Unknown error'}`);
-    }
-  }
-
-  /**
-   * Delete a salary adjustment
-   * @param teacherId - Teacher ID (UUID format)
-   * @param adjustmentId - Adjustment ID (UUID format)
-   * @returns Promise<void>
-   */
-  async deleteSalaryAdjustment(teacherId: string, adjustmentId: string): Promise<void> {
-    try {
-      const endpoint = TeacherSalaryApiPaths.ADJUSTMENT_BY_ID(teacherId, adjustmentId);
-      await apiService.delete(endpoint);
-    } catch (error: any) {
-      if (error.status === TeacherHttpStatus.NOT_FOUND) {
-        throw makeApiError(error, 'Salary adjustment not found');
-      }
-      throw makeApiError(error, `Failed to delete salary adjustment: ${error.message || 'Unknown error'}`);
-    }
-  }
 }
 
 // Export a singleton instance
@@ -729,6 +636,9 @@ export const getTeacherOverview = (id: string) => teacherApiService.getTeacherOv
 
 export const getTeacherClasses = (id: string, params?: TeacherClassesParams) =>
   teacherApiService.getTeacherClasses(id, params);
+
+export const getTeacherClassesPaymentSummary = (id: string) =>
+  teacherApiService.getTeacherClassesPaymentSummary(id);
 
 export const searchTeachers = (
   searchTerm?: string,
@@ -748,38 +658,23 @@ export const getAllSubjects = () => teacherApiService.getAllSubjects();
 export const checkTeacherEmailAvailable = (email: string, excludeId?: string) =>
   teacherApiService.checkEmailAvailable(email, excludeId);
 
-// Payment Rate Operations
-export const getTeacherPaymentRates = (teacherId: string, includeInactive = false) =>
-  teacherApiService.getTeacherPaymentRates(teacherId, includeInactive);
+// Salary Config Operations
+export const getTeacherSalaryConfig = (teacherId: string) =>
+  teacherApiService.getTeacherSalaryConfig(teacherId);
 
-export const setTeacherPaymentRate = (teacherId: string, request: SetTeacherPaymentRateRequest) =>
-  teacherApiService.setTeacherPaymentRate(teacherId, request);
+export const setTeacherSalaryConfig = (teacherId: string, request: SetTeacherSalaryConfigRequest) =>
+  teacherApiService.setTeacherSalaryConfig(teacherId, request);
 
-export const updateTeacherPaymentRate = (teacherId: string, rateId: string, request: UpdateTeacherPaymentRateRequest) =>
-  teacherApiService.updateTeacherPaymentRate(teacherId, rateId, request);
-
-export const deleteTeacherPaymentRate = (teacherId: string, rateId: string) =>
-  teacherApiService.deleteTeacherPaymentRate(teacherId, rateId);
+export const updateTeacherSalaryConfig = (teacherId: string, configId: string, request: UpdateTeacherSalaryConfigRequest) =>
+  teacherApiService.updateTeacherSalaryConfig(teacherId, configId, request);
 
 // Lesson Operations
 export const getTeacherLessons = (teacherId: string, params?: TeacherLessonsQueryParams) =>
   teacherApiService.getTeacherLessons(teacherId, params);
 
 // Salary Operations
-export const getTeacherSalary = (teacherId: string, year: number, month: number) =>
-  teacherApiService.getTeacherSalary(teacherId, year, month);
-
-export const getSalaryAdjustments = (teacherId: string, year: number, month: number) =>
-  teacherApiService.getSalaryAdjustments(teacherId, year, month);
-
-export const createSalaryAdjustment = (teacherId: string, request: CreateSalaryAdjustmentRequest) =>
-  teacherApiService.createSalaryAdjustment(teacherId, request);
-
-export const updateSalaryAdjustment = (teacherId: string, adjustmentId: string, request: UpdateSalaryAdjustmentRequest) =>
-  teacherApiService.updateSalaryAdjustment(teacherId, adjustmentId, request);
-
-export const deleteSalaryAdjustment = (teacherId: string, adjustmentId: string) =>
-  teacherApiService.deleteSalaryAdjustment(teacherId, adjustmentId);
+export const getTeacherSalary = (teacherId: string, academicYearId: string) =>
+  teacherApiService.getTeacherSalary(teacherId, academicYearId);
 
 // Export the service instance as default
 export default teacherApiService;

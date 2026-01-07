@@ -1,18 +1,16 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, BookOpen, Calendar, Users, FileText, ClipboardList, DollarSign } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { AppBreadcrumb } from '@/components/navigation';
 import { buildTeacherBreadcrumbs } from '@/domains/teachers/_shared/utils/teacherBreadcrumbs';
 import { TeacherPageHeader } from './layout';
 import { useTeacherProfile } from './useTeacherProfile';
+import { useTeacherAcademicYear } from './hooks/useTeacherAcademicYear';
 import { EditTeacherSheet } from './dialogs';
 import { TeacherOverview } from './tabs/overview';
 import { TeacherDetailsTab } from './tabs/details';
 import { TeacherClassesTab } from './tabs/classes';
-import { TeacherScheduleTab } from './tabs/schedule';
-import { TeacherStudentsTab } from './tabs/students';
 import { TeacherLessonsTab } from './tabs/lessons';
 import { TeacherSalaryTab } from './tabs/salary';
 
@@ -25,12 +23,24 @@ const TeacherProfilePage: React.FC = () => {
     setActiveTab,
     overviewData,
     overviewLoading,
+    paymentSummary,
     isEditSheetOpen,
     handleOpenEditSheet,
     handleCloseEditSheet,
     handleEditSuccess,
     handleTeacherUpdate,
   } = useTeacherProfile();
+
+  // Academic year context for filtering tabs
+  const {
+    selectedYearId,
+    selectedYear,
+    setSelectedYearId,
+    years,
+    isLoading: yearsLoading,
+    isBetweenYears,
+    betweenYearsMessage,
+  } = useTeacherAcademicYear();
 
   if (isLoading) {
     return (
@@ -69,6 +79,12 @@ const TeacherProfilePage: React.FC = () => {
       <TeacherPageHeader
         teacher={teacher}
         onEdit={handleOpenEditSheet}
+        selectedYear={selectedYear}
+        years={years}
+        onYearChange={setSelectedYearId}
+        isBetweenYears={isBetweenYears}
+        betweenYearsMessage={betweenYearsMessage}
+        yearsLoading={yearsLoading}
       />
 
       <Tabs
@@ -81,50 +97,31 @@ const TeacherProfilePage: React.FC = () => {
             value="overview"
             className="data-[state=active]:bg-white/20 text-white"
           >
-            <User className="w-4 h-4 mr-2" />
             Overview
           </TabsTrigger>
           <TabsTrigger
             value="details"
             className="data-[state=active]:bg-white/20 text-white"
           >
-            <FileText className="w-4 h-4 mr-2" />
             Details
           </TabsTrigger>
           <TabsTrigger
             value="classes"
             className="data-[state=active]:bg-white/20 text-white"
           >
-            <BookOpen className="w-4 h-4 mr-2" />
             Classes
-          </TabsTrigger>
-          <TabsTrigger
-            value="schedule"
-            className="data-[state=active]:bg-white/20 text-white"
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            Schedule
           </TabsTrigger>
           <TabsTrigger
             value="lessons"
             className="data-[state=active]:bg-white/20 text-white"
           >
-            <ClipboardList className="w-4 h-4 mr-2" />
             Lessons
           </TabsTrigger>
           <TabsTrigger
             value="salary"
             className="data-[state=active]:bg-white/20 text-white"
           >
-            <DollarSign className="w-4 h-4 mr-2" />
             Salary
-          </TabsTrigger>
-          <TabsTrigger
-            value="students"
-            className="data-[state=active]:bg-white/20 text-white"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Students
           </TabsTrigger>
         </TabsList>
 
@@ -132,7 +129,6 @@ const TeacherProfilePage: React.FC = () => {
           <TeacherOverview
             overviewData={overviewData}
             overviewLoading={overviewLoading}
-            onNavigateToTab={setActiveTab}
           />
         </TabsContent>
 
@@ -144,29 +140,26 @@ const TeacherProfilePage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="classes">
-          <TeacherClassesTab teacherId={teacher.id} />
-        </TabsContent>
-
-        <TabsContent value="schedule">
-          <GlassCard className="p-6">
-            <TeacherScheduleTab teacherId={teacher.id} />
-          </GlassCard>
+          <TeacherClassesTab
+            teacherId={teacher.id}
+            academicYearId={selectedYearId}
+            yearName={selectedYear?.name}
+          />
         </TabsContent>
 
         <TabsContent value="lessons">
-          <TeacherLessonsTab teacherId={teacher.id} />
+          <TeacherLessonsTab
+            teacherId={teacher.id}
+            academicYearId={selectedYearId}
+            yearName={selectedYear?.name}
+          />
         </TabsContent>
 
-        <TabsContent value="salary">
-          <GlassCard className="p-0 overflow-hidden">
-            <TeacherSalaryTab />
-          </GlassCard>
-        </TabsContent>
-
-        <TabsContent value="students">
-          <GlassCard className="p-6">
-            <TeacherStudentsTab teacherId={teacher.id} />
-          </GlassCard>
+        <TabsContent value="salary" className="space-y-4">
+          <TeacherSalaryTab
+            academicYearId={selectedYearId}
+            yearName={selectedYear?.name}
+          />
         </TabsContent>
       </Tabs>
 

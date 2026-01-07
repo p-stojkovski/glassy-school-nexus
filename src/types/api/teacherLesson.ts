@@ -40,6 +40,7 @@ export interface TeacherLessonsResponse {
 export interface TeacherLessonsQueryParams {
   status?: LessonStatusName[];
   classId?: string;
+  academicYearId?: string;
   fromDate?: string;
   toDate?: string;
   skip?: number;

@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { TeacherScheduleSlotDto } from '@/types/api/teacher';
 import { cn } from '@/lib/utils';
 import { DAYS_OF_WEEK, DAY_ABBREVIATIONS, DayOfWeek } from '@/constants/schedule';
@@ -18,14 +17,14 @@ const BAND_HEIGHT = HOUR_BLOCK_HEIGHT * 2;
 
 // Color palette for different classes (deterministic by classId)
 const CLASS_COLORS = [
-  { bg: 'bg-blue-500/80', border: 'border-blue-400/60', shadow: 'shadow-blue-900/30', hover: 'hover:bg-blue-500' },
-  { bg: 'bg-emerald-500/80', border: 'border-emerald-400/60', shadow: 'shadow-emerald-900/30', hover: 'hover:bg-emerald-500' },
-  { bg: 'bg-purple-500/80', border: 'border-purple-400/60', shadow: 'shadow-purple-900/30', hover: 'hover:bg-purple-500' },
-  { bg: 'bg-amber-500/80', border: 'border-amber-400/60', shadow: 'shadow-amber-900/30', hover: 'hover:bg-amber-500' },
-  { bg: 'bg-rose-500/80', border: 'border-rose-400/60', shadow: 'shadow-rose-900/30', hover: 'hover:bg-rose-500' },
-  { bg: 'bg-cyan-500/80', border: 'border-cyan-400/60', shadow: 'shadow-cyan-900/30', hover: 'hover:bg-cyan-500' },
-  { bg: 'bg-indigo-500/80', border: 'border-indigo-400/60', shadow: 'shadow-indigo-900/30', hover: 'hover:bg-indigo-500' },
-  { bg: 'bg-orange-500/80', border: 'border-orange-400/60', shadow: 'shadow-orange-900/30', hover: 'hover:bg-orange-500' },
+  { bg: 'bg-blue-500/80', border: 'border-blue-400/60', shadow: 'shadow-blue-900/30' },
+  { bg: 'bg-emerald-500/80', border: 'border-emerald-400/60', shadow: 'shadow-emerald-900/30' },
+  { bg: 'bg-purple-500/80', border: 'border-purple-400/60', shadow: 'shadow-purple-900/30' },
+  { bg: 'bg-amber-500/80', border: 'border-amber-400/60', shadow: 'shadow-amber-900/30' },
+  { bg: 'bg-rose-500/80', border: 'border-rose-400/60', shadow: 'shadow-rose-900/30' },
+  { bg: 'bg-cyan-500/80', border: 'border-cyan-400/60', shadow: 'shadow-cyan-900/30' },
+  { bg: 'bg-indigo-500/80', border: 'border-indigo-400/60', shadow: 'shadow-indigo-900/30' },
+  { bg: 'bg-orange-500/80', border: 'border-orange-400/60', shadow: 'shadow-orange-900/30' },
 ];
 
 const parseTime = (timeStr: string): number => {
@@ -49,13 +48,12 @@ const getClassColor = (classId: string, classIds: string[]) => {
 /**
  * Weekly schedule grid for teacher's teaching schedule.
  * Displays schedule slots with class names, color-coded by class.
- * Click on a slot navigates to the class detail page.
+ * Optionally interactive - slots can be clicked to navigate to class details.
  */
 const TeacherScheduleGrid: React.FC<TeacherScheduleGridProps> = ({
   slots,
   onSlotClick,
 }) => {
-  const navigate = useNavigate();
 
   // Get unique class IDs for consistent coloring
   const uniqueClassIds = useMemo(() => {
@@ -154,16 +152,6 @@ const TeacherScheduleGrid: React.FC<TeacherScheduleGridProps> = ({
     };
   };
 
-  // Handle slot click - navigate to class detail
-  const handleSlotClick = (slot: TeacherScheduleSlotDto) => {
-    if (onSlotClick) {
-      onSlotClick(slot);
-    } else {
-      // Default: navigate to class detail page
-      navigate(`/classes/${slot.classId}`);
-    }
-  };
-
   if (slots.length === 0) {
     return null;
   }
@@ -253,14 +241,15 @@ const TeacherScheduleGrid: React.FC<TeacherScheduleGridProps> = ({
                     <div
                       key={`${slot.slotId}-${idx}`}
                       className={cn(
-                        'absolute left-1.5 right-1.5 rounded-xl px-3 py-2 overflow-hidden cursor-pointer',
-                        colors.bg, colors.border, colors.shadow, colors.hover,
-                        'border shadow-lg transition-all duration-200',
-                        !slot.isClassActive && 'opacity-60'
+                        'absolute left-1.5 right-1.5 rounded-xl px-3 py-2 overflow-hidden',
+                        colors.bg, colors.border, colors.shadow,
+                        'border shadow-lg',
+                        !slot.isClassActive && 'opacity-60',
+                        onSlotClick && 'cursor-pointer hover:ring-2 hover:ring-white/30 transition-all'
                       )}
                       style={getSlotStyle(slot)}
-                      onClick={() => handleSlotClick(slot)}
-                      title={`${slot.className}\n${slot.startTime} - ${slot.endTime}\nClick to view class`}
+                      title={`${slot.className}\n${slot.startTime} - ${slot.endTime}`}
+                      onClick={() => onSlotClick?.(slot)}
                     >
                       {/* Class name - primary display */}
                       <div className="text-sm text-white font-semibold truncate">

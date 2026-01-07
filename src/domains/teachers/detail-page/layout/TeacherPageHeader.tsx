@@ -16,17 +16,31 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Teacher } from '@/domains/teachers/teachersSlice';
 import { deleteTeacher } from '@/services/teacherApiService';
 import { toast } from '@/hooks/use-toast';
+import { AcademicYear } from '@/domains/settings/types/academicCalendarTypes';
+import AcademicYearSelector from './AcademicYearSelector';
 
 interface TeacherPageHeaderProps {
   teacher: Teacher | null;
   onEdit: () => void;
   onUpdate?: () => void;
+  selectedYear?: AcademicYear | null;
+  years?: AcademicYear[];
+  onYearChange?: (yearId: string) => void;
+  isBetweenYears?: boolean;
+  betweenYearsMessage?: string | null;
+  yearsLoading?: boolean;
 }
 
 const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
   teacher,
   onEdit,
   onUpdate,
+  selectedYear,
+  years = [],
+  onYearChange,
+  isBetweenYears = false,
+  betweenYearsMessage,
+  yearsLoading = false,
 }) => {
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -148,8 +162,20 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
               </div>
             </div>
 
-            {/* Right: Actions */}
-            <div className="flex items-center shrink-0">
+            {/* Right: Academic Year Selector + Actions */}
+            <div className="flex items-center gap-3 shrink-0">
+              {/* Academic Year Selector */}
+              {selectedYear && onYearChange && (
+                <AcademicYearSelector
+                  selectedYear={selectedYear}
+                  years={years}
+                  onYearChange={onYearChange}
+                  isBetweenYears={isBetweenYears}
+                  betweenYearsMessage={betweenYearsMessage}
+                  isLoading={yearsLoading}
+                />
+              )}
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button

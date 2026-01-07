@@ -98,6 +98,7 @@ export const TeacherApiPaths = {
   BY_ID: (id: string) => `/api/teachers/${id}`,
   OVERVIEW: (id: string) => `/api/teachers/${id}/overview`,
   CLASSES: (id: string) => `/api/teachers/${id}/classes`,
+  CLASSES_PAYMENT_SUMMARY: (id: string) => `/api/teachers/${id}/classes/payment-summary`,
   SCHEDULE: (id: string) => `/api/teachers/${id}/schedule`,
   STUDENTS: (id: string) => `/api/teachers/${id}/students`,
   SEARCH: '/api/teachers/search',
@@ -121,7 +122,7 @@ export interface TeacherOverviewResponse {
   students: StudentsOverview;
   schedule: ScheduleOverview;
   lessons: LessonsOverview;
-  salary: SalaryOverview;
+  financials: StudentFinancialSummary;
 }
 
 export interface ClassesOverview {
@@ -129,12 +130,20 @@ export interface ClassesOverview {
   activeClasses: number;
   inactiveClasses: number;
   mostRecentClassName?: string | null;
+  fillRatePercentage: number;
 }
 
 export interface StudentsOverview {
   totalStudents: number;
   activeStudents: number;
   inactiveStudents: number;
+  attendancePercentage: number;
+}
+
+export interface StudentFinancialSummary {
+  paidCount: number;
+  dueCount: number;
+  overdueCount: number;
 }
 
 export interface ScheduleOverview {
@@ -158,16 +167,6 @@ export interface LessonsOverview {
   makeupThisMonth: number;
   lastConductedDate: string | null;
   nextScheduledDate: string | null;
-}
-
-export interface SalaryOverview {
-  lessonsTotal: number;
-  totalBonuses: number;
-  totalDeductions: number;
-  netTotal: number;
-  conductedLessonsThisMonth: number;
-  lastMonthNetTotal: number | null;
-  lastMonthName: string | null;
 }
 
 // Teacher Classes Response Models (for Teacher Profile Classes tab)
@@ -258,6 +257,47 @@ export interface TeacherStudentsStats {
 export interface TeacherStudentsParams {
   classId?: string;
   activeEnrollmentsOnly?: boolean;
+}
+
+// Teacher Classes Payment Summary Response Models (for enhanced Classes tab)
+export interface TeacherClassPaymentSummaryResponse {
+  summary: PaymentSummary;
+  classes: TeacherClassWithPayments[];
+}
+
+export interface PaymentSummary {
+  totalStudents: number;
+  paidStudents: number;
+  studentsWithDues: number;
+  totalOutstanding: number;
+}
+
+export interface TeacherClassWithPayments {
+  classId: string;
+  className: string;
+  subjectName: string;
+  isActive: boolean;
+  scheduleSlots: PaymentScheduleSlot[];
+  enrolledCount: number;
+  paidCount: number;
+  withDuesCount: number;
+  outstandingAmount: number;
+}
+
+export interface PaymentScheduleSlot {
+  dayOfWeek: number;
+  dayName: string;
+  startTime: string;
+  endTime: string;
+}
+
+// Student Payment Status (lazy-loaded per class)
+export interface StudentPaymentStatus {
+  studentId: string;
+  studentName: string;
+  enrollmentStatus: 'active' | 'inactive' | 'transferred';
+  paymentStatus: 'paid' | 'partial' | 'due';
+  dueAmount: number | null;
 }
 
 // Validation constraints (matching backend validation)

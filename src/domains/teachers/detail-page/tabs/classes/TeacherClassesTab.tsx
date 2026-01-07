@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Users, Calendar, ChevronRight, AlertCircle, DollarSign, Edit2 } from 'lucide-react';
+import { BookOpen, Users, Calendar, ChevronRight, AlertCircle, FilterX } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useTeacherClasses } from './useTeacherClasses';
-import { useTeacherPaymentRates } from './useTeacherPaymentRates';
-import { SetPaymentRateDialog } from '../../dialogs/SetPaymentRateDialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useTeacherClasses, StatusFilter } from './useTeacherClasses';
+import { useTeacherClassesWithPayments } from './useTeacherClassesWithPayments';
 import { TeacherClassDto, TeacherClassScheduleSlot } from '@/types/api/teacher';
+import PaymentSummaryBar from './PaymentSummaryBar';
+import ClassPaymentCard from './ClassPaymentCard';
 
 interface TeacherClassesTabProps {
   teacherId: string;
+  academicYearId?: string | null;
+  yearName?: string;
 }
 
 /**
@@ -47,15 +51,12 @@ function formatSchedule(slots: TeacherClassScheduleSlot[]): string {
 }
 
 /**
- * Single class card component
+ * Single class card component for list view (original design - fallback)
  */
 const ClassCard: React.FC<{
   classData: TeacherClassDto;
-  teacherId: string;
   onNavigate: (classId: string) => void;
-  paymentRate?: { id: string; rate: number };
-  onEditRate: (classId: string, className: string) => void;
-}> = ({ classData, teacherId, onNavigate, paymentRate, onEditRate }) => {
+}> = ({ classData, onNavigate }) => {
   const capacityPercentage = classData.classroomCapacity > 0
     ? Math.round((classData.enrolledCount / classData.classroomCapacity) * 100)
     : 0;
@@ -65,11 +66,6 @@ const ClassCard: React.FC<{
 
   const handleCardClick = () => {
     onNavigate(classData.classId);
-  };
-
-  const handleEditRate = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card navigation
-    onEditRate(classData.classId, classData.className);
   };
 
   return (
@@ -113,29 +109,6 @@ const ClassCard: React.FC<{
           <span className="truncate">{formatSchedule(classData.scheduleSlots)}</span>
         </div>
 
-        {/* Payment Rate */}
-        <div className="flex items-center text-sm text-white/70 justify-between">
-          <div className="flex items-center">
-            <DollarSign className="w-4 h-4 mr-2 text-white/40" />
-            {paymentRate ? (
-              <span className="font-medium text-green-400">
-                ${paymentRate.rate.toFixed(2)}/lesson
-              </span>
-            ) : (
-              <span className="text-white/40 italic">Not set</span>
-            )}
-          </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 px-2 text-xs text-white/60 hover:text-white hover:bg-white/10"
-            onClick={handleEditRate}
-          >
-            <Edit2 className="w-3 h-3 mr-1" />
-            {paymentRate ? 'Edit' : 'Set'}
-          </Button>
-        </div>
-
         {/* Academic year */}
         <div className="text-xs text-white/50">
           {classData.academicYearName}
@@ -151,55 +124,42 @@ const ClassCard: React.FC<{
 };
 
 /**
- * TeacherClassesTab - Displays all classes assigned to a teacher
+ * TeacherClassesTab - Classes list with filters and payment visibility per class.
  */
-const TeacherClassesTab: React.FC<TeacherClassesTabProps> = ({ teacherId }) => {
+const TeacherClassesTab: React.FC<TeacherClassesTabProps> = ({ teacherId, academicYearId, yearName }) => {
   const navigate = useNavigate();
+
+  // Fetch classes data
   const {
     filteredClasses,
-    loading,
-    error,
+    loading: classesLoading,
+    error: classesError,
     academicYears,
     selectedYearId,
     setSelectedYearId,
-    activeFilter,
-    setActiveFilter,
-    refresh,
-  } = useTeacherClasses({ teacherId });
+    statusFilter,
+    setStatusFilter,
+    hasActiveFilters,
+    resetFilters,
+    refresh: refreshClasses,
+  } = useTeacherClasses({ teacherId, academicYearId });
 
+  // Fetch payment data (for payment summary)
   const {
-    rates,
-    loading: ratesLoading,
-    setRate,
-    updateRate,
-    getRateForClass,
-  } = useTeacherPaymentRates({ teacherId });
-
-  const [rateDialogOpen, setRateDialogOpen] = useState(false);
-  const [selectedClass, setSelectedClass] = useState<{ id: string; name: string } | null>(null);
+    summary: paymentSummary,
+    classes: paymentClasses,
+    loading: paymentLoading,
+    studentsByClass,
+    studentsLoadingByClass,
+    loadStudentsForClass,
+  } = useTeacherClassesWithPayments({ teacherId });
 
   const handleNavigateToClass = (classId: string) => {
     navigate(`/classes/${classId}`);
   };
 
-  const handleEditRate = (classId: string, className: string) => {
-    setSelectedClass({ id: classId, name: className });
-    setRateDialogOpen(true);
-  };
-
-  const handleRateSubmit = async (request: any) => {
-    if (!selectedClass) return;
-
-    const existingRate = getRateForClass(selectedClass.id);
-    if (existingRate) {
-      await updateRate(existingRate.id, request);
-    } else {
-      await setRate(request);
-    }
-  };
-
   // Loading state
-  if (loading) {
+  if (classesLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <LoadingSpinner size="md" />
@@ -208,15 +168,15 @@ const TeacherClassesTab: React.FC<TeacherClassesTabProps> = ({ teacherId }) => {
   }
 
   // Error state
-  if (error) {
+  if (classesError) {
     return (
       <GlassCard className="p-6">
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
           <h3 className="text-lg font-semibold text-white mb-2">Failed to load classes</h3>
-          <p className="text-white/60 mb-4">{error}</p>
+          <p className="text-white/60 mb-4">{classesError}</p>
           <Button
-            onClick={refresh}
+            onClick={refreshClasses}
             variant="outline"
             className="bg-white/10 hover:bg-white/20 text-white border-white/20"
           >
@@ -229,119 +189,123 @@ const TeacherClassesTab: React.FC<TeacherClassesTabProps> = ({ teacherId }) => {
 
   return (
     <div className="space-y-4">
-      {/* Payment Rate Dialog */}
-      {selectedClass && (
-        <SetPaymentRateDialog
-          open={rateDialogOpen}
-          onOpenChange={setRateDialogOpen}
-          teacherId={teacherId}
-          classId={selectedClass.id}
-          className={selectedClass.name}
-          existingRate={getRateForClass(selectedClass.id)}
-          onSubmit={handleRateSubmit}
-        />
-      )}
-
       {/* Filters bar */}
-      <GlassCard className="p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          {/* Academic Year filter */}
-          {academicYears.length > 0 && (
-            <div className="flex-1">
-              <label className="text-xs text-white/50 mb-2 block">Academic Year</label>
-              <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-end gap-3 p-3 bg-white/[0.02] rounded-lg border border-white/10">
+        {/* Academic Year filter */}
+        {academicYears.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs text-white/50 font-medium">Academic Year:</span>
+            <Select
+              value={selectedYearId ?? ''}
+              onValueChange={(value) => setSelectedYearId(value)}
+            >
+              <SelectTrigger className="w-[140px] bg-white/10 border-white/20 text-white h-9">
+                <SelectValue placeholder="Select year" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-900/95 border-white/20">
                 {academicYears.map(year => (
-                  <Button
+                  <SelectItem
                     key={year.id}
-                    size="sm"
-                    variant={selectedYearId === year.id ? 'default' : 'outline'}
-                    className={selectedYearId === year.id
-                      ? 'bg-blue-500/80 hover:bg-blue-500 text-white'
-                      : 'bg-white/10 hover:bg-white/20 text-white/70 border-white/20'
-                    }
-                    onClick={() => setSelectedYearId(year.id)}
+                    value={year.id}
+                    className="text-white focus:bg-white/10"
                   >
                     {year.name}
-                  </Button>
+                  </SelectItem>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* Status filter */}
-          <div>
-            <label className="text-xs text-white/50 mb-2 block">Status</label>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant={activeFilter === null ? 'default' : 'outline'}
-                className={activeFilter === null
-                  ? 'bg-blue-500/80 hover:bg-blue-500 text-white'
-                  : 'bg-white/10 hover:bg-white/20 text-white/70 border-white/20'
-                }
-                onClick={() => setActiveFilter(null)}
-              >
-                All
-              </Button>
-              <Button
-                size="sm"
-                variant={activeFilter === true ? 'default' : 'outline'}
-                className={activeFilter === true
-                  ? 'bg-green-500/80 hover:bg-green-500 text-white'
-                  : 'bg-white/10 hover:bg-white/20 text-white/70 border-white/20'
-                }
-                onClick={() => setActiveFilter(true)}
-              >
-                Active
-              </Button>
-              <Button
-                size="sm"
-                variant={activeFilter === false ? 'default' : 'outline'}
-                className={activeFilter === false
-                  ? 'bg-gray-500/80 hover:bg-gray-500 text-white'
-                  : 'bg-white/10 hover:bg-white/20 text-white/70 border-white/20'
-                }
-                onClick={() => setActiveFilter(false)}
-              >
-                Inactive
-              </Button>
-            </div>
+              </SelectContent>
+            </Select>
           </div>
+        )}
+
+        {/* Status filter */}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs text-white/50 font-medium">Status:</span>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+          >
+            <SelectTrigger className="w-[120px] bg-white/10 border-white/20 text-white h-9">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-900/95 border-white/20">
+              <SelectItem value="all" className="text-white focus:bg-white/10">
+                All
+              </SelectItem>
+              <SelectItem value="active" className="text-white focus:bg-white/10">
+                Active
+              </SelectItem>
+              <SelectItem value="inactive" className="text-white focus:bg-white/10">
+                Inactive
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </GlassCard>
+
+        {/* Clear filters button */}
+        {hasActiveFilters && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 px-3 gap-1.5 border-white/20 bg-white/5 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/30"
+            onClick={resetFilters}
+          >
+            <FilterX className="h-3.5 w-3.5" />
+            Clear
+          </Button>
+        )}
+      </div>
+
+      {/* Payment Summary Bar */}
+      {paymentSummary && !paymentLoading && (
+        <PaymentSummaryBar summary={paymentSummary} />
+      )}
 
       {/* Empty state */}
       {filteredClasses.length === 0 ? (
         <GlassCard className="p-6">
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <BookOpen className="w-12 h-12 text-white/30 mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">No classes found</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              {yearName ? `No Classes for ${yearName}` : 'No classes found'}
+            </h3>
             <p className="text-white/60">
               {academicYears.length === 0
                 ? 'This teacher has no classes assigned yet.'
+                : yearName
+                ? `This teacher has no classes assigned for ${yearName}. Try selecting a different academic year or adjusting your filters.`
                 : 'No classes match the current filters.'}
             </p>
           </div>
         </GlassCard>
       ) : (
-        /* Class cards grid */
+        /* Class cards grid - Show payment cards if payment data is available */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredClasses.map(classData => {
-            const rate = getRateForClass(classData.classId);
-            return (
-              <ClassCard
-                key={classData.classId}
-                classData={classData}
-                teacherId={teacherId}
-                onNavigate={handleNavigateToClass}
-                paymentRate={rate ? {
-                  id: rate.id,
-                  rate: rate.ratePerLesson,
-                } : undefined}
-                onEditRate={handleEditRate}
-              />
-            );
-          })}
+          {paymentClasses.length > 0 && !paymentLoading
+            ? // Payment-enhanced cards
+              paymentClasses
+                .filter((pc) => {
+                  // Apply the same filters as regular classes
+                  const regularClass = filteredClasses.find((fc) => fc.classId === pc.classId);
+                  return !!regularClass;
+                })
+                .map((classData) => (
+                  <ClassPaymentCard
+                    key={classData.classId}
+                    classData={classData}
+                    students={studentsByClass[classData.classId]}
+                    studentsLoading={studentsLoadingByClass[classData.classId]}
+                    onExpand={() => loadStudentsForClass(classData.classId)}
+                  />
+                ))
+            : // Original cards (fallback if payment data fails)
+              filteredClasses.map((classData) => (
+                <ClassCard
+                  key={classData.classId}
+                  classData={classData}
+                  onNavigate={handleNavigateToClass}
+                />
+              ))}
         </div>
       )}
     </div>

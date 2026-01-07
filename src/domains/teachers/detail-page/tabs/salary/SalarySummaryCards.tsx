@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { DollarSign, Wallet, Calculator, Percent } from 'lucide-react';
 import { SalarySummaryResponse } from '@/types/api/teacherSalary';
 
 interface SalarySummaryCardsProps {
@@ -6,66 +6,61 @@ interface SalarySummaryCardsProps {
 }
 
 export default function SalarySummaryCards({ summary }: SalarySummaryCardsProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+  const formatMKD = (amount: number) => {
+    return new Intl.NumberFormat('mk-MK', {
       minimumFractionDigits: 2,
-    }).format(amount);
+      maximumFractionDigits: 2,
+    }).format(amount) + ' MKD';
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Lessons Total */}
-      <div className="p-6 bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-medium text-white/70">Lessons</p>
-          <DollarSign className="h-5 w-5 text-blue-400" />
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* Gross Salary */}
+      <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-xs font-medium text-white/60">Gross Salary</p>
+          <DollarSign className="h-4 w-4 text-blue-400" />
         </div>
-        <p className="text-3xl font-bold text-white">{formatCurrency(summary.lessonsTotal)}</p>
-        <p className="text-xs text-white/60 mt-1">
-          {summary.totalConductedLessons} lessons conducted
+        <p className="text-lg font-bold text-white">{formatMKD(summary.grossSalary)}</p>
+        <p className="text-[10px] text-white/50 mt-0.5">Before deductions</p>
+      </div>
+
+      {/* Total Contributions */}
+      <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-xs font-medium text-white/60">Contributions</p>
+          <Calculator className="h-4 w-4 text-orange-400" />
+        </div>
+        <p className="text-lg font-bold text-orange-400">
+          -{formatMKD(summary.totalContributions)}
+        </p>
+        <p className="text-[10px] text-white/50 mt-0.5">
+          Pension, health, employment
         </p>
       </div>
 
-      {/* Bonuses */}
-      <div className="p-6 bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-medium text-white/70">Bonuses</p>
-          <TrendingUp className="h-5 w-5 text-green-400" />
+      {/* Income Tax */}
+      <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-xs font-medium text-white/60">Income Tax</p>
+          <Percent className="h-4 w-4 text-red-400" />
         </div>
-        <p className="text-3xl font-bold text-green-400">
-          +{formatCurrency(summary.totalBonuses)}
+        <p className="text-lg font-bold text-red-400">
+          -{formatMKD(summary.incomeTax)}
         </p>
-        <p className="text-xs text-white/60 mt-1">
-          {summary.totalBonuses > 0 ? 'Extra earnings' : 'No bonuses'}
+        <p className="text-[10px] text-white/50 mt-0.5">
+          On {formatMKD(summary.taxableIncome)} taxable
         </p>
       </div>
 
-      {/* Deductions */}
-      <div className="p-6 bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-medium text-white/70">Deductions</p>
-          <TrendingDown className="h-5 w-5 text-red-400" />
+      {/* Net Salary */}
+      <div className="p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-xs font-medium text-white/80">Net Salary</p>
+          <Wallet className="h-4 w-4 text-green-400" />
         </div>
-        <p className="text-3xl font-bold text-red-400">
-          -{formatCurrency(summary.totalDeductions)}
-        </p>
-        <p className="text-xs text-white/60 mt-1">
-          {summary.totalDeductions > 0 ? 'Applied deductions' : 'No deductions'}
-        </p>
-      </div>
-
-      {/* Net Total */}
-      <div className="p-6 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-medium text-white/90">Net Total</p>
-          <Wallet className="h-5 w-5 text-purple-300" />
-        </div>
-        <p className="text-3xl font-bold text-white">{formatCurrency(summary.netTotal)}</p>
-        <p className="text-xs text-white/70 mt-1">
-          Final monthly salary
-        </p>
+        <p className="text-lg font-bold text-white">{formatMKD(summary.netSalary)}</p>
+        <p className="text-[10px] text-white/50 mt-0.5">After all deductions</p>
       </div>
     </div>
   );

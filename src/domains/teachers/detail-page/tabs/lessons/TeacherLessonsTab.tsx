@@ -1,17 +1,20 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, RefreshCw, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import GlassCard from '@/components/common/GlassCard';
 import { useTeacherLessons } from './useTeacherLessons';
 import { TeacherLessonsFilters } from './TeacherLessonsFilters';
 import { TeacherLessonsTable } from './TeacherLessonsTable';
+import LessonsStatsBar from './LessonsStatsBar';
 
 interface TeacherLessonsTabProps {
   teacherId: string;
+  academicYearId?: string | null;
+  yearName?: string;
 }
 
-export const TeacherLessonsTab: React.FC<TeacherLessonsTabProps> = ({ teacherId }) => {
+export const TeacherLessonsTab: React.FC<TeacherLessonsTabProps> = ({ teacherId, academicYearId, yearName }) => {
   const {
     lessons,
     stats,
@@ -21,10 +24,10 @@ export const TeacherLessonsTab: React.FC<TeacherLessonsTabProps> = ({ teacherId 
     setSelectedStatus,
     selectedClassId,
     setSelectedClassId,
-    fromDate,
-    setFromDate,
-    toDate,
-    setToDate,
+    scopeFilter,
+    setScopeFilter,
+    timeWindow,
+    setTimeWindow,
     classes,
     refresh,
     totalCount,
@@ -34,7 +37,7 @@ export const TeacherLessonsTab: React.FC<TeacherLessonsTabProps> = ({ teacherId 
     hasPreviousPage,
     goToNextPage,
     goToPreviousPage,
-  } = useTeacherLessons({ teacherId });
+  } = useTeacherLessons({ teacherId, academicYearId });
 
   // Calculate current page info
   const currentPage = Math.floor(skip / take) + 1;
@@ -42,21 +45,33 @@ export const TeacherLessonsTab: React.FC<TeacherLessonsTabProps> = ({ teacherId 
   const startItem = skip + 1;
   const endItem = Math.min(skip + take, totalCount);
 
+  const handleClearFilters = useCallback(() => {
+    setSelectedStatus('All');
+    setSelectedClassId(null);
+    setScopeFilter('all');
+    setTimeWindow('all');
+  }, [setSelectedStatus, setSelectedClassId, setScopeFilter, setTimeWindow]);
+
   if (loading && !lessons.length) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-muted-foreground">Loading lessons...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-white/60" />
+        <span className="ml-2 text-white/60">Loading lessons...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" className="bg-rose-500/10 border-rose-500/30 text-rose-300">
         <AlertDescription className="flex items-center justify-between">
           <span>{error}</span>
-          <Button variant="outline" size="sm" onClick={refresh}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refresh}
+            className="border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20"
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry
           </Button>
@@ -66,50 +81,64 @@ export const TeacherLessonsTab: React.FC<TeacherLessonsTabProps> = ({ teacherId 
   }
 
   return (
-    <div className="space-y-6">
-      {/* Filters Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TeacherLessonsFilters
-            stats={stats}
-            selectedStatus={selectedStatus}
-            onStatusChange={setSelectedStatus}
-            selectedClassId={selectedClassId}
-            onClassIdChange={setSelectedClassId}
-            fromDate={fromDate}
-            onFromDateChange={setFromDate}
-            toDate={toDate}
-            onToDateChange={setToDate}
-            classes={classes}
-          />
-        </CardContent>
-      </Card>
+    <div className="space-y-4">
+      {/* Filter Bar */}
+      <div className="flex flex-wrap items-end justify-between gap-3 p-3 bg-white/[0.02] rounded-lg border border-white/10">
+        <TeacherLessonsFilters
+          selectedStatus={selectedStatus}
+          onStatusChange={setSelectedStatus}
+          selectedClassId={selectedClassId}
+          onClassIdChange={setSelectedClassId}
+          scopeFilter={scopeFilter}
+          onScopeChange={setScopeFilter}
+          timeWindow={timeWindow}
+          onTimeWindowChange={setTimeWindow}
+          classes={classes}
+          onClearFilters={handleClearFilters}
+        />
 
-      {/* Lessons Table */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>
-            Lessons
-            {totalCount > 0 && (
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({totalCount} total)
-              </span>
-            )}
-          </CardTitle>
-          <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          </Button>
-        </CardHeader>
-        <CardContent>
+        {/* Refresh Button */}
+        <Button
+          onClick={refresh}
+          disabled={loading}
+          variant="outline"
+          size="sm"
+          className="h-9 border-white/20 bg-white/5 text-white hover:bg-white/10"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
+
+      {/* Stats Header */}
+      {stats && totalCount > 0 && (
+        <LessonsStatsBar stats={stats} totalCount={totalCount} />
+      )}
+
+      {/* Content Area */}
+      {lessons.length === 0 ? (
+        <div className="border border-white/10 rounded-lg p-8 bg-white/[0.02]">
+          <div className="flex flex-col items-center text-center py-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 mb-4">
+              <BookOpen className="w-8 h-8 text-white/40" />
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">
+              {yearName ? `No Lessons for ${yearName}` : 'No Lessons Found'}
+            </h3>
+            <p className="text-white/70">
+              {yearName
+                ? `No lessons found for ${yearName}. Try selecting a different academic year or adjusting your filter settings.`
+                : 'No lessons match the selected filters. Try adjusting your filter settings.'}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <GlassCard className="overflow-hidden">
           <TeacherLessonsTable lessons={lessons} />
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-muted-foreground">
+            <div className="flex items-center justify-between p-4 border-t border-white/10">
+              <div className="text-sm text-white/60">
                 Showing {startItem} to {endItem} of {totalCount} lessons
               </div>
               <div className="flex items-center gap-2">
@@ -118,18 +147,20 @@ export const TeacherLessonsTab: React.FC<TeacherLessonsTabProps> = ({ teacherId 
                   size="sm"
                   onClick={goToPreviousPage}
                   disabled={!hasPreviousPage || loading}
+                  className="h-8 border-white/20 bg-white/5 text-white hover:bg-white/10 disabled:opacity-50"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Previous
                 </Button>
-                <div className="text-sm text-muted-foreground">
+                <span className="text-sm text-white/60">
                   Page {currentPage} of {totalPages}
-                </div>
+                </span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={goToNextPage}
                   disabled={!hasNextPage || loading}
+                  className="h-8 border-white/20 bg-white/5 text-white hover:bg-white/10 disabled:opacity-50"
                 >
                   Next
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -137,8 +168,8 @@ export const TeacherLessonsTab: React.FC<TeacherLessonsTabProps> = ({ teacherId 
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </GlassCard>
+      )}
     </div>
   );
 };

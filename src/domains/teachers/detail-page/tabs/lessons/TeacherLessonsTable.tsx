@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { LessonStatusBadge } from './LessonStatusBadge';
+import LessonStatusBadge from '@/domains/lessons/components/LessonStatusBadge';
 import type { TeacherLessonResponse } from '@/types/api/teacherLesson';
 
 interface TeacherLessonsTableProps {
@@ -47,38 +47,38 @@ export const TeacherLessonsTable: React.FC<TeacherLessonsTableProps> = ({ lesson
     switch (lesson.statusName) {
       case 'Conducted':
         return lesson.conductedAt ? (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-white/60">
             Conducted at {formatDateTime(lesson.conductedAt)}
           </span>
         ) : (
-          <span className="text-sm text-muted-foreground">Completed</span>
+          <span className="text-sm text-white/60">Completed</span>
         );
 
       case 'Cancelled':
         return lesson.cancellationReason ? (
-          <span className="text-sm text-muted-foreground">{lesson.cancellationReason}</span>
+          <span className="text-sm text-white/60">{lesson.cancellationReason}</span>
         ) : (
-          <span className="text-sm text-muted-foreground">Cancelled</span>
+          <span className="text-sm text-white/60">Cancelled</span>
         );
 
       case 'Make Up':
         return lesson.originalLessonDate ? (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-white/60">
             Makeup for {formatDate(lesson.originalLessonDate)}
           </span>
         ) : (
-          <span className="text-sm text-muted-foreground">Makeup lesson</span>
+          <span className="text-sm text-white/60">Makeup lesson</span>
         );
 
       case 'No Show':
-        return <span className="text-sm text-muted-foreground">Student did not attend</span>;
+        return <span className="text-sm text-white/60">Student did not attend</span>;
 
       case 'Scheduled':
-        return <span className="text-sm text-muted-foreground">Upcoming</span>;
+        return <span className="text-sm text-white/60">Upcoming</span>;
 
       default:
         return lesson.notes ? (
-          <span className="text-sm text-muted-foreground">{lesson.notes}</span>
+          <span className="text-sm text-white/60">{lesson.notes}</span>
         ) : null;
     }
   };
@@ -86,33 +86,38 @@ export const TeacherLessonsTable: React.FC<TeacherLessonsTableProps> = ({ lesson
   if (lessons.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">No lessons found matching the selected filters.</p>
+        <p className="text-white/60">No lessons found matching the selected filters.</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Time</TableHead>
-            <TableHead>Class</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Details</TableHead>
+          <TableRow className="border-white/10 hover:bg-transparent">
+            <TableHead className="text-white/60">Date</TableHead>
+            <TableHead className="text-white/60">Time</TableHead>
+            <TableHead className="text-white/60">Class</TableHead>
+            <TableHead className="text-white/60">Status</TableHead>
+            <TableHead className="text-white/60">Details</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {lessons.map((lesson) => (
-            <TableRow key={lesson.id}>
-              <TableCell className="font-medium">{formatDate(lesson.scheduledDate)}</TableCell>
-              <TableCell>
+            <TableRow
+              key={lesson.id}
+              className="border-white/10 hover:bg-white/5 transition-all duration-150 bg-white/[0.02]"
+            >
+              <TableCell className="font-medium text-white">
+                {formatDate(lesson.scheduledDate)}
+              </TableCell>
+              <TableCell className="text-white/80">
                 {formatTime(lesson.startTime)} - {formatTime(lesson.endTime)}
               </TableCell>
-              <TableCell>{lesson.className}</TableCell>
+              <TableCell className="text-white/80">{lesson.className}</TableCell>
               <TableCell>
-                <LessonStatusBadge status={lesson.statusName} />
+                <LessonStatusBadge status={lesson.statusName} size="sm" />
               </TableCell>
               <TableCell>{getDetailsContent(lesson)}</TableCell>
             </TableRow>

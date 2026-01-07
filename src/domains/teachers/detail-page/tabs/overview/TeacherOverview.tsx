@@ -1,23 +1,35 @@
 import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { TeacherOverviewResponse } from '@/types/api/teacher';
+import { TeacherOverviewResponse, TeacherScheduleSlotDto } from '@/types/api/teacher';
 import ClassesCard from './ClassesCard';
 import StudentsCard from './StudentsCard';
-import ScheduleCard from './ScheduleCard';
-import LessonsCard from './LessonsCard';
-import SalaryCard from './SalaryCard';
+import {
+  TeacherScheduleGrid,
+  useTeacherSchedule,
+} from '../classes/schedule';
 
 interface TeacherOverviewProps {
   overviewData: TeacherOverviewResponse | null;
   overviewLoading: boolean;
-  onNavigateToTab: (tab: string) => void;
 }
 
 const TeacherOverview: React.FC<TeacherOverviewProps> = ({
   overviewData,
   overviewLoading,
-  onNavigateToTab,
 }) => {
+  const navigate = useNavigate();
+  const { teacherId } = useParams<{ teacherId: string }>();
+
+  const {
+    filteredSlots,
+    loading: scheduleLoading,
+  } = useTeacherSchedule({ teacherId: teacherId || '' });
+
+  const handleSlotClick = (slot: TeacherScheduleSlotDto) => {
+    navigate(`/classes/${slot.classId}`);
+  };
+
   if (overviewLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -35,27 +47,27 @@ const TeacherOverview: React.FC<TeacherOverviewProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-      <ClassesCard
-        data={overviewData.classes}
-        onClick={() => onNavigateToTab('classes')}
-      />
-      <StudentsCard
-        data={overviewData.students}
-        onClick={() => onNavigateToTab('students')}
-      />
-      <ScheduleCard
-        data={overviewData.schedule}
-        onClick={() => onNavigateToTab('schedule')}
-      />
-      <LessonsCard
-        data={overviewData.lessons}
-        onClick={() => onNavigateToTab('lessons')}
-      />
-      <SalaryCard
-        data={overviewData.salary}
-        onClick={() => onNavigateToTab('salary')}
-      />
+    <div className="space-y-4">
+      {/* Stats Cards Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <ClassesCard data={overviewData.classes} />
+        <StudentsCard
+          data={overviewData.students}
+          financials={overviewData.financials}
+        />
+      </div>
+
+      {/* Weekly Schedule Section */}
+      {scheduleLoading ? (
+        <div className="flex items-center justify-center min-h-[200px]">
+          <LoadingSpinner size="md" />
+        </div>
+      ) : filteredSlots.length > 0 ? (
+        <TeacherScheduleGrid
+          slots={filteredSlots}
+          onSlotClick={handleSlotClick}
+        />
+      ) : null}
     </div>
   );
 };

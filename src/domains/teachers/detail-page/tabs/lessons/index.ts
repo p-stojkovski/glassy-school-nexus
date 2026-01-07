@@ -1,3 +1,3 @@
 export { TeacherLessonsTab } from './TeacherLessonsTab';
 export { useTeacherLessons } from './useTeacherLessons';
-export { LessonStatusBadge } from './LessonStatusBadge';
+export { default as LessonsStatsBar } from './LessonsStatsBar';

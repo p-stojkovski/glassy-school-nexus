@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { RootState } from '@/store';
 import { setSelectedTeacher, updateTeacher, Teacher } from '@/domains/teachers/teachersSlice';
-import { getTeacherById, getTeacherOverview } from '@/services/teacherApiService';
-import { TeacherOverviewResponse } from '@/types/api/teacher';
+import { getTeacherById, getTeacherOverview, getTeacherClassesPaymentSummary } from '@/services/teacherApiService';
+import { TeacherOverviewResponse, PaymentSummary } from '@/types/api/teacher';
 
 export const useTeacherProfile = () => {
   const { teacherId } = useParams<{ teacherId: string }>();
@@ -19,6 +19,9 @@ export const useTeacherProfile = () => {
   // Overview tab lazy loading state
   const [overviewData, setOverviewData] = useState<TeacherOverviewResponse | null>(null);
   const [overviewLoading, setOverviewLoading] = useState(false);
+
+  // Payment summary for overview tab (studentsWithDues indicator)
+  const [paymentSummary, setPaymentSummary] = useState<PaymentSummary | null>(null);
 
   // Get teacher data from Redux state
   const { teachers, selectedTeacher } = useAppSelector(
@@ -62,8 +65,19 @@ export const useTeacherProfile = () => {
 
     setOverviewLoading(true);
     try {
-      const data = await getTeacherOverview(teacherId);
-      setOverviewData(data);
+      // Fetch overview and payment summary in parallel
+      const [overviewResult, paymentResult] = await Promise.allSettled([
+        getTeacherOverview(teacherId),
+        getTeacherClassesPaymentSummary(teacherId),
+      ]);
+
+      if (overviewResult.status === 'fulfilled') {
+        setOverviewData(overviewResult.value);
+      }
+
+      if (paymentResult.status === 'fulfilled') {
+        setPaymentSummary(paymentResult.value.summary);
+      }
     } catch (err) {
       console.error('Failed to fetch teacher overview:', err);
       // Don't set error state - overview failure shouldn't block the page
@@ -121,6 +135,7 @@ export const useTeacherProfile = () => {
     // Overview data (lazy loaded)
     overviewData,
     overviewLoading,
+    paymentSummary,
 
     // Edit sheet state
     isEditSheetOpen,
