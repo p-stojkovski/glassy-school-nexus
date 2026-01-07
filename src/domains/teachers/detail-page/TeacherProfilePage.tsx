@@ -9,7 +9,6 @@ import { useTeacherProfile } from './useTeacherProfile';
 import { useTeacherAcademicYear } from './hooks/useTeacherAcademicYear';
 import { EditTeacherSheet } from './dialogs';
 import { TeacherOverview } from './tabs/overview';
-import { TeacherDetailsTab } from './tabs/details';
 import { TeacherClassesTab } from './tabs/classes';
 import { TeacherLessonsTab } from './tabs/lessons';
 import { TeacherSalaryTab } from './tabs/salary';
@@ -28,7 +27,6 @@ const TeacherProfilePage: React.FC = () => {
     handleOpenEditSheet,
     handleCloseEditSheet,
     handleEditSuccess,
-    handleTeacherUpdate,
   } = useTeacherProfile();
 
   // Academic year context for filtering tabs
@@ -100,12 +98,6 @@ const TeacherProfilePage: React.FC = () => {
             Overview
           </TabsTrigger>
           <TabsTrigger
-            value="details"
-            className="data-[state=active]:bg-white/20 text-white"
-          >
-            Details
-          </TabsTrigger>
-          <TabsTrigger
             value="classes"
             className="data-[state=active]:bg-white/20 text-white"
           >
@@ -129,13 +121,6 @@ const TeacherProfilePage: React.FC = () => {
           <TeacherOverview
             overviewData={overviewData}
             overviewLoading={overviewLoading}
-          />
-        </TabsContent>
-
-        <TabsContent value="details">
-          <TeacherDetailsTab
-            teacher={teacher}
-            onUpdate={handleTeacherUpdate}
           />
         </TabsContent>
 

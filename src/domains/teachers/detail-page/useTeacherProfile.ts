@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { RootState } from '@/store';
-import { setSelectedTeacher, updateTeacher, Teacher } from '@/domains/teachers/teachersSlice';
+import { setSelectedTeacher, Teacher } from '@/domains/teachers/teachersSlice';
 import { getTeacherById, getTeacherOverview, getTeacherClassesPaymentSummary } from '@/services/teacherApiService';
 import { TeacherOverviewResponse, PaymentSummary } from '@/types/api/teacher';
 
@@ -112,13 +112,6 @@ export const useTeacherProfile = () => {
     // The teacher data will be updated via Redux when the update is successful
   }, []);
 
-  // Handle teacher update from inline editing (Details tab)
-  const handleTeacherUpdate = useCallback((updatedTeacher: Teacher) => {
-    // Update both selectedTeacher and the teacher in the list
-    dispatch(setSelectedTeacher(updatedTeacher));
-    dispatch(updateTeacher(updatedTeacher));
-  }, [dispatch]);
-
   return {
     // Data
     teacher,
@@ -142,9 +135,6 @@ export const useTeacherProfile = () => {
     handleOpenEditSheet,
     handleCloseEditSheet,
     handleEditSuccess,
-
-    // Teacher update (for inline editing in Details tab)
-    handleTeacherUpdate,
 
     // Navigation
     handleBack,
