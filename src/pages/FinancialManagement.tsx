@@ -55,22 +55,22 @@ const FinancialManagement: React.FC = () => {
       <FinancialHeader />{' '}
       <Tabs defaultValue="dashboard" className="w-full">
         {' '}
-        <TabsList className="grid grid-cols-3 mb-8 bg-white/10 shadow-lg border border-white/10">
+        <TabsList className="bg-transparent border-b border-white/[0.08] rounded-none p-0 h-auto gap-1 mb-8">
           <TabsTrigger
             value="dashboard"
-            className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
             Dashboard
           </TabsTrigger>
           <TabsTrigger
             value="obligations"
-            className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
             Payment Obligations
           </TabsTrigger>
           <TabsTrigger
             value="payments"
-            className="text-white data-[state=active]:bg-white/20 data-[state=active]:text-white"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
             Payments
           </TabsTrigger>

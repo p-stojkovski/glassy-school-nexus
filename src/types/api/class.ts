@@ -185,6 +185,7 @@ export interface StudentPaymentObligationInfo {
 export interface StudentLessonSummary {
   studentId: string;
   studentName: string;
+  enrollmentStatus: 'active' | 'inactive' | 'transferred';
   totalLessons: number;
   attendance: AttendanceSummary;
   homework: HomeworkSummary;

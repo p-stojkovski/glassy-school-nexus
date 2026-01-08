@@ -8,9 +8,8 @@ import { TeacherPageHeader } from './layout';
 import { useTeacherProfile } from './useTeacherProfile';
 import { useTeacherAcademicYear } from './hooks/useTeacherAcademicYear';
 import { EditTeacherSheet } from './dialogs';
-import { TeacherOverview } from './tabs/overview';
+import { TeacherScheduleTab } from './tabs/schedule';
 import { TeacherClassesTab } from './tabs/classes';
-import { TeacherLessonsTab } from './tabs/lessons';
 import { TeacherSalaryTab } from './tabs/salary';
 
 const TeacherProfilePage: React.FC = () => {
@@ -83,6 +82,8 @@ const TeacherProfilePage: React.FC = () => {
         isBetweenYears={isBetweenYears}
         betweenYearsMessage={betweenYearsMessage}
         yearsLoading={yearsLoading}
+        studentsCount={overviewData?.students?.totalStudents}
+        studentsLoading={overviewLoading}
       />
 
       <Tabs
@@ -90,35 +91,29 @@ const TeacherProfilePage: React.FC = () => {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="bg-white/10 border-white/20">
+        <TabsList className="bg-transparent border-b border-white/[0.08] rounded-none p-0 h-auto gap-1">
           <TabsTrigger
-            value="overview"
-            className="data-[state=active]:bg-white/20 text-white"
+            value="schedule"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
-            Overview
+            Schedule
           </TabsTrigger>
           <TabsTrigger
             value="classes"
-            className="data-[state=active]:bg-white/20 text-white"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
             Classes
           </TabsTrigger>
           <TabsTrigger
-            value="lessons"
-            className="data-[state=active]:bg-white/20 text-white"
-          >
-            Lessons
-          </TabsTrigger>
-          <TabsTrigger
             value="salary"
-            className="data-[state=active]:bg-white/20 text-white"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
             Salary
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
-          <TeacherOverview
+        <TabsContent value="schedule">
+          <TeacherScheduleTab
             overviewData={overviewData}
             overviewLoading={overviewLoading}
           />
@@ -126,14 +121,6 @@ const TeacherProfilePage: React.FC = () => {
 
         <TabsContent value="classes">
           <TeacherClassesTab
-            teacherId={teacher.id}
-            academicYearId={selectedYearId}
-            yearName={selectedYear?.name}
-          />
-        </TabsContent>
-
-        <TabsContent value="lessons">
-          <TeacherLessonsTab
             teacherId={teacher.id}
             academicYearId={selectedYearId}
             yearName={selectedYear?.name}

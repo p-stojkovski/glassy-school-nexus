@@ -11,7 +11,7 @@ export const useTeacherProfile = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('schedule');
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,9 +86,9 @@ export const useTeacherProfile = () => {
     }
   }, [teacherId]);
 
-  // Lazy load overview data when switching to overview tab
+  // Lazy load overview data when switching to schedule tab
   useEffect(() => {
-    if (activeTab === 'overview' && teacher && !overviewData && !overviewLoading) {
+    if (activeTab === 'schedule' && teacher && !overviewData && !overviewLoading) {
       fetchOverviewData();
     }
   }, [activeTab, teacher, overviewData, overviewLoading, fetchOverviewData]);

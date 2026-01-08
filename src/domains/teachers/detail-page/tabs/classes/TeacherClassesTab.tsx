@@ -1,15 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Users, Calendar, ChevronRight, AlertCircle, FilterX } from 'lucide-react';
+import { BookOpen, Users, Calendar, ChevronRight, AlertCircle } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useTeacherClasses, StatusFilter } from './useTeacherClasses';
+import { useTeacherClasses } from './useTeacherClasses';
 import { useTeacherClassesWithPayments } from './useTeacherClassesWithPayments';
 import { TeacherClassDto, TeacherClassScheduleSlot } from '@/types/api/teacher';
-import PaymentSummaryBar from './PaymentSummaryBar';
 import ClassPaymentCard from './ClassPaymentCard';
 
 interface TeacherClassesTabProps {
@@ -134,19 +132,11 @@ const TeacherClassesTab: React.FC<TeacherClassesTabProps> = ({ teacherId, academ
     filteredClasses,
     loading: classesLoading,
     error: classesError,
-    academicYears,
-    selectedYearId,
-    setSelectedYearId,
-    statusFilter,
-    setStatusFilter,
-    hasActiveFilters,
-    resetFilters,
     refresh: refreshClasses,
   } = useTeacherClasses({ teacherId, academicYearId });
 
-  // Fetch payment data (for payment summary)
+  // Fetch payment data for class cards
   const {
-    summary: paymentSummary,
     classes: paymentClasses,
     loading: paymentLoading,
     studentsByClass,
@@ -189,78 +179,6 @@ const TeacherClassesTab: React.FC<TeacherClassesTabProps> = ({ teacherId, academ
 
   return (
     <div className="space-y-4">
-      {/* Filters bar */}
-      <div className="flex flex-wrap items-end gap-3 p-3 bg-white/[0.02] rounded-lg border border-white/10">
-        {/* Academic Year filter */}
-        {academicYears.length > 0 && (
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs text-white/50 font-medium">Academic Year:</span>
-            <Select
-              value={selectedYearId ?? ''}
-              onValueChange={(value) => setSelectedYearId(value)}
-            >
-              <SelectTrigger className="w-[140px] bg-white/10 border-white/20 text-white h-9">
-                <SelectValue placeholder="Select year" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-900/95 border-white/20">
-                {academicYears.map(year => (
-                  <SelectItem
-                    key={year.id}
-                    value={year.id}
-                    className="text-white focus:bg-white/10"
-                  >
-                    {year.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {/* Status filter */}
-        <div className="flex flex-col gap-1.5">
-          <span className="text-xs text-white/50 font-medium">Status:</span>
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value as StatusFilter)}
-          >
-            <SelectTrigger className="w-[120px] bg-white/10 border-white/20 text-white h-9">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-900/95 border-white/20">
-              <SelectItem value="all" className="text-white focus:bg-white/10">
-                All
-              </SelectItem>
-              <SelectItem value="active" className="text-white focus:bg-white/10">
-                Active
-              </SelectItem>
-              <SelectItem value="inactive" className="text-white focus:bg-white/10">
-                Inactive
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Clear filters button */}
-        {hasActiveFilters && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 px-3 gap-1.5 border-white/20 bg-white/5 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/30"
-            onClick={resetFilters}
-          >
-            <FilterX className="h-3.5 w-3.5" />
-            Clear
-          </Button>
-        )}
-      </div>
-
-      {/* Payment Summary Bar */}
-      {paymentSummary && !paymentLoading && (
-        <PaymentSummaryBar summary={paymentSummary} />
-      )}
-
       {/* Empty state */}
       {filteredClasses.length === 0 ? (
         <GlassCard className="p-6">
@@ -270,11 +188,9 @@ const TeacherClassesTab: React.FC<TeacherClassesTabProps> = ({ teacherId, academ
               {yearName ? `No Classes for ${yearName}` : 'No classes found'}
             </h3>
             <p className="text-white/60">
-              {academicYears.length === 0
-                ? 'This teacher has no classes assigned yet.'
-                : yearName
-                ? `This teacher has no classes assigned for ${yearName}. Try selecting a different academic year or adjusting your filters.`
-                : 'No classes match the current filters.'}
+              {yearName
+                ? `This teacher has no classes assigned for ${yearName}. Try selecting a different academic year from the header.`
+                : 'This teacher has no classes assigned yet.'}
             </p>
           </div>
         </GlassCard>

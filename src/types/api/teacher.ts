@@ -186,6 +186,10 @@ export interface TeacherClassDto {
   classroomCapacity: number;
   createdAt: string;
   scheduleSlots: TeacherClassScheduleSlot[];
+  attendanceRatePercentage: number;
+  totalLessons: number;
+  conductedLessons: number;
+  homeworkCompletionPercentage: number;
 }
 
 export interface TeacherClassScheduleSlot {
@@ -282,6 +286,11 @@ export interface TeacherClassWithPayments {
   paidCount: number;
   withDuesCount: number;
   outstandingAmount: number;
+  attendanceRatePercentage: number;
+  totalLessons: number;
+  conductedLessons: number;
+  classroomCapacity: number;
+  homeworkCompletionPercentage: number;
 }
 
 export interface PaymentScheduleSlot {
@@ -292,12 +301,22 @@ export interface PaymentScheduleSlot {
 }
 
 // Student Payment Status (lazy-loaded per class)
+// Enhanced with attendance and homework metrics for the View Students sidebar
 export interface StudentPaymentStatus {
   studentId: string;
   studentName: string;
   enrollmentStatus: 'active' | 'inactive' | 'transferred';
+
+  // Payment metrics
   paymentStatus: 'paid' | 'partial' | 'due';
   dueAmount: number | null;
+
+  // Attendance metrics (calculated from AttendanceSummary)
+  attendancePercentage: number | null;  // (present / totalLessons) * 100, null if no lessons
+  totalLessons: number;
+
+  // Homework metrics (calculated from HomeworkSummary)
+  homeworkPercentage: number | null;    // (complete / totalLessons) * 100, null if no lessons
 }
 
 // Validation constraints (matching backend validation)

@@ -30,24 +30,24 @@ const AcademicCalendarSettingsTab: React.FC = () => {
         onValueChange={(value) => setActiveTab(value as AcademicCalendarTabType)}
         className="space-y-6"
       >
-        <TabsList className="bg-white/10 border-white/20">
+        <TabsList className="bg-transparent border-b border-white/[0.08] rounded-none p-0 h-auto gap-1">
           <TabsTrigger
             value="academic-years"
-            className="data-[state=active]:bg-white/20 text-white"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
             <GraduationCap className="w-4 h-4 mr-2" />
             Academic Years
           </TabsTrigger>
           <TabsTrigger
             value="semesters"
-            className="data-[state=active]:bg-white/20 text-white"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
             <Calendar className="w-4 h-4 mr-2" />
             Semesters
           </TabsTrigger>
           <TabsTrigger
             value="teaching-breaks"
-            className="data-[state=active]:bg-white/20 text-white"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
           >
             <Coffee className="w-4 h-4 mr-2" />
             Teaching Breaks

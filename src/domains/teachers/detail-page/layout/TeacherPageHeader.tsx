@@ -29,6 +29,8 @@ interface TeacherPageHeaderProps {
   isBetweenYears?: boolean;
   betweenYearsMessage?: string | null;
   yearsLoading?: boolean;
+  studentsCount?: number;
+  studentsLoading?: boolean;
 }
 
 const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
@@ -41,6 +43,8 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
   isBetweenYears = false,
   betweenYearsMessage,
   yearsLoading = false,
+  studentsCount,
+  studentsLoading = false,
 }) => {
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -159,6 +163,15 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
                 <Users className="w-3.5 h-3.5 text-white/50" />
                 <span className="text-white/40">Classes:</span>
                 <span>{teacher.classCount}</span>
+              </div>
+
+              <span className="text-white/20">|</span>
+
+              {/* Students */}
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-white/50" />
+                <span className="text-white/40">Students:</span>
+                <span>{studentsLoading ? '--' : (studentsCount ?? '--')}</span>
               </div>
             </div>
 

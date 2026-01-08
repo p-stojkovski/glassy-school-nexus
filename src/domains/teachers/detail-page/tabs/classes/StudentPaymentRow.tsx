@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, CheckCircle2, AlertCircle, MinusCircle } from 'lucide-react';
+import { User, CheckCircle2, AlertCircle, MinusCircle, BarChart3, BookOpen } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { StudentPaymentStatus } from '@/types/api/teacher';
 import { cn } from '@/lib/utils';
 
@@ -9,11 +10,13 @@ interface StudentPaymentRowProps {
 }
 
 /**
- * Individual student row showing payment status within an expanded class card.
- * Displays student name, payment status badge, and due amount if applicable.
+ * Individual student row showing payment, attendance, and homework status.
+ * Displays student name with enrollment status indicator and quick metrics.
+ * Clicks navigate to the student profile page.
  */
 const StudentPaymentRow: React.FC<StudentPaymentRowProps> = ({ student }) => {
   const navigate = useNavigate();
+  const isInactive = student.enrollmentStatus !== 'active';
 
   const handleClick = () => {
     navigate(`/students/${student.studentId}`);
@@ -29,7 +32,7 @@ const StudentPaymentRow: React.FC<StudentPaymentRowProps> = ({ student }) => {
     }).format(amount);
   };
 
-  const getStatusConfig = (status: StudentPaymentStatus['paymentStatus']) => {
+  const getPaymentStatusConfig = (status: StudentPaymentStatus['paymentStatus']) => {
     switch (status) {
       case 'paid':
         return {
@@ -52,40 +55,84 @@ const StudentPaymentRow: React.FC<StudentPaymentRowProps> = ({ student }) => {
     }
   };
 
-  const statusConfig = getStatusConfig(student.paymentStatus);
-  const StatusIcon = statusConfig.icon;
+  const getPercentageColor = (percentage: number | null): string => {
+    if (percentage === null) return 'text-white/40';
+    if (percentage >= 85) return 'text-green-400';
+    if (percentage >= 70) return 'text-amber-400';
+    return 'text-red-400';
+  };
+
+  const getEnrollmentBadge = () => {
+    if (student.enrollmentStatus === 'inactive') {
+      return (
+        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-gray-500/20 text-gray-400 border-gray-500/30">
+          Inactive
+        </Badge>
+      );
+    }
+    if (student.enrollmentStatus === 'transferred') {
+      return (
+        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-blue-500/20 text-blue-400 border-blue-500/30">
+          Transferred
+        </Badge>
+      );
+    }
+    return null;
+  };
+
+  const paymentConfig = getPaymentStatusConfig(student.paymentStatus);
+  const PaymentIcon = paymentConfig.icon;
 
   return (
     <div
       onClick={handleClick}
-      className="flex items-center justify-between py-2 px-3 hover:bg-white/5 cursor-pointer rounded-lg transition-colors"
+      className={cn(
+        'flex items-center justify-between py-2.5 px-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-b-0',
+        isInactive && 'opacity-60'
+      )}
     >
-      <div className="flex items-center gap-3 min-w-0 flex-1">
-        <User className="w-4 h-4 text-white/40 flex-shrink-0" />
-        <span className="text-sm text-white/90 truncate">{student.studentName}</span>
+      {/* Student Name & Enrollment Status */}
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <User className={cn('w-4 h-4 flex-shrink-0', isInactive ? 'text-white/30' : 'text-white/40')} />
+        <span className={cn('text-sm truncate', isInactive ? 'text-white/50' : 'text-white/90')}>
+          {student.studentName}
+        </span>
+        {getEnrollmentBadge()}
       </div>
 
-      <div className="flex items-center gap-4">
-        {/* Payment Status Badge */}
+      {/* Metrics Row */}
+      <div className="flex items-center gap-3">
+        {/* Payment Status */}
         <div
           className={cn(
-            'flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium',
-            statusConfig.className
+            'flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium',
+            paymentConfig.className
           )}
+          title={`Payment: ${paymentConfig.label}${student.dueAmount ? ` (${formatCurrency(student.dueAmount)})` : ''}`}
         >
-          <StatusIcon className="w-3.5 h-3.5" />
-          <span>{statusConfig.label}</span>
+          <PaymentIcon className="w-3 h-3" />
+          <span>{student.dueAmount ? formatCurrency(student.dueAmount) : paymentConfig.label}</span>
         </div>
 
-        {/* Due Amount */}
-        <div className="w-20 text-right">
-          <span
-            className={cn(
-              'text-sm font-medium',
-              student.dueAmount && student.dueAmount > 0 ? 'text-red-400' : 'text-white/40'
-            )}
-          >
-            {formatCurrency(student.dueAmount)}
+        {/* Attendance */}
+        <div
+          className="flex items-center gap-1 text-xs"
+          title={`Attendance: ${student.attendancePercentage !== null ? `${student.attendancePercentage}%` : 'N/A'} (${student.totalLessons} lessons)`}
+        >
+          <BarChart3 className={cn('w-3 h-3', getPercentageColor(student.attendancePercentage))} />
+          <span className={cn('w-8 text-right', getPercentageColor(student.attendancePercentage))}>
+            {student.attendancePercentage !== null ? `${student.attendancePercentage}%` : 'N/A'}
+          </span>
+        </div>
+
+        {/* Homework */}
+        <div
+          className="flex items-center gap-1 text-xs"
+          title={`Homework: ${student.homeworkPercentage !== null ? `${student.homeworkPercentage}%` : 'N/A'} (${student.totalLessons} lessons)`}
+        >
+          <BookOpen className={cn('w-3 h-3', getPercentageColor(student.homeworkPercentage))} />
+          <span className={cn('w-8 text-right', getPercentageColor(student.homeworkPercentage))}>
+            {student.homeworkPercentage !== null ? `${student.homeworkPercentage}%` : 'N/A'}
           </span>
         </div>
       </div>

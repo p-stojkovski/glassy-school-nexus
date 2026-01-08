@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { teacherApiService } from '@/services/teacherApiService';
+import { classApiService } from '@/services/classApiService';
 import {
   TeacherClassPaymentSummaryResponse,
   TeacherClassWithPayments,
   PaymentSummary,
   StudentPaymentStatus,
 } from '@/types/api/teacher';
+import { StudentLessonSummary } from '@/types/api/class';
 
 interface UseTeacherClassesWithPaymentsOptions {
   teacherId: string;
@@ -63,8 +65,7 @@ export function useTeacherClassesWithPayments({
     }
   }, [teacherId]);
 
-  // Generate mock student payment data for a class
-  // This simulates what the lazy-load endpoint would return
+  // Load real student data from the GetClassStudentsSummary endpoint
   const loadStudentsForClass = useCallback(
     async (classId: string) => {
       // If already loaded, skip
@@ -74,51 +75,57 @@ export function useTeacherClassesWithPayments({
 
       setStudentsLoadingByClass((prev) => ({ ...prev, [classId]: true }));
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      try {
+        // Call the real API endpoint
+        const studentSummaries = await classApiService.getClassStudentsSummary(classId);
 
-      // Find the class data
-      const classData = paymentData?.classes.find((c) => c.classId === classId);
-      if (!classData) {
+        // Map StudentLessonSummary to StudentPaymentStatus
+        const mappedStudents: StudentPaymentStatus[] = studentSummaries.map(
+          (summary: StudentLessonSummary) => {
+            // Calculate attendance percentage
+            const attendancePercentage =
+              summary.totalLessons > 0
+                ? Math.round((summary.attendance.present / summary.totalLessons) * 100)
+                : null;
+
+            // Calculate homework completion percentage
+            const homeworkPercentage =
+              summary.totalLessons > 0
+                ? Math.round((summary.homework.complete / summary.totalLessons) * 100)
+                : null;
+
+            // Derive payment status from paymentObligation
+            let paymentStatus: StudentPaymentStatus['paymentStatus'] = 'paid';
+            let dueAmount: number | null = null;
+
+            if (summary.paymentObligation?.hasPendingObligations) {
+              paymentStatus = summary.paymentObligation.pendingCount > 1 ? 'due' : 'partial';
+              dueAmount = summary.paymentObligation.totalPendingAmount;
+            }
+
+            return {
+              studentId: summary.studentId,
+              studentName: summary.studentName,
+              enrollmentStatus: summary.enrollmentStatus,
+              paymentStatus,
+              dueAmount,
+              attendancePercentage,
+              totalLessons: summary.totalLessons,
+              homeworkPercentage,
+            };
+          }
+        );
+
+        setStudentsByClass((prev) => ({ ...prev, [classId]: mappedStudents }));
+      } catch (err) {
+        console.error('Failed to load students for class:', err);
+        // Set empty array on error to avoid infinite retries
+        setStudentsByClass((prev) => ({ ...prev, [classId]: [] }));
+      } finally {
         setStudentsLoadingByClass((prev) => ({ ...prev, [classId]: false }));
-        return;
       }
-
-      // Generate mock students based on the class payment stats
-      const mockStudents: StudentPaymentStatus[] = [];
-      const totalStudents = classData.enrolledCount;
-
-      for (let i = 0; i < totalStudents; i++) {
-        // Use deterministic "random" based on classId and index
-        const seed = hashCode(`${classId}-${i}`);
-        const rand = Math.abs(seed % 100);
-
-        let paymentStatus: StudentPaymentStatus['paymentStatus'];
-        let dueAmount: number | null = null;
-
-        if (rand < 80) {
-          paymentStatus = 'paid';
-        } else if (rand < 95) {
-          paymentStatus = 'due';
-          dueAmount = 50 + (seed % 100); // $50-$150
-        } else {
-          paymentStatus = 'partial';
-          dueAmount = 25 + (seed % 50); // $25-$75
-        }
-
-        mockStudents.push({
-          studentId: `mock-student-${classId}-${i}`,
-          studentName: generateMockName(seed),
-          enrollmentStatus: 'active',
-          paymentStatus,
-          dueAmount,
-        });
-      }
-
-      setStudentsByClass((prev) => ({ ...prev, [classId]: mockStudents }));
-      setStudentsLoadingByClass((prev) => ({ ...prev, [classId]: false }));
     },
-    [paymentData, studentsByClass]
+    [studentsByClass]
   );
 
   // Fetch on mount
@@ -141,33 +148,6 @@ export function useTeacherClassesWithPayments({
     studentsLoadingByClass,
     loadStudentsForClass,
   };
-}
-
-// Simple hash function for deterministic "randomness"
-function hashCode(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return hash;
-}
-
-// Generate mock names for demo
-const FIRST_NAMES = [
-  'Ana', 'Marko', 'Elena', 'Stefan', 'Ivana', 'Nikola', 'Maria', 'Petar',
-  'Sofia', 'David', 'Nina', 'Luka', 'Milica', 'Boris', 'Tamara', 'Viktor',
-];
-const LAST_NAMES = [
-  'Petrova', 'Nikolov', 'Stojan', 'Ivanov', 'Dimitrov', 'Georgieva', 'Pavlovic',
-  'Jovanovic', 'Todorova', 'Kovac', 'Stankovic', 'Markovic', 'Ilic', 'Popov',
-];
-
-function generateMockName(seed: number): string {
-  const firstName = FIRST_NAMES[Math.abs(seed) % FIRST_NAMES.length];
-  const lastName = LAST_NAMES[Math.abs(seed >> 4) % LAST_NAMES.length];
-  return `${firstName} ${lastName}`;
 }
 
 export default useTeacherClassesWithPayments;

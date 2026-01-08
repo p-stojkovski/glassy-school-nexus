@@ -19,6 +19,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import GlassCard from '@/components/common/GlassCard';
 import { TeacherClassWithPayments, PaymentScheduleSlot, StudentPaymentStatus } from '@/types/api/teacher';
 import StudentPaymentRow from './StudentPaymentRow';
+import ClassMetricsRow from './ClassMetrics';
 import { cn } from '@/lib/utils';
 
 interface ClassPaymentCardProps {
@@ -154,6 +155,16 @@ const ClassPaymentCard: React.FC<ClassPaymentCardProps> = ({
         </div>
       </div>
 
+      {/* Class Metrics Row */}
+      <ClassMetricsRow
+        attendanceRatePercentage={classData.attendanceRatePercentage}
+        conductedLessons={classData.conductedLessons}
+        totalLessons={classData.totalLessons}
+        enrolledCount={classData.enrolledCount}
+        classroomCapacity={classData.classroomCapacity}
+        homeworkCompletionPercentage={classData.homeworkCompletionPercentage}
+      />
+
       {/* View Students Button */}
       <button
         type="button"
@@ -188,9 +199,10 @@ const ClassPaymentCard: React.FC<ClassPaymentCardProps> = ({
                 {/* Students Header Row */}
                 <div className="flex items-center justify-between py-2 px-3 bg-white/[0.02] text-xs text-white/50 font-medium rounded-t-lg border border-white/10">
                   <span>Student</span>
-                  <div className="flex items-center gap-4">
-                    <span>Status</span>
-                    <span className="w-20 text-right">Due Amount</span>
+                  <div className="flex items-center gap-3">
+                    <span className="w-16 text-center">Payment</span>
+                    <span className="w-12 text-center">Attend.</span>
+                    <span className="w-12 text-center">HW</span>
                   </div>
                 </div>
 

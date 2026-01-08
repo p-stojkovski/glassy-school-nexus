@@ -52,38 +52,38 @@ const SettingsPage: React.FC = () => {
           onValueChange={(value) => setActiveTab(value as SettingsTabType)}
           className="space-y-6"
         >
-          <TabsList className="bg-white/10 border-white/20">
+          <TabsList className="bg-transparent border-b border-white/[0.08] rounded-none p-0 h-auto gap-1">
             <TabsTrigger
               value="classrooms"
-              className="data-[state=active]:bg-white/20 text-white"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
               <Building className="w-4 h-4 mr-2" />
               Classrooms
             </TabsTrigger>
             <TabsTrigger
               value="subjects"
-              className="data-[state=active]:bg-white/20 text-white"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
               <BookOpen className="w-4 h-4 mr-2" />
               Subjects
             </TabsTrigger>
             <TabsTrigger
               value="academic-calendar"
-              className="data-[state=active]:bg-white/20 text-white"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
               <Calendar className="w-4 h-4 mr-2" />
               Academic Calendar
             </TabsTrigger>
             <TabsTrigger
               value="discount-types"
-              className="data-[state=active]:bg-white/20 text-white"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
               <Tag className="w-4 h-4 mr-2" />
               Discount Types
             </TabsTrigger>
             <TabsTrigger
               value="lesson-statuses"
-              className="data-[state=active]:bg-white/20 text-white"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
               <Calendar className="w-4 h-4 mr-2" />
               Lesson Statuses
