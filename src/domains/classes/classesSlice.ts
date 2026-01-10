@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ClassResponse } from '@/types/api/class';
 import { ClassSearchParams } from '@/types/api/class';
+import { ClassSalaryRule, ClassSalaryPreview } from './_shared/types/salaryRule.types';
 
 export type ClassItem = ClassResponse;
 
@@ -10,6 +11,11 @@ export interface LoadingStates {
   updating: boolean;
   deleting: boolean;
   searching: boolean;
+  fetchingSalaryRules: boolean;
+  creatingSalaryRule: boolean;
+  updatingSalaryRule: boolean;
+  deletingSalaryRule: boolean;
+  fetchingSalaryPreview: boolean;
 }
 
 export interface ErrorStates {
@@ -18,6 +24,11 @@ export interface ErrorStates {
   update: string | null;
   delete: string | null;
   search: string | null;
+  fetchSalaryRules: string | null;
+  createSalaryRule: string | null;
+  updateSalaryRule: string | null;
+  deleteSalaryRule: string | null;
+  fetchSalaryPreview: string | null;
 }
 
 interface ClassesState {
@@ -29,6 +40,12 @@ interface ClassesState {
   searchQuery: string;
   searchParams: ClassSearchParams;
   isSearchMode: boolean;
+  salaryRules: {
+    items: ClassSalaryRule[];
+  };
+  salaryPreview: {
+    data: ClassSalaryPreview | null;
+  };
 }
 
 const initialLoading: LoadingStates = {
@@ -37,6 +54,11 @@ const initialLoading: LoadingStates = {
   updating: false,
   deleting: false,
   searching: false,
+  fetchingSalaryRules: false,
+  creatingSalaryRule: false,
+  updatingSalaryRule: false,
+  deletingSalaryRule: false,
+  fetchingSalaryPreview: false,
 };
 
 const initialErrors: ErrorStates = {
@@ -45,6 +67,11 @@ const initialErrors: ErrorStates = {
   update: null,
   delete: null,
   search: null,
+  fetchSalaryRules: null,
+  createSalaryRule: null,
+  updateSalaryRule: null,
+  deleteSalaryRule: null,
+  fetchSalaryPreview: null,
 };
 
 const initialState: ClassesState = {
@@ -56,6 +83,12 @@ const initialState: ClassesState = {
   searchQuery: '',
   searchParams: {},
   isSearchMode: false,
+  salaryRules: {
+    items: [],
+  },
+  salaryPreview: {
+    data: null,
+  },
 };
 
 const classesSlice = createSlice({
@@ -156,6 +189,38 @@ const classesSlice = createSlice({
         state.searchParams = {};
       }
     },
+
+    // salary rules
+    setSalaryRules(state, action: PayloadAction<ClassSalaryRule[]>) {
+      state.salaryRules.items = action.payload;
+      state.errors.fetchSalaryRules = null;
+    },
+    addSalaryRule(state, action: PayloadAction<ClassSalaryRule>) {
+      state.salaryRules.items.push(action.payload);
+      state.errors.createSalaryRule = null;
+    },
+    updateSalaryRule(state, action: PayloadAction<ClassSalaryRule>) {
+      const idx = state.salaryRules.items.findIndex(r => r.id === action.payload.id);
+      if (idx !== -1) {
+        state.salaryRules.items[idx] = action.payload;
+      }
+      state.errors.updateSalaryRule = null;
+    },
+    removeSalaryRule(state, action: PayloadAction<string>) {
+      state.salaryRules.items = state.salaryRules.items.filter(r => r.id !== action.payload);
+      state.errors.deleteSalaryRule = null;
+    },
+    setSalaryPreview(state, action: PayloadAction<ClassSalaryPreview | null>) {
+      state.salaryPreview.data = action.payload;
+      state.errors.fetchSalaryPreview = null;
+    },
+    clearSalaryRules(state) {
+      state.salaryRules.items = [];
+    },
+    clearSalaryPreview(state) {
+      state.salaryPreview.data = null;
+    },
+
     resetClassesState: () => initialState,
   },
 });
@@ -176,6 +241,13 @@ export const {
   setSearchQuery,
   setSearchParams,
   setSearchMode,
+  setSalaryRules,
+  addSalaryRule,
+  updateSalaryRule,
+  removeSalaryRule,
+  setSalaryPreview,
+  clearSalaryRules,
+  clearSalaryPreview,
   resetClassesState,
 } = classesSlice.actions;
 

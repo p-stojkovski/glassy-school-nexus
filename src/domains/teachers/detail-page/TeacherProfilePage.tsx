@@ -10,7 +10,7 @@ import { useTeacherAcademicYear } from './hooks/useTeacherAcademicYear';
 import { EditTeacherSheet } from './dialogs';
 import { TeacherScheduleTab } from './tabs/schedule';
 import { TeacherClassesTab } from './tabs/classes';
-import { TeacherSalaryTab } from './tabs/salary';
+import { SalaryCalculationsTab } from './tabs/salary-calculations';
 
 const TeacherProfilePage: React.FC = () => {
   const {
@@ -128,9 +128,10 @@ const TeacherProfilePage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="salary" className="space-y-4">
-          <TeacherSalaryTab
+          <SalaryCalculationsTab
             academicYearId={selectedYearId}
             yearName={selectedYear?.name}
+            isActive={activeTab === 'salary'}
           />
         </TabsContent>
       </Tabs>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Package, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import {
   Collapsible,
   CollapsibleContent,
@@ -41,7 +41,6 @@ export const ReadOnlyMaterials: React.FC<ReadOnlyMaterialsProps> = ({
               !isExpanded && '-rotate-90'
             )}
           />
-          <Package className="h-5 w-5 text-white/60" />
           <div className="flex flex-col text-left">
             <span className="font-medium">Materials</span>
           </div>

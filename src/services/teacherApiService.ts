@@ -3,6 +3,7 @@
  * Implements all teacher-related API endpoints using the existing API infrastructure
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import apiService from './api';
 import {
   TeacherResponse,
@@ -40,6 +41,16 @@ import {
   TeacherSalaryResponse,
   TeacherSalaryApiPaths,
 } from '@/types/api/teacherSalary';
+import {
+  SalaryCalculation,
+  SalaryCalculationDetail,
+  TeacherSalaryPreview,
+  GenerateSalaryRequest,
+  ApproveSalaryRequest,
+  ReopenSalaryRequest,
+  SalaryCalculationFilters,
+  SalaryCalculationApiPaths,
+} from '@/domains/teachers/_shared/types/salaryCalculation.types';
 
 // Preserve status/details when rethrowing with a custom message
 function makeApiError(original: any, message: string): Error & { status?: number; details?: any } {
@@ -622,6 +633,207 @@ const raw = await apiService.get<any>(endpoint);
     }
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TEACHER SALARY CALCULATIONS (Phase 7.1 - Variable Salary Feature)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Get all salary calculations for a teacher (with optional filters)
+   * @param teacherId - Teacher ID (UUID format)
+   * @param filters - Optional filters (status, academicYearId, date range)
+   * @returns Promise<SalaryCalculation[]>
+   */
+  async getSalaryCalculations(
+    teacherId: string,
+    filters?: SalaryCalculationFilters
+  ): Promise<SalaryCalculation[]> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (filters?.status) {
+        queryParams.append('status', filters.status);
+      }
+      if (filters?.academicYearId) {
+        queryParams.append('academicYearId', filters.academicYearId);
+      }
+      if (filters?.fromDate) {
+        queryParams.append('fromDate', filters.fromDate);
+      }
+      if (filters?.toDate) {
+        queryParams.append('toDate', filters.toDate);
+      }
+
+      const queryString = queryParams.toString();
+      const endpoint = queryString
+        ? `${SalaryCalculationApiPaths.LIST(teacherId)}?${queryString}`
+        : SalaryCalculationApiPaths.LIST(teacherId);
+
+      const raw = await apiService.get<any>(endpoint);
+      const items = normalizeListResponse<any>(raw);
+      // Map calculationId to id (API returns calculationId, frontend expects id)
+      return items.map((item) => ({
+        ...item,
+        id: item.calculationId || item.id,
+      })) as SalaryCalculation[];
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
+      }
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid filter parameters');
+      }
+      throw makeApiError(error, `Failed to fetch salary calculations: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get a specific salary calculation with items and audit log
+   * @param teacherId - Teacher ID (UUID format)
+   * @param calcId - Calculation ID (UUID format)
+   * @returns Promise<SalaryCalculationDetail>
+   */
+  async getSalaryCalculation(
+    teacherId: string,
+    calcId: string
+  ): Promise<SalaryCalculationDetail> {
+    try {
+      const endpoint = SalaryCalculationApiPaths.BY_ID(teacherId, calcId);
+      const response = await apiService.get<SalaryCalculationDetail>(endpoint);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Salary calculation not found');
+      }
+      throw makeApiError(error, `Failed to fetch salary calculation: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Generate a new salary calculation for a teacher
+   * @param teacherId - Teacher ID (UUID format)
+   * @param request - Period details (periodStart, periodEnd)
+   * @returns Promise<SalaryCalculationDetail>
+   */
+  async generateSalaryCalculation(
+    teacherId: string,
+    request: GenerateSalaryRequest
+  ): Promise<SalaryCalculationDetail> {
+    try {
+      const endpoint = SalaryCalculationApiPaths.LIST(teacherId);
+      const response = await apiService.post<SalaryCalculationDetail>(endpoint, request);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
+      }
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        const details = error.details?.detail || error.message;
+        if (details?.includes('period')) {
+          throw makeApiError(error, 'Invalid period dates provided');
+        }
+        throw makeApiError(error, `Invalid request: ${details}`);
+      }
+      if (error.status === TeacherHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'A calculation already exists for this period');
+      }
+      throw makeApiError(error, `Failed to generate salary calculation: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Approve a salary calculation (with optional manual adjustment)
+   * @param teacherId - Teacher ID (UUID format)
+   * @param calcId - Calculation ID (UUID format)
+   * @param request - Approved amount and optional adjustment reason
+   * @returns Promise<SalaryCalculationDetail>
+   */
+  async approveSalaryCalculation(
+    teacherId: string,
+    calcId: string,
+    request: ApproveSalaryRequest
+  ): Promise<SalaryCalculationDetail> {
+    try {
+      const endpoint = SalaryCalculationApiPaths.APPROVE(teacherId, calcId);
+      const response = await apiService.put<SalaryCalculationDetail>(endpoint, request);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Salary calculation not found');
+      }
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        const details = error.details?.detail || error.message;
+        if (details?.includes('reason')) {
+          throw makeApiError(error, 'Adjustment reason is required when changing the calculated amount');
+        }
+        throw makeApiError(error, `Invalid request: ${details}`);
+      }
+      if (error.status === TeacherHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'Calculation is already approved');
+      }
+      throw makeApiError(error, `Failed to approve salary calculation: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Reopen an approved salary calculation (requires reason)
+   * @param teacherId - Teacher ID (UUID format)
+   * @param calcId - Calculation ID (UUID format)
+   * @param request - Reason for reopening
+   * @returns Promise<SalaryCalculationDetail>
+   */
+  async reopenSalaryCalculation(
+    teacherId: string,
+    calcId: string,
+    request: ReopenSalaryRequest
+  ): Promise<SalaryCalculationDetail> {
+    try {
+      const endpoint = SalaryCalculationApiPaths.REOPEN(teacherId, calcId);
+      const response = await apiService.put<SalaryCalculationDetail>(endpoint, request);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Salary calculation not found');
+      }
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        const details = error.details?.detail || error.message;
+        if (details?.includes('reason')) {
+          throw makeApiError(error, 'Reason is required to reopen an approved calculation');
+        }
+        if (details?.includes('pending')) {
+          throw makeApiError(error, 'Cannot reopen a calculation that is not approved');
+        }
+        throw makeApiError(error, `Invalid request: ${details}`);
+      }
+      throw makeApiError(error, `Failed to reopen salary calculation: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get teacher's salary preview for a specific month (projected earnings)
+   * @param teacherId - Teacher ID (UUID format)
+   * @param year - Year (e.g., 2025)
+   * @param month - Month (1-12)
+   * @returns Promise<TeacherSalaryPreview>
+   */
+  async getTeacherSalaryPreview(
+    teacherId: string,
+    year: number,
+    month: number
+  ): Promise<TeacherSalaryPreview> {
+    try {
+      const endpoint = SalaryCalculationApiPaths.PREVIEW(teacherId, year, month);
+      const response = await apiService.get<TeacherSalaryPreview>(endpoint);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
+      }
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid year or month parameters');
+      }
+      throw makeApiError(error, `Failed to fetch salary preview: ${error.message || 'Unknown error'}`);
+    }
+  }
+
 }
 
 // Export a singleton instance
@@ -675,6 +887,25 @@ export const getTeacherLessons = (teacherId: string, params?: TeacherLessonsQuer
 // Salary Operations
 export const getTeacherSalary = (teacherId: string, academicYearId: string) =>
   teacherApiService.getTeacherSalary(teacherId, academicYearId);
+
+// Salary Calculation Operations (Phase 7.1 - Variable Salary Feature)
+export const getSalaryCalculations = (teacherId: string, filters?: SalaryCalculationFilters) =>
+  teacherApiService.getSalaryCalculations(teacherId, filters);
+
+export const getSalaryCalculation = (teacherId: string, calcId: string) =>
+  teacherApiService.getSalaryCalculation(teacherId, calcId);
+
+export const generateSalaryCalculation = (teacherId: string, request: GenerateSalaryRequest) =>
+  teacherApiService.generateSalaryCalculation(teacherId, request);
+
+export const approveSalaryCalculation = (teacherId: string, calcId: string, request: ApproveSalaryRequest) =>
+  teacherApiService.approveSalaryCalculation(teacherId, calcId, request);
+
+export const reopenSalaryCalculation = (teacherId: string, calcId: string, request: ReopenSalaryRequest) =>
+  teacherApiService.reopenSalaryCalculation(teacherId, calcId, request);
+
+export const getTeacherSalaryPreview = (teacherId: string, year: number, month: number) =>
+  teacherApiService.getTeacherSalaryPreview(teacherId, year, month);
 
 // Export the service instance as default
 export default teacherApiService;

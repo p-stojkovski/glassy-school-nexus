@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, MapPin, Edit2, Trash2, Info, MoreVertical, Archive, Play, Clock, CheckCircle, XCircle, Calendar } from 'lucide-react';
+import { User, MapPin, Edit2, Trash2, Info, MoreVertical, Archive, Play, Clock, CheckCircle, XCircle, Calendar, FileText } from 'lucide-react';
 import { LessonResponse } from '@/types/api/lesson';
 import { UseClassLessonContextResult } from '@/domains/classes/detail-page/useClassLessonContext';
 import { formatTimeRangeWithoutSeconds } from '@/utils/timeFormatUtils';
@@ -32,6 +32,8 @@ interface ClassPageHeaderProps {
   onStartTeaching?: (lesson: LessonResponse) => void;
   onConductLesson?: (lesson: LessonResponse) => void;
   onCancelLesson?: (lesson: LessonResponse) => void;
+  /** Callback to open Edit Class Details sheet */
+  onEditClassDetails?: () => void;
 }
 
 const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
@@ -41,6 +43,7 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
   onStartTeaching,
   onConductLesson,
   onCancelLesson,
+  onEditClassDetails,
 }) => {
   const navigate = useNavigate();
   const { remove } = useClasses();
@@ -229,7 +232,7 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
                   align="end"
                   className="w-48 bg-gray-900/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl p-1.5"
                 >
-                  {/* Edit Option */}
+                  {/* Edit Class Info Option */}
                   <DropdownMenuItem
                     onClick={() => setShowEditDialog(true)}
                     className="gap-2.5 cursor-pointer text-white hover:text-white focus:text-white focus:bg-white/10 rounded-lg px-3 py-2.5 transition-all duration-200"
@@ -237,6 +240,17 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
                     <Edit2 className="w-4 h-4" />
                     <span className="font-medium">Edit Class</span>
                   </DropdownMenuItem>
+
+                  {/* Edit Class Details Option */}
+                  {onEditClassDetails && (
+                    <DropdownMenuItem
+                      onClick={onEditClassDetails}
+                      className="gap-2.5 cursor-pointer text-white hover:text-white focus:text-white focus:bg-white/10 rounded-lg px-3 py-2.5 transition-all duration-200"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span className="font-medium">Edit Class Details</span>
+                    </DropdownMenuItem>
+                  )}
 
                   {/* Enable Option - only show if class is disabled */}
                   {!classData.isActive && (

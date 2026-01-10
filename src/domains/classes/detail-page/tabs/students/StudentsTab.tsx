@@ -10,7 +10,7 @@ import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import StudentProgressTable from '@/domains/classes/detail-page/tabs/students/StudentProgressTable';
 import { TransferStudentDialog } from '@/domains/classes/detail-page/tabs/students/dialogs';
 import StudentFilters from '@/domains/classes/detail-page/tabs/students/StudentFilters';
-import { ClassBasicInfoResponse, ClassFormData } from '@/types/api/class';
+import { ClassBasicInfoResponse, ClassFormData, SameDayLessonInfo } from '@/types/api/class';
 import { addStudentsToClass, removeStudentFromClass } from '@/services/classApiService';
 import { StudentFilter } from '@/domains/classes/_shared/utils/studentFilters';
 
@@ -32,6 +32,11 @@ interface StudentToTransfer {
   name: string;
 }
 
+interface SameDayLessonPrompt {
+  lessonInfo: SameDayLessonInfo;
+  studentIds: string[];
+}
+
 const StudentsTab: React.FC<StudentsTabProps> = ({
   mode,
   classData,
@@ -47,6 +52,8 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   const [studentFilter, setStudentFilter] = useState<StudentFilter>('all');
   // Bump this when we know enrollment changed to invalidate cache in StudentProgressTable
   const [dataVersion, setDataVersion] = useState(0);
+  // Same-day lesson confirmation dialog state
+  const [sameDayLessonPrompt, setSameDayLessonPrompt] = useState<SameDayLessonPrompt | null>(null);
 
   // Memoized callbacks for StudentProgressTable to prevent unnecessary re-renders
   const handleOpenAddPanel = useCallback(() => setIsAddPanelOpen(true), []);
@@ -66,7 +73,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   );
 
   // Handle adding new students using the enrollment endpoint
-  const handleAddStudents = async (selectedStudentIds: string[]) => {
+  const handleAddStudents = async (selectedStudentIds: string[], includeTodayLesson?: boolean) => {
     if (!classData) return;
 
     setIsAdding(true);
@@ -79,7 +86,21 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
       }
 
       // Use the dedicated enrollment endpoint
-      const result = await addStudentsToClass(classData.id, { studentIds: selectedStudentIds });
+      const result = await addStudentsToClass(classData.id, {
+        studentIdsToAdd: selectedStudentIds,
+        includeTodayLesson,
+      });
+
+      // If there's a same-day lesson and user hasn't made a choice yet, show the confirmation dialog
+      if (result.sameDayLesson && includeTodayLesson === undefined) {
+        setSameDayLessonPrompt({
+          lessonInfo: result.sameDayLesson,
+          studentIds: selectedStudentIds,
+        });
+        setIsAddPanelOpen(false);
+        setIsAdding(false);
+        return;
+      }
 
       // Refetch class data
       if (onRefetchClassData) {
@@ -90,8 +111,12 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
       setDataVersion((v) => v + 1);
 
       // Show success with details from response
-      const successCount = result.enrolledCount ?? selectedStudentIds.length;
-      toast.success(`${successCount} student${successCount !== 1 ? 's' : ''} added successfully`);
+      const successCount = result.enrolledCount;
+      if (successCount === 0 && selectedStudentIds.length > 0) {
+        toast.warning(`No students were added. They may already be enrolled in another class.`);
+      } else {
+        toast.success(`${successCount} student${successCount !== 1 ? 's' : ''} added successfully`);
+      }
       setIsAddPanelOpen(false);
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : 'Failed to add students';
@@ -100,6 +125,17 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
     } finally {
       setIsAdding(false);
     }
+  };
+
+  // Handle same-day lesson confirmation
+  const handleSameDayLessonConfirm = async (includeTodayLesson: boolean) => {
+    if (!sameDayLessonPrompt) return;
+
+    const { studentIds } = sameDayLessonPrompt;
+    setSameDayLessonPrompt(null);
+
+    // Re-call handleAddStudents with the user's choice
+    await handleAddStudents(studentIds, includeTodayLesson);
   };
 
   // Handle removing a student using the enrollment endpoint
@@ -139,60 +175,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   if (mode === 'view') {
     return (
       <div className="space-y-4">
-        {/* Filters and Actions - consistent wrapper styling across tabs */}
-        <div className="flex flex-wrap items-end justify-between gap-3 p-3 bg-white/[0.02] rounded-lg border border-white/10">
-          {/* Left: Search and Filters */}
-          <div className="flex flex-wrap items-end gap-3">
-            {/* Search Bar - first and wider - only show when there are students */}
-            {classData.enrolledCount > 0 && (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-white/50 font-medium">Search:</span>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
-                  <Input
-                    type="text"
-                    placeholder="Search students by name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-10 w-[340px] bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/30 h-9"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
-                      aria-label="Clear search"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Student Filter */}
-            {classData.enrolledCount > 0 && (
-              <StudentFilters
-                filter={studentFilter}
-                onFilterChange={setStudentFilter}
-                compact={true}
-              />
-            )}
-          </div>
-
-          {/* Right: Add Students button */}
-          <Button
-            onClick={() => setIsAddPanelOpen(true)}
-            disabled={isAdding}
-            size="default"
-            variant="outline"
-            className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium gap-2 shrink-0 h-9"
-          >
-            <Plus className="w-4 h-4" />
-            Add Students
-          </Button>
-        </div>
-
-        {/* Content Area - Table or Empty State */}
+        {/* Unified Card Container - matching Salary Rules pattern */}
         {classData.enrolledCount === 0 ? (
           // Empty state with unified container styling
           <div className="border border-white/10 rounded-lg p-8 bg-white/[0.02]">
@@ -226,18 +209,70 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
             </div>
           </div>
         ) : (
-          <StudentProgressTable
-            classId={classData.id}
-            mode={mode}
-            isAddingStudents={isAdding}
-            onAddStudents={handleOpenAddPanel}
-            onRemoveStudent={handleRemoveStudentRequest}
-            onTransferStudent={handleTransferStudentRequest}
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
-            studentFilter={studentFilter}
-            dataVersion={dataVersion}
-          />
+          <div className="border border-white/10 rounded-lg bg-white/[0.02]">
+            {/* Header with Search, Filters, and Action Button */}
+            <div className="flex flex-wrap items-end justify-between gap-3 p-3 border-b border-white/10">
+              {/* Left: Search and Filters */}
+              <div className="flex flex-wrap items-end gap-3">
+                {/* Search Bar */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-white/50 font-medium">Search:</span>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+                    <Input
+                      type="text"
+                      placeholder="Search students by name..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 pr-10 w-[340px] bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/30 h-9"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                        aria-label="Clear search"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Student Filter */}
+                <StudentFilters
+                  filter={studentFilter}
+                  onFilterChange={setStudentFilter}
+                  compact={true}
+                />
+              </div>
+
+              {/* Right: Add Students button */}
+              <Button
+                onClick={() => setIsAddPanelOpen(true)}
+                disabled={isAdding}
+                size="default"
+                variant="outline"
+                className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium gap-2 shrink-0 h-9"
+              >
+                <Plus className="w-4 h-4" />
+                Add Students
+              </Button>
+            </div>
+
+            {/* Table Content */}
+            <StudentProgressTable
+              classId={classData.id}
+              mode={mode}
+              isAddingStudents={isAdding}
+              onAddStudents={handleOpenAddPanel}
+              onRemoveStudent={handleRemoveStudentRequest}
+              onTransferStudent={handleTransferStudentRequest}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+              studentFilter={studentFilter}
+              dataVersion={dataVersion}
+            />
+          </div>
         )}
 
         {/* Add Students Panel */}
@@ -270,6 +305,22 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
           variant="danger"
           onConfirm={handleRemoveStudent}
           onClose={() => setStudentToRemove(null)}
+        />
+
+        {/* Same-Day Lesson Confirmation Dialog */}
+        <ConfirmationDialog
+          isOpen={sameDayLessonPrompt !== null}
+          title="Include Today's Lesson?"
+          description={
+            sameDayLessonPrompt
+              ? `There's a lesson scheduled for today (${sameDayLessonPrompt.lessonInfo.startTime} - ${sameDayLessonPrompt.lessonInfo.endTime})${sameDayLessonPrompt.lessonInfo.isOngoing ? ' that is currently in progress' : ''}.\n\nShould the new student${sameDayLessonPrompt.studentIds.length > 1 ? 's' : ''} be included in today's lesson?`
+              : ''
+          }
+          confirmText="Yes, include today"
+          cancelText="No, start from next lesson"
+          variant="default"
+          onConfirm={() => handleSameDayLessonConfirm(true)}
+          onClose={() => handleSameDayLessonConfirm(false)}
         />
 
         {/* Transfer Student Dialog */}

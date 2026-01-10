@@ -151,12 +151,22 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
 
   // Calculate column count for expanded row colspan
   const getColSpan = useCallback(() => {
-    let cols = 3; // Expand, Student, Progress (always shown)
+    let cols = 4; // Expand, Student, Enrolled, Progress (always shown)
     if (hasAnyBillingData) cols++;
     if (hasAnyComments) cols++;
     if (mode === 'view' && (onRemoveStudent || onTransferStudent)) cols++;
     return cols;
   }, [hasAnyBillingData, hasAnyComments, mode, onRemoveStudent, onTransferStudent]);
+
+  // Format enrollment date for display
+  const formatEnrolledDate = useCallback((isoDate: string) => {
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }, []);
 
   // Loading state
   if (loading) {
@@ -204,174 +214,178 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
     );
   }
 
-  return (
-    <div className="space-y-4">
-      {/* No results state - filtered out by search */}
-      {summaries.length > 0 && filteredSummaries.length === 0 && (
-        <div className="rounded-lg border border-white/10 bg-white/[0.02] p-8 text-center">
-          <Search className="w-12 h-12 mx-auto mb-3 text-white/40" />
-          <h3 className="text-lg font-semibold text-white mb-2">No students found</h3>
-          <p className="text-white/70 text-sm mb-4">
-            No students match "{searchQuery}". Try a different search term.
-          </p>
-          {onClearSearch && (
-            <Button
-              onClick={onClearSearch}
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              Clear search
-            </Button>
-          )}
-        </div>
-      )}
+  // No results state - filtered out by search
+  if (summaries.length > 0 && filteredSummaries.length === 0) {
+    return (
+      <div className="p-8 text-center">
+        <Search className="w-12 h-12 mx-auto mb-3 text-white/40" />
+        <h3 className="text-lg font-semibold text-white mb-2">No students found</h3>
+        <p className="text-white/70 text-sm mb-4">
+          No students match "{searchQuery}". Try a different search term.
+        </p>
+        {onClearSearch && (
+          <Button
+            onClick={onClearSearch}
+            variant="outline"
+            className="border-white/20 text-white hover:bg-white/10"
+          >
+            Clear search
+          </Button>
+        )}
+      </div>
+    );
+  }
 
-      {/* Table */}
-      {filteredSummaries.length > 0 && (
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-white/20 hover:bg-transparent">
-                <TableHead className="text-white/90 font-semibold w-8"></TableHead>
-                <TableHead className="text-white/90 font-semibold min-w-[180px]">Student</TableHead>
-                <TableHead className="text-white/90 font-semibold min-w-[220px]">Progress</TableHead>
+  // Table (rendered directly without extra wrapper - parent provides card container)
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow className="border-white/20 hover:bg-transparent">
+          <TableHead className="text-white/90 font-semibold w-8"></TableHead>
+          <TableHead className="text-white/90 font-semibold min-w-[180px]">Student</TableHead>
+          <TableHead className="text-white/90 font-semibold w-28">Enrolled</TableHead>
+          <TableHead className="text-white/90 font-semibold min-w-[220px]">Progress</TableHead>
+          {hasAnyBillingData && (
+            <TableHead className="hidden md:table-cell text-white/90 font-semibold text-center w-24">
+              Billing
+            </TableHead>
+          )}
+          {hasAnyComments && (
+            <TableHead className="hidden lg:table-cell text-white/90 font-semibold text-center w-20">
+              Notes
+            </TableHead>
+          )}
+          {mode === 'view' && (onRemoveStudent || onTransferStudent) && (
+            <TableHead className="text-white/90 font-semibold text-center w-16">Actions</TableHead>
+          )}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {filteredSummaries.map((summary) => {
+          const isExpanded = expandedStudents.has(summary.studentId);
+          const isLoadingDetails = loadingDetails.has(summary.studentId);
+          const details = lessonDetails[summary.studentId] || [];
+          const riskIndicator = getAtRiskIndicator(summary);
+          const hasAttendance = summary.totalLessons > 0;
+
+          return (
+            <React.Fragment key={summary.studentId}>
+              {/* Main row */}
+              <TableRow className="border-white/10 group hover:bg-white/5 focus-within:bg-white/6 hover:shadow-sm transition-all duration-150 bg-white/[0.02]">
+                {/* Expand button */}
+                <TableCell className="py-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onToggleRow(summary.studentId)}
+                    className="h-8 w-8 p-0 hover:bg-white/10 transition-colors"
+                    aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+                    aria-expanded={isExpanded}
+                  >
+                    {isExpanded ? (
+                      <ChevronDown className="h-5 w-5 text-white/70" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5 text-white/70" />
+                    )}
+                  </Button>
+                </TableCell>
+
+                {/* Student name with risk indicator */}
+                <TableCell className="font-medium py-3">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      asChild
+                      variant="link"
+                      className="p-0 text-base font-bold text-blue-300 hover:text-blue-200 hover:underline"
+                    >
+                      <button onClick={() => navigate(`/students/${summary.studentId}`)}>
+                        {summary.studentName}
+                      </button>
+                    </Button>
+                    {riskIndicator.show && (
+                      <div
+                        className={`w-2 h-2 rounded-full ${riskIndicator.color} transition-transform hover:scale-125`}
+                        title={riskIndicator.title}
+                      />
+                    )}
+                  </div>
+                </TableCell>
+
+                {/* Enrolled date */}
+                <TableCell className="py-3">
+                  <span className="text-white/60 text-sm">
+                    {formatEnrolledDate(summary.enrolledAt)}
+                  </span>
+                </TableCell>
+
+                {/* Progress: Combined Lessons + Attendance + Homework */}
+                <TableCell className="py-3">
+                  <StudentProgressChips
+                    totalLessons={summary.totalLessons}
+                    attendance={summary.attendance}
+                    homework={summary.homework}
+                  />
+                </TableCell>
+
+                {/* Billing column */}
                 {hasAnyBillingData && (
-                  <TableHead className="hidden md:table-cell text-white/90 font-semibold text-center w-24">
-                    Billing
-                  </TableHead>
+                  <TableCell className="hidden md:table-cell text-center py-3">
+                    {summary.discount?.hasDiscount || summary.paymentObligation?.hasPendingObligations ? (
+                      <div className="flex items-center justify-center gap-1">
+                        {summary.discount && <DiscountIndicator discount={summary.discount} />}
+                        {summary.paymentObligation && (
+                          <PaymentObligationIndicator paymentObligation={summary.paymentObligation} />
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-white/60 text-sm">—</span>
+                    )}
+                  </TableCell>
                 )}
+
+                {/* Notes column */}
                 {hasAnyComments && (
-                  <TableHead className="hidden lg:table-cell text-white/90 font-semibold text-center w-20">
-                    Notes
-                  </TableHead>
+                  <TableCell className="hidden lg:table-cell text-center py-3">
+                    {summary.commentsCount > 0 ? (
+                      <div className="flex items-center justify-center gap-1 text-white/70 text-xs">
+                        <MessageSquare className="w-3 h-3" />
+                        <span>{summary.commentsCount}</span>
+                      </div>
+                    ) : (
+                      <span className="text-white/60 text-xs">—</span>
+                    )}
+                  </TableCell>
                 )}
+
+                {/* Actions column */}
                 {mode === 'view' && (onRemoveStudent || onTransferStudent) && (
-                  <TableHead className="text-white/90 font-semibold text-center w-16">Actions</TableHead>
+                  <TableCell className="text-center py-3">
+                    <div className="flex items-center justify-center">
+                      <StudentRowActionsMenu
+                        studentId={summary.studentId}
+                        studentName={summary.studentName}
+                        hasAttendance={hasAttendance}
+                        onTransfer={onTransferStudent}
+                        onRemove={onRemoveStudent}
+                      />
+                    </div>
+                  </TableCell>
                 )}
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSummaries.map((summary) => {
-                const isExpanded = expandedStudents.has(summary.studentId);
-                const isLoadingDetails = loadingDetails.has(summary.studentId);
-                const details = lessonDetails[summary.studentId] || [];
-                const riskIndicator = getAtRiskIndicator(summary);
-                const hasAttendance = summary.totalLessons > 0;
 
-                return (
-                  <React.Fragment key={summary.studentId}>
-                    {/* Main row */}
-                    <TableRow className="border-white/10 group hover:bg-white/5 focus-within:bg-white/6 hover:shadow-sm transition-all duration-150 bg-white/[0.02]">
-                      {/* Expand button */}
-                      <TableCell className="py-3">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onToggleRow(summary.studentId)}
-                          className="h-8 w-8 p-0 hover:bg-white/10 transition-colors"
-                          aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
-                          aria-expanded={isExpanded}
-                        >
-                          {isExpanded ? (
-                            <ChevronDown className="h-5 w-5 text-white/70" />
-                          ) : (
-                            <ChevronRight className="h-5 w-5 text-white/70" />
-                          )}
-                        </Button>
-                      </TableCell>
-
-                      {/* Student name with risk indicator */}
-                      <TableCell className="font-medium py-3">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            asChild
-                            variant="link"
-                            className="p-0 text-base font-bold text-blue-300 hover:text-blue-200 hover:underline"
-                          >
-                            <button onClick={() => navigate(`/students/${summary.studentId}`)}>
-                              {summary.studentName}
-                            </button>
-                          </Button>
-                          {riskIndicator.show && (
-                            <div
-                              className={`w-2 h-2 rounded-full ${riskIndicator.color} transition-transform hover:scale-125`}
-                              title={riskIndicator.title}
-                            />
-                          )}
-                        </div>
-                      </TableCell>
-
-                      {/* Progress: Combined Lessons + Attendance + Homework */}
-                      <TableCell className="py-3">
-                        <StudentProgressChips
-                          totalLessons={summary.totalLessons}
-                          attendance={summary.attendance}
-                          homework={summary.homework}
-                        />
-                      </TableCell>
-
-                      {/* Billing column */}
-                      {hasAnyBillingData && (
-                        <TableCell className="hidden md:table-cell text-center py-3">
-                          {summary.discount?.hasDiscount || summary.paymentObligation?.hasPendingObligations ? (
-                            <div className="flex items-center justify-center gap-1">
-                              {summary.discount && <DiscountIndicator discount={summary.discount} />}
-                              {summary.paymentObligation && (
-                                <PaymentObligationIndicator paymentObligation={summary.paymentObligation} />
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-white/60 text-sm">—</span>
-                          )}
-                        </TableCell>
-                      )}
-
-                      {/* Notes column */}
-                      {hasAnyComments && (
-                        <TableCell className="hidden lg:table-cell text-center py-3">
-                          {summary.commentsCount > 0 ? (
-                            <div className="flex items-center justify-center gap-1 text-white/70 text-xs">
-                              <MessageSquare className="w-3 h-3" />
-                              <span>{summary.commentsCount}</span>
-                            </div>
-                          ) : (
-                            <span className="text-white/60 text-xs">—</span>
-                          )}
-                        </TableCell>
-                      )}
-
-                      {/* Actions column */}
-                      {mode === 'view' && (onRemoveStudent || onTransferStudent) && (
-                        <TableCell className="text-center py-3">
-                          <div className="flex items-center justify-center">
-                            <StudentRowActionsMenu
-                              studentId={summary.studentId}
-                              studentName={summary.studentName}
-                              hasAttendance={hasAttendance}
-                              onTransfer={onTransferStudent}
-                              onRemove={onRemoveStudent}
-                            />
-                          </div>
-                        </TableCell>
-                      )}
-                    </TableRow>
-
-                    {/* Expandable details row */}
-                    {isExpanded && (
-                      <TableRow className="border-white/10 transition-opacity duration-200">
-                        <TableCell colSpan={getColSpan()} className="p-0 bg-white/[0.02]">
-                          <StudentLessonDetailsRow lessons={details} loading={isLoadingDetails} />
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </React.Fragment>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-    </div>
+              {/* Expandable details row */}
+              {isExpanded && (
+                <TableRow className="border-white/10 transition-opacity duration-200">
+                  <TableCell colSpan={getColSpan()} className="p-0 bg-white/[0.02]">
+                    <StudentLessonDetailsRow lessons={details} loading={isLoadingDetails} />
+                  </TableCell>
+                </TableRow>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 };
 

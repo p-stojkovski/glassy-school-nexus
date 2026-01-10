@@ -1,0 +1,221 @@
+/**
+ * ReopenSalaryDialog - Dialog to reopen an approved salary calculation
+ * Phase 7.4 implementation
+ */
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useParams } from 'react-router-dom';
+import { RotateCcw } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useToast } from '@/hooks/use-toast';
+import {
+  setLoadingState,
+  setError,
+  updateSalaryCalculation,
+} from '@/domains/teachers/teachersSlice';
+import { reopenSalaryCalculation } from '@/services/teacherApiService';
+import {
+  reopenSalarySchema,
+  type ReopenSalaryFormData,
+} from '../schemas/salaryDialogSchemas';
+import type { SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
+
+interface ReopenSalaryDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  calculation: SalaryCalculationDetail | null;
+  onSuccess?: () => void;
+}
+
+export const ReopenSalaryDialog: React.FC<ReopenSalaryDialogProps> = ({
+  open,
+  onOpenChange,
+  calculation,
+  onSuccess,
+}) => {
+  const { teacherId } = useParams<{ teacherId: string }>();
+  const dispatch = useAppDispatch();
+  const { toast } = useToast();
+
+  const loading = useAppSelector(
+    (state) => state.teachers.loading.reopeningSalaryCalculation
+  );
+
+  const form = useForm<ReopenSalaryFormData>({
+    resolver: zodResolver(reopenSalarySchema),
+    defaultValues: {
+      reason: '',
+    },
+  });
+
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        reason: '',
+      });
+    }
+  }, [open, form]);
+
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('mk-MK', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount) + ' MKD';
+  };
+
+  const formatPeriod = (start: string, end: string): string => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+    return `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
+  };
+
+  const onSubmit = async (data: ReopenSalaryFormData) => {
+    if (!teacherId || !calculation) return;
+
+    try {
+      dispatch(
+        setLoadingState({ operation: 'reopeningSalaryCalculation', loading: true })
+      );
+      dispatch(
+        setError({ operation: 'reopenSalaryCalculation', error: null })
+      );
+
+      const request = {
+        reason: data.reason,
+      };
+
+      const result = await reopenSalaryCalculation(teacherId, calculation.calculationId, request);
+
+      // Update Redux state
+      dispatch(updateSalaryCalculation(result.calculation));
+
+      toast({
+        title: 'Salary calculation reopened',
+        description: 'Successfully reopened calculation for review',
+        variant: 'default',
+      });
+
+      onOpenChange(false);
+      onSuccess?.();
+    } catch (err: any) {
+      const errorMessage =
+        err?.message || 'Failed to reopen salary calculation';
+      dispatch(
+        setError({ operation: 'reopenSalaryCalculation', error: errorMessage })
+      );
+      toast({
+        title: 'Reopen failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      dispatch(
+        setLoadingState({ operation: 'reopeningSalaryCalculation', loading: false })
+      );
+    }
+  };
+
+  if (!calculation) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-[#1a1f2e] border-white/10 max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-white">
+            <RotateCcw className="w-5 h-5 text-orange-400" />
+            Reopen Salary Calculation
+          </DialogTitle>
+          <DialogDescription className="text-white/60">
+            Reopen an approved calculation for revision. This will change its status back to pending.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-white/70">Period:</span>
+            <span className="text-sm text-white font-medium">
+              {formatPeriod(calculation.periodStart, calculation.periodEnd)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-white/70">Approved Amount:</span>
+            <span className="text-sm text-white font-medium">
+              {calculation.approvedAmount !== null
+                ? formatCurrency(calculation.approvedAmount)
+                : '-'}
+            </span>
+          </div>
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="reason"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white/80">
+                    Reason for Reopening <span className="text-red-400">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      disabled={loading}
+                      className="bg-white/5 border-white/20 text-white min-h-[100px] resize-none"
+                      placeholder="Explain why this calculation needs to be reopened..."
+                    />
+                  </FormControl>
+                  <FormDescription className="text-white/50 text-xs">
+                    Required (minimum 10 characters, maximum 500 characters)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={loading}
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                {loading ? 'Reopening...' : 'Reopen'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+};

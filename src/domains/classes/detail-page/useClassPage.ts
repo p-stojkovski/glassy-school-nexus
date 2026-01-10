@@ -5,7 +5,7 @@ import { classApiService } from '@/services/classApiService';
 import { ClassBasicInfoResponse, ClassResponse, ClassFormData, ArchivedScheduleSlotResponse } from '@/types/api/class';
 
 type ClassPageMode = 'view' | 'edit';
-type TabId = 'lessons' | 'students' | 'schedule' | 'info';
+type TabId = 'lessons' | 'students' | 'schedule' | 'info' | 'salary-rules';
 
 export interface ClassPageState {
   mode: ClassPageMode;

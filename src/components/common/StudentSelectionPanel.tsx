@@ -20,7 +20,7 @@ import { Student } from '@/domains/students/studentsSlice';
 import { Class } from '@/domains/classes/classesSlice';
 import { cn } from '@/lib/utils';
 import { studentApiService } from '@/services/studentApiService';
-import { CapacityValidationPanel } from '@/domains/classes/detail-page/tabs/students';
+// CapacityValidationPanel removed - capacity info now shown in button
 
 interface StudentSelectionPanelProps {
   students?: Student[]; // Made optional since we'll load them independently
@@ -154,11 +154,18 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
   }, [students, tempSelectedIds]);
 
   // Capacity validation
-  const hasCapacityIssue = useMemo(() => {
-    if (!classData) return false;
+  const capacityInfo = useMemo(() => {
+    if (!classData) return { hasIssue: false, overBy: 0, remaining: null };
     const totalAfterAdd = classData.enrolledCount + tempSelectedIds.length;
-    return totalAfterAdd > classData.classroomCapacity;
+    const remaining = classData.classroomCapacity - totalAfterAdd;
+    return {
+      hasIssue: totalAfterAdd > classData.classroomCapacity,
+      overBy: Math.max(0, totalAfterAdd - classData.classroomCapacity),
+      remaining: remaining,
+    };
   }, [classData, tempSelectedIds.length]);
+
+  const hasCapacityIssue = capacityInfo.hasIssue;
 
   const handleSelect = (student: Student) => {
     const isSelected = tempSelectedIds.includes(student.id);
@@ -262,20 +269,39 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
             </SheetTitle>
           </SheetHeader>
 
-          {/* Search Section */}
+          {/* Search Section - Consolidated */}
           <div className="p-4 border-b border-white/10">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-white/70">Search Students</h3>
+              <div className="flex items-center gap-2">
+                {!isLoadingStudents && !studentsError && filteredStudents.length > 0 && allowMultiple && (
+                  <>
+                    <button
+                      onClick={handleSelectAll}
+                      disabled={maxSelections !== undefined && tempSelectedIds.length >= maxSelections}
+                      className="text-xs text-white/50 hover:text-white/70 transition-colors disabled:opacity-50"
+                    >
+                      Select All
+                    </button>
+                    <span className="text-white/30">·</span>
+                    <button
+                      onClick={handleDeselectAll}
+                      className="text-xs text-white/50 hover:text-white/70 transition-colors"
+                    >
+                      Clear
+                    </button>
+                  </>
+                )}
+              </div>
               {!isLoadingStudents && !studentsError && (
                 <span className="text-xs text-white/50">
-                  {filteredStudents.length} {filteredStudents.length === 1 ? 'student' : 'students'} available
+                  {filteredStudents.length} available{classData && ` · ${classData.availableSlots} slots`}
                 </span>
               )}
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40 w-4 h-4" />
               <Input
-                placeholder="Search by name, email, or phone..."
+                placeholder="Search by name or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 h-10"
@@ -290,87 +316,6 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
               )}
             </div>
           </div>
-
-          {/* Capacity Validation Panel - Shows when classData provided and selections exist */}
-          {classData && tempSelectedIds.length > 0 && (
-            <div className="py-3">
-              <CapacityValidationPanel
-                selectedCount={tempSelectedIds.length}
-                currentEnrolled={classData.enrolledCount}
-                capacity={classData.classroomCapacity}
-                availableSlots={classData.availableSlots}
-              />
-            </div>
-          )}
-
-          {/* Selected Students Section - Always visible when selections exist */}
-          {tempSelectedIds.length > 0 && (
-            <div className="p-4 bg-white/5 border-b border-white/10">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-400" />
-                  Selected ({tempSelectedIds.length})
-                  {maxSelections && <span className="text-white/50">/ {maxSelections}</span>}
-                </h3>
-                {allowMultiple && (
-                  <button
-                    onClick={() => setTempSelectedIds([])}
-                    className="text-xs text-white/50 hover:text-white/70 transition-colors"
-                  >
-                    Clear All
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedStudents.map((student) => (
-                  <div
-                    key={student.id}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/10 border border-white/20 rounded-full text-sm group hover:bg-white/15 transition-colors"
-                  >
-                    <span className="text-white/90 truncate max-w-[120px]">
-                      {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email || 'Unknown'}
-                    </span>
-                    <button
-                      onClick={() => handleSelect(student)}
-                      className="text-white/40 hover:text-white/70 transition-colors p-0.5 hover:bg-white/10 rounded-full"
-                      title="Remove"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Available Students Section Header */}
-          {!isLoadingStudents && !studentsError && filteredStudents.length > 0 && (
-            <div className="px-4 py-3 border-b border-white/10">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-white/70">
-                  Available Students ({filteredStudents.length})
-                </h3>
-                {allowMultiple && filteredStudents.length > 0 && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleSelectAll}
-                      disabled={maxSelections && tempSelectedIds.length >= maxSelections}
-                      className="text-xs text-white/50 hover:text-white/70 transition-colors disabled:opacity-50"
-                    >
-                      Select All
-                    </button>
-                    <span className="text-white/30">|</span>
-                    <button
-                      onClick={handleDeselectAll}
-                      className="text-xs text-white/50 hover:text-white/70 transition-colors"
-                    >
-                      Deselect All
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Student List */}
           <ScrollArea className="flex-1">
@@ -459,17 +404,13 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
                         {isSelected && <Check className="w-3 h-3 text-white" />}
                       </div>
 
-                      {/* Student Info */}
+                      {/* Student Info - Simplified */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white truncate">
                           {student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email || 'Unknown Student'}
                         </p>
-                        {(student.email || student.phone) && (
-                          <p className="text-xs text-white/50 truncate mt-0.5">
-                            {student.email}
-                            {student.email && student.phone && ' • '}
-                            {student.phone}
-                          </p>
+                        {student.email && (
+                          <p className="text-xs text-white/50 truncate">{student.email}</p>
                         )}
                       </div>
                     </div>
@@ -479,35 +420,27 @@ const StudentSelectionPanel: React.FC<StudentSelectionPanelProps> = ({
             </div>
           </ScrollArea>
 
-          {/* Quick Stats Summary - Shows when students selected and no capacity issues */}
-          {tempSelectedIds.length > 0 && classData && !hasCapacityIssue && (
-            <div className="px-4 py-3 bg-white/5 border-t border-white/10">
-              <div className="flex items-center gap-2 text-sm text-white/70">
-                <Check className="w-4 h-4 text-green-400" />
-                <span>
-                  Adding <strong className="text-white">{tempSelectedIds.length}</strong> student{tempSelectedIds.length !== 1 ? 's' : ''}
-                  {' • '}
-                  <strong className="text-white">
-                    {classData.classroomCapacity - classData.enrolledCount - tempSelectedIds.length}
-                  </strong>{' '}
-                  slot{classData.classroomCapacity - classData.enrolledCount - tempSelectedIds.length !== 1 ? 's' : ''} will remain
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Footer Actions */}
+          {/* Footer Actions - Smart button with capacity feedback */}
           <div className="p-4 border-t border-white/10">
             <div className="flex gap-3">
               <Button
                 onClick={handleApply}
                 disabled={tempSelectedIds.length === 0 || isLoadingStudents || studentsError !== null || hasCapacityIssue}
-                className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className={cn(
+                  'flex-1 font-semibold disabled:opacity-50 disabled:cursor-not-allowed',
+                  hasCapacityIssue
+                    ? 'bg-red-500/80 hover:bg-red-500 text-white'
+                    : capacityInfo.remaining !== null && capacityInfo.remaining <= 2 && capacityInfo.remaining >= 0
+                    ? 'bg-amber-500 hover:bg-amber-600 text-black'
+                    : 'bg-yellow-500 hover:bg-yellow-600 text-black'
+                )}
               >
                 {tempSelectedIds.length === 0
                   ? 'Select Students'
                   : hasCapacityIssue
-                  ? 'Exceeds Capacity'
+                  ? `Exceeds by ${capacityInfo.overBy}`
+                  : capacityInfo.remaining !== null && capacityInfo.remaining <= 2
+                  ? `Add ${tempSelectedIds.length} · ${capacityInfo.remaining} left`
                   : `Add ${tempSelectedIds.length} Student${tempSelectedIds.length !== 1 ? 's' : ''}`}
               </Button>
               <Button

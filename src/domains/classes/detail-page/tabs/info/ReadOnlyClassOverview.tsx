@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import {
   Collapsible,
   CollapsibleContent,
@@ -41,7 +41,6 @@ export const ReadOnlyClassOverview: React.FC<ReadOnlyClassOverviewProps> = ({
               !isExpanded && '-rotate-90'
             )}
           />
-          <FileText className="h-5 w-5 text-white/60" />
           <div className="flex flex-col text-left">
             <span className="font-medium">Class Overview</span>
           </div>

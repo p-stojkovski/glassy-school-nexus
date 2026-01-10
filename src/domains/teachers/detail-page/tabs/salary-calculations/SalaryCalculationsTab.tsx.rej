@@ -1,0 +1,57 @@
+--- SalaryCalculationsTab.tsx
++++ SalaryCalculationsTab.tsx
+@@ -6,6 +6,7 @@
+  * Updated: Added kebab menu for row actions
+  */
+ import React, { useState } from 'react';
++import { useParams, useNavigate } from 'react-router-dom';
+ import { Plus, AlertCircle, Eye, CheckCircle, RotateCcw, ChevronDown, MoreVertical } from 'lucide-react';
+ import { Button } from '@/components/ui/button';
+ import { Badge } from '@/components/ui/badge';
+@@ -50,7 +51,6 @@ import {
+   GenerateSalaryDialog,
+   ApproveSalaryDialog,
+   ReopenSalaryDialog,
+-  SalaryCalculationDetailDialog,
+ } from './dialogs';
+ 
+ interface SalaryCalculationsTabProps {
+@@ -61,12 +61,13 @@ interface SalaryCalculationsTabProps {
+ 
+ const SalaryCalculationsTab: React.FC<SalaryCalculationsTabProps> = ({ academicYearId, yearName, isActive }) => {
+   const { toast } = useToast();
++  const navigate = useNavigate();
++  const { teacherId } = useParams<{ teacherId: string }>();
+ 
+   // Dialog state management
+   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+   const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
+-  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+   const [selectedCalculation, setSelectedCalculation] = useState<SalaryCalculation | null>(null);
+ 
+   // Collapsible state for salary preview
+@@ -161,8 +162,7 @@ const SalaryCalculationsTab: React.FC<SalaryCalculationsTabProps> = ({ academic
+   };
+ 
+   const handleViewDetails = (calculation: SalaryCalculation) => {
+-    setSelectedCalculation(calculation);
+-    setDetailDialogOpen(true);
++    navigate(`/teachers/${teacherId}/salary-calculations/${calculation.id}`);
+   };
+ 
+   const handleApprove = (calculation: SalaryCalculation) => {
+@@ -407,13 +407,6 @@ const SalaryCalculationsTab: React.FC<SalaryCalculationsTabProps> = ({ academic
+         calculation={selectedCalculation}
+         onSuccess={handleDialogSuccess}
+       />
+-
+-      <SalaryCalculationDetailDialog
+-        open={detailDialogOpen}
+-        onOpenChange={setDetailDialogOpen}
+-        calculation={selectedCalculation}
+-        onSuccess={handleDialogSuccess}
+-      />
+     </div>
+   );
+ };

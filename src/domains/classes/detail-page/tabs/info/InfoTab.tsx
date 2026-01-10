@@ -15,12 +15,18 @@ interface InfoTabProps {
   classData: ClassBasicInfoResponse;
   onUpdate: () => void;
   isActive: boolean;
+  onUnsavedChangesChange?: (hasChanges: boolean) => void;
+  isEditSheetOpen?: boolean;
+  onEditSheetOpenChange?: (open: boolean) => void;
 }
 
 const InfoTab: React.FC<InfoTabProps> = ({
   classData,
   onUpdate,
   isActive,
+  onUnsavedChangesChange,
+  isEditSheetOpen: externalIsEditSheetOpen,
+  onEditSheetOpenChange: externalOnEditSheetOpenChange,
 }) => {
   // Lazy loading state
   const [additionalDetails, setAdditionalDetails] = useState<ClassAdditionalDetailsResponse | null>(null);
@@ -42,8 +48,10 @@ const InfoTab: React.FC<InfoTabProps> = ({
     setFetchedForClassId(null);
   }, [classData?.id, fetchedForClassId]);
 
-  // Sheet state
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  // Sheet state - use external control if provided, otherwise use internal state
+  const [internalIsEditSheetOpen, setInternalIsEditSheetOpen] = useState(false);
+  const isEditSheetOpen = externalIsEditSheetOpen ?? internalIsEditSheetOpen;
+  const setIsEditSheetOpen = externalOnEditSheetOpenChange ?? setInternalIsEditSheetOpen;
 
   // Section expanded state (optional - can remove if you want sections always expanded)
   const [overviewExpanded, setOverviewExpanded] = useState(true);
@@ -117,19 +125,6 @@ const InfoTab: React.FC<InfoTabProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Edit Button - consistent wrapper styling across tabs */}
-      <div className="flex justify-end p-3 bg-white/[0.02] rounded-lg border border-white/10">
-        <Button
-          onClick={() => setIsEditSheetOpen(true)}
-          size="default"
-          variant="outline"
-          className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium gap-2"
-        >
-          <Edit className="h-4 w-4" />
-          Edit Class Details
-        </Button>
-      </div>
-
       {/* Read-Only Sections Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 auto-rows-fr">
         <ReadOnlyClassOverview

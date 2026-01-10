@@ -174,3 +174,50 @@ export const validateAndPrepareClassData = (
 
   return { isValid: true, errors: {}, data: requestData };
 };
+
+// ============================================================================
+// SALARY RULE SCHEMAS (Phase 6.4 - Teacher Variable Salary)
+// ============================================================================
+
+/**
+ * Schema for creating a new salary rule
+ * Backend validation rules (CreateClassSalaryRuleValidationRules):
+ * - MinStudents: >= 0
+ * - RatePerLesson: > 0, max 2 decimal places
+ * - EffectiveFrom: required, valid date
+ * - EffectiveTo: optional, if provided must be >= EffectiveFrom
+ */
+export const createSalaryRuleSchema = z.object({
+  minStudents: z.coerce
+    .number({ required_error: 'Minimum students is required' })
+    .int('Must be a whole number')
+    .min(0, 'Must be 0 or greater'),
+  ratePerLesson: z.coerce
+    .number({ required_error: 'Rate per lesson is required' })
+    .positive('Must be greater than 0')
+    .refine(
+      (val) => /^\d+(\.\d{1,2})?$/.test(val.toString()),
+      'Maximum 2 decimal places allowed'
+    ),
+  effectiveFrom: z.string().min(1, 'Effective from date is required'),
+  effectiveTo: z.string().optional().nullable(),
+}).refine(
+  (data) => {
+    if (!data.effectiveTo) return true;
+    return data.effectiveTo >= data.effectiveFrom;
+  },
+  {
+    message: 'End date must be on or after start date',
+    path: ['effectiveTo'],
+  }
+);
+
+/**
+ * Schema for updating an existing salary rule
+ * Same validation as create
+ */
+export const updateSalaryRuleSchema = createSalaryRuleSchema;
+
+// Types from schema
+export type CreateSalaryRuleFormData = z.infer<typeof createSalaryRuleSchema>;
+export type UpdateSalaryRuleFormData = z.infer<typeof updateSalaryRuleSchema>;

@@ -64,6 +64,8 @@ function normalizeListResponse<T>(raw: any): T[] {
       (raw as any).items,
       (raw as any).results,
       (raw as any).classes,
+      (raw as any).rules,
+      (raw as any).Rules,
       (raw as any).data,
       (raw as any).value,
     ];
@@ -529,7 +531,13 @@ await apiService.delete<void>(ClassApiPaths.BY_ID(id));
   ): Promise<AddStudentsResponse> {
     try {
       const endpoint = ClassApiPaths.ENROLLMENTS(classId);
-      return await apiService.post<AddStudentsResponse>(endpoint, request);
+      // Backend expects PascalCase: { StudentIdsToAdd, StudentIdsToRemove, IncludeTodayLesson }
+      const backendRequest = {
+        StudentIdsToAdd: request.studentIdsToAdd,
+        StudentIdsToRemove: null,
+        IncludeTodayLesson: request.includeTodayLesson,
+      };
+      return await apiService.post<AddStudentsResponse>(endpoint, backendRequest);
     } catch (error: any) {
       if (error.status === ClassHttpStatus.NOT_FOUND) {
         throw makeApiError(error, 'Class not found');
@@ -597,6 +605,116 @@ await apiService.delete<void>(ClassApiPaths.BY_ID(id));
       throw makeApiError(error, `Failed to transfer student: ${error.message || 'Unknown error'}`);
     }
   }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CLASS SALARY RULES (Phase 6.1 - Teacher Variable Salary)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Get all salary rules for a class
+   */
+  async getSalaryRules(classId: string): Promise<any[]> {
+    try {
+      const endpoint = `/api/classes/${classId}/salary-rules`;
+      const raw = await apiService.get<any>(endpoint);
+      return normalizeListResponse<any>(raw);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to view salary rules');
+      }
+      throw makeApiError(error, `Failed to fetch salary rules: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Create a new salary rule for a class
+   */
+  async createSalaryRule(classId: string, data: any): Promise<any> {
+    try {
+      const endpoint = `/api/classes/${classId}/salary-rules`;
+      return await apiService.post<any>(endpoint, data);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, error.message || 'Invalid salary rule data');
+      }
+      if (error.status === ClassHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'A salary rule with overlapping dates already exists');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to create salary rules');
+      }
+      throw makeApiError(error, `Failed to create salary rule: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Update an existing salary rule
+   */
+  async updateSalaryRule(classId: string, ruleId: string, data: any): Promise<any> {
+    try {
+      const endpoint = `/api/classes/${classId}/salary-rules/${ruleId}`;
+      return await apiService.put<any>(endpoint, data);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class or salary rule not found');
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, error.message || 'Invalid salary rule data');
+      }
+      if (error.status === ClassHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'A salary rule with overlapping dates already exists');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to update salary rules');
+      }
+      throw makeApiError(error, `Failed to update salary rule: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Delete a salary rule
+   */
+  async deleteSalaryRule(classId: string, ruleId: string): Promise<void> {
+    try {
+      const endpoint = `/api/classes/${classId}/salary-rules/${ruleId}`;
+      await apiService.delete<void>(endpoint);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class or salary rule not found');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to delete salary rules');
+      }
+      throw makeApiError(error, `Failed to delete salary rule: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get salary preview for a specific month
+   */
+  async getSalaryPreview(classId: string, year: number, month: number): Promise<any> {
+    try {
+      const endpoint = `/api/classes/${classId}/salary-preview?year=${year}&month=${month}`;
+      return await apiService.get<any>(endpoint);
+    } catch (error: any) {
+      if (error.status === ClassHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Class not found');
+      }
+      if (error.status === ClassHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid year or month parameters');
+      }
+      if (error.status === ClassHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(error, 'Authentication required to view salary preview');
+      }
+      throw makeApiError(error, `Failed to fetch salary preview: ${error.message || 'Unknown error'}`);
+    }
+  }
 }
 
 export const classApiService = new ClassApiService();
@@ -635,4 +753,16 @@ export const removeStudentFromClass = (classId: string, studentId: string) =>
   classApiService.removeStudentFromClass(classId, studentId);
 export const transferStudent = (classId: string, studentId: string, request: TransferStudentRequest) =>
   classApiService.transferStudent(classId, studentId, request);
+
+// Salary rules (Phase 6.1 - Teacher Variable Salary)
+export const getSalaryRules = (classId: string) =>
+  classApiService.getSalaryRules(classId);
+export const createSalaryRule = (classId: string, data: any) =>
+  classApiService.createSalaryRule(classId, data);
+export const updateSalaryRule = (classId: string, ruleId: string, data: any) =>
+  classApiService.updateSalaryRule(classId, ruleId, data);
+export const deleteSalaryRule = (classId: string, ruleId: string) =>
+  classApiService.deleteSalaryRule(classId, ruleId);
+export const getSalaryPreview = (classId: string, year: number, month: number) =>
+  classApiService.getSalaryPreview(classId, year, month);
 

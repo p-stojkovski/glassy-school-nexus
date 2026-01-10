@@ -194,6 +194,7 @@ export interface StudentLessonSummary {
   lastUpdated?: string | null;
   discount?: StudentDiscountInfo | null;
   paymentObligation?: StudentPaymentObligationInfo | null;
+  enrolledAt: string;  // ISO date string - when the student was enrolled
 }
 
 export interface StudentLessonDetail {
@@ -298,6 +299,16 @@ export interface UpdateAdditionalDetailsRequest {
 export interface ManageEnrollmentsRequest {
   studentIdsToAdd?: string[];
   studentIdsToRemove?: string[];
+  /** If true and there's a lesson today, include it for newly enrolled students. If false, start from tomorrow. */
+  includeTodayLesson?: boolean | null;
+}
+
+/** Information about a same-day lesson when enrolling students */
+export interface SameDayLessonInfo {
+  lessonId: string;
+  startTime: string;  // "HH:MM" format
+  endTime: string;    // "HH:MM" format
+  isOngoing: boolean;
 }
 
 /** Response from bulk enrollment management */
@@ -306,6 +317,8 @@ export interface ManageEnrollmentsResponse {
   removedCount: number;
   currentEnrollmentCount: number;
   warnings?: string[];
+  /** If present, there's a lesson today and the frontend should prompt the user */
+  sameDayLesson?: SameDayLessonInfo | null;
 }
 
 /** Request to transfer a student to another class */
@@ -328,13 +341,17 @@ export interface TransferStudentResponse {
 
 // Simple enrollment add/remove types used by UI helpers
 export interface AddStudentsRequest {
-  studentIds: string[];
+  studentIdsToAdd: string[];
+  /** If true and there's a lesson today, include it for newly enrolled students. If false, start from tomorrow. */
+  includeTodayLesson?: boolean | null;
 }
 
 export interface AddStudentsResponse {
   enrolledCount: number;
   addedStudentIds?: string[];
   warnings?: string[];
+  /** If present, there's a lesson today and the frontend should prompt the user */
+  sameDayLesson?: SameDayLessonInfo | null;
 }
 
 export interface RemoveStudentResponse {

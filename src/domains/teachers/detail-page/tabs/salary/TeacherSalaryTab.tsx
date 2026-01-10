@@ -83,19 +83,17 @@ export default function TeacherSalaryTab({ academicYearId, yearName }: TeacherSa
   }
 
   return (
-    <>
+    <div className="space-y-3">
       {/* Summary Cards */}
       <SalarySummaryCards summary={salaryData.summary} />
 
       {/* Salary Breakdown */}
-      <div className="space-y-3">
-        <SalaryBreakdownTable
-          grossSalary={salaryData.grossSalary}
-          contributions={salaryData.contributions}
-          incomeTax={salaryData.incomeTax}
-          summary={salaryData.summary}
-        />
-      </div>
-    </>
+      <SalaryBreakdownTable
+        grossSalary={salaryData.grossSalary}
+        contributions={salaryData.contributions}
+        incomeTax={salaryData.incomeTax}
+        summary={salaryData.summary}
+      />
+    </div>
   );
 }

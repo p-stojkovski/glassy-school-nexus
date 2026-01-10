@@ -1,5 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TeacherResponse, SubjectDto, TeacherSearchParams } from '@/types/api/teacher';
+import {
+  SalaryCalculation,
+  SalaryCalculationDetail,
+  TeacherSalaryPreview,
+  SalaryAuditLog,
+} from './_shared/types/salaryCalculation.types';
 
 // Use the API response type as our domain model
 export type Teacher = TeacherResponse;
@@ -12,6 +18,13 @@ export interface LoadingStates {
   deleting: boolean;
   searching: boolean;
   fetchingSubjects: boolean;
+  fetchingSalaryCalculations: boolean;
+  fetchingSalaryCalculationDetail: boolean;
+  generatingSalaryCalculation: boolean;
+  approvingSalaryCalculation: boolean;
+  reopeningSalaryCalculation: boolean;
+  fetchingSalaryPreview: boolean;
+  fetchingSalaryAuditLog: boolean;
 }
 
 // Error states for different operations
@@ -22,6 +35,13 @@ export interface ErrorStates {
   delete: string | null;
   search: string | null;
   fetchSubjects: string | null;
+  fetchSalaryCalculations: string | null;
+  fetchSalaryCalculationDetail: string | null;
+  generateSalaryCalculation: string | null;
+  approveSalaryCalculation: string | null;
+  reopenSalaryCalculation: string | null;
+  fetchSalaryPreview: string | null;
+  fetchSalaryAuditLog: string | null;
 }
 
 interface TeachersState {
@@ -30,17 +50,25 @@ interface TeachersState {
   subjects: SubjectDto[];
   searchResults: Teacher[];
   selectedTeacher: Teacher | null;
-  
+
   // Loading states
   loading: LoadingStates;
-  
+
   // Error states
   errors: ErrorStates;
-  
+
   // Search and filter state
   searchQuery: string;
   searchParams: TeacherSearchParams;
   isSearchMode: boolean;
+
+  // Salary calculations (Phase 7.1 - Variable Salary Feature)
+  salaryCalculations: {
+    items: SalaryCalculation[];
+  };
+  salaryCalculationDetail: SalaryCalculationDetail | null;
+  salaryPreview: TeacherSalaryPreview | null;
+  salaryAuditLogs: SalaryAuditLog[];
 }
 
 const initialLoadingStates: LoadingStates = {
@@ -50,6 +78,13 @@ const initialLoadingStates: LoadingStates = {
   deleting: false,
   searching: false,
   fetchingSubjects: false,
+  fetchingSalaryCalculations: false,
+  fetchingSalaryCalculationDetail: false,
+  generatingSalaryCalculation: false,
+  approvingSalaryCalculation: false,
+  reopeningSalaryCalculation: false,
+  fetchingSalaryPreview: false,
+  fetchingSalaryAuditLog: false,
 };
 
 const initialErrorStates: ErrorStates = {
@@ -59,6 +94,13 @@ const initialErrorStates: ErrorStates = {
   delete: null,
   search: null,
   fetchSubjects: null,
+  fetchSalaryCalculations: null,
+  fetchSalaryCalculationDetail: null,
+  generateSalaryCalculation: null,
+  approveSalaryCalculation: null,
+  reopenSalaryCalculation: null,
+  fetchSalaryPreview: null,
+  fetchSalaryAuditLog: null,
 };
 
 const initialState: TeachersState = {
@@ -71,6 +113,12 @@ const initialState: TeachersState = {
   searchQuery: '',
   searchParams: {},
   isSearchMode: false,
+  salaryCalculations: {
+    items: [],
+  },
+  salaryCalculationDetail: null,
+  salaryPreview: null,
+  salaryAuditLogs: [],
 };
 
 const teachersSlice = createSlice({
@@ -184,10 +232,78 @@ const teachersSlice = createSlice({
     resetTeachersState: (state) => {
       return initialState;
     },
-    
+
     // Legacy support for existing components
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading.fetching = action.payload;
+    },
+
+    // ════════════════════════════════════════════════════════════════════════
+    // SALARY CALCULATIONS (Phase 7.1 - Variable Salary Feature)
+    // ════════════════════════════════════════════════════════════════════════
+
+    // Salary calculation list
+    setSalaryCalculations: (state, action: PayloadAction<SalaryCalculation[]>) => {
+      state.salaryCalculations.items = action.payload;
+      state.errors.fetchSalaryCalculations = null;
+    },
+
+    addSalaryCalculation: (state, action: PayloadAction<SalaryCalculation>) => {
+      state.salaryCalculations.items.unshift(action.payload);
+      state.errors.generateSalaryCalculation = null;
+    },
+
+    updateSalaryCalculation: (state, action: PayloadAction<SalaryCalculation>) => {
+      const index = state.salaryCalculations.items.findIndex(c => c.id === action.payload.id);
+      if (index !== -1) {
+        state.salaryCalculations.items[index] = action.payload;
+      }
+      // Also update the detail if it's the same calculation
+      if (state.salaryCalculationDetail?.calculation.id === action.payload.id) {
+        state.salaryCalculationDetail.calculation = action.payload;
+      }
+    },
+
+    // Helper to update calculation from detail response (approve/reopen actions)
+    updateSalaryCalculationInState: (state, action: PayloadAction<SalaryCalculation>) => {
+      const index = state.salaryCalculations.items.findIndex(c => c.id === action.payload.id);
+      if (index !== -1) {
+        state.salaryCalculations.items[index] = action.payload;
+      }
+    },
+
+    clearSalaryCalculations: (state) => {
+      state.salaryCalculations.items = [];
+    },
+
+    // Salary calculation detail
+    setSalaryCalculationDetail: (state, action: PayloadAction<SalaryCalculationDetail | null>) => {
+      state.salaryCalculationDetail = action.payload;
+      state.errors.fetchSalaryCalculationDetail = null;
+    },
+
+    clearSalaryCalculationDetail: (state) => {
+      state.salaryCalculationDetail = null;
+    },
+
+    // Salary preview
+    setSalaryPreview: (state, action: PayloadAction<TeacherSalaryPreview | null>) => {
+      state.salaryPreview = action.payload;
+      state.errors.fetchSalaryPreview = null;
+    },
+
+    clearSalaryPreview: (state) => {
+      state.salaryPreview = null;
+    },
+
+    // Salary audit logs
+    setSalaryAuditLogs: (state, action: PayloadAction<SalaryAuditLog[]>) => {
+      state.salaryAuditLogs = action.payload;
+      state.errors.fetchSalaryAuditLog = null;
+    },
+
+    clearSalaryAuditLogs: (state) => {
+      state.salaryAuditLogs = [];
     },
   },
 });
@@ -199,30 +315,43 @@ export const {
   updateTeacher,
   deleteTeacher,
   setSelectedTeacher,
-  
+
   // Subjects management
   setSubjects,
-  
+
   // Loading states
   setLoadingState,
   setAllLoading,
-  
+
   // Error states
   setError,
   clearError,
   clearAllErrors,
-  
+
   // Search functionality
   setSearchResults,
   setSearchQuery,
   setSearchParams,
   setSearchMode,
-  
+
   // Reset
   resetTeachersState,
-  
+
   // Legacy support
   setLoading,
+
+  // Salary calculations (Phase 7.1)
+  setSalaryCalculations,
+  addSalaryCalculation,
+  updateSalaryCalculation,
+  updateSalaryCalculationInState,
+  clearSalaryCalculations,
+  setSalaryCalculationDetail,
+  clearSalaryCalculationDetail,
+  setSalaryPreview,
+  clearSalaryPreview,
+  setSalaryAuditLogs,
+  clearSalaryAuditLogs,
 } = teachersSlice.actions;
 
 export default teachersSlice.reducer;

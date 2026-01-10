@@ -1,5 +1,5 @@
 import React from 'react';
-import { ListChecks, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import {
   Collapsible,
   CollapsibleContent,
@@ -41,7 +41,6 @@ export const ReadOnlyLearningObjectives: React.FC<ReadOnlyLearningObjectivesProp
               !isExpanded && '-rotate-90'
             )}
           />
-          <ListChecks className="h-5 w-5 text-white/60" />
           <div className="flex flex-col text-left">
             <span className="font-medium">Learning Objectives</span>
           </div>
