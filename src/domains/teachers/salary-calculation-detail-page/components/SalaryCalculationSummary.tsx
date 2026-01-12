@@ -4,37 +4,12 @@
  */
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatCurrency, formatRelativeTime } from '@/utils/formatters';
 import type { SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
 
 interface SalaryCalculationSummaryProps {
   detail: SalaryCalculationDetail;
 }
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('mk-MK', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount) + ' MKD';
-};
-
-const formatRelativeTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return diffDays + ' days ago';
-  if (diffDays < 30) {
-    const weeks = Math.floor(diffDays / 7);
-    return weeks + (weeks > 1 ? ' weeks' : ' week') + ' ago';
-  }
-  if (diffDays < 365) {
-    const months = Math.floor(diffDays / 30);
-    return months + (months > 1 ? ' months' : ' month') + ' ago';
-  }
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-};
 
 export const SalaryCalculationSummary: React.FC<SalaryCalculationSummaryProps> = ({ detail }) => {
   return (

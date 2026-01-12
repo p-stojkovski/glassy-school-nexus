@@ -28,18 +28,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { formatCurrency } from '@/utils/formatters';
 import type { SalaryCalculationItem } from '@/domains/teachers/_shared/types/salaryCalculation.types';
 
 interface SalaryCalculationBreakdownProps {
   items: SalaryCalculationItem[];
 }
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('mk-MK', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount) + ' MKD';
-};
 
 export const SalaryCalculationBreakdown: React.FC<SalaryCalculationBreakdownProps> = ({ items }) => {
   if (items.length === 0) {

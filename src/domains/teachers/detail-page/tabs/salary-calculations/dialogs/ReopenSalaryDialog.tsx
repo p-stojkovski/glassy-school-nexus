@@ -38,6 +38,7 @@ import {
   reopenSalarySchema,
   type ReopenSalaryFormData,
 } from '../schemas/salaryDialogSchemas';
+import { formatCurrency, formatPeriodFull } from '@/utils/formatters';
 import type { SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
 
 interface ReopenSalaryDialogProps {
@@ -76,20 +77,6 @@ export const ReopenSalaryDialog: React.FC<ReopenSalaryDialogProps> = ({
       });
     }
   }, [open, form]);
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) + ' MKD';
-  };
-
-  const formatPeriod = (start: string, end: string): string => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
-    return `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
-  };
 
   const onSubmit = async (data: ReopenSalaryFormData) => {
     if (!teacherId || !calculation) return;
@@ -156,7 +143,7 @@ export const ReopenSalaryDialog: React.FC<ReopenSalaryDialogProps> = ({
           <div className="flex justify-between items-center">
             <span className="text-sm text-white/70">Period:</span>
             <span className="text-sm text-white font-medium">
-              {formatPeriod(calculation.periodStart, calculation.periodEnd)}
+              {formatPeriodFull(calculation.periodStart, calculation.periodEnd)}
             </span>
           </div>
           <div className="flex justify-between items-center">

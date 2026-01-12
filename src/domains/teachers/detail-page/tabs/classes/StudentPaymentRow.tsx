@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { User, CheckCircle2, AlertCircle, MinusCircle, BarChart3, BookOpen, ChevronRight, ChevronDown, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { StudentPaymentStatus } from '@/types/api/teacher';
@@ -16,7 +16,7 @@ interface StudentPaymentRowProps {
  * Expandable to show payment breakdown details.
  * Clicking anywhere on the row toggles expand/collapse.
  */
-const StudentPaymentRow: React.FC<StudentPaymentRowProps> = ({ student, isExpanded = false, onToggle }) => {
+const StudentPaymentRow = memo<StudentPaymentRowProps>(({ student, isExpanded = false, onToggle }) => {
   const isInactive = student.enrollmentStatus !== 'active';
 
   const handleRowClick = () => {
@@ -214,6 +214,8 @@ const StudentPaymentRow: React.FC<StudentPaymentRowProps> = ({ student, isExpand
       </div>
     </div>
   );
-};
+});
+
+StudentPaymentRow.displayName = 'StudentPaymentRow';
 
 export default StudentPaymentRow;

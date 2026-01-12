@@ -3,7 +3,7 @@
  * Displays date number and mini stacked status bars
  */
 
-import React from 'react';
+import React, { memo } from 'react';
 import { cn } from '@/lib/utils';
 import type { MonthDayData } from './calendarTypes';
 import { STATUS_COLORS } from './calendarTypes';
@@ -79,7 +79,7 @@ const DayTooltip: React.FC<{ counts: MonthDayData['statusCounts'] }> = ({ counts
  * Day cell for monthly calendar
  * Shows date number and stacked status bar
  */
-const LessonDayCell: React.FC<LessonDayCellProps> = ({ dayData, onClick }) => {
+const LessonDayCell = memo<LessonDayCellProps>(({ dayData, onClick }) => {
   const { dayNumber, isCurrentMonth, isToday, statusCounts } = dayData;
   const hasLessons = statusCounts.total > 0;
 
@@ -141,6 +141,8 @@ const LessonDayCell: React.FC<LessonDayCellProps> = ({ dayData, onClick }) => {
       )}
     </div>
   );
-};
+});
+
+LessonDayCell.displayName = 'LessonDayCell';
 
 export default LessonDayCell;

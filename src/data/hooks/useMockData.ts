@@ -19,7 +19,7 @@ import {
 import { setClasses } from '@/domains/classes/classesSlice';
 import {
   setTeachers,
-  setLoading as setTeachersLoading,
+  setLoadingState as setTeachersLoadingState,
 } from '@/domains/teachers/teachersSlice';
 import {
   createObligation,
@@ -140,7 +140,7 @@ export const useMockData = (
     async (data: MockDataState) => {
       // Set loading states (exclude students domain)
       dispatch(setClassroomsLoading(true));
-      dispatch(setTeachersLoading(true));
+      dispatch(setTeachersLoadingState({ operation: 'fetching', loading: true }));
 
       try {
         // Students are managed via API only; skip dispatching mock students
@@ -169,7 +169,7 @@ export const useMockData = (
       } finally {
         // Clear loading states
         dispatch(setClassroomsLoading(false));
-        dispatch(setTeachersLoading(false));
+        dispatch(setTeachersLoadingState({ operation: 'fetching', loading: false }));
       }
     },
     [dispatch]

@@ -1,4 +1,5 @@
 import { DollarSign, Calculator, Percent, Wallet } from 'lucide-react';
+import { formatMKD } from '@/utils/formatters';
 import { SalaryBreakdown } from './useSalaryCalculations';
 import { TAX_RATES } from './salarySetupSchema';
 
@@ -7,13 +8,6 @@ interface SalaryPreviewCardsProps {
 }
 
 export default function SalaryPreviewCards({ breakdown }: SalaryPreviewCardsProps) {
-  const formatMKD = (amount: number) => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) + ' MKD';
-  };
-
   const formatPercent = (rate: number) => {
     return (rate * 100).toFixed(1) + '%';
   };

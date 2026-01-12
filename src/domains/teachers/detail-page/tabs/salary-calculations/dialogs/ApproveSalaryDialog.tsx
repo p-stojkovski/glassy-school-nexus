@@ -39,6 +39,7 @@ import {
   approveSalarySchema,
   type ApproveSalaryFormData,
 } from '../schemas/salaryDialogSchemas';
+import { formatCurrency, formatPeriodFull } from '@/utils/formatters';
 import type { SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
 
 interface ApproveSalaryDialogProps {
@@ -83,20 +84,6 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
   // Watch approved amount to show reason field when it differs
   const approvedAmount = form.watch('approvedAmount');
   const isDifferent = calculation && approvedAmount !== calculation.calculatedAmount;
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) + ' MKD';
-  };
-
-  const formatPeriod = (start: string, end: string): string => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
-    return `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
-  };
 
   const onSubmit = async (data: ApproveSalaryFormData) => {
     if (!teacherId || !calculation) return;
@@ -164,7 +151,7 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
           <div className="flex justify-between items-center">
             <span className="text-sm text-white/70">Period:</span>
             <span className="text-sm text-white font-medium">
-              {formatPeriod(calculation.periodStart, calculation.periodEnd)}
+              {formatPeriodFull(calculation.periodStart, calculation.periodEnd)}
             </span>
           </div>
           <div className="flex justify-between items-center">

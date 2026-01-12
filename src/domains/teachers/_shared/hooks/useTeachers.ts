@@ -9,7 +9,6 @@ import {
   setSelectedTeacher,
   setSubjects,
   setLoadingState,
-  setAllLoading,
   setError,
   clearError,
   clearAllErrors,
@@ -63,7 +62,6 @@ export const useTeachers = () => {
     // Actions - Loading states
     setLoadingState: (operation: keyof typeof teachersState.loading, loading: boolean) =>
       dispatch(setLoadingState({ operation, loading })),
-    setAllLoading: (loading: boolean) => dispatch(setAllLoading(loading)),
 
     // Actions - Error states
     setError: (operation: keyof typeof teachersState.errors, error: string | null) =>

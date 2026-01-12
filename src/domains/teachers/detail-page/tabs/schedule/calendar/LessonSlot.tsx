@@ -3,7 +3,7 @@
  * Used in weekly view for positioned lesson blocks
  */
 
-import React from 'react';
+import React, { memo } from 'react';
 import { cn } from '@/lib/utils';
 import type { CalendarLesson, StatusColorConfig } from './calendarTypes';
 import { STATUS_COLORS } from './calendarTypes';
@@ -26,7 +26,7 @@ function getStatusColors(status: CalendarLesson['statusName']): StatusColorConfi
  * Lesson slot for weekly calendar view
  * Displays class name, time range, and status indicator
  */
-const LessonSlot: React.FC<LessonSlotProps> = ({ lesson, style, onClick }) => {
+const LessonSlot = memo<LessonSlotProps>(({ lesson, style, onClick }) => {
   const colors = getStatusColors(lesson.statusName);
 
   return (
@@ -66,6 +66,8 @@ const LessonSlot: React.FC<LessonSlotProps> = ({ lesson, style, onClick }) => {
       </div>
     </div>
   );
-};
+});
+
+LessonSlot.displayName = 'LessonSlot';
 
 export default LessonSlot;

@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { formatMKD } from '@/utils/formatters';
 import { ContributionBreakdown, TaxBreakdown, GrossSalaryInfo, SalarySummaryResponse } from '@/types/api/teacherSalary';
 
 interface SalaryBreakdownTableProps {
@@ -21,13 +22,6 @@ export default function SalaryBreakdownTable({
   incomeTax,
   summary,
 }: SalaryBreakdownTableProps) {
-  const formatMKD = (amount: number) => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) + ' MKD';
-  };
-
   const formatPercent = (rate: number) => {
     return `${(rate * 100).toFixed(2)}%`;
   };

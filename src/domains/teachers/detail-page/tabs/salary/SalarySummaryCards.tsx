@@ -1,4 +1,5 @@
 import { DollarSign, Wallet, Calculator, Percent } from 'lucide-react';
+import { formatMKD } from '@/utils/formatters';
 import { SalarySummaryResponse } from '@/types/api/teacherSalary';
 
 interface SalarySummaryCardsProps {
@@ -6,13 +7,6 @@ interface SalarySummaryCardsProps {
 }
 
 export default function SalarySummaryCards({ summary }: SalarySummaryCardsProps) {
-  const formatMKD = (amount: number) => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) + ' MKD';
-  };
-
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
       {/* Gross Salary */}

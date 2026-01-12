@@ -141,14 +141,14 @@ export const SalaryCalculationDetailPage: React.FC = () => {
       <ApproveSalaryDialog
         open={approveDialogOpen}
         onOpenChange={setApproveDialogOpen}
-        calculation={detail as any}
+        calculation={detail}
         onSuccess={handleDialogSuccess}
       />
 
       <ReopenSalaryDialog
         open={reopenDialogOpen}
         onOpenChange={setReopenDialogOpen}
-        calculation={detail as any}
+        calculation={detail}
         onSuccess={handleDialogSuccess}
       />
     </div>

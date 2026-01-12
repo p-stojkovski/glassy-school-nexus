@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/tooltip';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import { formatCurrency } from '@/utils/formatters';
 import { TeacherSalaryPreview } from '@/domains/teachers/_shared/types/salaryCalculation.types';
 
 interface SalaryPreviewCardProps {
@@ -68,13 +69,6 @@ const SalaryPreviewCard: React.FC<SalaryPreviewCardProps> = ({
   onMonthChange,
   onRetry,
 }) => {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) + ' MKD';
-  };
-
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
 

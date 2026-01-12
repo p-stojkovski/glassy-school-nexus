@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronRight,
@@ -68,7 +68,7 @@ interface ClassPaymentCardProps {
  * Class card showing payment summary per class.
  * Clicking "View Students" opens a Sheet (sidebar) showing individual student payment statuses.
  */
-const ClassPaymentCard: React.FC<ClassPaymentCardProps> = ({
+const ClassPaymentCard = memo<ClassPaymentCardProps>(({
   classData,
   students,
   studentsLoading,
@@ -246,6 +246,8 @@ const ClassPaymentCard: React.FC<ClassPaymentCardProps> = ({
       </Sheet>
     </GlassCard>
   );
-};
+});
+
+ClassPaymentCard.displayName = 'ClassPaymentCard';
 
 export default ClassPaymentCard;

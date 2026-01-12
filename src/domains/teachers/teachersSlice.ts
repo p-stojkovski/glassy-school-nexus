@@ -182,12 +182,6 @@ const teachersSlice = createSlice({
       const { operation, loading } = action.payload;
       state.loading[operation] = loading;
     },
-    
-    setAllLoading: (state, action: PayloadAction<boolean>) => {
-      (Object.keys(state.loading) as Array<keyof LoadingStates>).forEach(key => {
-        state.loading[key] = action.payload;
-      });
-    },
 
     // Error states
     setError: (state, action: PayloadAction<{ operation: keyof ErrorStates; error: string | null }>) => {
@@ -231,11 +225,6 @@ const teachersSlice = createSlice({
     // Reset state
     resetTeachersState: (state) => {
       return initialState;
-    },
-
-    // Legacy support for existing components
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading.fetching = action.payload;
     },
 
     // ════════════════════════════════════════════════════════════════════════
@@ -321,7 +310,6 @@ export const {
 
   // Loading states
   setLoadingState,
-  setAllLoading,
 
   // Error states
   setError,
@@ -336,9 +324,6 @@ export const {
 
   // Reset
   resetTeachersState,
-
-  // Legacy support
-  setLoading,
 
   // Salary calculations (Phase 7.1)
   setSalaryCalculations,

@@ -29,6 +29,7 @@ import NativeDateInput from '@/components/common/NativeDateInput';
 import { setTeacherSalaryConfig } from '@/services/teacherApiService';
 import { toast } from 'sonner';
 
+import { formatMKD } from '@/utils/formatters';
 import { salarySetupSchema, SalarySetupFormData, SALARY_SETUP_CONSTANTS } from './salarySetupSchema';
 import { useSalaryCalculations } from './useSalaryCalculations';
 import SalaryPreviewCards from './SalaryPreviewCards';
@@ -134,13 +135,6 @@ export default function SalarySetupSheet({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const formatMKD = (amount: number) => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) + ' MKD';
   };
 
   return (

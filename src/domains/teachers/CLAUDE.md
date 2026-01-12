@@ -1,21 +1,22 @@
 # Teachers Management Domain - ThinkEnglish
 
-> Orientation guide for the Teachers domain. Refactoring to parity with Students/Classes domains is ~85% complete.
+> Orientation guide and navigator for the Teachers domain. Each subfolder has its own detailed CLAUDE.md.
 
 ## Quick Reference
 
 | Resource | Purpose |
 |----------|---------|
-| **Agent:** `backend-specialist` | Backend investigation (no dedicated teacher agent yet) |
-| **Backend:** `think-english-api/src/Api/Features/Teachers/` | 11 endpoints + 8 shared contract files |
+| **Agent:** `teachers-domain-specialist` | Full-stack investigation, troubleshooting, implementation |
+| **Skill:** `teachers-domain-reference` | Auto-injected quick reference during active work |
+| **Backend:** `think-english-api/src/Api/Features/Teachers/` | 11+ endpoints + shared contract files |
 
 ## Domain Purpose
 
-Manages teacher profiles, subject assignments, and class associations.
+Manages teacher profiles, subject assignments, class associations, schedules, and **salary calculations** (variable pay based on lessons taught).
 
-**Core Entities:** Teacher, Subject
+**Core Entities:** Teacher, Subject, SalaryCalculation, SalaryRules
 
-**Related Domains:** Classes (via teacher assignments), Lessons, Attendance
+**Related Domains:** Classes (via assignments), Lessons, Attendance, Payments
 
 ## Directory Structure
 
@@ -23,90 +24,66 @@ Uses **flow-based organization** (by route/page) for better navigability.
 
 ```
 teachers/
-├── CLAUDE.md                    # This file (orientation)
-├── teachersSlice.ts             # Redux slice (dual-state pattern)
-├── index.ts                     # Domain exports
-├── _shared/                     # Shared across all pages
-│   ├── components/              # TeacherLoading
-│   │   ├── TeacherLoading.tsx
-│   │   └── index.ts
-│   ├── hooks/                   # useTeachers, useTeacherManagement
-│   │   ├── useTeachers.ts
-│   │   ├── useTeacherManagement.ts
-│   │   └── index.ts
-│   └── index.ts
-├── list-page/                   # /teachers route
-│   ├── TeacherTable.tsx         # Table view
-│   ├── TeacherCard.tsx          # Card view
-│   ├── components/              # TeacherFilters
-│   │   ├── TeacherFilters.tsx
-│   │   └── index.ts
-│   ├── dialogs/                 # CreateTeacherSheet
-│   │   ├── CreateTeacherSheet.tsx
-│   │   └── index.ts
-│   └── index.ts
-├── detail-page/                 # /teachers/:id route
-│   ├── TeacherProfilePage.tsx   # Main profile page with tabs
-│   ├── useTeacherProfile.ts     # Profile data hook
-│   ├── layout/                  # TeacherProfileHeader, TeacherBasicInfo
-│   │   ├── TeacherProfileHeader.tsx
-│   │   ├── TeacherBasicInfo.tsx
-│   │   └── index.ts
-│   ├── dialogs/                 # EditTeacherSheet
-│   │   ├── EditTeacherSheet.tsx
-│   │   └── index.ts
-│   ├── tabs/
-│   │   ├── overview/            # 3 profile cards (Classes, Students, Schedule)
-│   │   │   ├── TeacherOverview.tsx
-│   │   │   ├── ClassesCard.tsx
-│   │   │   ├── StudentsCard.tsx
-│   │   │   ├── ScheduleCard.tsx
-│   │   │   └── index.ts
-│   │   ├── details/             # Personal info, bio sections
-│   │   │   ├── TeacherDetailsTab.tsx
-│   │   │   ├── sections/
-│   │   │   ├── hooks/
-│   │   │   └── index.ts
-│   │   ├── classes/             # Assigned classes with filters
-│   │   │   ├── TeacherClassesTab.tsx
-│   │   │   ├── useTeacherClasses.ts
-│   │   │   └── index.ts
-│   │   ├── schedule/            # Weekly schedule grid
-│   │   │   ├── TeacherScheduleTab.tsx
-│   │   │   ├── TeacherScheduleGrid.tsx
-│   │   │   ├── ScheduleStatsBar.tsx
-│   │   │   ├── useTeacherSchedule.ts
-│   │   │   └── index.ts
-│   │   └── students/            # All students taught
-│   │       ├── TeacherStudentsTab.tsx
-│   │       ├── TeacherStudentsTable.tsx
-│   │       ├── useTeacherStudents.ts
-│   │       └── index.ts
-│   └── index.ts
-└── form-page/                   # Create/edit teacher forms
-    ├── forms/
-    │   ├── TabbedTeacherFormContent.tsx
-    │   ├── tabs/
-    │   │   ├── PersonalInformationTab.tsx
-    │   │   ├── ProfessionalInformationTab.tsx
-    │   │   └── index.ts
-    │   └── index.ts
-    ├── hooks/
-    │   ├── useTeacherForm.ts
-    │   ├── useTeacherFormPage.ts
-    │   └── index.ts
-    └── index.ts
+├── CLAUDE.md                         # This file (overview + navigator)
+├── teachersSlice.ts                  # Redux slice (dual-state + salary state)
+├── index.ts                          # Domain exports
+│
+├── _shared/                          # Shared across all pages
+│   ├── CLAUDE.md                     # Shared components, hooks, types docs
+│   ├── components/                   # TeacherLoading
+│   ├── hooks/                        # useTeachers, useTeacherCRUD, useTeacherManagement
+│   ├── types/                        # salaryCalculation.types.ts
+│   └── utils/                        # teacherBreadcrumbs
+│
+├── list-page/                        # /teachers route
+│   ├── CLAUDE.md                     # List page documentation
+│   ├── TeacherTable.tsx              # Table view
+│   ├── TeacherCard.tsx               # Card view
+│   ├── components/                   # TeacherFilters, TeacherHeader, TeacherEmptyState
+│   └── dialogs/                      # CreateTeacherSheet
+│
+├── detail-page/                      # /teachers/:id route
+│   ├── CLAUDE.md                     # Detail page documentation
+│   ├── TeacherProfilePage.tsx        # Main profile page with tabs
+│   ├── useTeacherProfile.ts          # Profile data hook
+│   ├── layout/                       # TeacherProfileHeader, TeacherBasicInfo, AcademicYearSelector
+│   ├── dialogs/                      # EditTeacherSheet
+│   ├── hooks/                        # useTeacherAcademicYear, salary hooks
+│   └── tabs/
+│       ├── classes/                  # Classes + schedule + payments
+│       ├── lessons/                  # Lessons tab with filters
+│       ├── schedule/                 # Calendar view (weekly/monthly)
+│       ├── salary/                   # Salary overview + setup
+│       └── salary-calculations/      # Monthly salary calculations
+│
+├── form-page/                        # /teachers/new, /teachers/:id/edit routes
+│   ├── CLAUDE.md                     # Form page documentation
+│   ├── forms/                        # TabbedTeacherFormContent
+│   │   └── tabs/                     # PersonalInformationTab, ProfessionalInformationTab
+│   └── hooks/                        # useTeacherForm, useTeacherFormPage
+│
+└── salary-calculation-detail-page/   # /teachers/:id/salary-calculations/:calcId route
+    ├── CLAUDE.md                     # Salary calculation detail docs
+    ├── SalaryCalculationDetailPage.tsx
+    ├── components/                   # Header, Summary, Breakdown, AuditLog
+    └── hooks/                        # useTeacherSalaryCalculationDetailPage, useAuditLog
 ```
 
-## Key Files
+## Subfolder Documentation
+
+| Folder | CLAUDE.md | Description |
+|--------|-----------|-------------|
+| `_shared/` | [_shared/CLAUDE.md](_shared/CLAUDE.md) | Shared hooks, components, types, utilities |
+| `list-page/` | [list-page/CLAUDE.md](list-page/CLAUDE.md) | Teacher list with filters, table/card views |
+| `detail-page/` | [detail-page/CLAUDE.md](detail-page/CLAUDE.md) | Profile page with 5 tabs |
+| `form-page/` | [form-page/CLAUDE.md](form-page/CLAUDE.md) | Create/edit teacher forms |
+| `salary-calculation-detail-page/` | [salary-calculation-detail-page/CLAUDE.md](salary-calculation-detail-page/CLAUDE.md) | Individual salary calculation details |
+
+## Key Files (Root Level)
 
 | Purpose | Path |
 |---------|------|
 | Redux Slice | `teachersSlice.ts` |
-| Primary Hook | `_shared/hooks/useTeachers.ts` |
-| Management Hook | `_shared/hooks/useTeacherManagement.ts` |
-| Profile Page | `detail-page/TeacherProfilePage.tsx` |
-| Profile Hook | `detail-page/useTeacherProfile.ts` |
 | API Service | `../../services/teacherApiService.ts` |
 | Types | `../../types/api/teacher.ts` |
 | Validation | `../../utils/validation/teacherValidators.ts` |
@@ -116,96 +93,45 @@ teachers/
 ### 1. Dual-State Redux Pattern
 Maintain separate `teachers` (full list) and `searchResults` arrays with `isSearchMode` toggle. Creating/updating/deleting must update BOTH arrays.
 
-### 2. Subject Association
-Each teacher is associated with a subject. Subjects are loaded separately and used for filtering and display.
+### 2. Salary State Management
+The slice also manages salary-related state:
+- `salaryCalculations.items` - List of salary calculations
+- `salaryCalculationDetail` - Current calculation detail
+- `salaryPreview` - Preview before generation
+- `salaryAuditLogs` - Audit trail
 
-### 3. Email Availability Check
-Form includes real-time email availability checking with debounced API calls.
+### 3. Academic Year Context
+Detail page uses `useTeacherAcademicYear` to filter data by academic year. The selector in the header controls which year's data is displayed.
 
-### 4. Lazy Loading
-All detail page tabs use lazy loading - data is fetched only when a tab is activated:
-- Overview: Loaded via `useTeacherProfile`
-- Classes: `useTeacherClasses`
-- Schedule: `useTeacherSchedule`
-- Students: `useTeacherStudents`
+### 4. Lazy Loading by Tab
+Each detail page tab loads its own data independently to optimize performance.
+
+## API Endpoints Summary
+
+**CRUD (6):** Create, GetAll, GetById, Update, Delete, Search
+
+**Profile Tabs (4):** Overview, Classes, Schedule, Students
+
+**Salary (5+):** GetCalculations, GenerateCalculation, GetCalculationDetail, ApproveCalculation, ReopenCalculation, GetSalaryPreview, GetAuditLog
+
+**Utilities (1):** CheckEmailAvailable
 
 ## Anti-Patterns (NEVER DO)
-
-### State Management
 
 | Wrong | Correct |
 |-------|---------|
 | Mix search results with all teachers | Use `isSearchMode` to differentiate |
 | Forget to update both arrays | Update both `teachers` and `searchResults` |
 | Use `useDispatch()` directly | Use `useAppDispatch()` from store/hooks.ts |
-
-### Imports
-
-| Wrong | Correct |
-|-------|---------|
-| Import from old `/components/` paths | Import from flow-based paths (`_shared/`, `list-page/`, etc.) |
-| Import types from random locations | Import from `teachersSlice.ts` or `types/api/teacher.ts` |
-
-## Common Tasks
-
-| Task | Where to Start |
-|------|----------------|
-| Update list table | `list-page/TeacherTable.tsx` |
-| Update filters | `list-page/components/TeacherFilters.tsx` |
-| Modify create form | `form-page/forms/TabbedTeacherFormContent.tsx` |
-| Update form validation | `utils/validation/teacherValidators.ts` |
-| Add new Redux action | `teachersSlice.ts` |
-| Modify profile page | `detail-page/TeacherProfilePage.tsx` |
-| Update overview cards | `detail-page/tabs/overview/` |
-| Update classes tab | `detail-page/tabs/classes/` |
-| Update schedule tab | `detail-page/tabs/schedule/` |
-| Update students tab | `detail-page/tabs/students/` |
-
-## API Endpoints (11 Total)
-
-**CRUD:**
-- `POST /api/teachers` - Create teacher
-- `GET /api/teachers` - Get all teachers
-- `GET /api/teachers/{id}` - Get by ID
-- `PUT /api/teachers/{id}` - Update teacher
-- `DELETE /api/teachers/{id}` - Delete teacher
-- `GET /api/teachers/search` - Search with filters
-
-**Utilities:**
-- `GET /api/teachers/email-available` - Check email availability
-
-**Profile Tabs (Lazy Loading):**
-- `GET /api/teachers/{id}/overview` - Overview metrics (classes, students, schedule stats)
-- `GET /api/teachers/{id}/classes` - Assigned classes with schedule slots
-- `GET /api/teachers/{id}/schedule` - Weekly teaching schedule
-- `GET /api/teachers/{id}/students` - All students taught
-
-## Refactoring Status
-
-This domain has been refactored to achieve parity with Students (76 files) and Classes (74 files).
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 3.1 | Foundation - Flow-based structure | ✅ COMPLETE |
-| 3.2 | Detail Page Foundation | ✅ COMPLETE |
-| 3.3 | Overview Tab + Profile Cards | ✅ COMPLETE |
-| 3.4 | Details Tab | ✅ COMPLETE |
-| 3.5 | Classes Tab | ✅ COMPLETE |
-| 3.6 | Schedule Tab | ✅ COMPLETE |
-| 3.7 | Students Tab | ✅ COMPLETE |
-| 3.8 | Form Enhancements | ✅ COMPLETE |
-| 3.9 | Polish & Testing | ⏳ PENDING |
-
-**Current Status:** ~85% complete (58 frontend files, 20 backend files)
-
-See `TEACHER_REFACTORING_PLAN.md` in project root for full details.
+| Import from old paths | Import from flow-based paths (`_shared/`, `list-page/`, etc.) |
 
 ## Verification
 
 ```bash
 # Frontend
 cd think-english-ui
-npm run build  # or: npx tsc --noEmit
+npm run type-check
+npm run lint
 
 # Check for anti-patterns (should return nothing)
 grep -r "useDispatch()" --include="*.tsx" src/domains/teachers
@@ -216,10 +142,11 @@ grep -r ": any" --include="*.ts" src/domains/teachers
 
 - **Main UI Guide:** [../../CLAUDE.md](../../CLAUDE.md)
 - **Root Project:** [../../../../CLAUDE.md](../../../../CLAUDE.md)
+- **Architecture Patterns:** `.claude/skills/thinkienglish-conventions/SKILL.md`
+- **UI/UX Design:** `.claude/skills/ui-ux-reference/SKILL.md`
 - **Students Domain (reference):** [../students/CLAUDE.md](../students/CLAUDE.md)
 - **Classes Domain (reference):** [../classes/CLAUDE.md](../classes/CLAUDE.md)
-- **Refactoring Plan:** [../../../../TEACHER_REFACTORING_PLAN.md](../../../../TEACHER_REFACTORING_PLAN.md)
 
 ---
 
-*Last updated: 2025-12-31 - Phases 3.1-3.8 Complete*
+*Last updated: 2026-01-12*

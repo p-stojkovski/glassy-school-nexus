@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { formatCurrency, formatPeriod, formatRelativeTime } from '@/utils/formatters';
 import {
   SalaryCalculationStatus,
   type SalaryCalculation,
@@ -78,44 +79,6 @@ const SalaryCalculationsTab: React.FC<SalaryCalculationsTabProps> = ({ academicY
     onMonthChange,
     refetch: refetchPreview,
   } = useTeacherSalaryPreview({ isExpanded: isPreviewExpanded });
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) + ' MKD';
-  };
-
-  const formatPeriod = (start: string, end: string): string => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-    const startFormatted = startDate.toLocaleDateString('en-US', options);
-    const endFormatted = endDate.toLocaleDateString('en-US', { ...options, year: 'numeric' });
-
-    return `${startFormatted} - ${endFormatted}`;
-  };
-
-  const formatRelativeTime = (dateString: string): string => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) {
-      const weeks = Math.floor(diffDays / 7);
-      return `${weeks} weeks ago`;
-    }
-    if (diffDays < 365) {
-      const months = Math.floor(diffDays / 30);
-      return `${months} months ago`;
-    }
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
 
   const getStatusBadge = (status: SalaryCalculationStatus) => {
     const styles = {
