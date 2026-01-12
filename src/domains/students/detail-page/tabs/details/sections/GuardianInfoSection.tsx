@@ -22,19 +22,21 @@ interface GuardianInfoSectionProps {
   /** The student data to display/edit */
   student: Student;
   /** Whether this section is currently in edit mode */
-  isEditing: boolean;
+  isEditing?: boolean;
   /** Callback when the Edit button is clicked */
-  onEdit: () => void;
+  onEdit?: () => void;
   /** Callback when save is requested - receives section data */
-  onSave: (data: GuardianInfoFormData) => Promise<boolean>;
+  onSave?: (data: GuardianInfoFormData) => Promise<boolean>;
   /** Callback when cancel is clicked */
-  onCancel: () => void;
+  onCancel?: () => void;
   /** Callback when form becomes dirty (has unsaved changes) */
-  onFormChange: (isDirty: boolean) => void;
+  onFormChange?: (isDirty: boolean) => void;
   /** Whether the section is expanded */
   isExpanded?: boolean;
   /** Callback when expand/collapse is toggled */
   onExpandedChange?: (expanded: boolean) => void;
+  /** When true, shows read-only display without edit capabilities */
+  readOnly?: boolean;
 }
 
 export type GuardianInfoSectionHandle = {
@@ -70,13 +72,14 @@ const ValueDisplay: React.FC<{ label: string; value?: string | null; className?:
  */
 export const GuardianInfoSection = React.forwardRef<GuardianInfoSectionHandle, GuardianInfoSectionProps>(({
   student,
-  isEditing,
+  isEditing = false,
   onEdit,
   onSave,
   onCancel,
   onFormChange,
   isExpanded = true,
   onExpandedChange,
+  readOnly = false,
 }, ref) => {
   const [isSaving, setIsSaving] = useState(false);
 
@@ -132,6 +135,9 @@ export const GuardianInfoSection = React.forwardRef<GuardianInfoSectionHandle, G
   // Check if guardian info has any data
   const hasGuardianInfo = !!(student.parentContact || student.parentEmail);
 
+  // Determine if we should show edit form (only if not readOnly and isEditing)
+  const showEditForm = !readOnly && isEditing;
+
   return (
     <EditableSectionWrapper
       title="Parent/Guardian Information"
@@ -145,8 +151,9 @@ export const GuardianInfoSection = React.forwardRef<GuardianInfoSectionHandle, G
       onExpandedChange={onExpandedChange}
       isComplete={hasGuardianInfo}
       subtitle="Add parent or guardian contact details"
+      readOnly={readOnly}
     >
-      {isEditing ? (
+      {showEditForm ? (
         <Form {...form}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField

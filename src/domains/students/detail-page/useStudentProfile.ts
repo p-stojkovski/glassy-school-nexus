@@ -28,6 +28,7 @@ export const useStudentProfile = () => {
   const [isPaymentSidebarOpen, setIsPaymentSidebarOpen] = useState(false);
   const [selectedObligation, setSelectedObligation] =
     useState<PaymentObligation | null>(null);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
   // Get student data
   const { students } = useAppSelector((state: RootState) => state.students);
@@ -127,7 +128,13 @@ export const useStudentProfile = () => {
   const handleClosePaymentSidebar = () => {
     setIsPaymentSidebarOpen(false);
     setSelectedObligation(null);
-  }; // Utility functions
+  };
+
+  // Edit sheet handlers
+  const handleOpenEditSheet = () => setIsEditSheetOpen(true);
+  const handleCloseEditSheet = () => setIsEditSheetOpen(false);
+
+  // Utility functions
   const canMakePayment = (status: string) => {
     return [
       ObligationStatus.Pending,
@@ -160,11 +167,14 @@ export const useStudentProfile = () => {
     setActiveTab,
     isPaymentSidebarOpen,
     selectedObligation,
+    isEditSheetOpen,
 
     // Handlers
     handleBack,
     handleOpenPaymentSidebar,
     handleClosePaymentSidebar,
+    handleOpenEditSheet,
+    handleCloseEditSheet,
 
     // Utils
     canMakePayment,

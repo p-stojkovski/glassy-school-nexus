@@ -23,6 +23,7 @@ interface TabbedStudentFormContentProps {
   onSubmit: (data: StudentFormData) => void;
   onCancel: () => void;
   onFormChange?: (data: StudentFormData) => void;
+  hideButtons?: boolean;
 }
 
 export interface StudentFormRef {
@@ -36,6 +37,7 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
     onSubmit,
     onCancel,
     onFormChange,
+    hideButtons = false,
   },
   ref
 ) => {
@@ -377,11 +379,11 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className="space-y-4"
+            className="space-y-3"
           >
             <TabsList className="bg-white/10 border-white/20">
               <TabsTrigger
@@ -433,19 +435,21 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
             </TabsContent>
           </Tabs>
 
-          <div className="pt-2">
-            <FormButtons
-              submitText={student ? 'Update Student' : 'Add Student'}
-              onCancel={onCancel}
-              disabled={
-                !form.formState.isValid ||
-                (shouldCheckAvailability && debouncedEmail && debouncedEmail.trim() && debouncedEmail !== (student?.email || '') && (
-                  isCheckingEmail || emailAvailable === false
-                )) ||
-                (isAmountRequired && (!discountAmount || discountAmount <= 0))
-              }
-            />
-          </div>
+          {!hideButtons && (
+            <div className="pt-2">
+              <FormButtons
+                submitText={student ? 'Update Student' : 'Add Student'}
+                onCancel={onCancel}
+                disabled={
+                  !form.formState.isValid ||
+                  (shouldCheckAvailability && debouncedEmail && debouncedEmail.trim() && debouncedEmail !== (student?.email || '') && (
+                    isCheckingEmail || emailAvailable === false
+                  )) ||
+                  (isAmountRequired && (!discountAmount || discountAmount <= 0))
+                }
+              />
+            </div>
+          )}
         </form>
       </Form>
   );

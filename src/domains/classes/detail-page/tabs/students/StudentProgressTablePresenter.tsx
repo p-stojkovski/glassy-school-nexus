@@ -139,10 +139,13 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
     return filtered;
   }, [summaries, searchQuery, studentFilter]);
 
-  // Check if any student has billing data
-  const hasAnyBillingData = useMemo(() => {
-    return filteredSummaries.some((s) => s.discount?.hasDiscount || s.paymentObligation?.hasPendingObligations);
+  // Check if any student has discount data
+  const hasAnyDiscountData = useMemo(() => {
+    return filteredSummaries.some((s) => s.discount?.hasDiscount);
   }, [filteredSummaries]);
+
+  // Always show Due column when there are students - so users can see "No dues" status
+  const showDueColumn = filteredSummaries.length > 0;
 
   // Check if any student has comments
   const hasAnyComments = useMemo(() => {
@@ -152,11 +155,12 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
   // Calculate column count for expanded row colspan
   const getColSpan = useCallback(() => {
     let cols = 4; // Expand, Student, Enrolled, Progress (always shown)
-    if (hasAnyBillingData) cols++;
+    if (hasAnyDiscountData) cols++; // Discount column
+    if (showDueColumn) cols++; // Due column
     if (hasAnyComments) cols++;
     if (mode === 'view' && (onRemoveStudent || onTransferStudent)) cols++;
     return cols;
-  }, [hasAnyBillingData, hasAnyComments, mode, onRemoveStudent, onTransferStudent]);
+  }, [hasAnyDiscountData, showDueColumn, hasAnyComments, mode, onRemoveStudent, onTransferStudent]);
 
   // Format enrollment date for display
   const formatEnrolledDate = useCallback((isoDate: string) => {
@@ -245,9 +249,14 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
           <TableHead className="text-white/90 font-semibold min-w-[180px]">Student</TableHead>
           <TableHead className="text-white/90 font-semibold w-28">Enrolled</TableHead>
           <TableHead className="text-white/90 font-semibold min-w-[220px]">Progress</TableHead>
-          {hasAnyBillingData && (
-            <TableHead className="hidden md:table-cell text-white/90 font-semibold text-center w-24">
-              Billing
+          {hasAnyDiscountData && (
+            <TableHead className="hidden md:table-cell text-white/90 font-semibold text-center w-32">
+              Discount
+            </TableHead>
+          )}
+          {showDueColumn && (
+            <TableHead className="hidden md:table-cell text-white/90 font-semibold text-center w-28">
+              Due
             </TableHead>
           )}
           {hasAnyComments && (
@@ -327,18 +336,24 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
                   />
                 </TableCell>
 
-                {/* Billing column */}
-                {hasAnyBillingData && (
+                {/* Discount column */}
+                {hasAnyDiscountData && (
                   <TableCell className="hidden md:table-cell text-center py-3">
-                    {summary.discount?.hasDiscount || summary.paymentObligation?.hasPendingObligations ? (
-                      <div className="flex items-center justify-center gap-1">
-                        {summary.discount && <DiscountIndicator discount={summary.discount} />}
-                        {summary.paymentObligation && (
-                          <PaymentObligationIndicator paymentObligation={summary.paymentObligation} />
-                        )}
-                      </div>
+                    {summary.discount?.hasDiscount ? (
+                      <DiscountIndicator discount={summary.discount} />
                     ) : (
-                      <span className="text-white/60 text-sm">—</span>
+                      <span className="text-white/40 text-sm">—</span>
+                    )}
+                  </TableCell>
+                )}
+
+                {/* Due column */}
+                {showDueColumn && (
+                  <TableCell className="hidden md:table-cell text-center py-3">
+                    {summary.paymentObligation?.hasPendingObligations ? (
+                      <PaymentObligationIndicator paymentObligation={summary.paymentObligation} />
+                    ) : (
+                      <span className="text-white/50 text-sm">No dues</span>
                     )}
                   </TableCell>
                 )}
@@ -377,7 +392,11 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
               {isExpanded && (
                 <TableRow className="border-white/10 transition-opacity duration-200">
                   <TableCell colSpan={getColSpan()} className="p-0 bg-white/[0.02]">
-                    <StudentLessonDetailsRow lessons={details} loading={isLoadingDetails} />
+                    <StudentLessonDetailsRow
+                      lessons={details}
+                      loading={isLoadingDetails}
+                      paymentObligation={summary.paymentObligation}
+                    />
                   </TableCell>
                 </TableRow>
               )}

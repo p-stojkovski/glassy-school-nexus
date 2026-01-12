@@ -1,5 +1,12 @@
 import React from 'react';
-import { Mail, Phone, User, Calendar, Users, AlertCircle, MapPin, Cake, Percent } from 'lucide-react';
+import { Mail, Phone, User, Calendar, Users, AlertCircle, MapPin, Cake, Percent, MoreVertical, Edit2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import GlassCard from '@/components/common/GlassCard';
 import { Student } from '@/domains/students/studentsSlice';
@@ -10,6 +17,7 @@ interface StudentBasicInfoProps {
   studentClass?: Class;
   outstandingBalance: number;
   getStatusColor: (status: string) => string;
+  onEdit: () => void;
 }
 
 const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
@@ -17,6 +25,7 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
   studentClass,
   outstandingBalance,
   getStatusColor,
+  onEdit,
 }) => {
   const statusText = student.isActive ? 'Active' : 'Inactive';
   const statusKey = student.isActive ? 'active' : 'inactive';
@@ -32,7 +41,7 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
 
   return (
     <GlassCard className="p-6">
-      <div className="flex items-start gap-6">
+      <div className="flex items-start justify-between gap-6">
         <div className="flex-1">
           <div className="flex items-center gap-4 mb-4">
             <h2 className="text-2xl font-bold text-white">{student.fullName}</h2>
@@ -98,6 +107,28 @@ const StudentBasicInfo: React.FC<StudentBasicInfoProps> = ({
             )}
           </div>
         </div>
+
+        {/* Kebab Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8 p-0"
+            >
+              <MoreVertical className="w-5 h-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-slate-800 border-white/20">
+            <DropdownMenuItem
+              onClick={onEdit}
+              className="text-white hover:bg-white/10 cursor-pointer"
+            >
+              <Edit2 className="w-4 h-4 mr-2" />
+              Edit Student
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </GlassCard>
   );

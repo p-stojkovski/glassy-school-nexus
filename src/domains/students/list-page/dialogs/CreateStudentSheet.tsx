@@ -6,8 +6,10 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
+  SheetFooter,
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { TabbedStudentFormContent } from '@/domains/students/form-page';
 import type { StudentFormRef } from '@/domains/students/form-page';
@@ -124,9 +126,33 @@ const CreateStudentSheet: React.FC<CreateStudentSheetProps> = ({
                   onSubmit={handleSubmit}
                   onCancel={handleCancel}
                   onFormChange={handleFormChange}
+                  hideButtons={true}
                 />
               </div>
             </ScrollArea>
+
+            {/* Sticky Footer with Action Buttons */}
+            <SheetFooter className="p-4 border-t border-white/10">
+              <div className="flex gap-3 w-full">
+                <Button
+                  type="submit"
+                  onClick={() => formRef.current?.submitForm()}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+                >
+                  {isSubmitting ? 'Creating...' : 'Add Student'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                  className="flex-1 text-white hover:bg-white/10"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </SheetFooter>
           </div>
         </SheetContent>
       </Sheet>

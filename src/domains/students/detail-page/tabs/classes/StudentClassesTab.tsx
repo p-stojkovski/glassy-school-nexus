@@ -236,7 +236,7 @@ const StudentClassesTab: React.FC<StudentClassesTabProps> = ({
                       <Link
                         to={`/classes/${enrollment.classId}`}
                         onClick={e => e.stopPropagation()}
-                        className="text-lg font-medium text-white/90 hover:text-white hover:underline truncate"
+                        className="text-base font-medium text-white/90 hover:text-white hover:underline truncate"
                       >
                         {enrollment.className}
                       </Link>

@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  User,
   MoreVertical,
   Trash2,
   Power,
   PowerOff,
-  Percent,
   AlertCircle,
-  Users,
-  Info
+  Info,
+  Edit2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
@@ -43,6 +40,7 @@ interface StudentPageHeaderProps {
   student: Student;
   studentClass?: ClassInfo;
   outstandingBalance?: number;
+  onEdit: () => void;
   onToggleStatus: () => void;
   onDelete: () => void;
   isDeleting?: boolean;
@@ -54,6 +52,7 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
   student,
   studentClass,
   outstandingBalance = 0,
+  onEdit,
   onToggleStatus,
   onDelete,
   isDeleting = false,
@@ -191,14 +190,14 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
                 </>
               )}
 
-              {/* Compact discount badge */}
+              {/* Discount info */}
               {discountLabel && (
                 <>
                   {(student.parentContact || student.phone || student.dateOfBirth) && <span className="text-white/20">|</span>}
-                  <Badge className="bg-yellow-500/15 text-yellow-300 border-yellow-500/20 text-xs px-1.5 py-0">
-                    <Percent className="w-3 h-3 mr-0.5" />
-                    {discountLabel}
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-white/40">Discount:</span>
+                    <span>{discountLabel}</span>
+                  </div>
                 </>
               )}
 
@@ -232,6 +231,15 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
                   align="end"
                   className="w-48 bg-gray-900/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl p-1.5"
                 >
+                  {/* Edit Option */}
+                  <DropdownMenuItem
+                    onClick={onEdit}
+                    className="gap-2.5 text-white hover:text-white focus:text-white focus:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 transition-all duration-200"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    <span className="font-medium">Edit Student</span>
+                  </DropdownMenuItem>
+
                   {/* Activate/Deactivate Option */}
                   <DropdownMenuItem
                     onClick={handleStatusClick}

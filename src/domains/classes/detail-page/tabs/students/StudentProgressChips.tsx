@@ -1,8 +1,5 @@
 import React from 'react';
 import { AttendanceSummary, HomeworkSummary } from '@/types/api/class';
-import { CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { MetricBadge } from '@/components/ui/metric-badge';
 
 interface StudentProgressChipsProps {
   totalLessons: number;
@@ -11,11 +8,15 @@ interface StudentProgressChipsProps {
 }
 
 /**
- * Displays student progress with fixed-width metric badges.
- * Uses the shared MetricBadge component for consistent styling.
+ * Displays student progress as readable text with subtle color coding.
  *
- * Primary metric (lessons) shows full label, issues show icon+number with tooltips.
- * No hover color changes for predictable UI.
+ * Format: "{present} of {total} lessons [• {n} absent] [• {n} late] [• {n} missing hw]"
+ *
+ * Benefits over icon-based badges:
+ * - Self-explanatory without icon memorization
+ * - Mobile-friendly (no hover interactions needed)
+ * - Accessible with clear text labels
+ * - Colors provide quick visual scanning
  */
 const StudentProgressChips: React.FC<StudentProgressChipsProps> = ({
   totalLessons,
@@ -26,60 +27,46 @@ const StudentProgressChips: React.FC<StudentProgressChipsProps> = ({
     return <span className="text-white/50 text-sm">—</span>;
   }
 
-  const lessonLabel = totalLessons === 1 ? 'lesson' : 'lessons';
-  const absenceLabel = attendance.absent === 1 ? 'absence' : 'absences';
-  const lateLabel = attendance.late === 1 ? 'late' : 'lates';
+  const lessonWord = totalLessons === 1 ? 'lesson' : 'lessons';
 
   return (
-    <TooltipProvider delayDuration={300}>
-      <div className="flex items-center gap-2">
-        {/* Primary metric: Total lessons - always shown with label */}
-        <MetricBadge
-          icon={<CheckCircle2 className="w-3.5 h-3.5" />}
-          count={totalLessons}
-          label={lessonLabel}
-          variant="success"
-          showLabel={true}
-        />
+    <div className="flex items-center flex-wrap text-sm">
+      {/* Primary: Present count of total lessons */}
+      <span className="text-white/80">{attendance.present}</span>
+      <span className="text-white/50">&nbsp;of {totalLessons} {lessonWord}</span>
 
-        {/* Issue metrics: Compact icon+number with tooltips */}
-        {attendance.absent > 0 && (
-          <MetricBadge
-            icon={<XCircle className="w-3.5 h-3.5" />}
-            count={attendance.absent}
-            label={absenceLabel}
-            variant="danger"
-          />
-        )}
+      {/* Issue: Absences */}
+      {attendance.absent > 0 && (
+        <>
+          <span className="text-white/30 mx-1.5">•</span>
+          <span className="text-red-400">{attendance.absent} absent</span>
+        </>
+      )}
 
-        {attendance.late > 0 && (
-          <MetricBadge
-            icon={<Clock className="w-3.5 h-3.5" />}
-            count={attendance.late}
-            label={lateLabel}
-            variant="warning"
-          />
-        )}
+      {/* Issue: Late arrivals */}
+      {attendance.late > 0 && (
+        <>
+          <span className="text-white/30 mx-1.5">•</span>
+          <span className="text-amber-400">{attendance.late} late</span>
+        </>
+      )}
 
-        {homework.missing > 0 && (
-          <MetricBadge
-            icon={<AlertCircle className="w-3.5 h-3.5" />}
-            count={homework.missing}
-            label="missing homework"
-            variant="danger"
-          />
-        )}
+      {/* Issue: Missing homework */}
+      {homework.missing > 0 && (
+        <>
+          <span className="text-white/30 mx-1.5">•</span>
+          <span className="text-red-400">{homework.missing} missing hw</span>
+        </>
+      )}
 
-        {homework.partial > 0 && (
-          <MetricBadge
-            icon={<Clock className="w-3.5 h-3.5" />}
-            count={homework.partial}
-            label="partial homework"
-            variant="warning"
-          />
-        )}
-      </div>
-    </TooltipProvider>
+      {/* Issue: Partial homework */}
+      {homework.partial > 0 && (
+        <>
+          <span className="text-white/30 mx-1.5">•</span>
+          <span className="text-amber-400">{homework.partial} partial hw</span>
+        </>
+      )}
+    </div>
   );
 };
 

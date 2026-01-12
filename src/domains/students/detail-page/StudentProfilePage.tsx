@@ -8,9 +8,15 @@ import StudentOverview from './tabs/overview/StudentOverview';
 import StudentAttendanceTab from './tabs/attendance/StudentAttendanceTab';
 import StudentGradesTab from './tabs/grades/StudentGradesTab';
 import StudentPaymentsTab from './tabs/payments/StudentPaymentsTab';
+import { EditStudentSheet } from './dialogs';
 import { useStudentProfile } from './useStudentProfile';
+import { useAppDispatch } from '@/store/hooks';
+import { updateStudent as updateStudentInStore } from '@/domains/students/studentsSlice';
+import { updateStudent } from '@/services/studentApiService';
+import type { StudentFormData } from '@/types/api/student';
 
 const StudentProfilePage: React.FC = () => {
+  const dispatch = useAppDispatch();
   const {
     student,
     studentClass,
@@ -24,14 +30,29 @@ const StudentProfilePage: React.FC = () => {
     setActiveTab,
     isPaymentSidebarOpen,
     selectedObligation,
+    isEditSheetOpen,
     handleBack,
     handleOpenPaymentSidebar,
     handleClosePaymentSidebar,
+    handleOpenEditSheet,
+    handleCloseEditSheet,
     canMakePayment,
     getStatusColor,
     getAttendanceStatusColor,
     getPaymentStatusColor,
   } = useStudentProfile();
+
+  const handleSubmitEdit = async (data: StudentFormData) => {
+    if (!student) throw new Error('No student to update');
+    const updatedStudent = await updateStudent(student.id, data);
+    dispatch(updateStudentInStore(updatedStudent));
+    return updatedStudent;
+  };
+
+  const handleEditSuccess = () => {
+    // The Redux state is already updated by handleSubmitEdit
+    // This callback can be used for additional side effects if needed
+  };
 
   if (!student) {
     return null; // Will redirect
@@ -46,6 +67,7 @@ const StudentProfilePage: React.FC = () => {
         studentClass={studentClass}
         outstandingBalance={outstandingBalance}
         getStatusColor={getStatusColor}
+        onEdit={handleOpenEditSheet}
       />
 
       <Tabs
@@ -122,6 +144,14 @@ const StudentProfilePage: React.FC = () => {
         onClose={handleClosePaymentSidebar}
         obligation={selectedObligation}
         studentName={student.fullName}
+      />
+
+      <EditStudentSheet
+        student={student}
+        open={isEditSheetOpen}
+        onOpenChange={(open) => !open && handleCloseEditSheet()}
+        onSuccess={handleEditSuccess}
+        onSubmit={handleSubmitEdit}
       />
     </div>
   );

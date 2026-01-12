@@ -30,11 +30,10 @@ export function DeleteSalaryRuleDialog({
   if (!rule) return null;
 
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat('mk-MK', {
       minimumFractionDigits: 2,
-    }).format(amount);
+      maximumFractionDigits: 2,
+    }).format(amount) + ' MKD';
   };
 
   const formatDate = (dateString: string | null): string => {

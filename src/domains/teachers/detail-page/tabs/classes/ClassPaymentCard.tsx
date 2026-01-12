@@ -5,7 +5,6 @@ import {
   Users,
   CheckCircle2,
   AlertCircle,
-  DollarSign,
   Calendar,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +20,42 @@ import { TeacherClassWithPayments, PaymentScheduleSlot, StudentPaymentStatus } f
 import StudentPaymentRow from './StudentPaymentRow';
 import ClassMetricsRow from './ClassMetrics';
 import { cn } from '@/lib/utils';
+
+/**
+ * Wrapper component to manage expanded state for student rows
+ */
+interface StudentPaymentRowListProps {
+  students: StudentPaymentStatus[];
+}
+
+const StudentPaymentRowList: React.FC<StudentPaymentRowListProps> = ({ students }) => {
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+  const toggleRow = (studentId: number) => {
+    setExpandedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(studentId)) {
+        newSet.delete(studentId);
+      } else {
+        newSet.add(studentId);
+      }
+      return newSet;
+    });
+  };
+
+  return (
+    <>
+      {students.map((student) => (
+        <StudentPaymentRow
+          key={student.studentId}
+          student={student}
+          isExpanded={expandedRows.has(student.studentId)}
+          onToggle={() => toggleRow(student.studentId)}
+        />
+      ))}
+    </>
+  );
+};
 
 interface ClassPaymentCardProps {
   classData: TeacherClassWithPayments;
@@ -41,15 +76,6 @@ const ClassPaymentCard: React.FC<ClassPaymentCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const formatSchedule = (slots: PaymentScheduleSlot[]): string => {
     if (!slots || slots.length === 0) return 'No schedule';
@@ -145,13 +171,6 @@ const ClassPaymentCard: React.FC<ClassPaymentCardProps> = ({
               {classData.withDuesCount} with dues
             </span>
           </div>
-
-          {classData.outstandingAmount > 0 && (
-            <div className="flex items-center gap-1.5">
-              <DollarSign className="w-3.5 h-3.5 text-red-400/80" />
-              <span className="text-red-400">{formatCurrency(classData.outstandingAmount)}</span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -213,9 +232,7 @@ const ClassPaymentCard: React.FC<ClassPaymentCardProps> = ({
                       <div className="animate-spin rounded-full h-8 w-8 border-2 border-white/20 border-t-white/60" />
                     </div>
                   ) : students && students.length > 0 ? (
-                    students.map((student) => (
-                      <StudentPaymentRow key={student.studentId} student={student} />
-                    ))
+                    <StudentPaymentRowList students={students} />
                   ) : (
                     <div className="text-center py-12 text-sm text-white/50">
                       No students enrolled in this class

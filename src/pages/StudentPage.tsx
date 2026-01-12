@@ -13,6 +13,7 @@ import {
   StudentPaymentsTab,
   StudentDetailsTab,
   useStudentPage,
+  EditStudentSheet,
 } from '@/domains/students/detail-page';
 import type { StudentDetailSection } from '@/domains/students/detail-page';
 import { useAppDispatch } from '@/store/hooks';
@@ -44,11 +45,14 @@ const StudentPage: React.FC = () => {
     setActiveTab,
     isPaymentSidebarOpen,
     selectedObligation,
+    isEditSheetOpen,
     loading,
     error,
     isDeleting,
     handleOpenPaymentSidebar,
     handleClosePaymentSidebar,
+    openEditSheet,
+    closeEditSheet,
     handleUpdate,
     handleCreate,
     handleToggleStatus,
@@ -171,6 +175,7 @@ const StudentPage: React.FC = () => {
         student={student}
         studentClass={studentClass}
         outstandingBalance={outstandingBalance}
+        onEdit={openEditSheet}
         onToggleStatus={handleToggleStatus}
         onDelete={handleDelete}
         isDeleting={isDeleting}
@@ -272,6 +277,15 @@ const StudentPage: React.FC = () => {
           studentName={student.fullName}
         />
       )}
+
+      {/* Edit Student Sidebar */}
+      <EditStudentSheet
+        student={student}
+        open={isEditSheetOpen}
+        onOpenChange={(open) => !open && closeEditSheet()}
+        onSuccess={() => {}}
+        onSubmit={handleUpdate}
+      />
     </div>
   );
 };

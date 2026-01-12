@@ -17,15 +17,15 @@ export interface EditableSectionWrapperProps {
   /** Optional icon to display next to the title */
   icon?: React.ReactNode;
   /** Whether this section is currently in edit mode */
-  isEditing: boolean;
+  isEditing?: boolean;
   /** Whether a save operation is in progress */
   isSaving?: boolean;
   /** Callback when the Edit button is clicked */
-  onEdit: () => void;
+  onEdit?: () => void;
   /** Callback when the Save button is clicked */
-  onSave: () => void;
+  onSave?: () => void;
   /** Callback when the Cancel button is clicked */
-  onCancel: () => void;
+  onCancel?: () => void;
   /** Whether the section is expanded (for collapsible behavior) */
   isExpanded?: boolean;
   /** Callback when expand/collapse is toggled */
@@ -38,6 +38,8 @@ export interface EditableSectionWrapperProps {
   children: React.ReactNode;
   /** Optional className for additional styling */
   className?: string;
+  /** When true, hides all edit buttons and shows read-only mode */
+  readOnly?: boolean;
 }
 
 /**
@@ -67,7 +69,7 @@ export interface EditableSectionWrapperProps {
 export const EditableSectionWrapper: React.FC<EditableSectionWrapperProps> = ({
   title,
   icon,
-  isEditing,
+  isEditing = false,
   isSaving = false,
   onEdit,
   onSave,
@@ -78,6 +80,7 @@ export const EditableSectionWrapper: React.FC<EditableSectionWrapperProps> = ({
   isComplete = true,
   children,
   className,
+  readOnly = false,
 }) => {
   return (
     <Collapsible
@@ -106,49 +109,51 @@ export const EditableSectionWrapper: React.FC<EditableSectionWrapperProps> = ({
           </div>
         </CollapsibleTrigger>
 
-        <div className="flex items-center gap-2 ml-4">
-          {isEditing ? (
-            <>
+        {!readOnly && (
+          <div className="flex items-center gap-2 ml-4">
+            {isEditing ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onCancel}
+                  disabled={isSaving}
+                  className="text-white/70 hover:text-white hover:bg-white/10"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={onSave}
+                  disabled={isSaving}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold gap-1"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save'
+                  )}
+                </Button>
+              </>
+            ) : (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                onClick={onCancel}
-                disabled={isSaving}
-                className="text-white/70 hover:text-white hover:bg-white/10"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent collapsible toggle
+                  onEdit?.();
+                }}
+                className="border-white/30 bg-white/10 hover:bg-white/20 text-white gap-1"
               >
-                Cancel
+                <Edit2 className="h-4 w-4" />
+                Edit
               </Button>
-              <Button
-                size="sm"
-                onClick={onSave}
-                disabled={isSaving}
-                className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold gap-1"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save'
-                )}
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent collapsible toggle
-                onEdit();
-              }}
-              className="border-white/30 bg-white/10 hover:bg-white/20 text-white gap-1"
-            >
-              <Edit2 className="h-4 w-4" />
-              Edit
-            </Button>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
       <CollapsibleContent>

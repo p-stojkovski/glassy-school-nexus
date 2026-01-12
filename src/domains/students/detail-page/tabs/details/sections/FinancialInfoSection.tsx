@@ -25,19 +25,21 @@ interface FinancialInfoSectionProps {
   /** The student data to display/edit */
   student: Student;
   /** Whether this section is currently in edit mode */
-  isEditing: boolean;
+  isEditing?: boolean;
   /** Callback when the Edit button is clicked */
-  onEdit: () => void;
+  onEdit?: () => void;
   /** Callback when save is requested - receives section data */
-  onSave: (data: FinancialInfoFormData) => Promise<boolean>;
+  onSave?: (data: FinancialInfoFormData) => Promise<boolean>;
   /** Callback when cancel is clicked */
-  onCancel: () => void;
+  onCancel?: () => void;
   /** Callback when form becomes dirty (has unsaved changes) */
-  onFormChange: (isDirty: boolean) => void;
+  onFormChange?: (isDirty: boolean) => void;
   /** Whether the section is expanded */
   isExpanded?: boolean;
   /** Callback when expand/collapse is toggled */
   onExpandedChange?: (expanded: boolean) => void;
+  /** When true, shows read-only display without edit capabilities */
+  readOnly?: boolean;
 }
 
 export type FinancialInfoSectionHandle = {
@@ -74,13 +76,14 @@ const ValueDisplay: React.FC<{ label: string; value?: string | null; className?:
  */
 export const FinancialInfoSection = React.forwardRef<FinancialInfoSectionHandle, FinancialInfoSectionProps>(({
   student,
-  isEditing,
+  isEditing = false,
   onEdit,
   onSave,
   onCancel,
   onFormChange,
   isExpanded = true,
   onExpandedChange,
+  readOnly = false,
 }, ref) => {
   const [isSaving, setIsSaving] = useState(false);
   const { discountTypes } = useDiscountTypes();
@@ -153,6 +156,9 @@ export const FinancialInfoSection = React.forwardRef<FinancialInfoSectionHandle,
   // Check if financial info has any data
   const hasFinancialInfo = student.hasDiscount;
 
+  // Determine if we should show edit form (only if not readOnly and isEditing)
+  const showEditForm = !readOnly && isEditing;
+
   return (
     <EditableSectionWrapper
       title="Financial Information"
@@ -166,8 +172,9 @@ export const FinancialInfoSection = React.forwardRef<FinancialInfoSectionHandle,
       onExpandedChange={onExpandedChange}
       isComplete={hasFinancialInfo}
       subtitle="Configure discount settings if applicable"
+      readOnly={readOnly}
     >
-      {isEditing ? (
+      {showEditForm ? (
         <Form {...form}>
           <div className="space-y-4">
             <FormField
