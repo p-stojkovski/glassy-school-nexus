@@ -84,8 +84,9 @@ export function EditClassInfoDialog({
       toast.success('Class information updated successfully');
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to update class information');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update class information';
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

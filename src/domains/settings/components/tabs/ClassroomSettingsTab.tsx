@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Sheet,
@@ -6,7 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import ClassroomForm from '@/domains/classrooms/components/ClassroomForm';
 import SettingsTable, { SettingsTableColumn } from '../shared/SettingsTable';
 import { useClassroomManagement } from '@/domains/classrooms/hooks/useClassroomManagement';
@@ -117,13 +118,16 @@ const ClassroomSettingsTab: React.FC = () => {
       <ConfirmDialog
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
-        onConfirm={confirmDeleteClassroom}
+        intent="danger"
+        icon={Trash2}
         title="Delete Classroom"
         description={
           classroomToDelete
             ? `Are you sure you want to delete ${classroomToDelete.name}? This action cannot be undone.`
             : 'Are you sure you want to delete this classroom?'
         }
+        confirmText="Delete"
+        onConfirm={confirmDeleteClassroom}
       />
     </>
   );

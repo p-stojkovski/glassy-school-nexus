@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import ClassScheduleSection from './ClassScheduleSection';
 import ArchivedSchedulesSection from './ArchivedSchedulesSection';
-import { AddScheduleSlotSidebar } from './dialogs/AddScheduleSlotSidebar';
+import { AddScheduleSlotSidebar } from './dialogs';
 import { EditScheduleSlotDialog } from './dialogs/EditScheduleSlotDialog';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';

@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { AlertTriangle } from 'lucide-react';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import ClassPageHeader from '@/domains/classes/detail-page/layout/ClassPageHeader';
@@ -407,27 +408,29 @@ const ClassPage: React.FC = () => {
       </Tabs>
 
       {/* Unsaved Changes Dialog - Tab Switching */}
-      <ConfirmationDialog
-        isOpen={showUnsavedChangesDialog}
-        onClose={handleStayOnTab}
-        onConfirm={handleDiscardChanges}
+      <ConfirmDialog
+        open={showUnsavedChangesDialog}
+        onOpenChange={(open) => !open && handleStayOnTab()}
+        intent="warning"
+        icon={AlertTriangle}
         title="Unsaved Changes"
         description="You have unsaved changes that will be lost. Would you like to stay and keep editing, or discard your changes?"
         confirmText="Discard Changes"
         cancelText="Stay"
-        variant="warning"
+        onConfirm={handleDiscardChanges}
       />
 
       {/* Unsaved Changes Dialog - Back Navigation */}
-      <ConfirmationDialog
-        isOpen={showBackConfirmDialog}
-        onClose={handleCancelBack}
-        onConfirm={handleConfirmBack}
+      <ConfirmDialog
+        open={showBackConfirmDialog}
+        onOpenChange={(open) => !open && handleCancelBack()}
+        intent="warning"
+        icon={AlertTriangle}
         title="Unsaved Changes"
         description="You have unsaved changes that will be lost. Would you like to stay and keep editing, or discard your changes?"
         confirmText="Discard Changes"
         cancelText="Stay"
-        variant="warning"
+        onConfirm={handleConfirmBack}
       />
 
       {/* Quick Conduct Lesson Modal (from Hero Section actions) */}

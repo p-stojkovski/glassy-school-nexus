@@ -7,15 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { ActionDialog } from '@/components/common/dialogs';
 import {
   Form,
   FormControl,
@@ -40,7 +32,8 @@ import {
   type ApproveSalaryFormData,
 } from '../schemas/salaryDialogSchemas';
 import { formatCurrency, formatPeriodFull } from '@/utils/formatters';
-import type { SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
+import { Amount } from '@/components/ui/amount';
+import type { SalaryCalculation, SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
 
 interface ApproveSalaryDialogProps {
   open: boolean;
@@ -66,7 +59,7 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
   const form = useForm<ApproveSalaryFormData>({
     resolver: zodResolver(approveSalarySchema),
     defaultValues: {
-      approvedAmount: calculation?.calculatedAmount || 0,
+      approvedAmount: calculation?.grandTotal || 0,
       reason: '',
     },
   });
@@ -75,7 +68,7 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
   useEffect(() => {
     if (open && calculation) {
       form.reset({
-        approvedAmount: calculation.calculatedAmount,
+        approvedAmount: calculation.grandTotal,
         reason: '',
       });
     }
@@ -83,7 +76,7 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
 
   // Watch approved amount to show reason field when it differs
   const approvedAmount = form.watch('approvedAmount');
-  const isDifferent = calculation && approvedAmount !== calculation.calculatedAmount;
+  const isDifferent = calculation && approvedAmount !== calculation.grandTotal;
 
   const onSubmit = async (data: ApproveSalaryFormData) => {
     if (!teacherId || !calculation) return;
@@ -103,8 +96,24 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
 
       const result = await approveSalaryCalculation(teacherId, calculation.calculationId, request);
 
+      // Transform SalaryCalculationDetail to SalaryCalculation format
+      const updatedCalculation: SalaryCalculation = {
+        id: result.calculationId,
+        teacherId: result.teacherId,
+        teacherName: '', // Not included in detail response, will be updated from list
+        academicYearId: result.academicYearId,
+        periodStart: result.periodStart,
+        periodEnd: result.periodEnd,
+        calculatedAmount: result.calculatedAmount,
+        approvedAmount: result.approvedAmount,
+        status: result.status,
+        approvedAt: result.approvedAt,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+      };
+
       // Update Redux state
-      dispatch(updateSalaryCalculation(result.calculation));
+      dispatch(updateSalaryCalculation(updatedCalculation));
 
       toast({
         title: 'Salary calculation approved',
@@ -135,18 +144,19 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
   if (!calculation) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1f2e] border-white/10 max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white">
-            <CheckCircle className="w-5 h-5 text-green-400" />
-            Approve Salary Calculation
-          </DialogTitle>
-          <DialogDescription className="text-white/60">
-            Review and approve the salary calculation. You can adjust the amount if needed.
-          </DialogDescription>
-        </DialogHeader>
-
+    <ActionDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      intent="success"
+      size="md"
+      icon={CheckCircle}
+      title="Approve Salary Calculation"
+      description="Review and approve the salary calculation. You can adjust the amount if needed."
+      confirmText="Approve"
+      onConfirm={form.handleSubmit(onSubmit)}
+      isLoading={loading}
+    >
+      <div className="space-y-4">
         <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-sm text-white/70">Period:</span>
@@ -155,15 +165,13 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm text-white/70">Calculated Amount:</span>
-            <span className="text-sm text-white font-medium">
-              {formatCurrency(calculation.calculatedAmount)}
-            </span>
+            <span className="text-sm text-white/70">Total Amount:</span>
+            <Amount value={calculation.grandTotal} size="sm" weight="medium" className="text-white" />
           </div>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-4">
             <FormField
               control={form.control}
               name="approvedAmount"
@@ -173,10 +181,18 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
                   <FormControl>
                     <Input
                       type="number"
-                      step="100"
+                      step="0.01"
                       min="0"
-                      value={field.value}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      value={field.value ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '') {
+                          field.onChange(undefined);
+                        } else {
+                          const numValue = parseFloat(value);
+                          field.onChange(isNaN(numValue) ? undefined : numValue);
+                        }
+                      }}
                       disabled={loading}
                       className="bg-white/5 border-white/20 text-white"
                       placeholder="Enter approved amount"
@@ -215,28 +231,9 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
                 )}
               />
             )}
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={loading}
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                {loading ? 'Approving...' : 'Approve'}
-              </Button>
-            </DialogFooter>
-          </form>
+          </div>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </ActionDialog>
   );
 };

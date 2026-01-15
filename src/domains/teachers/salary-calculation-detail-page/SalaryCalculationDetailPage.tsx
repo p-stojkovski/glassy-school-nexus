@@ -1,7 +1,7 @@
 /**
  * Salary Calculation Detail Page
  * Standalone page for viewing detailed breakdown of a salary calculation
- * Converted from SalaryCalculationDetailDialog to match Class/Student page patterns
+ * Compact layout with prominent grand total and tabbed details
  */
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -9,11 +9,9 @@ import { ChevronRight, Home } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import { useTeacherSalaryCalculationDetail } from './hooks/useTeacherSalaryCalculationDetailPage';
-import { SalaryCalculationHeader } from './components/SalaryCalculationHeader';
-import { SalaryCalculationBreakdown } from './components/SalaryCalculationBreakdown';
-import { SalaryCalculationAuditLog } from './components/SalaryCalculationAuditLog';
+import { SalaryTotalHero } from './components/SalaryTotalHero';
+import { SalaryDetailTabs } from './components/SalaryDetailTabs';
 import { ApproveSalaryDialog, ReopenSalaryDialog } from '../detail-page/tabs/salary-calculations/dialogs';
-import type { SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
 
 /**
  * Breadcrumb Navigation Component
@@ -44,7 +42,7 @@ const SalaryCalculationBreadcrumbs: React.FC<{
       </button>
       <ChevronRight className="w-4 h-4" />
       <button
-        onClick={() => navigate(`/teachers/${teacherId}?tab=salary-calculations`)}
+        onClick={() => navigate(`/teachers/${teacherId}?tab=salary`)}
         className="hover:text-white transition-colors"
       >
         Salary Calculations
@@ -58,11 +56,11 @@ const SalaryCalculationBreadcrumbs: React.FC<{
 export const SalaryCalculationDetailPage: React.FC = () => {
   const { teacherId, calculationId } = useParams<{ teacherId: string; calculationId: string }>();
   const navigate = useNavigate();
-  
+
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
 
-  const { detail, loading, error, refetch, teacherName, periodDisplay } = 
+  const { detail, loading, error, refetch, teacherName, periodDisplay, currentEmploymentType } =
     useTeacherSalaryCalculationDetail({
       teacherId: teacherId || null,
       calculationId: calculationId || null,
@@ -101,7 +99,7 @@ export const SalaryCalculationDetailPage: React.FC = () => {
     return (
       <div className="space-y-4">
         <button
-          onClick={() => navigate(`/teachers/${teacherId}?tab=salary-calculations`)}
+          onClick={() => navigate(`/teachers/${teacherId}?tab=salary`)}
           className="text-white/80 hover:text-white transition-colors flex items-center gap-2"
         >
           ← Back to Salary Calculations
@@ -118,26 +116,28 @@ export const SalaryCalculationDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Breadcrumbs */}
       <SalaryCalculationBreadcrumbs
         teacherName={teacherName}
         periodDisplay={periodDisplay}
       />
 
-      {/* Page Header with Actions and Summary */}
-      <SalaryCalculationHeader
+      <SalaryTotalHero
         detail={detail}
+        currentEmploymentType={currentEmploymentType}
         onApprove={handleApprove}
         onReopen={handleReopen}
       />
 
-      {/* Class Breakdown */}
-      <SalaryCalculationBreakdown items={detail.items} />
+      <SalaryDetailTabs
+        items={detail.items}
+        adjustments={detail.adjustments}
+        adjustmentsTotal={detail.adjustmentsTotal}
+        baseSalaryAmount={detail.baseSalaryAmount}
+        status={detail.status}
+        calculationId={detail.calculationId}
+        onSuccess={refetch}
+      />
 
-      {/* Audit Log - Collapsible with Lazy Loading */}
-      <SalaryCalculationAuditLog />
-
-      {/* Action Dialogs */}
       <ApproveSalaryDialog
         open={approveDialogOpen}
         onOpenChange={setApproveDialogOpen}

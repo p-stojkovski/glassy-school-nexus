@@ -7,10 +7,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Star, Play } from 'lucide-react';
+import { Star, Play, Trash2 } from 'lucide-react';
 import SettingsTable, { SettingsTableColumn } from '../shared/SettingsTable';
 import AcademicYearForm from './forms/AcademicYearForm';
-import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import DateRangeDisplay from './shared/DateRangeDisplay';
 import academicCalendarApiService from '../../services/academicCalendarApi';
 import { clearAcademicYearsCache } from '@/hooks/useAcademicYears';
@@ -286,13 +286,16 @@ const AcademicYearsManagement: React.FC = () => {
       <ConfirmDialog
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
-        onConfirm={confirmDeleteAcademicYear}
+        intent="danger"
+        icon={Trash2}
         title="Delete Academic Year"
         description={
           academicYearToDelete
             ? `Are you sure you want to delete "${academicYearToDelete.name}"? This action cannot be undone and will also delete all associated semesters, teaching breaks, and holidays.`
             : 'Are you sure you want to delete this academic year?'
         }
+        confirmText="Delete"
+        onConfirm={confirmDeleteAcademicYear}
       />
     </>
   );

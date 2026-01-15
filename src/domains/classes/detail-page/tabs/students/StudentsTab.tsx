@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Users, Loader2, Plus, Search, X } from 'lucide-react';
+import { Users, Loader2, Plus, Search, X, UserMinus, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import { toast } from 'sonner';
 import { ScheduleEnrollmentTab } from '@/domains/classes/form-page';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
@@ -296,20 +296,25 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
         )}
 
         {/* Remove Student Confirmation Dialog */}
-        <ConfirmationDialog
-          isOpen={studentToRemove !== null}
+        <ConfirmDialog
+          open={studentToRemove !== null}
+          onOpenChange={(open) => !open && setStudentToRemove(null)}
+          intent="danger"
+          icon={UserMinus}
           title="Remove Student"
           description={`Remove ${studentToRemove?.name || 'this student'} from this class?\n\nThey have not attended any lessons yet and can be safely removed.`}
           confirmText="Remove Student"
           cancelText="Cancel"
-          variant="danger"
           onConfirm={handleRemoveStudent}
-          onClose={() => setStudentToRemove(null)}
+          isLoading={isRemoving}
         />
 
         {/* Same-Day Lesson Confirmation Dialog */}
-        <ConfirmationDialog
-          isOpen={sameDayLessonPrompt !== null}
+        <ConfirmDialog
+          open={sameDayLessonPrompt !== null}
+          onOpenChange={(open) => !open && handleSameDayLessonConfirm(false)}
+          intent="primary"
+          icon={Calendar}
           title="Include Today's Lesson?"
           description={
             sameDayLessonPrompt
@@ -318,9 +323,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
           }
           confirmText="Yes, include today"
           cancelText="No, start from next lesson"
-          variant="default"
           onConfirm={() => handleSameDayLessonConfirm(true)}
-          onClose={() => handleSameDayLessonConfirm(false)}
         />
 
         {/* Transfer Student Dialog */}

@@ -11,6 +11,9 @@
 /** Salary calculation status */
 export type SalaryCalculationStatus = 'pending' | 'approved' | 'reopened';
 
+/** Salary adjustment type */
+export type SalaryAdjustmentType = 'addition' | 'deduction';
+
 /** Teacher salary calculation - summary for list view */
 export interface SalaryCalculation {
   id: string;
@@ -20,11 +23,13 @@ export interface SalaryCalculation {
   periodStart: string; // ISO date string (yyyy-MM-dd)
   periodEnd: string;
   calculatedAmount: number;
+  baseSalaryAmount: number; // Monthly base salary for full-time teachers (0 for contract)
   approvedAmount: number | null;
   status: SalaryCalculationStatus;
   approvedAt: string | null; // ISO datetime string
   createdAt: string;
   updatedAt: string;
+  employmentType: 'full_time' | 'contract' | null; // Snapshot of employment type at calculation time (null for legacy)
 }
 
 /**
@@ -50,11 +55,21 @@ export interface SalaryCalculationItem {
 /** Audit log entry for salary calculation changes */
 export interface SalaryAuditLog {
   id: string;
-  action: string; // 'created', 'approved', 'adjusted', 'reopened', 'recalculated'
+  action: string; // 'created', 'approved', 'adjusted', 'reopened', 'recalculated', 'adjustment_added', 'adjustment_removed'
   previousAmount: number | null;
   newAmount: number | null;
   reason: string | null; // Required for adjustments/reopening
   createdAt: string; // ISO datetime string
+}
+
+/** Manual adjustment (bonus or deduction) for a salary calculation */
+export interface SalaryAdjustment {
+  id: string;
+  adjustmentType: SalaryAdjustmentType;
+  description: string;
+  amount: number;
+  createdAt: string; // ISO datetime string
+  createdByName: string | null;
 }
 
 /** Snapshot of salary rule used in calculation (for audit trail) */
@@ -64,7 +79,7 @@ export interface RuleSnapshot {
   effectiveFrom: string; // ISO date string (yyyy-MM-dd)
 }
 
-/** Detailed salary calculation with items and audit log (flat structure from API) */
+/** Detailed salary calculation with items, adjustments, and audit log (flat structure from API) */
 export interface SalaryCalculationDetail {
   calculationId: string;
   teacherId: string;
@@ -72,13 +87,18 @@ export interface SalaryCalculationDetail {
   periodStart: string; // ISO date string (yyyy-MM-dd)
   periodEnd: string;
   calculatedAmount: number;
+  baseSalaryAmount: number; // Monthly base salary for full-time teachers (0 for contract)
   approvedAmount: number | null;
   status: SalaryCalculationStatus;
   approvedAt: string | null; // ISO datetime string
   createdAt: string;
   updatedAt: string;
   items: SalaryCalculationItem[];
+  adjustments: SalaryAdjustment[];
   auditLog: SalaryAuditLog[];
+  adjustmentsTotal: number; // Sum of additions minus deductions
+  grandTotal: number; // baseSalaryAmount + calculatedAmount + adjustmentsTotal
+  employmentType: 'full_time' | 'contract' | null; // Snapshot of employment type at calculation time (null for legacy)
 }
 
 // ============================================================================
@@ -107,6 +127,7 @@ export interface TeacherSalaryPreview {
   month: number;
   classBreakdown: ClassSalaryPreviewItem[];
   totalEstimated: number;
+  baseSalaryAmount?: number; // Optional: base salary for full-time teachers (will be 0 for contract)
   warnings: string[]; // e.g., "Business English skipped (0 students)"
   pendingChangeWarnings: string[]; // e.g., "2 pending enrollments may change tier"
 }
@@ -132,6 +153,13 @@ export interface ReopenSalaryRequest {
   reason: string; // Always required
 }
 
+/** Request to create a salary adjustment (bonus or deduction) */
+export interface CreateSalaryAdjustmentRequest {
+  adjustmentType: SalaryAdjustmentType; // 'addition' or 'deduction'
+  description: string; // Free text, 3-200 characters
+  amount: number; // Positive value, max 999999.99
+}
+
 // ============================================================================
 // API Path Helpers
 // ============================================================================
@@ -139,26 +167,34 @@ export interface ReopenSalaryRequest {
 export const SalaryCalculationApiPaths = {
   /** List all calculations for a teacher */
   LIST: (teacherId: string) => `/api/teachers/${teacherId}/salary-calculations`,
-  
+
   /** Get specific calculation detail */
-  BY_ID: (teacherId: string, calcId: string) => 
+  BY_ID: (teacherId: string, calcId: string) =>
     `/api/teachers/${teacherId}/salary-calculations/${calcId}`,
-  
+
   /** Approve a calculation */
-  APPROVE: (teacherId: string, calcId: string) => 
+  APPROVE: (teacherId: string, calcId: string) =>
     `/api/teachers/${teacherId}/salary-calculations/${calcId}/approve`,
-  
+
   /** Reopen an approved calculation */
-  REOPEN: (teacherId: string, calcId: string) => 
+  REOPEN: (teacherId: string, calcId: string) =>
     `/api/teachers/${teacherId}/salary-calculations/${calcId}/reopen`,
-  
+
   /** Manually trigger recalculation */
-  RECALCULATE: (teacherId: string, calcId: string) => 
+  RECALCULATE: (teacherId: string, calcId: string) =>
     `/api/teachers/${teacherId}/salary-calculations/${calcId}/recalculate`,
-  
+
   /** Get salary preview for a month */
-  PREVIEW: (teacherId: string, year: number, month: number) => 
+  PREVIEW: (teacherId: string, year: number, month: number) =>
     `/api/teachers/${teacherId}/salary-preview?year=${year}&month=${month}`,
+
+  /** Create a salary adjustment */
+  CREATE_ADJUSTMENT: (teacherId: string, calcId: string) =>
+    `/api/teachers/${teacherId}/salary-calculations/${calcId}/adjustments`,
+
+  /** Delete a salary adjustment */
+  DELETE_ADJUSTMENT: (teacherId: string, calcId: string, adjustmentId: string) =>
+    `/api/teachers/${teacherId}/salary-calculations/${calcId}/adjustments/${adjustmentId}`,
 } as const;
 
 // ============================================================================
@@ -195,5 +231,18 @@ export const SalaryCalculationValidationRules = {
   REOPEN: {
     REASON_REQUIRED: 'Reason is required to reopen an approved calculation',
     CANNOT_REOPEN_PENDING: 'Cannot reopen a calculation that is not approved',
+  },
+  ADJUSTMENT: {
+    TYPE_REQUIRED: 'Adjustment type is required',
+    TYPE_INVALID: "Adjustment type must be 'addition' or 'deduction'",
+    DESCRIPTION_REQUIRED: 'Description is required',
+    DESCRIPTION_MIN_LENGTH: 3,
+    DESCRIPTION_MAX_LENGTH: 200,
+    DESCRIPTION_TOO_SHORT: 'Description must be at least 3 characters',
+    DESCRIPTION_TOO_LONG: 'Description must be at most 200 characters',
+    AMOUNT_NOT_POSITIVE: 'Amount must be positive',
+    AMOUNT_MAX: 999999.99,
+    AMOUNT_TOO_LARGE: 'Amount cannot exceed 999,999.99',
+    CANNOT_MODIFY_APPROVED: 'Cannot add or remove adjustments from an approved calculation',
   },
 } as const;

@@ -127,7 +127,6 @@ export const useTeacherManagement = () => {
     searchTerm: teacherFilters.searchTerm,
     statusFilter: teacherFilters.statusFilter,
     subjectFilter: teacherFilters.subjectFilter,
-    experienceFilter: teacherFilters.experienceFilter,
     hasActiveFilters: teacherFilters.hasActiveFilters,
     searchParams: teacherList.searchParams,
 
@@ -166,7 +165,6 @@ export const useTeacherManagement = () => {
     setSearchTerm: teacherFilters.setSearchTerm,
     setStatusFilter: teacherFilters.setStatusFilter,
     setSubjectFilter: teacherFilters.setSubjectFilter,
-    setExperienceFilter: teacherFilters.setExperienceFilter,
 
     // State setters
     setIsFormOpen,

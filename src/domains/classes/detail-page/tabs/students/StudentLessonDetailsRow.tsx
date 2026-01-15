@@ -2,6 +2,7 @@ import React from 'react';
 import { StudentLessonDetail, StudentPaymentObligationInfo } from '@/types/api/class';
 import { Clock, CheckCircle2, XCircle, AlertTriangle, FileText, DollarSign } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { Amount } from '@/components/ui/amount';
 
 interface StudentLessonDetailsRowProps {
   lessons: StudentLessonDetail[];
@@ -124,9 +125,9 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
                 <div className="text-sm font-medium text-amber-200 mb-1">Payment Due</div>
                 <div className="text-xs text-amber-300/80">
                   {paymentObligation.pendingCount === 1 ? (
-                    <>{formatCurrency(paymentObligation.totalPendingAmount)} outstanding</>
+                    <><Amount value={paymentObligation.totalPendingAmount} size="sm" className="text-amber-300/80" /> outstanding</>
                   ) : (
-                    <>{paymentObligation.pendingCount} pending obligations ({formatCurrency(paymentObligation.totalPendingAmount)} total)</>
+                    <>{paymentObligation.pendingCount} pending obligations (<Amount value={paymentObligation.totalPendingAmount} size="sm" className="text-amber-300/80" /> total)</>
                   )}
                 </div>
                 <div className="text-xs text-amber-300/60 mt-1">
@@ -143,13 +144,6 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
     );
   }
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount) + ' MKD';
-  };
-
   return (
     <div className="px-6 py-4 transition-all duration-200">
       {/* Payment Obligations Section - shown above lessons */}
@@ -161,9 +155,9 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
               <div className="text-sm font-medium text-amber-200 mb-1">Payment Due</div>
               <div className="text-xs text-amber-300/80">
                 {paymentObligation.pendingCount === 1 ? (
-                  <>{formatCurrency(paymentObligation.totalPendingAmount)} outstanding</>
+                  <><Amount value={paymentObligation.totalPendingAmount} size="sm" className="text-amber-300/80" /> outstanding</>
                 ) : (
-                  <>{paymentObligation.pendingCount} pending obligations ({formatCurrency(paymentObligation.totalPendingAmount)} total)</>
+                  <>{paymentObligation.pendingCount} pending obligations (<Amount value={paymentObligation.totalPendingAmount} size="sm" className="text-amber-300/80" /> total)</>
                 )}
               </div>
               <div className="text-xs text-amber-300/60 mt-1">

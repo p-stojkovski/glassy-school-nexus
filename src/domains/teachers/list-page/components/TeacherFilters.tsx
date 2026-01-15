@@ -13,8 +13,6 @@ interface TeacherFiltersProps {
   setStatusFilter: (filter: 'all' | 'active' | 'inactive') => void;
   subjectFilter: string;
   setSubjectFilter: (filter: string) => void;
-  experienceFilter: 'all' | '0-2' | '3-5' | '5+';
-  setExperienceFilter: (filter: 'all' | '0-2' | '3-5' | '5+') => void;
   subjects: SubjectDto[];
   clearFilters: () => void;
   hasActiveFilters?: boolean;
@@ -28,8 +26,6 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
   setStatusFilter,
   subjectFilter,
   setSubjectFilter,
-  experienceFilter,
-  setExperienceFilter,
   subjects,
   clearFilters,
   hasActiveFilters = false,
@@ -49,25 +45,14 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
     closePopover();
   };
 
-  const handleExperienceSelect = (value: string) => {
-    setExperienceFilter(value as 'all' | '0-2' | '3-5' | '5+');
-    closePopover();
-  };
-
   // Labels for display
   const statusLabel = statusFilter === 'all' ? 'All' : statusFilter === 'active' ? 'Active' : 'Inactive';
   const subjectLabel = subjectFilter === 'all' ? 'All' : subjects.find(s => s.id === subjectFilter)?.name || 'Unknown';
-  const experienceLabel =
-    experienceFilter === 'all' ? 'All' :
-    experienceFilter === '0-2' ? '0-2 years' :
-    experienceFilter === '3-5' ? '3-5 years' :
-    '5+ years';
 
   // Build active filter chips (exclude search term from chips)
   const activeChips: { key: string; label: string }[] = [];
   if (statusFilter !== 'all') activeChips.push({ key: 'status', label: `Status: ${statusLabel}` });
   if (subjectFilter !== 'all') activeChips.push({ key: 'subject', label: `Subject: ${subjectLabel}` });
-  if (experienceFilter !== 'all') activeChips.push({ key: 'experience', label: `Experience: ${experienceLabel}` });
 
   const clearSingleChip = (key: string) => {
     switch (key) {
@@ -76,9 +61,6 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
         break;
       case 'subject':
         setSubjectFilter('all');
-        break;
-      case 'experience':
-        setExperienceFilter('all');
         break;
       default:
         break;
@@ -170,31 +152,6 @@ const TeacherFilters: React.FC<TeacherFiltersProps> = ({
                 ],
                 subjectFilter,
                 handleSubjectSelect
-              )}
-            </PopoverContent>
-          </Popover>
-
-          {/* Experience Filter */}
-          <Popover
-            open={openFilter === 'experience'}
-            onOpenChange={(open) => setOpenFilter(open ? 'experience' : null)}
-          >
-            <PopoverTrigger asChild>
-              <Button className={filterButtonClass} variant="outline">
-                Experience
-                <ChevronDown className="w-4 h-4 text-white/60" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-52 bg-[#0d1026]/95 border-white/10 text-white p-2 shadow-xl">
-              {renderOptions(
-                [
-                  { value: 'all', label: 'All' },
-                  { value: '0-2', label: '0-2 years' },
-                  { value: '3-5', label: '3-5 years' },
-                  { value: '5+', label: '5+ years' },
-                ],
-                experienceFilter,
-                handleExperienceSelect
               )}
             </PopoverContent>
           </Popover>

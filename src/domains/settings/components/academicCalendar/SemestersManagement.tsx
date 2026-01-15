@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Sheet,
@@ -8,7 +9,7 @@ import {
 } from '@/components/ui/sheet';
 import SettingsTable, { SettingsTableColumn } from '../shared/SettingsTable';
 import SemesterForm from './forms/SemesterForm';
-import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import DateRangeDisplay from './shared/DateRangeDisplay';
 import YearsDropdown from '@/components/common/YearsDropdown';
 import academicCalendarApiService from '../../services/academicCalendarApi';
@@ -260,13 +261,16 @@ const SemestersManagement: React.FC = () => {
       <ConfirmDialog
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
-        onConfirm={confirmDeleteSemester}
+        intent="danger"
+        icon={Trash2}
         title="Delete Semester"
         description={
           semesterToDelete
             ? `Are you sure you want to delete "${semesterToDelete.name}"? This action cannot be undone.`
             : 'Are you sure you want to delete this semester?'
         }
+        confirmText="Delete"
+        onConfirm={confirmDeleteSemester}
       />
     </>
   );

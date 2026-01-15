@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRightLeft, Users, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ActionDialog } from '@/components/common/dialogs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -61,8 +53,8 @@ export default function TransferStudentDialog({
         (c) => c.id !== sourceClass.id && c.availableSlots > 0
       );
       setAvailableClasses(filtered);
-    } catch (error: any) {
-      console.error('Error loading classes:', error);
+    } catch (err: unknown) {
+      console.error('Error loading classes:', err);
       toast.error('Failed to load available classes');
     } finally {
       setIsLoadingClasses(false);
@@ -90,8 +82,9 @@ export default function TransferStudentDialog({
       );
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to transfer student');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to transfer student';
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -108,144 +101,112 @@ export default function TransferStudentDialog({
   const selectedClass = availableClasses.find((c) => c.id === selectedClassId);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
-            <ArrowRightLeft className="w-5 h-5 text-blue-400" />
-            Transfer Student
-          </DialogTitle>
-          <DialogDescription className="text-white/70">
-            Transfer <span className="font-medium text-white">{studentName}</span> from{' '}
-            <span className="font-medium text-white">{sourceClass.name}</span> to another
-            class
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-2">
-          {/* Class Search */}
-          <div className="space-y-2">
-            <Label className="text-white/80 text-sm">Select Target Class</Label>
-            <Input
-              placeholder="Search classes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
-            />
-          </div>
-
-          {/* Class List */}
-          <ScrollArea className="h-[220px] rounded-md border border-white/10 bg-white/5">
-            {isLoadingClasses ? (
-              <div className="flex items-center justify-center h-full py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-white/40" />
-              </div>
-            ) : filteredClasses.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full py-8 text-white/40">
-                <Users className="w-8 h-8 mb-2" />
-                <p className="text-sm">
-                  {searchTerm
-                    ? 'No matching classes found'
-                    : 'No available classes with capacity'}
-                </p>
-              </div>
-            ) : (
-              <div className="p-2 space-y-1">
-                {filteredClasses.map((cls) => (
-                  <button
-                    key={cls.id}
-                    type="button"
-                    onClick={() => setSelectedClassId(cls.id)}
-                    className={`w-full text-left p-3 rounded-lg transition-all ${
-                      selectedClassId === cls.id
-                        ? 'bg-blue-500/30 border border-blue-400/50'
-                        : 'bg-white/5 hover:bg-white/10 border border-transparent'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-white truncate">{cls.name}</p>
-                        <p className="text-sm text-white/60 truncate">
-                          {cls.subjectName} • {cls.teacherName}
-                        </p>
-                      </div>
-                      <div className="text-right ml-4 flex-shrink-0">
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            cls.availableSlots > 3
-                              ? 'bg-green-500/20 text-green-300'
-                              : cls.availableSlots > 1
-                              ? 'bg-amber-500/20 text-amber-300'
-                              : 'bg-red-500/20 text-red-300'
-                          }`}
-                        >
-                          {cls.availableSlots} slot{cls.availableSlots !== 1 ? 's' : ''} left
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-
-          {/* Selected Class Preview */}
-          {selectedClass && (
-            <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg p-3">
-              <p className="text-sm text-white/60">Transferring to:</p>
-              <p className="font-medium text-white">{selectedClass.name}</p>
-              <p className="text-sm text-white/60">
-                {selectedClass.subjectName} • {selectedClass.teacherName}
-              </p>
-            </div>
-          )}
-
-          {/* Reason (Optional) */}
-          <div className="space-y-2">
-            <Label className="text-white/80 text-sm">
-              Reason for Transfer{' '}
-              <span className="text-white/40">(optional)</span>
-            </Label>
-            <Textarea
-              placeholder="E.g., Schedule conflict, changed skill level, parent request..."
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              rows={2}
-              className="bg-white/5 border-white/20 text-white placeholder:text-white/40 resize-none"
-            />
-          </div>
+    <ActionDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      intent="warning"
+      size="lg"
+      icon={ArrowRightLeft}
+      title="Transfer Student"
+      description={`Transfer ${studentName} from ${sourceClass.name} to another class`}
+      confirmText="Transfer Student"
+      onConfirm={handleSubmit}
+      isLoading={isSubmitting}
+      disabled={!selectedClassId}
+    >
+      <div className="space-y-4">
+        {/* Class Search */}
+        <div className="space-y-2">
+          <Label className="text-white/80 text-sm">Select Target Class</Label>
+          <Input
+            placeholder="Search classes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
+          />
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-            className="text-white/70 hover:text-white hover:bg-white/10"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting || !selectedClassId}
-            className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Transferring...
-              </>
-            ) : (
-              <>
-                <ArrowRightLeft className="w-4 h-4" />
-                Transfer Student
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {/* Class List */}
+        <ScrollArea className="h-[220px] rounded-md border border-white/10 bg-white/5">
+          {isLoadingClasses ? (
+            <div className="flex items-center justify-center h-full py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-white/40" />
+            </div>
+          ) : filteredClasses.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full py-8 text-white/40">
+              <Users className="w-8 h-8 mb-2" />
+              <p className="text-sm">
+                {searchTerm
+                  ? 'No matching classes found'
+                  : 'No available classes with capacity'}
+              </p>
+            </div>
+          ) : (
+            <div className="p-2 space-y-1">
+              {filteredClasses.map((cls) => (
+                <button
+                  key={cls.id}
+                  type="button"
+                  onClick={() => setSelectedClassId(cls.id)}
+                  className={`w-full text-left p-3 rounded-lg transition-all ${
+                    selectedClassId === cls.id
+                      ? 'bg-blue-500/30 border border-blue-400/50'
+                      : 'bg-white/5 hover:bg-white/10 border border-transparent'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-white truncate">{cls.name}</p>
+                      <p className="text-sm text-white/60 truncate">
+                        {cls.subjectName} • {cls.teacherName}
+                      </p>
+                    </div>
+                    <div className="text-right ml-4 flex-shrink-0">
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          cls.availableSlots > 3
+                            ? 'bg-green-500/20 text-green-300'
+                            : cls.availableSlots > 1
+                            ? 'bg-amber-500/20 text-amber-300'
+                            : 'bg-red-500/20 text-red-300'
+                        }`}
+                      >
+                        {cls.availableSlots} slot{cls.availableSlots !== 1 ? 's' : ''} left
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+
+        {/* Selected Class Preview */}
+        {selectedClass && (
+          <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg p-3">
+            <p className="text-sm text-white/60">Transferring to:</p>
+            <p className="font-medium text-white">{selectedClass.name}</p>
+            <p className="text-sm text-white/60">
+              {selectedClass.subjectName} • {selectedClass.teacherName}
+            </p>
+          </div>
+        )}
+
+        {/* Reason (Optional) */}
+        <div className="space-y-2">
+          <Label className="text-white/80 text-sm">
+            Reason for Transfer{' '}
+            <span className="text-white/40">(optional)</span>
+          </Label>
+          <Textarea
+            placeholder="E.g., Schedule conflict, changed skill level, parent request..."
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={2}
+            className="bg-white/5 border-white/20 text-white placeholder:text-white/40 resize-none"
+          />
+        </div>
+      </div>
+    </ActionDialog>
   );
 }

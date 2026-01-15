@@ -165,8 +165,8 @@ const TabbedClassFormContent = React.forwardRef<ClassFormRef, ClassFormContentPr
 
     try {
       await onSubmit(data);
-    } catch (error: any) {
-      console.error('Form submission error:', error);
+    } catch (err: unknown) {
+      console.error('Form submission error:', err);
     }
   };
 

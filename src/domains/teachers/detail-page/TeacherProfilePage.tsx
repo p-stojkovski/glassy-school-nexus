@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GlassCard from '@/components/common/GlassCard';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -7,12 +8,17 @@ import { buildTeacherBreadcrumbs } from '@/domains/teachers/_shared/utils/teache
 import { TeacherPageHeader } from './layout';
 import { useTeacherProfile } from './useTeacherProfile';
 import { useTeacherAcademicYear } from './hooks/useTeacherAcademicYear';
-import { EditTeacherSheet } from './dialogs';
+import { EditTeacherSheet, EmploymentSettingsSheet } from './dialogs';
 import { TeacherScheduleTab } from './tabs/schedule';
 import { TeacherClassesTab } from './tabs/classes';
 import { SalaryCalculationsTab } from './tabs/salary-calculations';
+import { useAppDispatch } from '@/store/hooks';
+import { fetchBaseSalary } from '@/domains/teachers/teachersSlice';
 
 const TeacherProfilePage: React.FC = () => {
+  const { teacherId } = useParams<{ teacherId: string }>();
+  const dispatch = useAppDispatch();
+
   const {
     teacher,
     isLoading,
@@ -38,6 +44,19 @@ const TeacherProfilePage: React.FC = () => {
     isBetweenYears,
     betweenYearsMessage,
   } = useTeacherAcademicYear();
+
+  // Employment settings sheet state
+  const [isEmploymentSheetOpen, setIsEmploymentSheetOpen] = useState(false);
+
+  // Handle successful employment settings save
+  const handleEmploymentSettingsSaved = () => {
+    // Refetch base salary to ensure the UI reflects the latest data
+    // Note: The setBaseSalary thunk already updates Redux state, but this ensures
+    // consistency if there's any issue with the response not matching what's in the DB
+    if (teacherId && selectedYearId) {
+      dispatch(fetchBaseSalary({ teacherId, academicYearId: selectedYearId }));
+    }
+  };
 
   if (isLoading) {
     return (
@@ -76,6 +95,7 @@ const TeacherProfilePage: React.FC = () => {
       <TeacherPageHeader
         teacher={teacher}
         onEdit={handleOpenEditSheet}
+        onOpenEmploymentSettings={() => setIsEmploymentSheetOpen(true)}
         selectedYear={selectedYear}
         years={years}
         onYearChange={setSelectedYearId}
@@ -142,6 +162,16 @@ const TeacherProfilePage: React.FC = () => {
         onSuccess={handleEditSuccess}
         teacher={teacher}
       />
+
+      {selectedYearId && (
+        <EmploymentSettingsSheet
+          isOpen={isEmploymentSheetOpen}
+          onClose={() => setIsEmploymentSheetOpen(false)}
+          onSuccess={handleEmploymentSettingsSaved}
+          teacher={teacher}
+          academicYearId={selectedYearId}
+        />
+      )}
     </div>
   );
 };

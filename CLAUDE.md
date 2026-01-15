@@ -97,7 +97,8 @@ src/
 │   ├── teachers/                 # Teacher management
 │   └── [domain]/                 # Other domains follow same pattern
 ├── components/                    # Shared components
-│   ├── ui/                       # ShadCN primitives (DO NOT EDIT)
+│   ├── ui/                       # ShadCN primitives (DO NOT EDIT except amount.tsx)
+│   │   ├── amount.tsx            # Monetary display component (custom)
 │   │   ├── button.tsx            # Generated from ShadCN CLI
 │   │   ├── dialog.tsx
 │   │   ├── form.tsx
@@ -347,6 +348,121 @@ export function CreateStudentDialog() {
 | **Compose, Don't Wrap** | Use ShadCN components directly, avoid custom wrappers |
 | **Variant Props** | Use built-in variants (`variant="destructive"`, `size="sm"`) |
 | **asChild Pattern** | Use `asChild` prop to compose with custom components |
+
+## Standard Dialog System
+
+> **REQUIRED:** All new dialogs must use the Standard Dialog components from `components/common/dialogs/`.
+
+### Available Components
+
+```typescript
+import { ConfirmDialog, ActionDialog, AlertDialog } from '@/components/common/dialogs';
+```
+
+| Component | Use Case | Children |
+|-----------|----------|----------|
+| `ConfirmDialog` | Yes/No confirmations | None |
+| `ActionDialog` | Form-based actions | Required |
+| `AlertDialog` | Single-button notifications | None |
+
+### Intent System
+
+| Intent | Button Color | Use Case |
+|--------|--------------|----------|
+| `primary` | Yellow | Create, Edit, Generate, Save |
+| `success` | Green | Approve, Enable, Complete |
+| `danger` | Red | Delete, Remove permanently |
+| `warning` | Orange | Disable, Archive, Reopen |
+
+### Quick Examples
+
+**Confirmation (Yes/No):**
+```typescript
+<ConfirmDialog
+  open={showDelete}
+  onOpenChange={setShowDelete}
+  intent="danger"
+  icon={Trash2}
+  title="Delete Item"
+  description="This cannot be undone."
+  confirmText="Delete"
+  onConfirm={handleDelete}
+  isLoading={isDeleting}
+/>
+```
+
+**Form Action:**
+```typescript
+<ActionDialog
+  open={showCreate}
+  onOpenChange={setShowCreate}
+  intent="primary"
+  icon={Plus}
+  title="Create Item"
+  confirmText="Create"
+  onConfirm={form.handleSubmit(onSubmit)}
+  isLoading={loading}
+>
+  <Form {...form}>
+    {/* Form fields */}
+  </Form>
+</ActionDialog>
+```
+
+**Full documentation:** See `.claude/skills/component-patterns/SKILL.md`
+
+## Standard Sheet System
+
+> **REQUIRED:** All new sheets (side panels) must use the Standard Sheet components from `components/common/sheets/`.
+
+### Available Components
+
+```typescript
+import { FormSheet, ViewSheet } from '@/components/common/sheets';
+```
+
+| Component | Use Case | Footer |
+|-----------|----------|--------|
+| `FormSheet` | Form-based actions with save/cancel | Yes (Save/Cancel buttons) |
+| `ViewSheet` | Read-only display panels | No |
+
+### Size System (REQUIRED)
+
+| Size | Width | Use Case |
+|------|-------|----------|
+| `sm` | 448px | Simple forms |
+| `md` | 512px | Standard forms |
+| `lg` | 576px | Complex forms |
+| `xl` | 672px | Forms with preview |
+| `2xl` | 768px | Rich content forms |
+
+### Quick Example
+
+```typescript
+<FormSheet
+  open={open}
+  onOpenChange={setOpen}
+  intent="primary"
+  size="md"
+  icon={Plus}
+  title="Create Class"
+  confirmText="Create"
+  onConfirm={form.handleSubmit(onSubmit)}
+  isLoading={loading}
+  isDirty={form.formState.isDirty}  // Enables unsaved changes protection
+>
+  <Form {...form}>
+    {/* Form fields */}
+  </Form>
+</FormSheet>
+```
+
+**Key Features:**
+- Click outside does NOT close (blocked)
+- `isDirty` prop enables unsaved changes warning dialog
+- Consistent glass morphism styling
+
+**Full documentation:** See `.claude/skills/component-patterns/SKILL.md`
 
 ## Form Handling with Zod + react-hook-form
 

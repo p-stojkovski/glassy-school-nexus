@@ -99,7 +99,7 @@ export const useSalaryRules = ({ classId, isActive }: UseSalaryRulesOptions) => 
     if (isActive && !rulesRequestedRef.current && !loading) {
       fetchSalaryRules();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     // Exclude fetchSalaryRules - it's stable in behavior but unstable in reference, causing double-fetch
   }, [isActive, loading]);
 
@@ -117,7 +117,7 @@ export const useSalaryRules = ({ classId, isActive }: UseSalaryRulesOptions) => 
     if (previewRequestedKeyRef.current === previewKey) return;
 
     fetchSalaryPreview(selectedYear, selectedMonth);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     // Exclude fetchSalaryPreview - it's stable in behavior but unstable in reference, causing double-fetch
   }, [isActive, classId, selectedYear, selectedMonth, previewLoading]);
 

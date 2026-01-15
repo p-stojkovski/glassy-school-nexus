@@ -1,12 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import StandardConfirmDialog from '@/components/common/StandardConfirmDialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import StandardDemoNotice from '@/components/common/StandardDemoNotice';
 import { DemoManager } from '@/data/components/DemoManager';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -150,9 +151,11 @@ const PrivateLessonsManagementPage: React.FC = () => {
       </Sheet>
 
       {/* Cancel/Delete Confirmation Dialog */}
-      <StandardConfirmDialog
-        isOpen={!!lessonToCancel}
-        onClose={() => setLessonToCancel(null)}
+      <ConfirmDialog
+        open={!!lessonToCancel}
+        onOpenChange={(open) => !open && setLessonToCancel(null)}
+        intent={lessonToCancel?.status === 'scheduled' ? 'warning' : 'danger'}
+        icon={lessonToCancel?.status === 'scheduled' ? XCircle : Trash2}
         title={
           lessonToCancel?.status === 'scheduled'
             ? 'Cancel Private Lesson'
@@ -169,7 +172,6 @@ const PrivateLessonsManagementPage: React.FC = () => {
             : 'Delete Lesson'
         }
         cancelText="Keep Lesson"
-        variant="danger"
         onConfirm={
           lessonToCancel?.status === 'scheduled'
             ? confirmCancelLesson
@@ -178,14 +180,15 @@ const PrivateLessonsManagementPage: React.FC = () => {
       />
 
       {/* Complete Confirmation Dialog */}
-      <StandardConfirmDialog
-        isOpen={!!lessonToComplete}
-        onClose={() => setLessonToComplete(null)}
+      <ConfirmDialog
+        open={!!lessonToComplete}
+        onOpenChange={(open) => !open && setLessonToComplete(null)}
+        intent="success"
+        icon={CheckCircle}
         title="Complete Private Lesson"
         description={`Are you sure you want to mark the private lesson with ${lessonToComplete?.studentName} as completed? This action will finalize the lesson.`}
         confirmText="Mark as Complete"
         cancelText="Cancel"
-        variant="default"
         onConfirm={confirmCompleteLesson}
       />
     </div>

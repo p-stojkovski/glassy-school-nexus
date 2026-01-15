@@ -25,6 +25,7 @@ import {
   TeacherSearchParams,
   TeacherApiPaths,
   TeacherHttpStatus,
+  EmploymentSettingsResponse,
 } from '@/types/api/teacher';
 import {
   TeacherSalaryConfigResponse,
@@ -44,22 +45,38 @@ import {
 import {
   SalaryCalculation,
   SalaryCalculationDetail,
+  SalaryAdjustment,
   TeacherSalaryPreview,
   GenerateSalaryRequest,
   ApproveSalaryRequest,
   ReopenSalaryRequest,
+  CreateSalaryAdjustmentRequest,
   SalaryCalculationFilters,
   SalaryCalculationApiPaths,
 } from '@/domains/teachers/_shared/types/salaryCalculation.types';
+import {
+  TeacherBaseSalaryResponse,
+  TeacherBaseSalaryHistoryResponse,
+  SetTeacherBaseSalaryRequest,
+  TeacherBaseSalaryApiPaths,
+} from '@/types/api/teacherBaseSalary';
 
-// Preserve status/details when rethrowing with a custom message
-function makeApiError(original: any, message: string): Error & { status?: number; details?: any } {
+// Preserve status/details/code when rethrowing with a custom message
+function makeApiError(original: any, message: string): Error & { status?: number; details?: any; code?: string } {
   const err: any = new Error(message);
   if (original) {
     err.status = original.status;
     err.details = original.details;
+    // Extract error code from ProblemDetails type field
+    // Backend returns: { type: "https://api.thinkenglish.com/errors/error_code", ... }
+    // Or: { type: "error_code", ... }
+    const type = original.details?.type || original.details?.Type;
+    if (typeof type === 'string') {
+      // Extract code from URL format or use as-is
+      err.code = type.includes('/errors/') ? type.split('/errors/').pop() : type;
+    }
   }
-  return err as Error & { status?: number; details?: any };
+  return err as Error & { status?: number; details?: any; code?: string };
 }
 
 // Normalize API responses that may wrap arrays in different shapes
@@ -834,6 +851,204 @@ const raw = await apiService.get<any>(endpoint);
     }
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SALARY ADJUSTMENTS (Bonuses/Deductions)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Create a salary adjustment (bonus or deduction) for a calculation
+   * @param teacherId - Teacher ID (UUID format)
+   * @param calcId - Calculation ID (UUID format)
+   * @param request - Adjustment details (type, description, amount)
+   * @returns Promise<SalaryAdjustment> - The created adjustment
+   */
+  async createSalaryAdjustment(
+    teacherId: string,
+    calcId: string,
+    request: CreateSalaryAdjustmentRequest
+  ): Promise<SalaryAdjustment> {
+    try {
+      const endpoint = SalaryCalculationApiPaths.CREATE_ADJUSTMENT(teacherId, calcId);
+      const response = await apiService.post<SalaryAdjustment>(endpoint, request);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Salary calculation not found');
+      }
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        const details = error.details?.detail || error.message;
+        if (details?.includes('type')) {
+          throw makeApiError(error, 'Invalid adjustment type - must be "addition" or "deduction"');
+        }
+        if (details?.includes('description')) {
+          throw makeApiError(error, 'Description must be between 3 and 200 characters');
+        }
+        if (details?.includes('amount')) {
+          throw makeApiError(error, 'Amount must be positive and not exceed 999,999.99');
+        }
+        throw makeApiError(error, `Invalid request: ${details}`);
+      }
+      if (error.status === TeacherHttpStatus.CONFLICT) {
+        const details = error.details?.detail || error.message;
+        if (details?.includes('approved')) {
+          throw makeApiError(error, 'Cannot add adjustments to an approved calculation');
+        }
+        if (details?.includes('duplicate')) {
+          throw makeApiError(error, 'An adjustment with this type and description already exists');
+        }
+        throw makeApiError(error, 'Cannot create adjustment - calculation may be approved');
+      }
+      throw makeApiError(error, `Failed to create salary adjustment: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Delete a salary adjustment from a calculation
+   * @param teacherId - Teacher ID (UUID format)
+   * @param calcId - Calculation ID (UUID format)
+   * @param adjustmentId - Adjustment ID (UUID format)
+   * @returns Promise<void>
+   */
+  async deleteSalaryAdjustment(
+    teacherId: string,
+    calcId: string,
+    adjustmentId: string
+  ): Promise<void> {
+    try {
+      const endpoint = SalaryCalculationApiPaths.DELETE_ADJUSTMENT(teacherId, calcId, adjustmentId);
+      await apiService.delete<void>(endpoint);
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Adjustment or calculation not found');
+      }
+      if (error.status === TeacherHttpStatus.CONFLICT) {
+        throw makeApiError(error, 'Cannot delete adjustments from an approved calculation');
+      }
+      throw makeApiError(error, `Failed to delete salary adjustment: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // EMPLOYMENT SETTINGS (Employment Type + Base Salary)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Get employment settings for a teacher (employment type, base salary, effective date, join date)
+   * @param teacherId - Teacher ID (UUID format)
+   * @param academicYearId - Academic Year ID (UUID format)
+   * @returns Promise<EmploymentSettingsResponse>
+   */
+  async getEmploymentSettings(
+    teacherId: string,
+    academicYearId: string
+  ): Promise<EmploymentSettingsResponse> {
+    try {
+      const endpoint = `${TeacherApiPaths.EMPLOYMENT_SETTINGS(teacherId)}?academicYearId=${academicYearId}`;
+      const response = await apiService.get<EmploymentSettingsResponse>(endpoint);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
+      }
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        throw makeApiError(error, 'Invalid request');
+      }
+      throw makeApiError(error, `Failed to fetch employment settings: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TEACHER BASE SALARY (Employment Type Feature - Full Time Teachers)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Get current base salary for a full-time teacher
+   * @param teacherId - Teacher ID (UUID format)
+   * @param academicYearId - Academic Year ID (UUID format)
+   * @returns Promise<TeacherBaseSalaryResponse>
+   */
+  async getTeacherBaseSalary(
+    teacherId: string,
+    academicYearId: string
+  ): Promise<TeacherBaseSalaryResponse> {
+    try {
+      const endpoint = `${TeacherBaseSalaryApiPaths.BASE_SALARY(teacherId)}?academicYearId=${academicYearId}`;
+      const response = await apiService.get<TeacherBaseSalaryResponse>(endpoint);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Base salary configuration not found');
+      }
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        const errorType = (error.details?.type || error.details?.Type || '') as string;
+        if (errorType.includes('not_full_time_teacher')) {
+          throw makeApiError(error, 'Base salary can only be retrieved for full-time teachers');
+        }
+        throw makeApiError(error, 'Invalid request');
+      }
+      throw makeApiError(error, `Failed to fetch base salary: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get base salary history for a teacher (all changes within an academic year)
+   * @param teacherId - Teacher ID (UUID format)
+   * @param academicYearId - Academic Year ID (UUID format)
+   * @returns Promise<TeacherBaseSalaryHistoryResponse>
+   */
+  async getTeacherBaseSalaryHistory(
+    teacherId: string,
+    academicYearId: string
+  ): Promise<TeacherBaseSalaryHistoryResponse> {
+    try {
+      const endpoint = `${TeacherBaseSalaryApiPaths.BASE_SALARY_HISTORY(teacherId)}?academicYearId=${academicYearId}`;
+      const response = await apiService.get<TeacherBaseSalaryHistoryResponse>(endpoint);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        throw makeApiError(error, 'Teacher not found');
+      }
+      throw makeApiError(error, `Failed to fetch base salary history: ${error.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Set base salary for a full-time teacher (creates new or updates existing)
+   * @param teacherId - Teacher ID (UUID format)
+   * @param request - Base salary details (amount, academicYearId, effectiveFrom, changeReason)
+   * @returns Promise<TeacherBaseSalaryResponse>
+   */
+  async setTeacherBaseSalary(
+    teacherId: string,
+    request: SetTeacherBaseSalaryRequest
+  ): Promise<TeacherBaseSalaryResponse> {
+    try {
+      const endpoint = TeacherBaseSalaryApiPaths.BASE_SALARY(teacherId);
+      const response = await apiService.post<TeacherBaseSalaryResponse>(endpoint, request);
+      return response;
+    } catch (error: any) {
+      if (error.status === TeacherHttpStatus.NOT_FOUND) {
+        const errorType = (error.details?.type || error.details?.Type || '') as string;
+        if (errorType.includes('academic_year_not_found')) {
+          throw makeApiError(error, 'Academic year not found');
+        }
+        throw makeApiError(error, 'Teacher not found');
+      }
+      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
+        const errorType = (error.details?.type || error.details?.Type || '') as string;
+        if (errorType.includes('not_full_time_teacher')) {
+          throw makeApiError(error, 'Base salary can only be set for full-time teachers');
+        }
+        if (errorType.includes('effective_date_in_past')) {
+          throw makeApiError(error, 'Effective date cannot be before current active salary\'s effective date');
+        }
+        const validationError = error.details?.detail || 'Invalid base salary data';
+        throw makeApiError(error, `Validation error: ${validationError}`);
+      }
+      throw makeApiError(error, `Failed to set base salary: ${error.message || 'Unknown error'}`);
+    }
+  }
+
 }
 
 // Export a singleton instance
@@ -906,6 +1121,27 @@ export const reopenSalaryCalculation = (teacherId: string, calcId: string, reque
 
 export const getTeacherSalaryPreview = (teacherId: string, year: number, month: number) =>
   teacherApiService.getTeacherSalaryPreview(teacherId, year, month);
+
+// Salary Adjustment Operations
+export const createSalaryAdjustment = (teacherId: string, calcId: string, request: CreateSalaryAdjustmentRequest) =>
+  teacherApiService.createSalaryAdjustment(teacherId, calcId, request);
+
+export const deleteSalaryAdjustment = (teacherId: string, calcId: string, adjustmentId: string) =>
+  teacherApiService.deleteSalaryAdjustment(teacherId, calcId, adjustmentId);
+
+// Employment Settings Operations
+export const getEmploymentSettings = (teacherId: string, academicYearId: string) =>
+  teacherApiService.getEmploymentSettings(teacherId, academicYearId);
+
+// Base Salary Operations (Employment Type Feature)
+export const getTeacherBaseSalary = (teacherId: string, academicYearId: string) =>
+  teacherApiService.getTeacherBaseSalary(teacherId, academicYearId);
+
+export const getTeacherBaseSalaryHistory = (teacherId: string, academicYearId: string) =>
+  teacherApiService.getTeacherBaseSalaryHistory(teacherId, academicYearId);
+
+export const setTeacherBaseSalary = (teacherId: string, request: SetTeacherBaseSalaryRequest) =>
+  teacherApiService.setTeacherBaseSalary(teacherId, request);
 
 // Export the service instance as default
 export default teacherApiService;

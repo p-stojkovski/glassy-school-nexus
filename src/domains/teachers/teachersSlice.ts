@@ -1,11 +1,14 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { TeacherResponse, SubjectDto, TeacherSearchParams } from '@/types/api/teacher';
 import {
   SalaryCalculation,
   SalaryCalculationDetail,
+  SalaryAdjustment,
   TeacherSalaryPreview,
   SalaryAuditLog,
 } from './_shared/types/salaryCalculation.types';
+import { TeacherBaseSalaryResponse } from '@/types/api/teacherBaseSalary';
+import { teacherBaseSalaryService } from '@/services/teacherBaseSalaryService';
 
 // Use the API response type as our domain model
 export type Teacher = TeacherResponse;
@@ -25,6 +28,10 @@ export interface LoadingStates {
   reopeningSalaryCalculation: boolean;
   fetchingSalaryPreview: boolean;
   fetchingSalaryAuditLog: boolean;
+  creatingSalaryAdjustment: boolean;
+  deletingSalaryAdjustment: boolean;
+  fetchingBaseSalary: boolean;
+  settingBaseSalary: boolean;
 }
 
 // Error states for different operations
@@ -42,6 +49,9 @@ export interface ErrorStates {
   reopenSalaryCalculation: string | null;
   fetchSalaryPreview: string | null;
   fetchSalaryAuditLog: string | null;
+  createSalaryAdjustment: string | null;
+  deleteSalaryAdjustment: string | null;
+  baseSalary: string | null;
 }
 
 interface TeachersState {
@@ -69,6 +79,10 @@ interface TeachersState {
   salaryCalculationDetail: SalaryCalculationDetail | null;
   salaryPreview: TeacherSalaryPreview | null;
   salaryAuditLogs: SalaryAuditLog[];
+
+  // Base salary (Employment Type Feature - Full Time teachers)
+  baseSalary: TeacherBaseSalaryResponse | null;
+  baseSalaryHistory: TeacherBaseSalaryResponse[];
 }
 
 const initialLoadingStates: LoadingStates = {
@@ -85,6 +99,10 @@ const initialLoadingStates: LoadingStates = {
   reopeningSalaryCalculation: false,
   fetchingSalaryPreview: false,
   fetchingSalaryAuditLog: false,
+  creatingSalaryAdjustment: false,
+  deletingSalaryAdjustment: false,
+  fetchingBaseSalary: false,
+  settingBaseSalary: false,
 };
 
 const initialErrorStates: ErrorStates = {
@@ -101,6 +119,9 @@ const initialErrorStates: ErrorStates = {
   reopenSalaryCalculation: null,
   fetchSalaryPreview: null,
   fetchSalaryAuditLog: null,
+  createSalaryAdjustment: null,
+  deleteSalaryAdjustment: null,
+  baseSalary: null,
 };
 
 const initialState: TeachersState = {
@@ -119,7 +140,48 @@ const initialState: TeachersState = {
   salaryCalculationDetail: null,
   salaryPreview: null,
   salaryAuditLogs: [],
+  baseSalary: null,
+  baseSalaryHistory: [],
 };
+
+// ════════════════════════════════════════════════════════════════════════
+// ASYNC THUNKS - BASE SALARY (Employment Type Feature)
+// ════════════════════════════════════════════════════════════════════════
+
+/**
+ * Fetch current base salary for a teacher in a specific academic year
+ */
+export const fetchBaseSalary = createAsyncThunk(
+  'teachers/fetchBaseSalary',
+  async ({ teacherId, academicYearId }: { teacherId: string; academicYearId: string }) => {
+    return await teacherBaseSalaryService.getBaseSalary(teacherId, academicYearId);
+  }
+);
+
+/**
+ * Set or update base salary for a teacher
+ * Creates new version and deactivates previous one
+ */
+export const setBaseSalary = createAsyncThunk(
+  'teachers/setBaseSalary',
+  async ({
+    teacherId,
+    request,
+  }: {
+    teacherId: string;
+    request: {
+      baseNetSalary: number;
+      academicYearId: string;
+      effectiveFrom?: string;
+      changeReason?: string;
+    };
+  }) => {
+    return await teacherBaseSalaryService.setBaseSalary(teacherId, {
+      ...request,
+      teacherId, // Include teacherId in request body
+    });
+  }
+);
 
 const teachersSlice = createSlice({
   name: 'teachers',
@@ -247,9 +309,17 @@ const teachersSlice = createSlice({
       if (index !== -1) {
         state.salaryCalculations.items[index] = action.payload;
       }
-      // Also update the detail if it's the same calculation
-      if (state.salaryCalculationDetail?.calculation.id === action.payload.id) {
-        state.salaryCalculationDetail.calculation = action.payload;
+      // Also update the detail if it's the same calculation (flat structure uses calculationId)
+      if (state.salaryCalculationDetail?.calculationId === action.payload.id) {
+        // Update the relevant fields in the flat structure
+        state.salaryCalculationDetail = {
+          ...state.salaryCalculationDetail,
+          calculatedAmount: action.payload.calculatedAmount,
+          approvedAmount: action.payload.approvedAmount,
+          status: action.payload.status,
+          approvedAt: action.payload.approvedAt,
+          updatedAt: action.payload.updatedAt,
+        };
       }
     },
 
@@ -294,6 +364,98 @@ const teachersSlice = createSlice({
     clearSalaryAuditLogs: (state) => {
       state.salaryAuditLogs = [];
     },
+
+    // ════════════════════════════════════════════════════════════════════════
+    // SALARY ADJUSTMENTS (Bonuses/Deductions)
+    // ════════════════════════════════════════════════════════════════════════
+
+    addSalaryAdjustment: (state, action: PayloadAction<SalaryAdjustment>) => {
+      if (state.salaryCalculationDetail) {
+        // Add the adjustment to the list
+        state.salaryCalculationDetail.adjustments.push(action.payload);
+        // Recalculate totals
+        const adjustmentsTotal = state.salaryCalculationDetail.adjustments.reduce(
+          (sum, adj) => sum + (adj.adjustmentType === 'addition' ? adj.amount : -adj.amount),
+          0
+        );
+        state.salaryCalculationDetail.adjustmentsTotal = adjustmentsTotal;
+        state.salaryCalculationDetail.grandTotal =
+          state.salaryCalculationDetail.calculatedAmount + adjustmentsTotal;
+      }
+      state.errors.createSalaryAdjustment = null;
+    },
+
+    removeSalaryAdjustment: (state, action: PayloadAction<string>) => {
+      if (state.salaryCalculationDetail) {
+        // Remove the adjustment from the list
+        state.salaryCalculationDetail.adjustments =
+          state.salaryCalculationDetail.adjustments.filter(adj => adj.id !== action.payload);
+        // Recalculate totals
+        const adjustmentsTotal = state.salaryCalculationDetail.adjustments.reduce(
+          (sum, adj) => sum + (adj.adjustmentType === 'addition' ? adj.amount : -adj.amount),
+          0
+        );
+        state.salaryCalculationDetail.adjustmentsTotal = adjustmentsTotal;
+        state.salaryCalculationDetail.grandTotal =
+          state.salaryCalculationDetail.calculatedAmount + adjustmentsTotal;
+      }
+      state.errors.deleteSalaryAdjustment = null;
+    },
+
+    // ════════════════════════════════════════════════════════════════════════
+    // BASE SALARY (Employment Type Feature)
+    // ════════════════════════════════════════════════════════════════════════
+
+    setBaseSalaryData: (state, action: PayloadAction<TeacherBaseSalaryResponse | null>) => {
+      state.baseSalary = action.payload;
+      state.errors.baseSalary = null;
+    },
+
+    setBaseSalaryHistory: (state, action: PayloadAction<TeacherBaseSalaryResponse[]>) => {
+      state.baseSalaryHistory = action.payload;
+    },
+
+    clearBaseSalary: (state) => {
+      state.baseSalary = null;
+      state.baseSalaryHistory = [];
+    },
+  },
+  extraReducers: (builder) => {
+    // ════════════════════════════════════════════════════════════════════════
+    // BASE SALARY - Fetch
+    // ════════════════════════════════════════════════════════════════════════
+    builder.addCase(fetchBaseSalary.pending, (state) => {
+      state.loading.fetchingBaseSalary = true;
+      state.errors.baseSalary = null;
+    });
+    builder.addCase(fetchBaseSalary.fulfilled, (state, action) => {
+      state.loading.fetchingBaseSalary = false;
+      state.baseSalary = action.payload;
+      state.errors.baseSalary = null;
+    });
+    builder.addCase(fetchBaseSalary.rejected, (state, action) => {
+      state.loading.fetchingBaseSalary = false;
+      state.errors.baseSalary = action.error.message ?? 'Failed to fetch base salary';
+    });
+
+    // ════════════════════════════════════════════════════════════════════════
+    // BASE SALARY - Set/Update
+    // ════════════════════════════════════════════════════════════════════════
+    builder.addCase(setBaseSalary.pending, (state) => {
+      state.loading.settingBaseSalary = true;
+      state.errors.baseSalary = null;
+    });
+    builder.addCase(setBaseSalary.fulfilled, (state, action) => {
+      state.loading.settingBaseSalary = false;
+      state.baseSalary = action.payload;
+      // Add to history (prepend since it's the newest)
+      state.baseSalaryHistory = [action.payload, ...state.baseSalaryHistory];
+      state.errors.baseSalary = null;
+    });
+    builder.addCase(setBaseSalary.rejected, (state, action) => {
+      state.loading.settingBaseSalary = false;
+      state.errors.baseSalary = action.error.message ?? 'Failed to set base salary';
+    });
   },
 });
 
@@ -337,6 +499,15 @@ export const {
   clearSalaryPreview,
   setSalaryAuditLogs,
   clearSalaryAuditLogs,
+
+  // Salary adjustments
+  addSalaryAdjustment,
+  removeSalaryAdjustment,
+
+  // Base salary (Employment Type Feature)
+  setBaseSalaryData,
+  setBaseSalaryHistory,
+  clearBaseSalary,
 } = teachersSlice.actions;
 
 export default teachersSlice.reducer;

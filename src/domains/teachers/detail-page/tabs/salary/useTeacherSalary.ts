@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getTeacherSalary } from '@/services/teacherApiService';
 import { TeacherSalaryResponse } from '@/types/api/teacherSalary';
+import { TeacherSalaryErrorCodes, hasErrorCode } from '@/domains/teachers/_shared/errorCodes';
 
 interface UseTeacherSalaryOptions {
   teacherId: string;
@@ -49,14 +50,14 @@ export function useTeacherSalary({
       const result = await getTeacherSalary(teacherId, academicYearId);
       setData(result);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load salary data';
-
-      // Detect the specific "no salary configured" error
-      if (message.includes('No salary configuration found')) {
+      // Detect the specific "no salary configured" error using error code
+      // This is more reliable than string matching on error messages
+      if (hasErrorCode(err, TeacherSalaryErrorCodes.NO_SALARY_CONFIGURED)) {
         setNoSalaryConfigured(true);
         setData(null);
         // Don't set error - we'll show a friendly empty state instead
       } else {
+        const message = err instanceof Error ? err.message : 'Failed to load salary data';
         setError(message);
         console.error('Error loading teacher salary:', err);
       }

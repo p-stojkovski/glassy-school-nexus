@@ -77,7 +77,7 @@ const CreateLessonSidebar: React.FC<CreateLessonSidebarProps> = ({
 
   const handleInputChange = (field: keyof CreateLessonRequest, value: string) => {
     setFormData(prev => {
-      let next: CreateLessonRequest = { ...prev, [field]: value } as CreateLessonRequest;
+      const next: CreateLessonRequest = { ...prev, [field]: value } as CreateLessonRequest;
 
       if (field === 'startTime') {
         const newStart = value;

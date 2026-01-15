@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AppBreadcrumb } from '@/components/navigation';
 import { buildClassBreadcrumbs } from '@/domains/classes/_shared/utils/classBreadcrumbs';
@@ -8,7 +8,7 @@ import ClassFormContent from './ClassFormContent';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import { useClassFormPage } from './useClassFormPage';
 import { useUnsavedChangesWarning } from '@/domains/students/_shared';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import { ClassFormData } from '@/types/api/class';
 import { ClassFormRef } from './ClassFormContent';
 
@@ -146,18 +146,29 @@ const ClassFormPage: React.FC = () => {
       </div>
 
       {/* Confirmation Dialog */}
-      <ConfirmationDialog
-        isOpen={dialogState.isOpen}
-        onClose={closeDialog}
-        onConfirm={handleConfirm}
-        onSave={dialogState.showSaveOption ? handleDialogSave : undefined}
+      <ConfirmDialog
+        open={dialogState.isOpen}
+        onOpenChange={(open) => !open && closeDialog()}
+        intent="warning"
+        icon={AlertTriangle}
         title={dialogState.title}
         description={dialogState.description}
-        confirmText={dialogState.confirmText}
+        confirmText={dialogState.saveText || 'Save Changes'}
         cancelText={dialogState.cancelText}
-        saveText={dialogState.saveText}
-        variant={dialogState.variant}
-        showSaveOption={dialogState.showSaveOption}
+        onConfirm={handleDialogSave}
+        infoContent={
+          dialogState.showSaveOption ? (
+            <div className="flex justify-center">
+              <Button
+                variant="outline"
+                onClick={handleConfirm}
+                className="border-red-500/50 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300"
+              >
+                {dialogState.confirmText || 'Discard Changes'}
+              </Button>
+            </div>
+          ) : undefined
+        }
       />
     </div>
   );

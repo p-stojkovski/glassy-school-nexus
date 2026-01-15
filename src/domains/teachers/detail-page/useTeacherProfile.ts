@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { RootState } from '@/store';
 import { setSelectedTeacher, Teacher } from '@/domains/teachers/teachersSlice';
@@ -10,8 +10,14 @@ export const useTeacherProfile = () => {
   const { teacherId } = useParams<{ teacherId: string }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState('schedule');
+  // Read initial tab from URL, default to 'schedule'
+  const tabFromUrl = searchParams.get('tab');
+  const validTabs = ['schedule', 'classes', 'salary'];
+  const initialTab = tabFromUrl && validTabs.includes(tabFromUrl) ? tabFromUrl : 'schedule';
+
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +99,15 @@ export const useTeacherProfile = () => {
     }
   }, [activeTab, teacher, overviewData, overviewLoading, fetchOverviewData]);
 
+  // Update URL when tab changes
+  const handleSetActiveTab = useCallback((tab: string) => {
+    setActiveTab(tab);
+    // Update URL parameter to preserve tab state while keeping other params (e.g., year)
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('tab', tab);
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   // Navigation handlers
   const handleBack = useCallback(() => {
     navigate('/teachers');
@@ -123,7 +138,7 @@ export const useTeacherProfile = () => {
 
     // Tab state
     activeTab,
-    setActiveTab,
+    setActiveTab: handleSetActiveTab,
 
     // Overview data (lazy loaded)
     overviewData,

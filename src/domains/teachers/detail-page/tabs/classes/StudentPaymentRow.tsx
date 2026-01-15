@@ -1,6 +1,8 @@
 import React, { memo } from 'react';
 import { User, CheckCircle2, AlertCircle, MinusCircle, BarChart3, BookOpen, ChevronRight, ChevronDown, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Amount } from '@/components/ui/amount';
+import { formatCurrency } from '@/utils/formatters';
 import { StudentPaymentStatus } from '@/types/api/teacher';
 import { cn } from '@/lib/utils';
 
@@ -23,14 +25,6 @@ const StudentPaymentRow = memo<StudentPaymentRowProps>(({ student, isExpanded = 
     if (onToggle) {
       onToggle();
     }
-  };
-
-  const formatCurrency = (amount: number | null): string => {
-    if (amount === null || amount === 0) return '-';
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount) + ' MKD';
   };
 
   const getPaymentStatusConfig = (status: StudentPaymentStatus['paymentStatus']) => {
@@ -125,7 +119,7 @@ const StudentPaymentRow = memo<StudentPaymentRowProps>(({ student, isExpanded = 
             title={`Payment: ${paymentConfig.label}${student.dueAmount ? ` (${formatCurrency(student.dueAmount)})` : ''}`}
           >
             <PaymentIcon className="w-3 h-3" />
-            <span>{student.dueAmount ? formatCurrency(student.dueAmount) : paymentConfig.label}</span>
+            <span>{student.dueAmount ? <Amount value={student.dueAmount} size="sm" /> : paymentConfig.label}</span>
           </div>
 
           {/* Attendance */}
@@ -183,7 +177,7 @@ const StudentPaymentRow = memo<StudentPaymentRowProps>(({ student, isExpanded = 
               <div className="pl-5 space-y-1 text-xs text-white/60">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-3 h-3 text-red-400/80" />
-                  <span className="text-red-400/90">Outstanding Amount: {formatCurrency(student.dueAmount)}</span>
+                  <span className="text-red-400/90">Outstanding Amount: <Amount value={student.dueAmount} size="sm" className="text-red-400/90" /></span>
                 </div>
                 <div className="text-white/50">
                   Payment required for continued enrollment
@@ -195,7 +189,7 @@ const StudentPaymentRow = memo<StudentPaymentRowProps>(({ student, isExpanded = 
               <div className="pl-5 space-y-1 text-xs text-white/60">
                 <div className="flex items-center gap-2">
                   <MinusCircle className="w-3 h-3 text-amber-400/80" />
-                  <span className="text-amber-400/90">Remaining Balance: {formatCurrency(student.dueAmount)}</span>
+                  <span className="text-amber-400/90">Remaining Balance: <Amount value={student.dueAmount} size="sm" className="text-amber-400/90" /></span>
                 </div>
                 <div className="text-white/50">
                   Partial payment received, balance due

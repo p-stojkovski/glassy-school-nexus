@@ -48,7 +48,7 @@ const FinancialInformationTab: React.FC<FinancialInformationTabProps> = ({
   }, [isAmountRequired, amount, form]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-lg">
       {/* Discount Enable Checkbox */}
       <FormField
         control={form.control}

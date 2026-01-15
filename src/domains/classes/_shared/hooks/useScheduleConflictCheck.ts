@@ -150,7 +150,7 @@ export const useScheduleConflictCheck = (): UseScheduleConflictCheckReturn & {
               endTime,
             },
           ],
-          rangeType: rangeType as any,
+          rangeType,
         });
 
         // Only apply results if this is still the latest check
@@ -160,10 +160,11 @@ export const useScheduleConflictCheck = (): UseScheduleConflictCheckReturn & {
           setDateRangeContext(getDateRangeContext(rangeType, response.conflictInfo.isUsingFallbackDateRange));
           setExistingOverlap(response.existingScheduleOverlap || null);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Schedule conflict check failed:', err);
         if (lastCheckRef.current === scheduledKey) {
-          setError(err.message || 'Failed to check for conflicts');
+          const errorMsg = err instanceof Error ? err.message : 'Failed to check for conflicts';
+          setError(errorMsg);
           setConflicts([]);
           setExistingOverlap(null);
         }

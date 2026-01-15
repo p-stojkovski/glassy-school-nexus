@@ -33,6 +33,8 @@ interface DatePickerProps {
   disabled?: boolean;
   /** Whether to prevent selecting past dates (uses start of day comparison) */
   disablePastDates?: boolean;
+  /** Custom matcher function to disable specific dates (receives Date, returns true to disable) */
+  disabledMatcher?: (date: Date) => boolean;
 }
 
 /**
@@ -57,6 +59,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   error,
   disabled = false,
   disablePastDates = false,
+  disabledMatcher,
 }) => {
   const [open, setOpen] = React.useState(false);
 
@@ -82,21 +85,26 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
   // Create disabled date matcher
   const disabledDays = React.useMemo(() => {
-    const matchers: Array<Date | { before: Date } | { after: Date }> = [];
-    
+    const matchers: Array<Date | { before: Date } | { after: Date } | ((date: Date) => boolean)> = [];
+
     if (disablePastDates) {
       // Disable dates before today (start of day for accurate comparison)
       matchers.push({ before: startOfDay(new Date()) });
     } else if (minDate) {
       matchers.push({ before: minDate });
     }
-    
+
     if (maxDate) {
       matchers.push({ after: maxDate });
     }
-    
+
+    // Add custom matcher if provided
+    if (disabledMatcher) {
+      matchers.push(disabledMatcher);
+    }
+
     return matchers.length > 0 ? matchers : undefined;
-  }, [minDate, maxDate, disablePastDates]);
+  }, [minDate, maxDate, disablePastDates, disabledMatcher]);
 
   // Handle date selection
   const handleSelect = (date: Date | undefined) => {

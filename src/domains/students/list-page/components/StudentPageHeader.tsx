@@ -7,7 +7,8 @@ import {
   PowerOff,
   AlertCircle,
   Info,
-  Edit2
+  Edit2,
+  CheckCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,7 +26,7 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import { Student } from '@/domains/students/studentsSlice';
 import { useCanViewFinance } from '@/hooks/usePermissions';
 
@@ -309,22 +310,24 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onConfirm={handleConfirmDelete}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => !open && setShowDeleteDialog(false)}
+        intent="danger"
+        icon={Trash2}
         title="Delete Student"
         description={`Are you sure you want to delete "${student.fullName}"? This action cannot be undone.`}
         confirmText={isDeleting ? 'Deleting...' : 'Delete Student'}
         cancelText="Cancel"
-        variant="danger"
+        onConfirm={handleConfirmDelete}
       />
 
       {/* Status Toggle Confirmation Dialog */}
-      <ConfirmationDialog
-        isOpen={showStatusDialog}
-        onClose={() => setShowStatusDialog(false)}
-        onConfirm={handleConfirmStatus}
+      <ConfirmDialog
+        open={showStatusDialog}
+        onOpenChange={(open) => !open && setShowStatusDialog(false)}
+        intent={student.isActive ? 'warning' : 'success'}
+        icon={student.isActive ? PowerOff : CheckCircle}
         title={student.isActive ? 'Deactivate Student' : 'Activate Student'}
         description={
           student.isActive
@@ -333,7 +336,7 @@ const StudentPageHeader: React.FC<StudentPageHeaderProps> = ({
         }
         confirmText={student.isActive ? 'Deactivate' : 'Activate'}
         cancelText="Cancel"
-        variant={student.isActive ? 'danger' : 'info'}
+        onConfirm={handleConfirmStatus}
       />
     </>
   );

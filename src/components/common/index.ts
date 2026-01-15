@@ -1,6 +1,5 @@
 export { default as ClassroomsDropdown } from './ClassroomsDropdown';
 export { default as ClearFiltersButton } from './ClearFiltersButton';
-export { default as ConfirmDialog } from './ConfirmDialog';
 export { default as DatePicker } from './DatePicker';
 export { default as DemoNotice } from './DemoNotice';
 export { default as EmptyState } from './EmptyState';

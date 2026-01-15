@@ -122,15 +122,6 @@ const TeacherTable: React.FC<TeacherTableProps> = ({
     return items;
   };
 
-  // Calculate years of experience from joinDate
-  const calculateExperience = (joinDate: string): number => {
-    const join = new Date(joinDate);
-    const now = new Date();
-    const years = now.getFullYear() - join.getFullYear();
-    const monthDiff = now.getMonth() - join.getMonth();
-    return monthDiff < 0 || (monthDiff === 0 && now.getDate() < join.getDate()) ? years - 1 : years;
-  };
-
   return (
     <motion.div
       layout
@@ -165,9 +156,7 @@ const TeacherTable: React.FC<TeacherTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {teachers.map((teacher) => {
-              const yearsExperience = calculateExperience(teacher.joinDate);
-              return (
+            {teachers.map((teacher) => (
                 <TableRow
                   key={teacher.id}
                   onClick={() => onView(teacher)}
@@ -243,8 +232,7 @@ const TeacherTable: React.FC<TeacherTableProps> = ({
                     </div>
                   </TableCell>
                 </TableRow>
-              );
-            })}
+            ))}
           </TableBody>
         </Table>
       </GlassCard>

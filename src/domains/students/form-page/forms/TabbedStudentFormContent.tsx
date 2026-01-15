@@ -15,7 +15,6 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { checkStudentEmailAvailable } from '@/services/studentApiService';
 import { useDiscountTypes } from '@/hooks/useDiscountTypes';
 
-// Use the API-compatible schema from validation utilities
 const studentSchema = createStudentSchema;
 
 interface TabbedStudentFormContentProps {
@@ -141,10 +140,11 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
           }
         }
         lastCheckedKeyRef.current = checkKey;
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!isMounted) return;
         setIsCheckingEmail(false);
-        setEmailCheckError(err?.message || 'Failed to check availability');
+        const message = err instanceof Error ? err.message : 'Failed to check availability';
+        setEmailCheckError(message);
       }
     })();
 
@@ -270,9 +270,10 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
 
     try {
       await onSubmit(data);
-    } catch (error: any) {
-      const status: number | undefined = error?.status;
-      const message: string = error?.message || '';
+    } catch (error: unknown) {
+      const apiError = error as { status?: number; message?: string; details?: ProblemDetails };
+      const status = apiError?.status;
+      const message = apiError?.message || '';
 
       if (status === StudentHttpStatus.CONFLICT && /email/i.test(message)) {
         form.setError('email', {
@@ -284,7 +285,7 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
         return;
       }
 
-      const details = error?.details as ProblemDetails | undefined;
+      const details = apiError?.details;
       if (status === StudentHttpStatus.BAD_REQUEST && details && typeof details.errors === 'object') {
         const fieldMap: Record<string, keyof StudentFormData> = {
           FirstName: 'firstName',
@@ -356,15 +357,12 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
         return;
       }
 
-      console.error('Form submission error:', error);
+      console.error('Form submission error:', apiError);
     }
   };
 
-  const TabIndicator: React.FC<{ hasErrors: boolean; hasData: boolean }> = ({ hasErrors, hasData }) => (
-    <div className="flex items-center gap-1 ml-2">
-      {hasErrors && <Circle className="h-2 w-2 fill-red-400 text-red-400" />}
-      {!hasErrors && hasData && <Circle className="h-2 w-2 fill-yellow-400 text-yellow-400" />}
-    </div>
+  const TabIndicator: React.FC<{ hasErrors: boolean }> = ({ hasErrors }) => (
+    hasErrors ? <Circle className="h-2 w-2 fill-red-400 text-red-400 ml-2" /> : null
   );
 
   // Expose form methods via ref - placed after handleSubmit is defined
@@ -385,30 +383,30 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
             onValueChange={setActiveTab}
             className="space-y-3"
           >
-            <TabsList className="bg-white/10 border-white/20">
+            <TabsList className="bg-white/10 border-white/20 w-full max-w-lg grid grid-cols-3">
               <TabsTrigger
                 value="student-info"
-                className="data-[state=active]:bg-white/20 text-white"
+                className="data-[state=active]:bg-white/20 text-white justify-center"
               >
                 <User className="w-4 h-4 mr-2" />
-                Student Information
-                <TabIndicator hasErrors={studentTabErrors} hasData={studentTabHasData} />
+                Student
+                <TabIndicator hasErrors={studentTabErrors} />
               </TabsTrigger>
               <TabsTrigger
                 value="parent-info"
-                className="data-[state=active]:bg-white/20 text-white"
+                className="data-[state=active]:bg-white/20 text-white justify-center"
               >
                 <Phone className="w-4 h-4 mr-2" />
-                Parent/Guardian Information
-                <TabIndicator hasErrors={parentTabErrors} hasData={parentTabHasData} />
+                Parent/Guardian
+                <TabIndicator hasErrors={parentTabErrors} />
               </TabsTrigger>
               <TabsTrigger
                 value="financial-info"
-                className="data-[state=active]:bg-white/20 text-white"
+                className="data-[state=active]:bg-white/20 text-white justify-center"
               >
                 <DollarSign className="w-4 h-4 mr-2" />
-                Financial Information
-                <TabIndicator hasErrors={financialTabErrors} hasData={financialTabHasData} />
+                Financial
+                <TabIndicator hasErrors={financialTabErrors} />
               </TabsTrigger>
             </TabsList>
 

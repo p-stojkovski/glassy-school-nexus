@@ -35,7 +35,7 @@ interface StudentInformationTabProps {
 const StudentInformationTab: React.FC<StudentInformationTabProps> = ({ form, emailAvailability }) => {
   const ea = emailAvailability;
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-lg">
       <FormField
         control={form.control}
         name="firstName"

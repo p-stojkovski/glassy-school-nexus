@@ -27,6 +27,7 @@ interface UseTeacherSalaryCalculationDetailPageReturn {
   refetch: () => Promise<void>;
   teacherName: string;
   periodDisplay: string;
+  currentEmploymentType: 'full_time' | 'contract';
 }
 
 /**
@@ -53,6 +54,7 @@ export const useTeacherSalaryCalculationDetail = ({
 }: UseTeacherSalaryCalculationDetailPageOptions): UseTeacherSalaryCalculationDetailPageReturn => {
   const dispatch = useAppDispatch();
   const [teacherName, setTeacherName] = useState('Loading...');
+  const [currentEmploymentType, setCurrentEmploymentType] = useState<'full_time' | 'contract'>('contract');
 
   const detail = useAppSelector((state) => state.teachers.salaryCalculationDetail);
   const loading = useAppSelector(
@@ -80,6 +82,7 @@ export const useTeacherSalaryCalculationDetail = ({
       ]);
 
       setTeacherName(teacherData.name);
+      setCurrentEmploymentType(teacherData.employmentType);
       dispatch(setSalaryCalculationDetail(calculationData));
     } catch (err: any) {
       const errorMessage =
@@ -118,5 +121,6 @@ export const useTeacherSalaryCalculationDetail = ({
     refetch: fetchDetail,
     teacherName,
     periodDisplay,
+    currentEmploymentType,
   };
 };

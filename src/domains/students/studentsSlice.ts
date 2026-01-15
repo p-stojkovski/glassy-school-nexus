@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { StudentResponse, DiscountTypeDto, StudentSearchParams } from '@/types/api/student';
 
-// Use the API response type as our domain model
 export type Student = StudentResponse;
 
 // Loading states for different operations
@@ -88,7 +87,6 @@ const studentsSlice = createSlice({
     // Data management
     setStudents: (state, action: PayloadAction<Student[]>) => {
       state.students = action.payload;
-      // Keep totalCount in sync when not searching
       if (!state.isSearchMode) {
         state.totalCount = state.students.length;
       }
@@ -97,29 +95,25 @@ const studentsSlice = createSlice({
     
     addStudent: (state, action: PayloadAction<Student>) => {
       state.students.unshift(action.payload);
-      // Also update search results if in search mode
       if (state.isSearchMode) {
         state.searchResults.unshift(action.payload);
         state.totalCount += 1;
       } else {
-        // Sync totalCount to actual number of students when not searching
         state.totalCount = state.students.length;
       }
     },
-    
+
     updateStudent: (state, action: PayloadAction<Student>) => {
       const index = state.students.findIndex(s => s.id === action.payload.id);
       if (index !== -1) {
         state.students[index] = action.payload;
       }
-      
-      // Also update in search results if present
+
       const searchIndex = state.searchResults.findIndex(s => s.id === action.payload.id);
       if (searchIndex !== -1) {
         state.searchResults[searchIndex] = action.payload;
       }
-      
-      // Update selected student if it matches
+
       if (state.selectedStudent?.id === action.payload.id) {
         state.selectedStudent = action.payload;
       }
@@ -128,15 +122,13 @@ const studentsSlice = createSlice({
     deleteStudent: (state, action: PayloadAction<string>) => {
       state.students = state.students.filter(s => s.id !== action.payload);
       state.searchResults = state.searchResults.filter(s => s.id !== action.payload);
-      
-      // Update total count depending on mode
+
       if (state.isSearchMode) {
         state.totalCount = Math.max(0, state.totalCount - 1);
       } else {
         state.totalCount = state.students.length;
       }
-      
-      // Clear selected student if it was deleted
+
       if (state.selectedStudent?.id === action.payload) {
         state.selectedStudent = null;
       }

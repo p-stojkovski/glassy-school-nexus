@@ -3,6 +3,9 @@
  * Based on the backend Teachers API documentation
  */
 
+// Employment Type
+export type EmploymentType = 'full_time' | 'contract';
+
 // Request Models
 export interface CreateTeacherRequest {
   name: string;          // Required: max 100 characters, letters/spaces/hyphens/apostrophes/periods only
@@ -10,6 +13,7 @@ export interface CreateTeacherRequest {
   phone?: string;        // Optional: max 20 characters, digits/spaces/hyphens/parentheses/periods/plus signs
   subjectId: string;     // Required: valid GUID, must exist in subjects table
   notes?: string;        // Optional: max 500 characters
+  employmentType?: EmploymentType; // Optional: defaults to 'contract'
 }
 
 export interface UpdateTeacherRequest {
@@ -18,6 +22,7 @@ export interface UpdateTeacherRequest {
   phone?: string;        // Optional: max 20 characters
   subjectId: string;     // Required: valid GUID, must exist
   notes?: string;        // Optional: max 500 characters
+  employmentType?: EmploymentType; // Optional: defaults to 'contract'
 }
 
 // Response Models
@@ -32,6 +37,7 @@ export interface TeacherResponse {
   notes?: string;         // Additional notes
   classCount: number;     // Number of assigned classes
   isActive: boolean;      // Whether the teacher is active
+  employmentType: EmploymentType; // 'full_time' or 'contract'
 }
 
 export interface TeacherCreatedResponse {
@@ -92,6 +98,15 @@ export enum TeacherHttpStatus {
   INTERNAL_SERVER_ERROR = 500,
 }
 
+// Employment Settings Response
+export interface EmploymentSettingsResponse {
+  teacherId: string;
+  employmentType: 'contract' | 'full_time';
+  baseSalaryAmount: number | null;
+  effectiveFrom: string | null; // ISO date (YYYY-MM-DD)
+  joinDate: string; // ISO date (YYYY-MM-DD)
+}
+
 // API Endpoint paths
 export const TeacherApiPaths = {
   BASE: '/api/teachers',
@@ -104,6 +119,7 @@ export const TeacherApiPaths = {
   SEARCH: '/api/teachers/search',
   SUBJECTS: '/api/subjects',
   EMAIL_AVAILABLE: '/api/teachers/email-available',
+  EMPLOYMENT_SETTINGS: (id: string) => `/api/teachers/${id}/employment-settings`,
 } as const;
 
 // Form data interface used internally by components
@@ -356,7 +372,8 @@ export function isTeacherResponse(obj: any): obj is TeacherResponse {
     typeof obj.subjectId === 'string' &&
     typeof obj.subjectName === 'string' &&
     typeof obj.joinDate === 'string' &&
-    typeof obj.classCount === 'number'
+    typeof obj.classCount === 'number' &&
+    (obj.employmentType === 'full_time' || obj.employmentType === 'contract')
   );
 }
 

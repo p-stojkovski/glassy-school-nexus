@@ -12,4 +12,3 @@ export type { EditableSectionWrapperProps } from './EditableSectionWrapper';
 export { StudentInfoSection } from './StudentInfoSection';
 export { GuardianInfoSection } from './GuardianInfoSection';
 export { FinancialInfoSection } from './FinancialInfoSection';
-export { UnsavedChangesDialog } from './UnsavedChangesDialog';

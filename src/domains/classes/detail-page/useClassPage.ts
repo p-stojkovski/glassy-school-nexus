@@ -81,10 +81,11 @@ export const useClassPage = (classId: string) => {
           // If URL has ?edit=true, populate editData
           editData: prev.mode === 'edit' ? convertToFormData(data) : null,
         }));
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : 'Failed to load class';
         setState((prev) => ({
           ...prev,
-          error: err?.message || 'Failed to load class',
+          error: errorMsg,
           loading: false,
         }));
       }
@@ -135,7 +136,7 @@ export const useClassPage = (classId: string) => {
   }, []);
 
   // Update a field in edit data
-  const updateField = useCallback((field: keyof ClassFormData, value: any) => {
+  const updateField = useCallback((field: keyof ClassFormData, value: ClassFormData[keyof ClassFormData]) => {
     setState((prev) => {
       if (!prev.editData) return prev;
       return {
@@ -150,7 +151,7 @@ export const useClassPage = (classId: string) => {
   }, []);
 
   // Update nested fields (e.g., schedule array)
-  const updateNestedField = useCallback((field: keyof ClassFormData, value: any[]) => {
+  const updateNestedField = useCallback((field: keyof ClassFormData, value: unknown[]) => {
     setState((prev) => {
       if (!prev.editData) return prev;
       return {
@@ -182,8 +183,8 @@ export const useClassPage = (classId: string) => {
 
       toast.success('Class updated successfully');
       return true;
-    } catch (err: any) {
-      const errorMsg = err?.message || 'Failed to update class';
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update class';
       setState((prev) => ({
         ...prev,
         error: errorMsg,
@@ -218,7 +219,7 @@ export const useClassPage = (classId: string) => {
         ...prev,
         classData: data,
       }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error refetching class data:', err);
       toast.error('Failed to refresh class data');
     }
@@ -272,7 +273,7 @@ export const useClassPage = (classId: string) => {
         archivedSchedules: archived,
         loadingArchived: false,
       }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       setState((prev) => ({
         ...prev,
         loadingArchived: false,
@@ -324,7 +325,7 @@ export const useClassPage = (classId: string) => {
         archivedSchedules: archived,
         loadingArchived: false,
       }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       setState((prev) => ({
         ...prev,
         loadingArchived: false,

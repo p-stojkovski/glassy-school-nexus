@@ -3,14 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { GraduationCap, Calendar, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
 import {
   Form,
   FormControl,
@@ -20,7 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { FormSheet } from '@/components/common/sheets';
 import SubjectsDropdown from '@/components/common/SubjectsDropdown';
 import TeachersDropdown from '@/components/common/TeachersDropdown';
 import ClassroomsDropdown from '@/components/common/ClassroomsDropdown';
@@ -134,190 +126,143 @@ export function CreateClassSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-md p-0 bg-white/10 backdrop-blur-md border border-white/20 text-white overflow-y-auto"
-      >
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <SheetHeader className="px-4 py-4 border-b border-white/10">
-            <SheetTitle className="flex items-center gap-2 text-white text-lg font-semibold">
-              <GraduationCap className="w-5 h-5 text-yellow-400" />
-              Create New Class
-            </SheetTitle>
-            <SheetDescription className="text-white/70 mt-2">
-              Create your class with the essentials below. You'll add the schedule and students immediately after.
-            </SheetDescription>
+    <FormSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      intent="primary"
+      size="sm"
+      icon={GraduationCap}
+      title="Create New Class"
+      description="Create your class with the essentials below. You'll add the schedule and students immediately after."
+      confirmText={isSubmitting ? 'Adding...' : 'Add Class'}
+      cancelText="Cancel"
+      onConfirm={form.handleSubmit(handleSubmit)}
+      isLoading={isSubmitting}
+      disabled={!hasActiveYear || isLoadingYears}
+      isDirty={form.formState.isDirty}
+    >
+      {/* Academic Year Banner */}
+      {!isLoadingYears && (
+        hasActiveYear ? (
+          <div className="mb-4 flex items-center gap-2 px-3 py-2 bg-indigo-500/20 border border-indigo-500/30 rounded-lg">
+            <Calendar className="w-4 h-4 text-indigo-400" />
+            <span className="text-sm text-indigo-300">
+              This class will be created for <span className="font-semibold">{activeYear.name}</span>
+            </span>
+          </div>
+        ) : (
+          <div className="mb-4 flex items-center gap-2 px-3 py-2 bg-amber-500/20 border border-amber-500/30 rounded-lg">
+            <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <span className="text-sm text-amber-300">
+              No active academic year. Please configure an academic year before creating classes.
+            </span>
+          </div>
+        )
+      )}
 
-            {/* Academic Year Banner */}
-            {!isLoadingYears && (
-              hasActiveYear ? (
-                <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-indigo-500/20 border border-indigo-500/30 rounded-lg">
-                  <Calendar className="w-4 h-4 text-indigo-400" />
-                  <span className="text-sm text-indigo-300">
-                    This class will be created for <span className="font-semibold">{activeYear.name}</span>
-                  </span>
-                </div>
-              ) : (
-                <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-amber-500/20 border border-amber-500/30 rounded-lg">
-                  <AlertTriangle className="w-4 h-4 text-amber-400" />
-                  <span className="text-sm text-amber-300">
-                    No active academic year. Please configure an academic year before creating classes.
-                  </span>
-                </div>
-              )
-            )}
-
+      {/* Show blocking message if no active year */}
+      {!isLoadingYears && !hasActiveYear ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="p-4 bg-amber-500/20 rounded-full mb-4">
+            <AlertTriangle className="w-8 h-8 text-amber-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">Academic Year Required</h3>
+          <p className="text-white/60 max-w-xs">
+            You need to set up an active academic year before you can create classes.
+            Please go to Settings → Academic Calendar to configure your academic year.
+          </p>
+        </div>
+      ) : (
+        <Form {...form}>
+          <form id="quick-create-class-form" className="space-y-4">
             {hasActiveYear && (
-              <p className="text-white/60 text-sm mt-2">
+              <p className="text-white/60 text-sm mb-4">
                 All fields are required.
               </p>
             )}
-          </SheetHeader>
 
-          {/* Form Content */}
-          <ScrollArea className="flex-1">
-            <div className="p-4">
-              {/* Show blocking message if no active year */}
-              {!isLoadingYears && !hasActiveYear ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="p-4 bg-amber-500/20 rounded-full mb-4">
-                    <AlertTriangle className="w-8 h-8 text-amber-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Academic Year Required</h3>
-                  <p className="text-white/60 max-w-xs">
-                    You need to set up an active academic year before you can create classes.
-                    Please go to Settings → Academic Calendar to configure your academic year.
-                  </p>
-                </div>
-              ) : (
-              <Form {...form}>
-                <form id="quick-create-class-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-
-                  {/* Class Name Field */}
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-white">Class Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="e.g., Beginner English A1"
-                            className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-yellow-400 focus:ring-yellow-400"
-                          />
-                        </FormControl>
-                        <FormMessage className="text-red-300" />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Subject Field */}
-                  <FormField
-                    control={form.control}
-                    name="subjectId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-white">Subject</FormLabel>
-                        <FormControl>
-                          <SubjectsDropdown
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            placeholder="Select subject"
-                            className="bg-white/5 border-white/20"
-                          />
-                        </FormControl>
-                        <FormMessage className="text-red-300" />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Assigned Teacher Field */}
-                  <FormField
-                    control={form.control}
-                    name="teacherId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-white">Assigned Teacher</FormLabel>
-                        <FormControl>
-                          <TeachersDropdown
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            placeholder="Select teacher"
-                            className="bg-white/5 border-white/20"
-                            includeSubjectInfo={true}
-                          />
-                        </FormControl>
-                        <FormMessage className="text-red-300" />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Assigned Classroom Field */}
-                  <FormField
-                    control={form.control}
-                    name="classroomId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-white">Assigned Classroom</FormLabel>
-                        <FormControl>
-                          <ClassroomsDropdown
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            placeholder="Select classroom"
-                            className="bg-white/5 border-white/20"
-                          />
-                        </FormControl>
-                        <FormMessage className="text-red-300" />
-                      </FormItem>
-                    )}
-                  />
-
-                </form>
-              </Form>
+            {/* Class Name Field */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Class Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="e.g., Beginner English A1"
+                      className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-yellow-400 focus:ring-yellow-400"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-300" />
+                </FormItem>
               )}
-            </div>
-          </ScrollArea>
+            />
 
-          {/* Footer Actions */}
-          <div className="p-4 border-t border-white/10">
-            <div className="flex gap-3">
-              {hasActiveYear ? (
-                <>
-                  <Button
-                    type="submit"
-                    form="quick-create-class-form"
-                    disabled={isSubmitting}
-                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                  >
-                    {isSubmitting ? 'Adding...' : 'Add Class'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => onOpenChange(false)}
-                    disabled={isSubmitting}
-                    className="text-white hover:bg-white/10"
-                  >
-                    Cancel
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => onOpenChange(false)}
-                  className="flex-1 text-white hover:bg-white/10"
-                >
-                  Close
-                </Button>
+            {/* Subject Field */}
+            <FormField
+              control={form.control}
+              name="subjectId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Subject</FormLabel>
+                  <FormControl>
+                    <SubjectsDropdown
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Select subject"
+                      className="bg-white/5 border-white/20"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-300" />
+                </FormItem>
               )}
-            </div>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+            />
+
+            {/* Assigned Teacher Field */}
+            <FormField
+              control={form.control}
+              name="teacherId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Assigned Teacher</FormLabel>
+                  <FormControl>
+                    <TeachersDropdown
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Select teacher"
+                      className="bg-white/5 border-white/20"
+                      includeSubjectInfo={true}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-300" />
+                </FormItem>
+              )}
+            />
+
+            {/* Assigned Classroom Field */}
+            <FormField
+              control={form.control}
+              name="classroomId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Assigned Classroom</FormLabel>
+                  <FormControl>
+                    <ClassroomsDropdown
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Select classroom"
+                      className="bg-white/5 border-white/20"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-300" />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
+      )}
+    </FormSheet>
   );
 }

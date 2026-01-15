@@ -24,11 +24,12 @@ export const useClassFormPage = (classId?: string) => {
         // Call the individual endpoint directly to get full class details (skip global loading)
         const classData = await classApiService.getClassById(classId);
         setClassItem(classData);
-      } catch (err: any) {
-        if (err?.status === 404) {
+      } catch (err: unknown) {
+        const apiError = err as { status?: number; message?: string };
+        if (apiError?.status === 404) {
           setFormError('Class not found');
         } else {
-          setFormError(err?.message || 'Failed to load class');
+          setFormError(apiError?.message || (err instanceof Error ? err.message : 'Failed to load class'));
         }
       } finally {
         setLoading(false);
@@ -53,13 +54,15 @@ export const useClassFormPage = (classId?: string) => {
         await create(data);
       }
       navigate('/classes');
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const apiError = err as { status?: number; message?: string };
       // For conflict errors (409), don't set form error as they're handled by toast
       // and we want to keep the form data intact
-      if (error?.status !== 409) {
+      if (apiError?.status !== 409) {
+        const errorMsg = apiError?.message || (err instanceof Error ? err.message : null);
         const msg = classItem
-          ? error?.message || 'Failed to update class'
-          : error?.message || 'Failed to create class';
+          ? errorMsg || 'Failed to update class'
+          : errorMsg || 'Failed to create class';
         setFormError(msg);
       }
       // For all errors (including 409), don't navigate away

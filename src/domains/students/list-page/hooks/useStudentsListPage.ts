@@ -6,8 +6,6 @@ import { Student } from '@/domains/students/studentsSlice';
 import { StudentSearchParams } from '@/types/api/student';
 import { getAllTeachers } from '@/services/teacherApiService';
 
-export type StudentViewMode = 'grid' | 'table';
-
 /**
  * List page orchestration hook for the Students domain.
  *
@@ -68,7 +66,6 @@ export const useStudentsListPage = () => {
 
   // Local UI state
   const [teachers, setTeachers] = useState<{ id: string; name: string }[]>([]);
-  const [viewMode, setViewMode] = useState<StudentViewMode>('table');
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -306,10 +303,6 @@ export const useStudentsListPage = () => {
     teachers,
     hasActiveFilters,
     searchParams,
-
-    // View state
-    viewMode,
-    setViewMode,
 
     // Selected student
     selectedStudent,

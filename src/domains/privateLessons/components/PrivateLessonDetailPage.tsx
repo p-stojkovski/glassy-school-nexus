@@ -7,6 +7,8 @@ import {
   Plus,
   Edit2,
   Trash2,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,19 +19,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import GlassCard from '@/components/common/GlassCard';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import StandardConfirmDialog from '@/components/common/StandardConfirmDialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import { DemoManager } from '@/data/components/DemoManager';
 import { usePrivateLessonsManagement } from '../hooks/usePrivateLessonsManagement';
 import {
@@ -566,48 +558,37 @@ const PrivateLessonDetailPage: React.FC = () => {
       </Sheet>
 
       {/* Delete Payment Confirmation */}
-      <AlertDialog
+      <ConfirmDialog
         open={!!paymentToDelete}
-        onOpenChange={() => setPaymentToDelete(null)}
-      >
-        <AlertDialogContent className="bg-gray-900/95 border-white/20 text-white">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Payment Record</AlertDialogTitle>
-            <AlertDialogDescription className="text-white/70">
-              Are you sure you want to delete this payment record? This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDeletePayment}
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onOpenChange={(open) => !open && setPaymentToDelete(null)}
+        intent="danger"
+        icon={Trash2}
+        title="Delete Payment Record"
+        description="Are you sure you want to delete this payment record? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDeletePayment}
+      />
 
       {/* Complete Confirmation Dialog */}
-      <StandardConfirmDialog
-        isOpen={!!lessonToComplete}
-        onClose={() => setLessonToComplete(null)}
+      <ConfirmDialog
+        open={!!lessonToComplete}
+        onOpenChange={(open) => !open && setLessonToComplete(null)}
+        intent="success"
+        icon={CheckCircle}
         title="Complete Private Lesson"
         description={`Are you sure you want to mark the private lesson with ${lessonToComplete?.studentName} as completed? This action will finalize the lesson.`}
         confirmText="Mark as Complete"
         cancelText="Cancel"
-        variant="default"
         onConfirm={confirmCompleteLesson}
       />
 
       {/* Cancel/Delete Confirmation Dialog */}
-      <StandardConfirmDialog
-        isOpen={!!lessonToCancel}
-        onClose={() => setLessonToCancel(null)}
+      <ConfirmDialog
+        open={!!lessonToCancel}
+        onOpenChange={(open) => !open && setLessonToCancel(null)}
+        intent={lessonToCancel?.status === 'scheduled' ? 'warning' : 'danger'}
+        icon={lessonToCancel?.status === 'scheduled' ? XCircle : Trash2}
         title={
           lessonToCancel?.status === 'scheduled'
             ? 'Cancel Private Lesson'
@@ -624,7 +605,6 @@ const PrivateLessonDetailPage: React.FC = () => {
             : 'Delete Lesson'
         }
         cancelText="Keep Lesson"
-        variant="danger"
         onConfirm={confirmDeleteLesson}
       />
     </div>

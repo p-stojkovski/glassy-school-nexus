@@ -21,6 +21,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from '@/components/ui/table';
 import {
   Tooltip,
@@ -30,8 +31,9 @@ import {
 } from '@/components/ui/tooltip';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
-import { formatCurrency } from '@/utils/formatters';
+import { Amount } from '@/components/ui/amount';
 import { TeacherSalaryPreview } from '@/domains/teachers/_shared/types/salaryCalculation.types';
+import { MONTHS } from '@/domains/teachers/_shared/constants';
 
 interface SalaryPreviewCardProps {
   preview: TeacherSalaryPreview | null;
@@ -43,21 +45,6 @@ interface SalaryPreviewCardProps {
   onMonthChange: (month: number) => void;
   onRetry: () => void;
 }
-
-const MONTHS = [
-  { value: 1, label: 'January' },
-  { value: 2, label: 'February' },
-  { value: 3, label: 'March' },
-  { value: 4, label: 'April' },
-  { value: 5, label: 'May' },
-  { value: 6, label: 'June' },
-  { value: 7, label: 'July' },
-  { value: 8, label: 'August' },
-  { value: 9, label: 'September' },
-  { value: 10, label: 'October' },
-  { value: 11, label: 'November' },
-  { value: 12, label: 'December' },
-];
 
 const SalaryPreviewCard: React.FC<SalaryPreviewCardProps> = ({
   preview,
@@ -205,26 +192,69 @@ const SalaryPreviewCard: React.FC<SalaryPreviewCardProps> = ({
                             {classItem.activeStudents}
                           </div>
                         </TableCell>
-                        <TableCell className="text-white/80 text-right">
+                        <TableCell className="text-right">
                           <div>
-                            <div className="font-medium">{formatCurrency(classItem.rateApplied)}</div>
+                            <Amount value={classItem.rateApplied} weight="medium" className="text-white/80" />
                             <div className="text-xs text-white/50">{classItem.rateTierDescription}</div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-white font-semibold text-right">
-                          {formatCurrency(classItem.estimatedAmount)}
+                        <TableCell className="text-right">
+                          <Amount value={classItem.estimatedAmount} weight="semibold" className="text-white" />
                         </TableCell>
                       </TableRow>
                     ))}
-                    <TableRow className="bg-blue-500/10 border-t border-blue-500/30">
-                      <TableCell colSpan={4} className="text-white font-semibold text-right py-2">
-                        Total Estimated
+                  </TableBody>
+                  <TableFooter>
+                    {preview.baseSalaryAmount !== undefined && preview.baseSalaryAmount > 0 && (
+                      <TableRow className="bg-white/[0.03] border-t border-white/10">
+                        <TableCell colSpan={4} className="text-white/70 font-medium text-right py-1.5 text-sm">
+                          Base Salary (Full Time)
+                        </TableCell>
+                        <TableCell className="text-right py-1.5">
+                          <Amount value={preview.baseSalaryAmount} weight="medium" className="text-white/70" />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    <TableRow className="bg-white/[0.03] border-t border-white/10">
+                      <TableCell colSpan={4} className="text-white/70 font-medium text-right py-1.5 text-sm">
+                        {preview.baseSalaryAmount !== undefined && preview.baseSalaryAmount > 0
+                          ? 'Variable Pay (from classes)'
+                          : 'Total Estimated'}
                       </TableCell>
-                      <TableCell className="text-blue-200 font-semibold text-right py-2">
-                        {formatCurrency(preview.totalEstimated)}
+                      <TableCell className="text-right py-1.5">
+                        <Amount value={preview.totalEstimated} weight="medium" className="text-white/70" />
                       </TableCell>
                     </TableRow>
-                  </TableBody>
+                    {preview.baseSalaryAmount !== undefined && preview.baseSalaryAmount > 0 && (
+                      <>
+                        <TableRow className="border-t-2 border-blue-500/30">
+                          <TableCell colSpan={5} className="py-0.5" />
+                        </TableRow>
+                        <TableRow className="bg-blue-500/10">
+                          <TableCell colSpan={4} className="text-white font-semibold text-right py-2">
+                            Grand Total
+                          </TableCell>
+                          <TableCell className="text-right py-2">
+                            <Amount
+                              value={preview.baseSalaryAmount + preview.totalEstimated}
+                              weight="semibold"
+                              className="text-blue-200"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      </>
+                    )}
+                    {!(preview.baseSalaryAmount !== undefined && preview.baseSalaryAmount > 0) && (
+                      <TableRow className="bg-blue-500/10 border-t-2 border-blue-500/30">
+                        <TableCell colSpan={4} className="text-white font-semibold text-right py-2">
+                          Total Estimated
+                        </TableCell>
+                        <TableCell className="text-right py-2">
+                          <Amount value={preview.totalEstimated} weight="semibold" className="text-blue-200" />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableFooter>
                 </Table>
               </div>
             ) : (

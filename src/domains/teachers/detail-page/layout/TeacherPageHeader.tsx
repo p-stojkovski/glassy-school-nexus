@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, BookOpen, Calendar, Users, Edit2, Trash2, MoreVertical, Info } from 'lucide-react';
+import { Mail, Phone, Edit2, Trash2, MoreVertical, Info, Briefcase } from 'lucide-react';
 import { AppBreadcrumb } from '@/components/navigation';
 import { buildTeacherBreadcrumbs } from '@/domains/teachers/_shared/utils/teacherBreadcrumbs';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
@@ -12,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import { Teacher } from '@/domains/teachers/teachersSlice';
 import { deleteTeacher } from '@/services/teacherApiService';
 import { toast } from '@/hooks/use-toast';
@@ -23,6 +22,7 @@ interface TeacherPageHeaderProps {
   teacher: Teacher | null;
   onEdit: () => void;
   onUpdate?: () => void;
+  onOpenEmploymentSettings?: () => void;
   selectedYear?: AcademicYear | null;
   years?: AcademicYear[];
   onYearChange?: (yearId: string) => void;
@@ -37,6 +37,7 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
   teacher,
   onEdit,
   onUpdate,
+  onOpenEmploymentSettings,
   selectedYear,
   years = [],
   onYearChange,
@@ -107,23 +108,26 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
         <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-xl px-4 py-3">
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">
 
-            {/* Left: Subject Badge + Status */}
-            <div className="flex items-center gap-2 min-w-0">
-              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 border">
-                {teacher.subjectName}
-              </Badge>
-              {!teacher.isActive && (
+            {/* Left: Status indicator (if inactive) */}
+            {!teacher.isActive && (
+              <div className="flex items-center gap-2 min-w-0">
                 <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30 rounded">
                   Inactive
                 </span>
-              )}
-            </div>
+                <span className="text-white/20">|</span>
+              </div>
+            )}
 
-            {/* Separator */}
-            <span className="hidden lg:block text-white/20">|</span>
-
-            {/* Center: Primary metadata */}
+            {/* Primary metadata */}
             <div className="flex flex-wrap items-center gap-3 flex-1 text-sm text-white/70">
+              {/* Employment Type */}
+              <div className="flex items-center gap-1.5">
+                <Briefcase className="w-3.5 h-3.5 text-white/50" />
+                <span>{teacher.employmentType === 'full_time' ? 'Full Time' : 'Contract'}</span>
+              </div>
+
+              <span className="text-white/20">|</span>
+
               {/* Email */}
               <div className="flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-white/50" />
@@ -142,7 +146,6 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
 
               {/* Subject */}
               <div className="flex items-center gap-1.5">
-                <BookOpen className="w-3.5 h-3.5 text-white/50" />
                 <span className="text-white/40">Subject:</span>
                 <span>{teacher.subjectName}</span>
               </div>
@@ -151,7 +154,6 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
 
               {/* Join Date */}
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-white/50" />
                 <span className="text-white/40">Joined:</span>
                 <span>{formatDate(teacher.joinDate)}</span>
               </div>
@@ -160,7 +162,6 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
 
               {/* Classes */}
               <div className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-white/50" />
                 <span className="text-white/40">Classes:</span>
                 <span>{teacher.classCount}</span>
               </div>
@@ -169,7 +170,6 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
 
               {/* Students */}
               <div className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-white/50" />
                 <span className="text-white/40">Students:</span>
                 <span>{studentsLoading ? '--' : (studentsCount ?? '--')}</span>
               </div>
@@ -210,6 +210,15 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
                   >
                     <Edit2 className="w-4 h-4" />
                     <span className="font-medium">Edit Teacher</span>
+                  </DropdownMenuItem>
+
+                  {/* Employment Settings Option */}
+                  <DropdownMenuItem
+                    onClick={onOpenEmploymentSettings}
+                    className="gap-2.5 cursor-pointer text-white hover:text-white focus:text-white focus:bg-white/10 rounded-lg px-3 py-2.5 transition-all duration-200"
+                  >
+                    <Briefcase className="w-4 h-4" />
+                    <span className="font-medium">Employment Settings</span>
                   </DropdownMenuItem>
 
                   {/* Delete Option */}
@@ -259,15 +268,17 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onConfirm={handleConfirmDelete}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => !open && setShowDeleteDialog(false)}
+        intent="danger"
+        icon={Trash2}
         title="Delete Teacher"
         description={`Are you sure you want to delete "${teacher.name}"? This action cannot be undone.`}
-        confirmText={isDeleting ? 'Deleting...' : 'Delete Teacher'}
+        confirmText="Delete Teacher"
         cancelText="Cancel"
-        variant="danger"
+        onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
       />
     </>
   );

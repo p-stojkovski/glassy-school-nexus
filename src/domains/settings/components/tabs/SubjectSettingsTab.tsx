@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Sheet,
@@ -8,7 +9,7 @@ import {
 } from '@/components/ui/sheet';
 import SettingsTable, { SettingsTableColumn } from '../shared/SettingsTable';
 import SubjectForm from '../forms/SubjectForm';
-import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import subjectApiService, { Subject } from '@/services/subjectApiService';
 import { toast } from 'sonner';
 
@@ -191,13 +192,16 @@ const SubjectSettingsTab: React.FC = () => {
       <ConfirmDialog
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
-        onConfirm={confirmDeleteSubject}
+        intent="danger"
+        icon={Trash2}
         title="Delete Subject"
         description={
           subjectToDelete
             ? `Are you sure you want to delete ${subjectToDelete.name}? This action cannot be undone and may affect existing classes and teachers.`
             : 'Are you sure you want to delete this subject?'
         }
+        confirmText="Delete"
+        onConfirm={confirmDeleteSubject}
       />
     </>
   );

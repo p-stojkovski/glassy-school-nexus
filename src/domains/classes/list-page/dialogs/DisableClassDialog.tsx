@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 import { Archive, AlertTriangle } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import { useClasses } from '@/domains/classes/_shared/hooks/useClasses';
 import { ClassBasicInfoResponse } from '@/types/api/class';
 
@@ -43,23 +35,19 @@ export const DisableClassDialog: React.FC<DisableClassDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
-            <Archive className="w-5 h-5 text-orange-400" />
-            Disable Class
-          </DialogTitle>
-          <DialogDescription className="text-white/70">
-            Temporarily disable this class from active operations
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          <p className="text-white/80">
-            Are you sure you want to disable <strong className="text-white">{classData.name}</strong>?
-          </p>
-
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      intent="warning"
+      size="md"
+      icon={Archive}
+      title="Disable Class"
+      description={`Are you sure you want to disable ${classData.name}?`}
+      confirmText="Disable Class"
+      onConfirm={handleConfirm}
+      isLoading={isDisabling}
+      infoContent={
+        <div className="space-y-4">
           <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 space-y-2">
             <div className="flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
@@ -80,26 +68,7 @@ export const DisableClassDialog: React.FC<DisableClassDialogProps> = ({
             You can re-enable this class later if needed. Disabled classes are hidden by default in the class list.
           </p>
         </div>
-
-        <DialogFooter className="gap-3 pt-4">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            disabled={isDisabling}
-            className="text-white hover:bg-white/10"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={isDisabling}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-          >
-            {isDisabling ? 'Disabling...' : 'Disable Class'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      }
+    />
   );
 };

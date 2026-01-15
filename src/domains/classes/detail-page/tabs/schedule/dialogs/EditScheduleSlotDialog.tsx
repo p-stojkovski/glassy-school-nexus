@@ -1,16 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Calendar, Trash2, AlertTriangle, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ActionDialog } from '@/components/common/dialogs';
 import {
   Form,
   FormControl,
@@ -186,7 +179,7 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, classData,
 
     try {
       const request: UpdateScheduleSlotRequest = {
-        dayOfWeek: data.dayOfWeek as any,
+        dayOfWeek: data.dayOfWeek as ScheduleSlotDto['dayOfWeek'],
         startTime: data.startTime,
         endTime: data.endTime,
         semesterId: data.semesterId || null,
@@ -207,8 +200,9 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, classData,
 
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to update schedule slot');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update schedule slot';
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -217,273 +211,251 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, classData,
   if (!slot) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-yellow-400" />
-            Edit session
-          </DialogTitle>
-          <DialogDescription className="text-white/70">
-            Update the schedule slot details
-          </DialogDescription>
-        </DialogHeader>
+    <ActionDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      intent="primary"
+      size="lg"
+      icon={Calendar}
+      title="Edit session"
+      description="Update the schedule slot details"
+      confirmText="Save Changes"
+      onConfirm={form.handleSubmit(handleSubmit)}
+      isLoading={isSubmitting}
+    >
+      <Form {...form}>
+        <form className="space-y-4">
+          {/* Day of Week */}
+          <FormField
+            control={form.control}
+            name="dayOfWeek"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Day of Week</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="bg-gray-900 border-white/20">
+                    {DAYS_OF_WEEK.map((day) => (
+                      <SelectItem key={day} value={day} className="text-white hover:bg-white/10 focus:bg-white/10">
+                        {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            {/* Day of Week */}
+          {/* Time Range */}
+          <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="dayOfWeek"
+              name="startTime"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white">Day of Week</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-gray-900 border-white/20">
-                      {DAYS_OF_WEEK.map((day) => (
-                        <SelectItem key={day} value={day} className="text-white hover:bg-white/10 focus:bg-white/10">
-                          {day}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <TimeCombobox
+                    label="Start Time"
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="9:00 AM"
+                    startHour={7}
+                    endHour={21}
+                    intervalMinutes={30}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Time Range */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <TimeCombobox
-                      label="Start Time"
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="9:00 AM"
-                      startHour={7}
-                      endHour={21}
-                      intervalMinutes={30}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="endTime"
+              render={({ field }) => (
+                <FormItem>
+                  <TimeCombobox
+                    label="End Time"
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="10:00 AM"
+                    min={form.watch('startTime')}
+                    startHour={7}
+                    endHour={21}
+                    intervalMinutes={30}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
+          {/* Semester Assignment */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <FormLabel className="text-white text-sm font-medium">Change Semester Assignment</FormLabel>
+              {selectedSemesterId ? (
+                <Badge variant="outline" className="text-xs text-blue-400 border-blue-400/50">
+                  {semesters.find(s => s.id === selectedSemesterId)?.name || 'Semester'}
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-xs text-purple-400 border-purple-400/50">
+                  All Semesters
+                </Badge>
+              )}
+            </div>
+            <SemestersDropdown
+              academicYearId={classData?.academicYearId}
+              value={selectedSemesterId || ''}
+              onValueChange={(id) => setSelectedSemesterId(id || null)}
+              placeholder="All semesters (Global)"
+              disabled={loadingSemesters || !classData?.academicYearId}
+              showDateRangeInfo={true}
+              onError={(message) => {
+                console.error('Failed to load semesters:', message);
+              }}
+            />
+            {!classData?.academicYearId && (
+              <div className="text-xs text-red-300 mt-2">
+                This class has no academic year. Semester selection is disabled.
+              </div>
+            )}
+            {classData?.academicYearId && !loadingSemesters && semesters.length === 0 && (
+              <div className="text-xs text-white/60 mt-2">
+                No semesters defined for this academic year. Create semesters in Academic Calendar settings.
+              </div>
+            )}
+            {selectedSemesterId && selectedSemesterId !== (slot?.semesterId || null) && (
+              <div className="text-xs text-amber-300 flex items-start gap-2 mt-2">
+                <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>This schedule will no longer apply to other semesters</span>
+              </div>
+            )}
+            {!selectedSemesterId && (slot?.semesterId || null) && (
+              <div className="text-xs text-amber-300 flex items-start gap-2 mt-2">
+                <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>This schedule will apply to all semesters</span>
+              </div>
+            )}
+            {!!slot?.pastLessonCount && slot.pastLessonCount > 0 && (
+              <div className="text-xs text-white/60 flex items-start gap-2 mt-1">
+                <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>{slot.pastLessonCount} past lesson{slot.pastLessonCount !== 1 ? 's' : ''} will remain associated with their original semester</span>
+              </div>
+            )}
+          </div>
+
+          {/* Update Future Lessons Option */}
+          {timesChanged && (
+            <div className="border border-amber-500/30 bg-amber-500/10 p-3 rounded-md">
               <FormField
                 control={form.control}
-                name="endTime"
+                name="updateFutureLessons"
                 render={({ field }) => (
-                  <FormItem>
-                    <TimeCombobox
-                      label="End Time"
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="10:00 AM"
-                      min={form.watch('startTime')}
-                      startHour={7}
-                      endHour={21}
-                      intervalMinutes={30}
-                    />
-                    <FormMessage />
+                  <FormItem className="flex items-start gap-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="mt-1 border-white/30 data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
+                      />
+                    </FormControl>
+                    <div className="flex-1">
+                      <FormLabel className="font-medium cursor-pointer text-white">
+                        Update future lessons with new times
+                      </FormLabel>
+                      <p className="text-sm text-white/60 mt-1">
+                        Future lessons will be updated to match the new schedule times. Past lessons remain unchanged.
+                      </p>
+                    </div>
                   </FormItem>
                 )}
               />
             </div>
+          )}
 
-            {/* Semester Assignment */}
+          {/* Conflict Warnings */}
+          {scheduleChanged && !isValidating && (hasConflicts || hasOverlaps) && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-white text-sm font-medium">Change Semester Assignment</FormLabel>
-                {selectedSemesterId ? (
-                  <Badge variant="outline" className="text-xs text-blue-400 border-blue-400/50">
-                    {semesters.find(s => s.id === selectedSemesterId)?.name || 'Semester'}
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="text-xs text-purple-400 border-purple-400/50">
-                    All Semesters
-                  </Badge>
-                )}
-              </div>
-              <SemestersDropdown
-                academicYearId={classData?.academicYearId}
-                value={selectedSemesterId || ''}
-                onValueChange={(id) => setSelectedSemesterId(id || null)}
-                placeholder="All semesters (Global)"
-                disabled={loadingSemesters || !classData?.academicYearId}
-                showDateRangeInfo={true}
-                onError={(message) => {
-                  console.error('Failed to load semesters:', message);
-                }}
-              />
-              {!classData?.academicYearId && (
-                <div className="text-xs text-red-300 mt-2">
-                  This class has no academic year. Semester selection is disabled.
-                </div>
+              {/* Existing Schedule Overlap Warning */}
+              {hasOverlaps && existingOverlap && (
+                <Alert className="bg-amber-500/10 border-amber-500/30">
+                  <AlertTriangle className="h-4 w-4 text-amber-400" />
+                  <AlertDescription className="text-white/80 text-sm">
+                    <span className="font-medium text-amber-300">Schedule overlap detected:</span>
+                    {existingOverlap.overlaps.map((overlap) => (
+                      <div key={overlap.scheduleSlotId} className="mt-1">
+                        <span className="text-white/90">
+                          {overlap.dayOfWeek} {overlap.startTime} - {overlap.endTime}
+                        </span>
+                        <span className="text-xs ml-2 text-white/60">
+                          ({overlap.futureLessonCount} future lesson{overlap.futureLessonCount !== 1 ? 's' : ''})
+                        </span>
+                      </div>
+                    ))}
+                  </AlertDescription>
+                </Alert>
               )}
-              {classData?.academicYearId && !loadingSemesters && semesters.length === 0 && (
-                <div className="text-xs text-white/60 mt-2">
-                  No semesters defined for this academic year. Create semesters in Academic Calendar settings.
-                </div>
-              )}
-              {selectedSemesterId && selectedSemesterId !== (slot?.semesterId || null) && (
-                <div className="text-xs text-amber-300 flex items-start gap-2 mt-2">
-                  <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>This schedule will no longer apply to other semesters</span>
-                </div>
-              )}
-              {!selectedSemesterId && (slot?.semesterId || null) && (
-                <div className="text-xs text-amber-300 flex items-start gap-2 mt-2">
-                  <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>This schedule will apply to all semesters</span>
-                </div>
-              )}
-              {!!slot?.pastLessonCount && slot.pastLessonCount > 0 && (
-                <div className="text-xs text-white/60 flex items-start gap-2 mt-1">
-                  <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>{slot.pastLessonCount} past lesson{slot.pastLessonCount !== 1 ? 's' : ''} will remain associated with their original semester</span>
-                </div>
+
+              {/* Teacher/Classroom/Class Conflicts */}
+              {hasConflicts && conflictInfo && (
+                <Alert className="bg-red-500/10 border-red-500/30">
+                  <AlertTriangle className="h-4 w-4 text-red-400" />
+                  <AlertDescription className="text-white/80 text-sm">
+                    <span className="font-medium text-red-300">Scheduling conflicts found:</span>
+                    {conflictInfo.conflicts.slice(0, 3).map((conflict, index) => (
+                      <div key={index} className="mt-1">
+                        <span className="text-white/90">
+                          {conflict.conflictType === 'teacher_conflict' && 'Teacher busy'}
+                          {conflict.conflictType === 'classroom_conflict' && 'Classroom busy'}
+                          {conflict.conflictType === 'class_conflict' && 'Class conflict'}
+                        </span>
+                        <span className="text-xs ml-2 text-white/60">
+                          ({conflict.instances.length} instance{conflict.instances.length !== 1 ? 's' : ''})
+                        </span>
+                      </div>
+                    ))}
+                    {conflictInfo.conflicts.length > 3 && (
+                      <p className="text-xs text-white/50 mt-1">
+                        +{conflictInfo.conflicts.length - 3} more conflicts
+                      </p>
+                    )}
+                  </AlertDescription>
+                </Alert>
               )}
             </div>
+          )}
 
-            {/* Update Future Lessons Option */}
-            {timesChanged && (
-              <div className="border border-amber-500/30 bg-amber-500/10 p-3 rounded-md">
-                <FormField
-                  control={form.control}
-                  name="updateFutureLessons"
-                  render={({ field }) => (
-                    <FormItem className="flex items-start gap-2">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          className="mt-1 border-white/30 data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
-                        />
-                      </FormControl>
-                      <div className="flex-1">
-                        <FormLabel className="font-medium cursor-pointer text-white">
-                          Update future lessons with new times
-                        </FormLabel>
-                        <p className="text-sm text-white/60 mt-1">
-                          Future lessons will be updated to match the new schedule times. Past lessons remain unchanged.
-                        </p>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
+          {/* Validation Loading */}
+          {scheduleChanged && isValidating && (
+            <div className="text-center py-2">
+              <span className="text-sm text-white/50">Checking for conflicts...</span>
+            </div>
+          )}
 
-            {/* Conflict Warnings */}
-            {scheduleChanged && !isValidating && (hasConflicts || hasOverlaps) && (
-              <div className="space-y-3">
-                {/* Existing Schedule Overlap Warning */}
-                {hasOverlaps && existingOverlap && (
-                  <Alert className="bg-amber-500/10 border-amber-500/30">
-                    <AlertTriangle className="h-4 w-4 text-amber-400" />
-                    <AlertDescription className="text-white/80 text-sm">
-                      <span className="font-medium text-amber-300">Schedule overlap detected:</span>
-                      {existingOverlap.overlaps.map((overlap) => (
-                        <div key={overlap.scheduleSlotId} className="mt-1">
-                          <span className="text-white/90">
-                            {overlap.dayOfWeek} {overlap.startTime} - {overlap.endTime}
-                          </span>
-                          <span className="text-xs ml-2 text-white/60">
-                            ({overlap.futureLessonCount} future lesson{overlap.futureLessonCount !== 1 ? 's' : ''})
-                          </span>
-                        </div>
-                      ))}
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Teacher/Classroom/Class Conflicts */}
-                {hasConflicts && conflictInfo && (
-                  <Alert className="bg-red-500/10 border-red-500/30">
-                    <AlertTriangle className="h-4 w-4 text-red-400" />
-                    <AlertDescription className="text-white/80 text-sm">
-                      <span className="font-medium text-red-300">Scheduling conflicts found:</span>
-                      {conflictInfo.conflicts.slice(0, 3).map((conflict, index) => (
-                        <div key={index} className="mt-1">
-                          <span className="text-white/90">
-                            {conflict.conflictType === 'teacher_conflict' && 'Teacher busy'}
-                            {conflict.conflictType === 'classroom_conflict' && 'Classroom busy'}
-                            {conflict.conflictType === 'class_conflict' && 'Class conflict'}
-                          </span>
-                          <span className="text-xs ml-2 text-white/60">
-                            ({conflict.instances.length} instance{conflict.instances.length !== 1 ? 's' : ''})
-                          </span>
-                        </div>
-                      ))}
-                      {conflictInfo.conflicts.length > 3 && (
-                        <p className="text-xs text-white/50 mt-1">
-                          +{conflictInfo.conflicts.length - 3} more conflicts
-                        </p>
-                      )}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            )}
-
-            {/* Validation Loading */}
-            {scheduleChanged && isValidating && (
-              <div className="text-center py-2">
-                <span className="text-sm text-white/50">Checking for conflicts...</span>
-              </div>
-            )}
-
-            <DialogFooter className="gap-3 pt-4 sm:justify-between">
-              <div>
-                {onDelete && slot && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      onOpenChange(false);
-                      onDelete(slot);
-                    }}
-                    disabled={isSubmitting}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
-                )}
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => onOpenChange(false)}
-                  disabled={isSubmitting}
-                  className="text-white hover:bg-white/10"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                >
-                  {isSubmitting ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </div>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          {/* Delete Button */}
+          {onDelete && slot && (
+            <div className="pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  onOpenChange(false);
+                  onDelete(slot);
+                }}
+                disabled={isSubmitting}
+                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 w-full"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Schedule Slot
+              </Button>
+            </div>
+          )}
+        </form>
+      </Form>
+    </ActionDialog>
   );
 }

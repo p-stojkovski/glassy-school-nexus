@@ -19,7 +19,7 @@ import { ClassBasicInfoResponse } from '@/types/api/class';
 import { EditClassInfoDialog } from '@/domains/classes/detail-page/dialogs/EditClassInfoDialog';
 import { DisableClassDialog } from '@/domains/classes/list-page/dialogs/DisableClassDialog';
 import { EnableClassDialog } from '@/domains/classes/list-page/dialogs/EnableClassDialog';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import { useClasses } from '@/domains/classes/_shared/hooks/useClasses';
 import { toast } from '@/hooks/use-toast';
 
@@ -355,15 +355,17 @@ const ClassPageHeader: React.FC<ClassPageHeaderProps> = ({
       />
 
       {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onConfirm={handleConfirmDelete}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => !open && setShowDeleteDialog(false)}
+        intent="danger"
+        icon={Trash2}
         title="Delete Class"
         description={`Are you sure you want to delete "${classData.name}"? This action cannot be undone.`}
-        confirmText={isDeleting ? 'Deleting...' : 'Delete Class'}
+        confirmText="Delete Class"
         cancelText="Cancel"
-        variant="danger"
+        onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
       />
     </>
   );

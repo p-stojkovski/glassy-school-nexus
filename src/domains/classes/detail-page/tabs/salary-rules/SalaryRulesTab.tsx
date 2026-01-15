@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import { Amount } from '@/components/ui/amount';
 import { ClassBasicInfoResponse } from '@/types/api/class';
 import { useSalaryRules } from '../../hooks/useSalaryRules';
 import ClassSalaryPreviewCard from './ClassSalaryPreviewCard';
@@ -67,13 +68,6 @@ const SalaryRulesTab: React.FC<SalaryRulesTabProps> = ({ classData, isActive }) 
     classId: classData.id,
     isActive,
   });
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) + ' MKD';
-  };
 
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Ongoing';
@@ -173,8 +167,8 @@ const SalaryRulesTab: React.FC<SalaryRulesTabProps> = ({ classData, isActive }) 
                   className={rule.isApplied ? 'bg-blue-500/10' : ''}
                 >
                   <TableCell className="py-2 text-white font-medium">{rule.minStudents}</TableCell>
-                  <TableCell className="py-2 text-white font-medium">
-                    {formatCurrency(rule.ratePerLesson)}
+                  <TableCell className="py-2">
+                    <Amount value={rule.ratePerLesson} weight="medium" className="text-white" />
                   </TableCell>
                   <TableCell className="py-2 text-white/80">{formatDate(rule.effectiveFrom)}</TableCell>
                   <TableCell className="py-2 text-white/80">{formatDate(rule.effectiveTo)}</TableCell>

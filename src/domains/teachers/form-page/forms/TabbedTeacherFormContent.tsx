@@ -18,6 +18,7 @@ interface TabbedTeacherFormContentProps {
   onSubmit: (data: TeacherFormData) => void;
   onCancel: () => void;
   onFormChange?: (data: TeacherFormData) => void;
+  hideButtons?: boolean;
 }
 
 export interface TeacherFormRef {
@@ -32,6 +33,7 @@ const TabbedTeacherFormContent = React.forwardRef<TeacherFormRef, TabbedTeacherF
     onSubmit,
     onCancel,
     onFormChange,
+    hideButtons = false,
   },
   ref
 ) => {
@@ -276,11 +278,8 @@ const TabbedTeacherFormContent = React.forwardRef<TeacherFormRef, TabbedTeacherF
     }
   };
 
-  const TabIndicator: React.FC<{ hasErrors: boolean; hasData: boolean }> = ({ hasErrors, hasData }) => (
-    <div className="flex items-center gap-1 ml-2">
-      {hasErrors && <Circle className="h-2 w-2 fill-red-400 text-red-400" />}
-      {!hasErrors && hasData && <Circle className="h-2 w-2 fill-yellow-400 text-yellow-400" />}
-    </div>
+  const TabIndicator: React.FC<{ hasErrors: boolean }> = ({ hasErrors }) => (
+    hasErrors ? <Circle className="h-2 w-2 fill-red-400 text-red-400 ml-2" /> : null
   );
 
   // Expose form methods via ref
@@ -301,22 +300,22 @@ const TabbedTeacherFormContent = React.forwardRef<TeacherFormRef, TabbedTeacherF
           onValueChange={setActiveTab}
           className="space-y-4"
         >
-          <TabsList className="bg-white/10 border-white/20">
+          <TabsList className="bg-white/10 border-white/20 w-full max-w-lg grid grid-cols-2">
             <TabsTrigger
               value="personal-info"
-              className="data-[state=active]:bg-white/20 text-white"
+              className="data-[state=active]:bg-white/20 text-white justify-center"
             >
               <User className="w-4 h-4 mr-2" />
-              Personal Information
-              <TabIndicator hasErrors={personalTabErrors} hasData={personalTabHasData} />
+              Personal
+              <TabIndicator hasErrors={personalTabErrors} />
             </TabsTrigger>
             <TabsTrigger
               value="professional-info"
-              className="data-[state=active]:bg-white/20 text-white"
+              className="data-[state=active]:bg-white/20 text-white justify-center"
             >
               <Briefcase className="w-4 h-4 mr-2" />
-              Professional Information
-              <TabIndicator hasErrors={professionalTabErrors} hasData={professionalTabHasData} />
+              Professional
+              <TabIndicator hasErrors={professionalTabErrors} />
             </TabsTrigger>
           </TabsList>
 
@@ -340,19 +339,21 @@ const TabbedTeacherFormContent = React.forwardRef<TeacherFormRef, TabbedTeacherF
           </TabsContent>
         </Tabs>
 
-        <div className="pt-2">
-          <FormButtons
-            submitText={teacher ? 'Update Teacher' : 'Add Teacher'}
-            onCancel={onCancel}
-            disabled={
-              !form.formState.isValid ||
-              isSubjectsEmpty ||
-              (shouldCheckAvailability && debouncedEmail && debouncedEmail.trim() && debouncedEmail !== (teacher?.email || '') && (
-                isCheckingEmail || emailAvailable === false
-              ))
-            }
-          />
-        </div>
+        {!hideButtons && (
+          <div className="pt-2">
+            <FormButtons
+              submitText={teacher ? 'Update Teacher' : 'Add Teacher'}
+              onCancel={onCancel}
+              disabled={
+                !form.formState.isValid ||
+                isSubjectsEmpty ||
+                (shouldCheckAvailability && debouncedEmail && debouncedEmail.trim() && debouncedEmail !== (teacher?.email || '') && (
+                  isCheckingEmail || emailAvailable === false
+                ))
+              }
+            />
+          </div>
+        )}
       </form>
     </Form>
   );

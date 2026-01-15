@@ -28,8 +28,6 @@ import GradesManagement from './pages/GradesManagement';
 import FinancialManagement from './pages/FinancialManagement';
 import PrivateLessons from './pages/PrivateLessons';
 import PrivateLessonDetailPage from './domains/privateLessons/components/PrivateLessonDetailPage';
-import { StudentProfilePage } from '@/domains/students/detail-page';
-import StudentFormPage from './pages/StudentFormPage';
 import StudentPage from './pages/StudentPage';
 import SettingsPage from './pages/SettingsPage';
 import NotFound from './pages/NotFound';

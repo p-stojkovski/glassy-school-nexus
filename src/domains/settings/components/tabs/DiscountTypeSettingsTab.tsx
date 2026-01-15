@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Sheet,
@@ -8,7 +9,7 @@ import {
 } from '@/components/ui/sheet';
 import SettingsTable, { SettingsTableColumn } from '../shared/SettingsTable';
 import DiscountTypeForm from '../forms/DiscountTypeForm';
-import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import discountTypeApiService, { DiscountType } from '@/services/discountTypeApiService';
 import { toast } from 'sonner';
 
@@ -215,13 +216,16 @@ const DiscountTypeSettingsTab: React.FC = () => {
       <ConfirmDialog
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
-        onConfirm={confirmDeleteDiscountType}
+        intent="danger"
+        icon={Trash2}
         title="Delete Discount Type"
         description={
           discountTypeToDelete
             ? `Are you sure you want to delete ${discountTypeToDelete.name}? This action cannot be undone and may affect existing student records.`
             : 'Are you sure you want to delete this discount type?'
         }
+        confirmText="Delete"
+        onConfirm={confirmDeleteDiscountType}
       />
     </>
   );

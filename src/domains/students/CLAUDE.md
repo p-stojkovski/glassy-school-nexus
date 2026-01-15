@@ -1,6 +1,6 @@
 # Students Management Domain - ThinkEnglish
 
-> Orientation guide for the Students domain. For deep dives, see the specialist agent and skill.
+> Orientation guide and navigator for the Students domain. Each subfolder has its own detailed CLAUDE.md.
 
 ## Quick Reference
 
@@ -24,51 +24,65 @@ Uses **flow-based organization** (by route/page) for better navigability.
 
 ```
 students/
-├── CLAUDE.md                    # This file (orientation)
-├── studentsSlice.ts             # Redux slice (dual-state pattern)
-├── _shared/                     # Shared across all pages
-│   ├── components/              # StudentLoading, StudentEmptyState
-│   ├── hooks/                   # useStudents, useStudentFilters, useInitializeStudents
-│   └── utils/                   # Student utilities
-├── list-page/                   # /students route
-│   ├── StudentTable.tsx         # Table view
-│   ├── StudentCard.tsx          # Card view
-│   ├── components/              # StudentFilters, StudentPageHeader, ClassNameCell
-│   ├── dialogs/                 # CreateStudentSheet
-│   └── hooks/                   # useStudentsListPage
-├── detail-page/                 # /students/:id route
-│   ├── StudentProfilePage.tsx   # Main detail page
-│   ├── useStudentPage.ts        # Detail page state management
-│   ├── useStudentProfile.ts     # Profile data management
-│   ├── layout/                  # StudentHeader, StudentBasicInfo, StudentProfileHeader
-│   ├── dialogs/                 # EditStudentSheet
+├── CLAUDE.md                         # This file (overview + navigator)
+├── studentsSlice.ts                  # Redux slice (dual-state pattern)
+│
+├── _shared/                          # Shared across all pages
+│   ├── CLAUDE.md                     # Shared components, hooks docs
+│   ├── components/                   # StudentLoading, StudentEmptyState
+│   ├── hooks/                        # useStudents, useStudentFilters, useInitializeStudents
+│   └── utils/                        # Student utilities
+│
+├── list-page/                        # /students route
+│   ├── CLAUDE.md                     # List page documentation
+│   ├── StudentTable.tsx              # Table view
+│   ├── StudentCard.tsx               # Card view
+│   ├── components/                   # StudentFilters, StudentPageHeader
+│   ├── dialogs/                      # CreateStudentSheet
+│   └── hooks/                        # useStudentsListPage
+│
+├── detail-page/                      # /students/:id route
+│   ├── CLAUDE.md                     # Detail page documentation
+│   ├── StudentProfilePage.tsx        # Main profile page with tabs
+│   ├── useStudentPage.ts             # Detail page state
+│   ├── useStudentProfile.ts          # Profile data hook
+│   ├── layout/                       # StudentHeader, StudentProfileHeader, StudentBasicInfo
+│   ├── dialogs/                      # EditStudentSheet
 │   └── tabs/
-│       ├── overview/            # 5 profile cards (Contacts, Attendance, Performance, Billing, Homework)
-│       ├── details/             # Section-based editing (Personal, Guardian, Financial)
-│       │   ├── sections/        # EditableSectionWrapper, StudentInfoSection, GuardianInfoSection, FinancialInfoSection
-│       │   └── hooks/           # useSectionEdit
-│       ├── classes/             # StudentClassesTab
-│       ├── payments/            # StudentPaymentsTab
-│       ├── attendance/          # StudentAttendanceTab
-│       └── grades/              # StudentGradesTab
-├── form-page/                   # /students/new, /students/:id/edit routes
-│   ├── CreateStudentHeader.tsx  # Form page header
-│   ├── forms/                   # StudentForm, StudentFormContent, TabbedStudentFormContent
-│   │   └── tabs/                # StudentInformationTab, ParentGuardianTab, FinancialInformationTab
-│   └── hooks/                   # useStudentForm, useStudentFormPage
-└── schemas/                     # Zod validation schemas
+│       ├── overview/                 # 5 profile cards
+│       ├── details/                  # Section-based editing (unique to Students)
+│       ├── classes/                  # Class enrollment history
+│       ├── payments/                 # Payment history
+│       ├── attendance/               # Attendance records
+│       └── grades/                   # Grade records
+│
+├── form-page/                        # /students/new, /students/:id/edit routes
+│   ├── CLAUDE.md                     # Form page documentation
+│   ├── CreateStudentHeader.tsx       # Form page header
+│   ├── forms/                        # TabbedStudentFormContent
+│   │   └── tabs/                     # StudentInformationTab, ParentGuardianTab, FinancialInformationTab
+│   └── hooks/                        # useStudentForm, useStudentFormPage
+│
+└── schemas/                          # Zod validation schemas
+    ├── CLAUDE.md                     # Validation documentation
     └── studentValidators.ts
 ```
 
-## Key Files
+## Subfolder Documentation
+
+| Folder | CLAUDE.md | Description |
+|--------|-----------|-------------|
+| `_shared/` | [_shared/CLAUDE.md](_shared/CLAUDE.md) | Shared hooks, components, utilities |
+| `list-page/` | [list-page/CLAUDE.md](list-page/CLAUDE.md) | Student list with filters, table/card views |
+| `detail-page/` | [detail-page/CLAUDE.md](detail-page/CLAUDE.md) | Profile page with 6 tabs + section editing |
+| `form-page/` | [form-page/CLAUDE.md](form-page/CLAUDE.md) | Create/edit student forms |
+| `schemas/` | [schemas/CLAUDE.md](schemas/CLAUDE.md) | Zod validation schemas |
+
+## Key Files (Root Level)
 
 | Purpose | Path |
 |---------|------|
 | Redux Slice | `studentsSlice.ts` |
-| Primary Hook | `_shared/hooks/useStudents.ts` |
-| Detail Page Hook | `detail-page/useStudentPage.ts` |
-| Form Page Hook | `form-page/hooks/useStudentFormPage.ts` |
-| Section Edit Hook | `detail-page/tabs/details/hooks/useSectionEdit.ts` |
 | API Service | `../../services/studentApiService.ts` |
 | Types | `../../types/api/student.ts` |
 | Validation | `schemas/studentValidators.ts` |
@@ -100,68 +114,31 @@ The Overview tab displays five summary cards:
 4. **BillingCard** - Payment status
 5. **HomeworkCard** - Homework completion
 
-### 5. Discount Management Integration
-Students can have discounts assigned through `FinancialInfoSection`. Discount types are loaded via `loadDiscountTypes()` in `useStudents`.
-
-### 6. Unsaved Changes Warning
+### 5. Unsaved Changes Warning
 `useUnsavedChangesWarning` hook prevents navigation when sections have unsaved edits. `UnsavedChangesDialog` prompts before losing changes.
 
-## Anti-Patterns (NEVER DO)
+## API Endpoints Summary
 
-### State Management
+**CRUD (6):** Create, GetAll, GetById, Update, Delete, Search
+
+**Lazy Loading (2):** GetOverview, GetClasses
+
+**Utilities (1):** CheckEmailAvailable
+
+## Anti-Patterns (NEVER DO)
 
 | Wrong | Correct |
 |-------|---------|
 | Mix search results with all students | Use `isSearchMode` to differentiate |
 | Forget to update both arrays | Update both `students` and `searchResults` |
 | Use `useDispatch()` directly | Use `useAppDispatch()` from store/hooks.ts |
-
-### Data Loading
-
-| Wrong | Correct |
-|-------|---------|
-| Load all student data upfront | Lazy load per-tab |
-| Pass dropdown data from parent | Let components fetch their own data |
-
-### Section Editing
-
-| Wrong | Correct |
-|-------|---------|
-| Allow navigation with unsaved changes | Use `useUnsavedChangesWarning` |
-| Create new section component types | Reuse `EditableSectionWrapper` pattern |
-
-## Common Tasks
-
-| Task | Where to Start |
-|------|----------------|
-| Add new student field | Use `students-domain-specialist` agent |
-| Fix section editing issue | `detail-page/tabs/details/hooks/useSectionEdit.ts` |
-| Update overview card | `detail-page/tabs/overview/` |
-| Modify form validation | `schemas/studentValidators.ts` |
-| Add filter option | `list-page/components/StudentFilters.tsx` |
-| Update discount handling | `detail-page/tabs/details/sections/FinancialInfoSection.tsx` |
-
-## API Endpoints (9 Total)
-
-**CRUD:**
-- `POST /api/students` - Create student
-- `GET /api/students` - Get all students
-- `GET /api/students/{id}` - Get by ID
-- `PUT /api/students/{id}` - Update student
-- `DELETE /api/students/{id}` - Delete student
-- `GET /api/students/search` - Search with filters
-
-**Lazy Loading:**
-- `GET /api/students/{id}/overview` - Overview card data
-- `GET /api/students/{id}/classes` - Class enrollment history
-
-**Utilities:**
-- `GET /api/students/email-available` - Check email availability
+| Import from old paths | Import from flow-based paths (`_shared/`, `list-page/`, etc.) |
 
 ## Verification
 
 ```bash
 # Frontend
+cd think-english-ui
 npm run type-check
 npm run lint
 
@@ -176,7 +153,9 @@ grep -r ": any" --include="*.ts" src/domains/students
 - **Root Project:** [../../../../CLAUDE.md](../../../../CLAUDE.md)
 - **Architecture Patterns:** `.claude/skills/thinkienglish-conventions/SKILL.md`
 - **UI/UX Design:** `.claude/skills/ui-ux-reference/SKILL.md`
+- **Teachers Domain (reference):** [../teachers/CLAUDE.md](../teachers/CLAUDE.md)
+- **Classes Domain (reference):** [../classes/CLAUDE.md](../classes/CLAUDE.md)
 
 ---
 
-*Last updated: 2025-12-30*
+*Last updated: 2026-01-12*

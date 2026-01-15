@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/sheet';
 import SettingsTable, { SettingsTableColumn } from '../shared/SettingsTable';
 import LessonStatusForm, { LessonStatusFormData } from '../forms/LessonStatusForm';
-import ConfirmDialog from '@/components/common/ConfirmDialog';
 import lessonStatusApiService, { LessonStatus } from '@/services/lessonStatusApiService';
 import { LessonStatusColors } from '@/types/api/lesson';
 import { toast } from 'sonner';

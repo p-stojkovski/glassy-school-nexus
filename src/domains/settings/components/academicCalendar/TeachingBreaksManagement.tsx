@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Sheet,
@@ -8,7 +9,7 @@ import {
 } from '@/components/ui/sheet';
 import SettingsTable, { SettingsTableColumn } from '../shared/SettingsTable';
 import TeachingBreakForm from './forms/TeachingBreakForm';
-import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { ConfirmDialog } from '@/components/common/dialogs';
 import DateRangeDisplay from './shared/DateRangeDisplay';
 import YearsDropdown from '@/components/common/YearsDropdown';
 import academicCalendarApiService from '../../services/academicCalendarApi';
@@ -292,13 +293,16 @@ const TeachingBreaksManagement: React.FC = () => {
       <ConfirmDialog
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
-        onConfirm={confirmDeleteTeachingBreak}
+        intent="danger"
+        icon={Trash2}
         title="Delete Teaching Break"
         description={
           teachingBreakToDelete
             ? `Are you sure you want to delete "${teachingBreakToDelete.name}"? This action cannot be undone.`
             : 'Are you sure you want to delete this teaching break?'
         }
+        confirmText="Delete"
+        onConfirm={confirmDeleteTeachingBreak}
       />
     </>
   );

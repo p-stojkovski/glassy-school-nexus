@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 import {
   Table,
   TableBody,
@@ -67,6 +67,15 @@ const StudentTable: React.FC<StudentTableProps> = ({
   // Use prop if provided, otherwise use hook
   const canViewFinanceFromHook = useCanViewFinance();
   const canViewFinance = canViewFinanceProp ?? canViewFinanceFromHook;
+
+  // Memoized handlers to avoid recreating functions on every render
+  const handleRowClick = useCallback((student: Student) => {
+    onView(student);
+  }, [onView]);
+
+  const handlePageClick = useCallback((page: number) => {
+    onPageChange(page);
+  }, [onPageChange]);
 
   const renderPaginationItems = () => {
     const items = [];
@@ -149,43 +158,58 @@ const StudentTable: React.FC<StudentTableProps> = ({
     return items;
   };
 
-  // Get all obligations and balances from finance slice
-  const allObligations = useSelector((state: RootState) => state.finance.obligations);
-  const allPayments = useSelector((state: RootState) => state.finance.payments);
+  const allObligations = useAppSelector((state: RootState) => state.finance.obligations);
+  const allPayments = useAppSelector((state: RootState) => state.finance.payments);
 
-  // Helper to build discount info from student data
-  const buildDiscountInfo = (student: Student): StudentDiscountInfo | null => {
+  // Pre-compute obligation/payment maps by studentId for O(1) lookups
+  const studentFinanceMap = useMemo(() => {
+    const obligationsByStudent = new Map<string, typeof allObligations>();
+    const paymentsByStudent = new Map<string, typeof allPayments>();
+
+    allObligations.forEach(o => {
+      if (!obligationsByStudent.has(o.studentId)) {
+        obligationsByStudent.set(o.studentId, []);
+      }
+      obligationsByStudent.get(o.studentId)!.push(o);
+    });
+
+    allPayments.forEach(p => {
+      if (!paymentsByStudent.has(p.studentId)) {
+        paymentsByStudent.set(p.studentId, []);
+      }
+      paymentsByStudent.get(p.studentId)!.push(p);
+    });
+
+    return { obligationsByStudent, paymentsByStudent };
+  }, [allObligations, allPayments]);
+
+  const buildDiscountInfo = useCallback((student: Student): StudentDiscountInfo | null => {
     if (!student.hasDiscount) return null;
-
     return {
       hasDiscount: true,
       discountTypeName: student.discountTypeName || null,
       discountAmount: student.discountAmount || null,
     };
-  };
+  }, []);
 
-  // Helper to build payment obligation info from finance slice
-  const buildPaymentObligationInfo = (studentId: string): StudentPaymentObligationInfo | null => {
-    const obligations = allObligations.filter(o => o.studentId === studentId);
-    const payments = allPayments.filter(p => p.studentId === studentId);
+  const buildPaymentObligationInfo = useCallback((studentId: string): StudentPaymentObligationInfo | null => {
+    const obligations = studentFinanceMap.obligationsByStudent.get(studentId) || [];
+    const payments = studentFinanceMap.paymentsByStudent.get(studentId) || [];
 
     const totalObligations = obligations.reduce((sum, o) => sum + o.amount, 0);
     const totalPayments = payments.reduce((sum, p) => sum + p.amount, 0);
     const outstandingBalance = totalObligations - totalPayments;
 
-    const hasPending = outstandingBalance > 0;
-    if (!hasPending) return null;
+    if (outstandingBalance <= 0) return null;
 
-    const pendingCount = obligations.filter(
-      (o) => o.status !== ObligationStatus.Paid
-    ).length;
+    const pendingCount = obligations.filter(o => o.status !== ObligationStatus.Paid).length;
 
     return {
       hasPendingObligations: true,
       pendingCount,
       totalPendingAmount: outstandingBalance,
     };
-  };
+  }, [studentFinanceMap]);
 
   return (
     <motion.div
@@ -233,7 +257,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
               return (
                 <TableRow
                   key={student.id}
-                  onClick={() => onView(student)}
+                  onClick={() => handleRowClick(student)}
                   className="border-white/10 hover:bg-white/10 cursor-pointer transition-colors group"
                 >
                   {/* Student name + status + phone + join date */}

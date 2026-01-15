@@ -24,12 +24,13 @@ import {
 import StudentSelectionTrigger from '@/components/common/StudentSelectionTrigger';
 import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import { NativeTimeInput } from '@/components/common';
-import { ClassFormData } from '@/types/api/class';
+import { ClassFormData, ScheduleSlotDto, ClassResponse } from '@/types/api/class';
+import { StudentResponse } from '@/types/api/student';
 
 interface ScheduleEnrollmentTabProps {
   form: UseFormReturn<ClassFormData>;
-  students?: any[];
-  classes?: any[];
+  students?: StudentResponse[];
+  classes?: ClassResponse[];
 }
 
 const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
@@ -40,7 +41,7 @@ const ScheduleEnrollmentTab: React.FC<ScheduleEnrollmentTabProps> = ({
   const [isStudentPanelOpen, setIsStudentPanelOpen] = useState(false);
 
   // Function to check for schedule conflicts
-  const hasScheduleConflict = (currentIndex: number, schedule: any[]) => {
+  const hasScheduleConflict = (currentIndex: number, schedule: ScheduleSlotDto[]) => {
     if (!schedule || schedule.length <= 1) return false;
 
     const currentSlot = schedule[currentIndex];

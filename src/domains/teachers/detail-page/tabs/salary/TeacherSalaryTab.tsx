@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useTeacherSalary } from './useTeacherSalary';
 import SalarySummaryCards from './SalarySummaryCards';
 import SalaryBreakdownTable from './SalaryBreakdownTable';
 import SalaryEmptyState from './SalaryEmptyState';
 import { SalarySetupSheet } from './setup';
+import { BaseSalarySection } from './BaseSalarySection';
+import { fetchBaseSalary } from '@/domains/teachers/teachersSlice';
 
 interface TeacherSalaryTabProps {
   academicYearId?: string | null;
@@ -15,6 +18,11 @@ interface TeacherSalaryTabProps {
 
 export default function TeacherSalaryTab({ academicYearId, yearName }: TeacherSalaryTabProps) {
   const { teacherId } = useParams<{ teacherId: string }>();
+  const dispatch = useAppDispatch();
+
+  // Get teacher from Redux state
+  const selectedTeacher = useAppSelector((state) => state.teachers.selectedTeacher);
+  const employmentType = selectedTeacher?.employmentType || 'contract';
 
   // Dialog states
   const [showSetupSheet, setShowSetupSheet] = useState(false);
@@ -24,6 +32,13 @@ export default function TeacherSalaryTab({ academicYearId, yearName }: TeacherSa
     teacherId: teacherId!,
     academicYearId: academicYearId || undefined,
   });
+
+  // Fetch base salary when teacher is full-time and academic year is selected
+  useEffect(() => {
+    if (teacherId && academicYearId && employmentType === 'full_time') {
+      dispatch(fetchBaseSalary({ teacherId, academicYearId }));
+    }
+  }, [teacherId, academicYearId, employmentType, dispatch]);
 
   if (!teacherId) {
     return (
@@ -55,7 +70,16 @@ export default function TeacherSalaryTab({ academicYearId, yearName }: TeacherSa
   // Show empty state when no salary is configured
   if (noSalaryConfigured) {
     return (
-      <>
+      <div className="space-y-6">
+        {/* Base Salary Section (only for Full Time teachers) - Read Only */}
+        {employmentType === 'full_time' && academicYearId && (
+          <BaseSalarySection
+            teacherId={teacherId!}
+            academicYearId={academicYearId}
+            onSuccess={refresh}
+          />
+        )}
+
         <SalaryEmptyState
           onSetupClick={() => setShowSetupSheet(true)}
           yearName={yearName}
@@ -69,7 +93,7 @@ export default function TeacherSalaryTab({ academicYearId, yearName }: TeacherSa
             onSuccess={refresh}
           />
         )}
-      </>
+      </div>
     );
   }
 
@@ -83,7 +107,16 @@ export default function TeacherSalaryTab({ academicYearId, yearName }: TeacherSa
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
+      {/* Base Salary Section (only for Full Time teachers) - Read Only */}
+      {employmentType === 'full_time' && academicYearId && (
+        <BaseSalarySection
+          teacherId={teacherId!}
+          academicYearId={academicYearId}
+          onSuccess={refresh}
+        />
+      )}
+
       {/* Summary Cards */}
       <SalarySummaryCards summary={salaryData.summary} />
 

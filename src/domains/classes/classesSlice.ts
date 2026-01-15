@@ -167,7 +167,9 @@ const classesSlice = createSlice({
       state.errors[action.payload] = null;
     },
     clearAllErrors(state) {
-      Object.keys(state.errors).forEach(k => (state.errors as any)[k] = null);
+      (Object.keys(state.errors) as Array<keyof ErrorStates>).forEach(k => {
+        state.errors[k] = null;
+      });
     },
 
     // search

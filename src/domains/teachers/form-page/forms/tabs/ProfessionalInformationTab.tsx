@@ -16,7 +16,7 @@ interface ProfessionalInformationTabProps {
 
 const ProfessionalInformationTab: React.FC<ProfessionalInformationTabProps> = ({ form }) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-lg">
       <FormField
         control={form.control}
         name="notes"

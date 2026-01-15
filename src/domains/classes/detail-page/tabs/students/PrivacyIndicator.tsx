@@ -1,5 +1,6 @@
 import React from 'react';
 import { StudentDiscountInfo, StudentPaymentObligationInfo } from '@/types/api/class';
+import { Amount } from '@/components/ui/amount';
 
 interface DiscountIndicatorProps {
   discount?: StudentDiscountInfo | null;
@@ -61,21 +62,13 @@ export const PaymentObligationIndicator: React.FC<PaymentObligationIndicatorProp
     ? 'text-yellow-400'
     : 'text-slate-400';
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount) + ' MKD';
-  };
-
-  // Format: "168 MKD due" or "3 pending" if multiple obligations
-  const displayText = count === 1
-    ? `${formatCurrency(totalAmount)} due`
-    : `${count} pending`;
-
   return (
     <span className={`${colorClass} text-sm ${className}`}>
-      {displayText}
+      {count === 1 ? (
+        <><Amount value={totalAmount} size="sm" className={colorClass} /> due</>
+      ) : (
+        `${count} pending`
+      )}
     </span>
   );
 };

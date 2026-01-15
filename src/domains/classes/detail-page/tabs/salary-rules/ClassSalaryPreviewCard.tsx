@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import { Amount } from '@/components/ui/amount';
 import { ClassSalaryPreview } from '@/domains/classes/_shared/types/salaryRule.types';
 
 interface ClassSalaryPreviewCardProps {
@@ -49,13 +50,6 @@ const ClassSalaryPreviewCard: React.FC<ClassSalaryPreviewCardProps> = ({
   onMonthChange,
   onRetry,
 }) => {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('mk-MK', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) + ' MKD';
-  };
-
   const getMonthName = (month: number): string => {
     return MONTHS.find((m) => m.value === month)?.label || '';
   };
@@ -157,9 +151,7 @@ const ClassSalaryPreviewCard: React.FC<ClassSalaryPreviewCardProps> = ({
 
               <div className="flex items-center gap-2">
                 <span className="text-white/60">Rate:</span>
-                <span className="font-semibold text-white">
-                  {formatCurrency(preview.rateApplied)}
-                </span>
+                <Amount value={preview.rateApplied} weight="semibold" className="text-white" />
                 <span className="text-white/50">({preview.rateTierDescription})</span>
               </div>
 
@@ -167,9 +159,7 @@ const ClassSalaryPreviewCard: React.FC<ClassSalaryPreviewCardProps> = ({
 
               <div className="flex items-center gap-2">
                 <span className="text-blue-300 font-medium">Estimated:</span>
-                <span className="font-bold text-blue-200">
-                  {formatCurrency(preview.estimatedAmount)}
-                </span>
+                <Amount value={preview.estimatedAmount} weight="bold" className="text-blue-200" />
               </div>
             </div>
           </div>

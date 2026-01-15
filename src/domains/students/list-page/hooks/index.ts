@@ -2,4 +2,4 @@
  * List Page Hooks
  */
 
-export { useStudentsListPage, type StudentViewMode } from './useStudentsListPage';
+export { useStudentsListPage } from './useStudentsListPage';

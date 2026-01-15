@@ -7,15 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams } from 'react-router-dom';
 import { RotateCcw } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { ActionDialog } from '@/components/common/dialogs';
 import {
   Form,
   FormControl,
@@ -38,8 +30,9 @@ import {
   reopenSalarySchema,
   type ReopenSalaryFormData,
 } from '../schemas/salaryDialogSchemas';
-import { formatCurrency, formatPeriodFull } from '@/utils/formatters';
-import type { SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
+import { formatPeriodFull } from '@/utils/formatters';
+import { Amount } from '@/components/ui/amount';
+import type { SalaryCalculation, SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
 
 interface ReopenSalaryDialogProps {
   open: boolean;
@@ -95,8 +88,24 @@ export const ReopenSalaryDialog: React.FC<ReopenSalaryDialogProps> = ({
 
       const result = await reopenSalaryCalculation(teacherId, calculation.calculationId, request);
 
+      // Transform SalaryCalculationDetail to SalaryCalculation format
+      const updatedCalculation: SalaryCalculation = {
+        id: result.calculationId,
+        teacherId: result.teacherId,
+        teacherName: '', // Not included in detail response, will be updated from list
+        academicYearId: result.academicYearId,
+        periodStart: result.periodStart,
+        periodEnd: result.periodEnd,
+        calculatedAmount: result.calculatedAmount,
+        approvedAmount: result.approvedAmount,
+        status: result.status,
+        approvedAt: result.approvedAt,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+      };
+
       // Update Redux state
-      dispatch(updateSalaryCalculation(result.calculation));
+      dispatch(updateSalaryCalculation(updatedCalculation));
 
       toast({
         title: 'Salary calculation reopened',
@@ -127,18 +136,19 @@ export const ReopenSalaryDialog: React.FC<ReopenSalaryDialogProps> = ({
   if (!calculation) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1f2e] border-white/10 max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white">
-            <RotateCcw className="w-5 h-5 text-orange-400" />
-            Reopen Salary Calculation
-          </DialogTitle>
-          <DialogDescription className="text-white/60">
-            Reopen an approved calculation for revision. This will change its status back to pending.
-          </DialogDescription>
-        </DialogHeader>
-
+    <ActionDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      intent="warning"
+      size="md"
+      icon={RotateCcw}
+      title="Reopen Salary Calculation"
+      description="Reopen an approved calculation for revision. This will change its status back to pending."
+      confirmText="Reopen"
+      onConfirm={form.handleSubmit(onSubmit)}
+      isLoading={loading}
+    >
+      <div className="space-y-4">
         <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-2">
           <div className="flex justify-between items-center">
             <span className="text-sm text-white/70">Period:</span>
@@ -148,61 +158,40 @@ export const ReopenSalaryDialog: React.FC<ReopenSalaryDialogProps> = ({
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-white/70">Approved Amount:</span>
-            <span className="text-sm text-white font-medium">
-              {calculation.approvedAmount !== null
-                ? formatCurrency(calculation.approvedAmount)
-                : '-'}
-            </span>
+            {calculation.approvedAmount !== null ? (
+              <Amount value={calculation.approvedAmount} size="sm" weight="medium" className="text-white" />
+            ) : (
+              <span className="text-sm text-white font-medium">-</span>
+            )}
           </div>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="reason"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white/80">
-                    Reason for Reopening <span className="text-red-400">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      disabled={loading}
-                      className="bg-white/5 border-white/20 text-white min-h-[100px] resize-none"
-                      placeholder="Explain why this calculation needs to be reopened..."
-                    />
-                  </FormControl>
-                  <FormDescription className="text-white/50 text-xs">
-                    Required (minimum 10 characters, maximum 500 characters)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={loading}
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                {loading ? 'Reopening...' : 'Reopen'}
-              </Button>
-            </DialogFooter>
-          </form>
+          <FormField
+            control={form.control}
+            name="reason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white/80">
+                  Reason for Reopening <span className="text-red-400">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    disabled={loading}
+                    className="bg-white/5 border-white/20 text-white min-h-[100px] resize-none"
+                    placeholder="Explain why this calculation needs to be reopened..."
+                  />
+                </FormControl>
+                <FormDescription className="text-white/50 text-xs">
+                  Required (minimum 10 characters, maximum 500 characters)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </Form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </ActionDialog>
   );
 };
