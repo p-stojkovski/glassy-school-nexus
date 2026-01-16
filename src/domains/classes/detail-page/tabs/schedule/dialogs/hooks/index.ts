@@ -1,0 +1,1 @@
+export { useScheduleSlotSemesters } from './useScheduleSlotSemesters';

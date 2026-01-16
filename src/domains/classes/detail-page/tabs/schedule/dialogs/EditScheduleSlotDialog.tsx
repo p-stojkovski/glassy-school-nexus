@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Calendar, Trash2, AlertTriangle, Info } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Calendar, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ActionDialog } from '@/components/common/dialogs';
 import {
@@ -10,26 +9,17 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { TimeCombobox } from '@/components/common';
-import SemestersDropdown from '@/components/common/SemestersDropdown';
 import { classApiService } from '@/services/classApiService';
-import { academicCalendarApiService } from '@/services/academicCalendarApiService';
 import { UpdateScheduleSlotRequest } from '@/types/api/scheduleSlot';
 import { ScheduleSlotDto, ClassBasicInfoResponse } from '@/types/api/class';
 import { ExistingScheduleOverlapInfo, ScheduleConflictInfo } from '@/types/api/scheduleValidation';
-import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
 import { toast } from 'sonner';
+
+import { DayTimeFields, SemesterSection } from './components';
+import { useScheduleSlotSemesters } from './hooks';
 
 interface EditScheduleSlotDialogProps {
   open: boolean;
@@ -49,18 +39,23 @@ interface FormData {
   semesterId: string | null;
 }
 
-const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
 export function EditScheduleSlotDialog({ open, onOpenChange, classId, classData, slot, onSuccess, onDelete }: EditScheduleSlotDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [conflictInfo, setConflictInfo] = useState<ScheduleConflictInfo | null>(null);
   const [existingOverlap, setExistingOverlap] = useState<ExistingScheduleOverlapInfo | null>(null);
 
-  // Semester state
-  const [semesters, setSemesters] = useState<AcademicSemesterResponse[]>([]);
-  const [selectedSemesterId, setSelectedSemesterId] = useState<string | null>(null);
-  const [loadingSemesters, setLoadingSemesters] = useState(false);
+  // Use semester hook for fetching and managing semester state
+  const {
+    semesters,
+    selectedSemesterId,
+    setSelectedSemesterId,
+    loadingSemesters,
+  } = useScheduleSlotSemesters({
+    academicYearId: classData?.academicYearId,
+    isOpen: open,
+    initialSemesterId: slot?.semesterId || null,
+  });
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -83,34 +78,10 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, classData,
         semesterId: slot.semesterId || null,
       });
       setSelectedSemesterId(slot.semesterId || null);
-      // Clear validation state when slot changes
       setConflictInfo(null);
       setExistingOverlap(null);
     }
-  }, [slot, form]);
-
-  // Fetch semesters for the class's academic year
-  useEffect(() => {
-    if (!classData?.academicYearId || !open) return;
-
-    const fetchSemesters = async () => {
-      setLoadingSemesters(true);
-      try {
-        const semestersList = await academicCalendarApiService.getSemestersForYear(
-          classData.academicYearId
-        );
-        // Filter out deleted semesters
-        const activeSemesters = semestersList.filter((s) => !s.isDeleted);
-        setSemesters(activeSemesters);
-      } catch (err) {
-        console.error('Failed to load semesters:', err);
-      } finally {
-        setLoadingSemesters(false);
-      }
-    };
-
-    fetchSemesters();
-  }, [classData?.academicYearId, open]);
+  }, [slot, form, setSelectedSemesterId]);
 
   // Sync selectedSemesterId with form
   useEffect(() => {
@@ -147,7 +118,7 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, classData,
           }],
         });
 
-        // Filter out overlaps that are the current slot being edited (same slotId)
+        // Filter out overlaps that are the current slot being edited
         const filteredOverlaps = response.existingScheduleOverlap?.overlaps.filter(
           overlap => overlap.scheduleSlotId !== slot.id
         ) || [];
@@ -164,7 +135,6 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, classData,
       }
     };
 
-    // Debounce the validation
     const timeoutId = setTimeout(validateChanges, 500);
     return () => clearTimeout(timeoutId);
   }, [classId, slot, watchedDay, watchedStart, watchedEnd, scheduleChanged, open]);
@@ -188,7 +158,6 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, classData,
 
       const response = await classApiService.updateScheduleSlot(classId, slot.id, request);
 
-      // Show success message
       if (response.updatedFutureLessonsCount > 0) {
         toast.success(
           `Schedule updated! ${response.updatedFutureLessonsCount} future lesson(s) updated with new times.`,
@@ -225,128 +194,29 @@ export function EditScheduleSlotDialog({ open, onOpenChange, classId, classData,
     >
       <Form {...form}>
         <form className="space-y-4">
-          {/* Day of Week */}
-          <FormField
+          {/* Day of Week and Time Range */}
+          <DayTimeFields
             control={form.control}
-            name="dayOfWeek"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-white">Day of Week</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="bg-gray-900 border-white/20">
-                    {DAYS_OF_WEEK.map((day) => (
-                      <SelectItem key={day} value={day} className="text-white hover:bg-white/10 focus:bg-white/10">
-                        {day}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+            setValue={form.setValue}
+            getValues={form.getValues}
+            setError={form.setError}
+            clearErrors={form.clearErrors}
+            watch={form.watch}
+            autoEndTime={false}
           />
 
-          {/* Time Range */}
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="startTime"
-              render={({ field }) => (
-                <FormItem>
-                  <TimeCombobox
-                    label="Start Time"
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="9:00 AM"
-                    startHour={7}
-                    endHour={21}
-                    intervalMinutes={30}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="endTime"
-              render={({ field }) => (
-                <FormItem>
-                  <TimeCombobox
-                    label="End Time"
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="10:00 AM"
-                    min={form.watch('startTime')}
-                    startHour={7}
-                    endHour={21}
-                    intervalMinutes={30}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
           {/* Semester Assignment */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <FormLabel className="text-white text-sm font-medium">Change Semester Assignment</FormLabel>
-              {selectedSemesterId ? (
-                <Badge variant="outline" className="text-xs text-blue-400 border-blue-400/50">
-                  {semesters.find(s => s.id === selectedSemesterId)?.name || 'Semester'}
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-xs text-purple-400 border-purple-400/50">
-                  All Semesters
-                </Badge>
-              )}
-            </div>
-            <SemestersDropdown
-              academicYearId={classData?.academicYearId}
-              value={selectedSemesterId || ''}
-              onValueChange={(id) => setSelectedSemesterId(id || null)}
-              placeholder="All semesters (Global)"
-              disabled={loadingSemesters || !classData?.academicYearId}
-              showDateRangeInfo={true}
-              onError={(message) => {
-                console.error('Failed to load semesters:', message);
-              }}
-            />
-            {!classData?.academicYearId && (
-              <div className="text-xs text-red-300 mt-2">
-                This class has no academic year. Semester selection is disabled.
-              </div>
-            )}
-            {classData?.academicYearId && !loadingSemesters && semesters.length === 0 && (
-              <div className="text-xs text-white/60 mt-2">
-                No semesters defined for this academic year. Create semesters in Academic Calendar settings.
-              </div>
-            )}
-            {selectedSemesterId && selectedSemesterId !== (slot?.semesterId || null) && (
-              <div className="text-xs text-amber-300 flex items-start gap-2 mt-2">
-                <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span>This schedule will no longer apply to other semesters</span>
-              </div>
-            )}
-            {!selectedSemesterId && (slot?.semesterId || null) && (
-              <div className="text-xs text-amber-300 flex items-start gap-2 mt-2">
-                <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span>This schedule will apply to all semesters</span>
-              </div>
-            )}
-            {!!slot?.pastLessonCount && slot.pastLessonCount > 0 && (
-              <div className="text-xs text-white/60 flex items-start gap-2 mt-1">
-                <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span>{slot.pastLessonCount} past lesson{slot.pastLessonCount !== 1 ? 's' : ''} will remain associated with their original semester</span>
-              </div>
-            )}
-          </div>
+          <SemesterSection
+            academicYearId={classData?.academicYearId}
+            selectedSemesterId={selectedSemesterId}
+            onSemesterChange={setSelectedSemesterId}
+            loadingSemesters={loadingSemesters}
+            semesters={semesters}
+            label="Change Semester Assignment"
+            showBadge={true}
+            originalSemesterId={slot?.semesterId || null}
+            pastLessonCount={slot?.pastLessonCount}
+          />
 
           {/* Update Future Lessons Option */}
           {timesChanged && (

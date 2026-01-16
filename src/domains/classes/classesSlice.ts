@@ -253,4 +253,20 @@ export const {
   resetClassesState,
 } = classesSlice.actions;
 
+// Selectors
+export const selectClasses = (state: { classes: ClassesState }) => state.classes.classes;
+export const selectSearchResults = (state: { classes: ClassesState }) => state.classes.searchResults;
+export const selectSelectedClass = (state: { classes: ClassesState }) => state.classes.selectedClass;
+export const selectLoading = (state: { classes: ClassesState }) => state.classes.loading;
+export const selectErrors = (state: { classes: ClassesState }) => state.classes.errors;
+export const selectSearchQuery = (state: { classes: ClassesState }) => state.classes.searchQuery;
+export const selectSearchParams = (state: { classes: ClassesState }) => state.classes.searchParams;
+export const selectIsSearchMode = (state: { classes: ClassesState }) => state.classes.isSearchMode;
+export const selectSalaryRules = (state: { classes: ClassesState }) => state.classes.salaryRules.items;
+export const selectSalaryPreview = (state: { classes: ClassesState }) => state.classes.salaryPreview.data;
+
+// Display data selector (search results if in search mode, otherwise all classes)
+export const selectDisplayClasses = (state: { classes: ClassesState }) =>
+  state.classes.isSearchMode ? state.classes.searchResults : state.classes.classes;
+
 export default classesSlice.reducer;
