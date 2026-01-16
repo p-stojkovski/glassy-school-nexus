@@ -11,6 +11,9 @@ import {
   clearSalaryAuditLogs,
   setLoadingState,
   setError,
+  selectSalaryCalculationDetail,
+  selectLoading,
+  selectErrors,
 } from '@/domains/teachers/teachersSlice';
 import { getSalaryCalculation, getTeacherById } from '@/services/teacherApiService';
 import type { SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
@@ -56,13 +59,9 @@ export const useTeacherSalaryCalculationDetail = ({
   const [teacherName, setTeacherName] = useState('Loading...');
   const [currentEmploymentType, setCurrentEmploymentType] = useState<'full_time' | 'contract'>('contract');
 
-  const detail = useAppSelector((state) => state.teachers.salaryCalculationDetail);
-  const loading = useAppSelector(
-    (state) => state.teachers.loading.fetchingSalaryCalculationDetail
-  );
-  const error = useAppSelector(
-    (state) => state.teachers.errors.fetchSalaryCalculationDetail
-  );
+  const detail = useAppSelector(selectSalaryCalculationDetail);
+  const loading = useAppSelector(selectLoading).fetchingSalaryCalculationDetail;
+  const error = useAppSelector(selectErrors).fetchSalaryCalculationDetail;
 
   const fetchDetail = useCallback(async () => {
     if (!teacherId || !calculationId) return;
@@ -84,9 +83,9 @@ export const useTeacherSalaryCalculationDetail = ({
       setTeacherName(teacherData.name);
       setCurrentEmploymentType(teacherData.employmentType);
       dispatch(setSalaryCalculationDetail(calculationData));
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err?.message || 'Failed to fetch salary calculation detail';
+        err instanceof Error ? err.message : 'Failed to fetch salary calculation detail';
       dispatch(
         setError({ operation: 'fetchSalaryCalculationDetail', error: errorMessage })
       );

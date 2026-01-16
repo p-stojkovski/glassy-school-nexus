@@ -512,6 +512,34 @@ export const {
 
 export default teachersSlice.reducer;
 
-// Selectors
+// ════════════════════════════════════════════════════════════════════════
+// SELECTORS
+// ════════════════════════════════════════════════════════════════════════
+
+// Data selectors
+export const selectTeachers = (state: { teachers: TeachersState }) => state.teachers.teachers;
+export const selectSearchResults = (state: { teachers: TeachersState }) => state.teachers.searchResults;
+export const selectSelectedTeacher = (state: { teachers: TeachersState }) => state.teachers.selectedTeacher;
+export const selectSubjects = (state: { teachers: TeachersState }) => state.teachers.subjects;
+
+// Loading selectors
+export const selectLoading = (state: { teachers: TeachersState }) => state.teachers.loading;
+
+// Error selectors
 export const selectErrors = (state: { teachers: TeachersState }) => state.teachers.errors;
+
+// Search selectors
+export const selectSearchQuery = (state: { teachers: TeachersState }) => state.teachers.searchQuery;
+export const selectSearchParams = (state: { teachers: TeachersState }) => state.teachers.searchParams;
+export const selectIsSearchMode = (state: { teachers: TeachersState }) => state.teachers.isSearchMode;
+
+// Salary calculation selectors
+export const selectSalaryCalculations = (state: { teachers: TeachersState }) => state.teachers.salaryCalculations;
+export const selectSalaryCalculationDetail = (state: { teachers: TeachersState }) => state.teachers.salaryCalculationDetail;
+export const selectSalaryPreview = (state: { teachers: TeachersState }) => state.teachers.salaryPreview;
+export const selectSalaryAuditLogs = (state: { teachers: TeachersState }) => state.teachers.salaryAuditLogs;
+
+// Base salary selectors
+export const selectBaseSalary = (state: { teachers: TeachersState }) => state.teachers.baseSalary;
+export const selectBaseSalaryHistory = (state: { teachers: TeachersState }) => state.teachers.baseSalaryHistory;
 

@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import GlassCard from '@/components/common/GlassCard';
-import { ClassResponse, ScheduleSlotDto } from '@/types/api/class';
+import { ClassResponse } from '@/types/api/class';
 import { formatSchedule } from '@/utils/scheduleFormatter';
 
 interface Props {

@@ -22,7 +22,7 @@ import {
 import DatePicker from '@/components/common/DatePicker';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useToast } from '@/hooks/use-toast';
-import { setBaseSalary, setSelectedTeacher } from '@/domains/teachers/teachersSlice';
+import { setBaseSalary, setSelectedTeacher, selectLoading } from '@/domains/teachers/teachersSlice';
 import { updateTeacher, getSalaryCalculations, getEmploymentSettings } from '@/services/teacherApiService';
 import { BASE_SALARY_VALIDATION } from '@/types/api/teacherBaseSalary';
 import type { Teacher } from '@/domains/teachers/teachersSlice';
@@ -31,7 +31,7 @@ import {
   employmentSettingsSchema,
   type EmploymentSettingsFormData,
   getDefaultEffectiveDate,
-} from '../schemas/employmentSettingsSchema';
+} from '@/domains/teachers/schemas';
 
 interface EmploymentSettingsSheetProps {
   isOpen: boolean;
@@ -75,7 +75,7 @@ const EmploymentSettingsSheet: React.FC<EmploymentSettingsSheetProps> = ({
   const { toast } = useToast();
 
   // Redux state
-  const settingBaseSalary = useAppSelector((state) => state.teachers.loading.settingBaseSalary);
+  const settingBaseSalary = useAppSelector(selectLoading).settingBaseSalary;
 
   // Local state
   const [isSubmitting, setIsSubmitting] = useState(false);

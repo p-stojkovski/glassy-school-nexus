@@ -1,6 +1,6 @@
+// Re-exported from centralized teachers/schemas/ location
 export {
   employmentSettingsSchema,
   type EmploymentSettingsFormData,
-  getEffectiveDate,
-  getMonthDisplay,
-} from './employmentSettingsSchema';
+  getDefaultEffectiveDate,
+} from '@/domains/teachers/schemas';

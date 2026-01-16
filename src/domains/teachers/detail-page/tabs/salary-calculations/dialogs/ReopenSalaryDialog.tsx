@@ -29,7 +29,7 @@ import { reopenSalaryCalculation } from '@/services/teacherApiService';
 import {
   reopenSalarySchema,
   type ReopenSalaryFormData,
-} from '../schemas/salaryDialogSchemas';
+} from '@/domains/teachers/schemas';
 import { formatPeriodFull } from '@/utils/formatters';
 import { Amount } from '@/components/ui/amount';
 import type { SalaryCalculation, SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
@@ -115,9 +115,9 @@ export const ReopenSalaryDialog: React.FC<ReopenSalaryDialogProps> = ({
 
       onOpenChange(false);
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err?.message || 'Failed to reopen salary calculation';
+        err instanceof Error ? err.message : 'Failed to reopen salary calculation';
       dispatch(
         setError({ operation: 'reopenSalaryCalculation', error: errorMessage })
       );

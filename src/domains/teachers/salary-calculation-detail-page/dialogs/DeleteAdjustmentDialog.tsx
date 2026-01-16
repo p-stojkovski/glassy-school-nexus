@@ -64,9 +64,9 @@ export const DeleteAdjustmentDialog: React.FC<DeleteAdjustmentDialogProps> = ({
 
       onOpenChange(false);
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err?.message || 'Failed to delete salary adjustment';
+        err instanceof Error ? err.message : 'Failed to delete salary adjustment';
       dispatch(
         setError({ operation: 'deleteSalaryAdjustment', error: errorMessage })
       );

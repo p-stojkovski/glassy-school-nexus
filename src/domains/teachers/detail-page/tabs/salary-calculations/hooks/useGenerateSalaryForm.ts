@@ -17,7 +17,7 @@ import { generateSalaryCalculation } from '@/services/teacherApiService';
 import {
   generateSalarySchema,
   type GenerateSalaryFormData,
-} from '../schemas/salaryDialogSchemas';
+} from '@/domains/teachers/schemas';
 import type { SalaryCalculation } from '@/domains/teachers/_shared/types/salaryCalculation.types';
 import { MONTHS } from '@/domains/teachers/_shared/constants';
 

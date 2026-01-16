@@ -9,7 +9,7 @@ import SalaryBreakdownTable from './SalaryBreakdownTable';
 import SalaryEmptyState from './SalaryEmptyState';
 import { SalarySetupSheet } from './setup';
 import { BaseSalarySection } from './BaseSalarySection';
-import { fetchBaseSalary } from '@/domains/teachers/teachersSlice';
+import { fetchBaseSalary, selectSelectedTeacher } from '@/domains/teachers/teachersSlice';
 
 interface TeacherSalaryTabProps {
   academicYearId?: string | null;
@@ -21,7 +21,7 @@ export default function TeacherSalaryTab({ academicYearId, yearName }: TeacherSa
   const dispatch = useAppDispatch();
 
   // Get teacher from Redux state
-  const selectedTeacher = useAppSelector((state) => state.teachers.selectedTeacher);
+  const selectedTeacher = useAppSelector(selectSelectedTeacher);
   const employmentType = selectedTeacher?.employmentType || 'contract';
 
   // Dialog states

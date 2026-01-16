@@ -1,5 +1,12 @@
 /**
  * Salary calculation schemas exports
- * Phase 7.4
+ * Re-exported from centralized teachers/schemas/ location
  */
-export * from './salaryDialogSchemas';
+export {
+  generateSalarySchema,
+  type GenerateSalaryFormData,
+  approveSalarySchema,
+  type ApproveSalaryFormData,
+  reopenSalarySchema,
+  type ReopenSalaryFormData,
+} from '@/domains/teachers/schemas';

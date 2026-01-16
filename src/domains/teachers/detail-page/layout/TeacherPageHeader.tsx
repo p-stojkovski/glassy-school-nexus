@@ -73,10 +73,11 @@ const TeacherPageHeader: React.FC<TeacherPageHeaderProps> = ({
       });
       setShowDeleteDialog(false);
       navigate('/teachers');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to delete teacher. Please try again.';
       toast({
         title: 'Error',
-        description: error.message || 'Failed to delete teacher. Please try again.',
+        description: message,
         variant: 'destructive',
       });
     } finally {

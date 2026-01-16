@@ -8,7 +8,7 @@
 |----------|---------|
 | **Agent:** `classes-domain-specialist` | Full-stack investigation, troubleshooting, implementation |
 | **Skill:** `classes-domain-reference` | Auto-injected quick reference during active work |
-| **Backend:** `think-english-api/src/Api/Features/Classes/` | 21 endpoints + 13 shared contract files |
+| **Backend:** `think-english-api/src/Api/Features/Classes/` | 26 endpoints + shared contract files |
 
 ## Domain Purpose
 
@@ -113,7 +113,7 @@ Dropdowns fetch their own data internally. Don't pass dropdown data from parent 
 ### 6. Multi-Tab Unsaved Changes
 Track unsaved changes across tabs with `registerTabUnsavedChanges()` to prevent data loss.
 
-## API Endpoints Summary
+## API Endpoints Summary (26 Total)
 
 **CRUD (8):** Create, Get, GetAll, Search, Update, UpdateBasicInfo, UpdateAdditionalDetails, Delete
 
@@ -124,6 +124,8 @@ Track unsaved changes across tabs with `registerTabUnsavedChanges()` to prevent 
 **Enrollment (1):** ManageEnrollments
 
 **Status (2):** Disable, Enable
+
+**Salary Rules (5):** GetSalaryRules, CreateSalaryRule, UpdateSalaryRule, DeleteSalaryRule, GetSalaryPreview
 
 ## Anti-Patterns (NEVER DO)
 
@@ -158,4 +160,4 @@ grep -r ": any" --include="*.ts" src/domains/classes
 
 ---
 
-*Last updated: 2026-01-12*
+*Last updated: 2026-01-15*

@@ -1,7 +1,7 @@
 import { DollarSign, Calculator, Percent, Wallet } from 'lucide-react';
 import { formatMKD } from '@/utils/formatters';
 import { SalaryBreakdown } from './useSalaryCalculations';
-import { TAX_RATES } from './salarySetupSchema';
+import { TAX_RATES } from '@/domains/teachers/schemas';
 
 interface SalaryPreviewCardsProps {
   breakdown: SalaryBreakdown | null;

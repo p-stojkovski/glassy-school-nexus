@@ -10,6 +10,9 @@ import {
   setLoadingState,
   setError,
   setSalaryAuditLogs,
+  selectSalaryAuditLogs,
+  selectLoading,
+  selectErrors,
 } from '@/domains/teachers/teachersSlice';
 import { getSalaryCalculation } from '@/services/teacherApiService';
 
@@ -23,9 +26,9 @@ export function useSalaryCalculationAuditLog({ isExpanded }: UseSalaryCalculatio
   const [hasFetched, setHasFetched] = useState(false);
 
   // Redux state
-  const auditLogs = useAppSelector((state) => state.teachers.salaryAuditLogs);
-  const loading = useAppSelector((state) => state.teachers.loading.fetchingSalaryAuditLog);
-  const error = useAppSelector((state) => state.teachers.errors.fetchSalaryAuditLog);
+  const auditLogs = useAppSelector(selectSalaryAuditLogs);
+  const loading = useAppSelector(selectLoading).fetchingSalaryAuditLog;
+  const error = useAppSelector(selectErrors).fetchSalaryAuditLog;
 
   // Fetch audit log (extracts from salary calculation detail)
   const fetchAuditLog = useCallback(async () => {
@@ -38,8 +41,8 @@ export function useSalaryCalculationAuditLog({ isExpanded }: UseSalaryCalculatio
       const data = await getSalaryCalculation(teacherId, calculationId);
       dispatch(setSalaryAuditLogs(data.auditLog));
       setHasFetched(true);
-    } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to load audit log';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load audit log';
       dispatch(setError({ operation: 'fetchSalaryAuditLog', error: errorMessage }));
     } finally {
       dispatch(setLoadingState({ operation: 'fetchingSalaryAuditLog', loading: false }));

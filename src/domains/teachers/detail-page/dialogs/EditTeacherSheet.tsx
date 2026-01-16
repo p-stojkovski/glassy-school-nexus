@@ -2,8 +2,7 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { UserCog } from 'lucide-react';
 import { FormSheet } from '@/components/common/sheets';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { RootState } from '@/store';
-import { updateTeacher as updateTeacherInStore } from '@/domains/teachers/teachersSlice';
+import { updateTeacher as updateTeacherInStore, selectSubjects } from '@/domains/teachers/teachersSlice';
 import { updateTeacher, getAllSubjects } from '@/services/teacherApiService';
 import { showSuccessMessage, TeacherErrorHandlers } from '@/utils/apiErrorHandler';
 import { validateAndPrepareTeacherData } from '@/utils/validation/teacherValidators';
@@ -39,7 +38,7 @@ const EditTeacherSheet: React.FC<EditTeacherSheetProps> = ({
   const [subjectsLoading, setSubjectsLoading] = useState(false);
 
   // Get subjects from store or fetch them
-  const storeSubjects = useAppSelector((state: RootState) => state.teachers.subjects);
+  const storeSubjects = useAppSelector(selectSubjects);
 
   // Load subjects if not in store
   useEffect(() => {

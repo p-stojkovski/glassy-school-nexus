@@ -21,7 +21,7 @@ import { setTeacherSalaryConfig } from '@/services/teacherApiService';
 import { toast } from 'sonner';
 
 import { formatMKD } from '@/utils/formatters';
-import { salarySetupSchema, SalarySetupFormData, SALARY_SETUP_CONSTANTS } from './salarySetupSchema';
+import { salarySetupSchema, type SalarySetupFormData, SALARY_SETUP_CONSTANTS } from '@/domains/teachers/schemas';
 import { useSalaryCalculations } from './useSalaryCalculations';
 import SalaryPreviewCards from './SalaryPreviewCards';
 

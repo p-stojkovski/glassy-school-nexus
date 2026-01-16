@@ -300,39 +300,11 @@ const teacher = await apiService.get<TeacherResponse>(TeacherApiPaths.BY_ID(id))
    * Search for teachers by name, email, or subject
    * @param searchParams - Search parameters
    * @returns Promise<TeacherResponse[]>
+   * @deprecated Use getAllTeachers(searchParams) instead - endpoints have been consolidated
    */
   async searchTeachers(searchParams: TeacherSearchParams = {}): Promise<TeacherResponse[]> {
-    try {
-      const params = new URLSearchParams();
-      
-      if (searchParams.searchTerm) {
-        params.append('searchTerm', searchParams.searchTerm);
-      }
-      
-      if (searchParams.subjectId) {
-        params.append('subjectId', searchParams.subjectId);
-      }
-
-      const queryString = params.toString();
-      const endpoint = queryString ? `${TeacherApiPaths.SEARCH}?${queryString}` : TeacherApiPaths.SEARCH;
-      
-      
-const raw = await apiService.get<any>(endpoint);
-      const teachers = normalizeListResponse<TeacherResponse>(raw);
-      return teachers;
-    } catch (error: any) {
-      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
-        // Check if it's invalid subject ID error
-        if (error.details?.detail?.includes('Subject ID')) {
-          throw makeApiError(error, 'Invalid subject ID format provided');
-        }
-        throw makeApiError(error, 'Invalid search parameters provided');
-      }
-      if (error.status === TeacherHttpStatus.UNAUTHORIZED) {
-        throw makeApiError(error, 'Authentication required to search teachers');
-      }
-      throw makeApiError(error, `Failed to search teachers: ${error.message || 'Unknown error'}`);
-    }
+    // Consolidated: search now uses the same endpoint as getAllTeachers
+    return this.getAllTeachers(searchParams);
   }
 
   /**

@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/table';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { teacherBaseSalaryService } from '@/services/teacherBaseSalaryService';
-import { setBaseSalaryHistory } from '@/domains/teachers/teachersSlice';
+import { setBaseSalaryHistory, selectBaseSalaryHistory } from '@/domains/teachers/teachersSlice';
 import { formatCurrency } from '@/utils/formatters';
 import type { TeacherBaseSalaryResponse } from '@/types/api/teacherBaseSalary';
 
@@ -38,7 +38,7 @@ export function BaseSalaryHistoryDialog({
   academicYearId,
 }: BaseSalaryHistoryDialogProps) {
   const dispatch = useAppDispatch();
-  const history = useAppSelector((state) => state.teachers.baseSalaryHistory);
+  const history = useAppSelector(selectBaseSalaryHistory);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

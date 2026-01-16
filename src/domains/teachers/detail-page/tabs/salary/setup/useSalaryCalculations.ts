@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { TAX_RATES, SALARY_SETUP_CONSTANTS } from './salarySetupSchema';
+import { TAX_RATES, SALARY_SETUP_CONSTANTS } from '@/domains/teachers/schemas';
 
 export interface ContributionBreakdown {
   pension: number;

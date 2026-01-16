@@ -21,10 +21,12 @@ For detailed domain-specific patterns, components, and workflows, see:
 
 - **[Class Management](src/domains/classes/CLAUDE.md)** - Classes, schedules, enrollment, student progress tracking
 - **[Student Management](src/domains/students/CLAUDE.md)** - Student profiles, guardians, financial info, discounts
+- **[Teacher Management](src/domains/teachers/CLAUDE.md)** - Teacher profiles, schedules, classes, lessons, salary calculations
 
 > **Domain-Specific Agents:** For domain work, use the specialized agent instead of `frontend-specialist`:
 > - **Classes Domain:** Use `classes-domain-specialist` for any work in `src/domains/classes/`
 > - **Students Domain:** Use `students-domain-specialist` for any work in `src/domains/students/`
+> - **Teachers Domain:** Use `teachers-domain-specialist` for any work in `src/domains/teachers/`
 >
 > These agents have full-stack context including backend endpoints, API contracts, and business rules. They supersede both `frontend-specialist` and `backend-specialist` for their respective domains.
 

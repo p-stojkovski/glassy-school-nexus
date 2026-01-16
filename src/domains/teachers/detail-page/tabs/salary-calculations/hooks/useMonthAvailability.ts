@@ -11,7 +11,7 @@ import { useMemo, useEffect, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { MONTHS } from '@/domains/teachers/_shared/constants';
 import type { SalaryCalculation } from '@/domains/teachers/_shared/types/salaryCalculation.types';
-import type { GenerateSalaryFormData } from '../schemas/salaryDialogSchemas';
+import type { GenerateSalaryFormData } from '@/domains/teachers/schemas';
 
 export interface UseMonthAvailabilityOptions {
   /**

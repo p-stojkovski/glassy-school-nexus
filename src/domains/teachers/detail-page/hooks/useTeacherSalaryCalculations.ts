@@ -9,6 +9,9 @@ import {
   setLoadingState,
   setError,
   setSalaryCalculations,
+  selectSalaryCalculations,
+  selectLoading,
+  selectErrors,
 } from '@/domains/teachers/teachersSlice';
 import { getSalaryCalculations } from '@/services/teacherApiService';
 import {
@@ -30,9 +33,9 @@ export function useTeacherSalaryCalculations({ academicYearId }: UseTeacherSalar
   const dispatch = useAppDispatch();
 
   // Redux state
-  const calculations = useAppSelector((state) => state.teachers.salaryCalculations.items);
-  const loading = useAppSelector((state) => state.teachers.loading.fetchingSalaryCalculations);
-  const error = useAppSelector((state) => state.teachers.errors.fetchSalaryCalculations);
+  const calculations = useAppSelector(selectSalaryCalculations).items;
+  const loading = useAppSelector(selectLoading).fetchingSalaryCalculations;
+  const error = useAppSelector(selectErrors).fetchSalaryCalculations;
 
   // Local filter state
   const [filters, setFilters] = useState<SalaryCalculationsFilters>({
@@ -59,8 +62,8 @@ export function useTeacherSalaryCalculations({ academicYearId }: UseTeacherSalar
 
       const data = await getSalaryCalculations(teacherId, apiFilters);
       dispatch(setSalaryCalculations(data));
-    } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to load salary calculations';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load salary calculations';
       dispatch(setError({ operation: 'fetchSalaryCalculations', error: errorMessage }));
     } finally {
       dispatch(setLoadingState({ operation: 'fetchingSalaryCalculations', loading: false }));

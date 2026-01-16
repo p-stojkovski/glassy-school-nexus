@@ -3,6 +3,7 @@ import { Calendar, History, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppSelector } from '@/store/hooks';
+import { selectBaseSalary, selectLoading } from '@/domains/teachers/teachersSlice';
 import { formatCurrency } from '@/utils/formatters';
 import { BaseSalaryHistoryDialog } from './BaseSalaryHistoryDialog';
 
@@ -15,8 +16,8 @@ interface BaseSalarySectionProps {
 export function BaseSalarySection({ teacherId, academicYearId }: BaseSalarySectionProps) {
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
 
-  const baseSalary = useAppSelector((state) => state.teachers.baseSalary);
-  const loading = useAppSelector((state) => state.teachers.loading.fetchingBaseSalary);
+  const baseSalary = useAppSelector(selectBaseSalary);
+  const loading = useAppSelector(selectLoading).fetchingBaseSalary;
 
   if (loading) {
     return (

@@ -31,7 +31,7 @@ import { createSalaryAdjustment } from '@/services/teacherApiService';
 import {
   addAdjustmentSchema,
   type AddAdjustmentFormData,
-} from '../schemas/addAdjustmentSchema';
+} from '@/domains/teachers/schemas';
 
 interface AddAdjustmentDialogProps {
   open: boolean;
@@ -100,9 +100,9 @@ export const AddAdjustmentDialog: React.FC<AddAdjustmentDialogProps> = ({
 
       onOpenChange(false);
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err?.message || 'Failed to add salary adjustment';
+        err instanceof Error ? err.message : 'Failed to add salary adjustment';
       dispatch(
         setError({ operation: 'createSalaryAdjustment', error: errorMessage })
       );

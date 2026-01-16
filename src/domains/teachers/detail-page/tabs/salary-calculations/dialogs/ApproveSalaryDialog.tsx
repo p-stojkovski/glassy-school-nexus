@@ -30,7 +30,7 @@ import { approveSalaryCalculation } from '@/services/teacherApiService';
 import {
   approveSalarySchema,
   type ApproveSalaryFormData,
-} from '../schemas/salaryDialogSchemas';
+} from '@/domains/teachers/schemas';
 import { formatCurrency, formatPeriodFull } from '@/utils/formatters';
 import { Amount } from '@/components/ui/amount';
 import type { SalaryCalculation, SalaryCalculationDetail } from '@/domains/teachers/_shared/types/salaryCalculation.types';
@@ -123,9 +123,9 @@ export const ApproveSalaryDialog: React.FC<ApproveSalaryDialogProps> = ({
 
       onOpenChange(false);
       onSuccess?.();
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err?.message || 'Failed to approve salary calculation';
+        err instanceof Error ? err.message : 'Failed to approve salary calculation';
       dispatch(
         setError({ operation: 'approveSalaryCalculation', error: errorMessage })
       );

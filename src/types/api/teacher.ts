@@ -116,7 +116,7 @@ export const TeacherApiPaths = {
   CLASSES_PAYMENT_SUMMARY: (id: string) => `/api/teachers/${id}/classes/payment-summary`,
   SCHEDULE: (id: string) => `/api/teachers/${id}/schedule`,
   STUDENTS: (id: string) => `/api/teachers/${id}/students`,
-  SEARCH: '/api/teachers/search',
+  // SEARCH endpoint removed - use BASE with searchTerm/subjectId query params instead
   SUBJECTS: '/api/subjects',
   EMAIL_AVAILABLE: '/api/teachers/email-available',
   EMPLOYMENT_SETTINGS: (id: string) => `/api/teachers/${id}/employment-settings`,

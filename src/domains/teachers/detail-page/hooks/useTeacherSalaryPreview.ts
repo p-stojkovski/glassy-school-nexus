@@ -10,6 +10,9 @@ import {
   setLoadingState,
   setError,
   setSalaryPreview,
+  selectSalaryPreview,
+  selectLoading,
+  selectErrors,
 } from '@/domains/teachers/teachersSlice';
 import { getTeacherSalaryPreview } from '@/services/teacherApiService';
 
@@ -28,9 +31,9 @@ export function useTeacherSalaryPreview({ isExpanded }: UseTeacherSalaryPreviewO
   const [hasFetched, setHasFetched] = useState(false);
 
   // Redux state
-  const preview = useAppSelector((state) => state.teachers.salaryPreview);
-  const loading = useAppSelector((state) => state.teachers.loading.fetchingSalaryPreview);
-  const error = useAppSelector((state) => state.teachers.errors.fetchSalaryPreview);
+  const preview = useAppSelector(selectSalaryPreview);
+  const loading = useAppSelector(selectLoading).fetchingSalaryPreview;
+  const error = useAppSelector(selectErrors).fetchSalaryPreview;
 
   // Fetch salary preview
   const fetchPreview = useCallback(async (year: number, month: number) => {
@@ -43,8 +46,8 @@ export function useTeacherSalaryPreview({ isExpanded }: UseTeacherSalaryPreviewO
       const data = await getTeacherSalaryPreview(teacherId, year, month);
       dispatch(setSalaryPreview(data));
       setHasFetched(true);
-    } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to load salary preview';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load salary preview';
       dispatch(setError({ operation: 'fetchSalaryPreview', error: errorMessage }));
     } finally {
       dispatch(setLoadingState({ operation: 'fetchingSalaryPreview', loading: false }));
