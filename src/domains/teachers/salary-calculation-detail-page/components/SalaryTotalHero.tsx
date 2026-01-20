@@ -117,8 +117,7 @@ export const SalaryTotalHero: React.FC<SalaryTotalHeroProps> = ({
           {detail.status === 'approved' && (
             <Button
               onClick={onReopen}
-              variant="outline"
-              className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 gap-2"
+              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold gap-2"
             >
               <RotateCcw className="w-4 h-4" />
               Reopen

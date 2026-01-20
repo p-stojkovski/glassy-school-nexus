@@ -81,10 +81,11 @@ export interface SettingsBreadcrumbContext {
  * Page types for the teacher domain
  */
 export type TeacherPageType =
-  | 'list'    // /teachers
-  | 'details' // /teachers/:teacherId
-  | 'create'  // /teachers/new
-  | 'edit';   // /teachers/:teacherId/edit
+  | 'list'          // /teachers
+  | 'details'       // /teachers/:teacherId
+  | 'create'        // /teachers/new
+  | 'edit'          // /teachers/:teacherId/edit
+  | 'salary-detail'; // /teachers/:teacherId/salary/:calculationId
 
 /**
  * Context data for teacher-related breadcrumbs
@@ -93,6 +94,10 @@ export interface TeacherBreadcrumbContext {
   teacherData?: {
     id: number;
     name: string;
+  } | null;
+  /** Salary calculation data for salary-detail page */
+  salaryData?: {
+    periodDisplay: string;
   } | null;
   pageType: TeacherPageType;
 }

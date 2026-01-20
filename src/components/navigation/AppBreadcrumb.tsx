@@ -21,7 +21,7 @@ interface AppBreadcrumbProps {
 const AppBreadcrumb: React.FC<AppBreadcrumbProps> = ({
   items,
   className = '',
-  showIcons = true,
+  showIcons = false,
   maxLabelWidth = '200px',
 }) => {
   if (items.length === 0) {

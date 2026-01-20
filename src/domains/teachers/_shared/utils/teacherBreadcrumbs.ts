@@ -14,6 +14,10 @@ export interface TeacherBreadcrumbContext {
     id: number;
     name: string;
   } | null;
+  /** Salary calculation data for salary-detail page */
+  salaryData?: {
+    periodDisplay: string;
+  } | null;
   /** The type of page being rendered */
   pageType: TeacherPageType;
 }
@@ -73,6 +77,24 @@ export function buildTeacherBreadcrumbs(
         label: teacherData?.name
           ? `Edit ${teacherData.name}`
           : 'Edit Teacher',
+        isCurrentPage: true,
+      });
+      break;
+
+    case 'salary-detail':
+      // Dashboard → Teachers → [Teacher Name] → Salary Calculations → [Period]
+      if (teacherData) {
+        items.push({
+          label: teacherData.name,
+          href: `/teachers/${teacherData.id}`,
+        });
+      }
+      items.push({
+        label: 'Salary Calculations',
+        href: teacherData ? `/teachers/${teacherData.id}?tab=salary` : undefined,
+      });
+      items.push({
+        label: context.salaryData?.periodDisplay ?? BREADCRUMB_PLACEHOLDER,
         isCurrentPage: true,
       });
       break;

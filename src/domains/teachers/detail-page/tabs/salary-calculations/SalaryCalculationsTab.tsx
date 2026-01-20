@@ -1,7 +1,6 @@
 /**
  * Salary Calculations Tab - Teacher Profile
- * Displays salary preview card and list of salary calculations with status filtering
- * Refactored: Components extracted for maintainability
+ * Displays list of salary calculations with status filtering
  */
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -14,13 +13,11 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import GlassCard from '@/components/common/GlassCard';
 import { SalaryCalculationStatus, type SalaryCalculation } from '@/domains/teachers/_shared/types/salaryCalculation.types';
 import { useTeacherSalaryCalculations } from '../../hooks/useTeacherSalaryCalculations';
-import { useTeacherSalaryPreview } from '../../hooks/useTeacherSalaryPreview';
 import { GenerateSalaryDialog } from './dialogs';
 import {
   SalaryCalculationsHeader,
   SalaryCalculationsTable,
   SalaryCalculationsEmptyState,
-  SalaryPreviewCollapsible,
 } from './components';
 
 interface SalaryCalculationsTabProps {
@@ -40,9 +37,6 @@ const SalaryCalculationsTab: React.FC<SalaryCalculationsTabProps> = ({ academicY
   // Dialog state management
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
 
-  // Collapsible state for salary preview
-  const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
-
   // Salary calculations list
   const {
     calculations,
@@ -52,18 +46,6 @@ const SalaryCalculationsTab: React.FC<SalaryCalculationsTabProps> = ({ academicY
     setFilters,
     refetch,
   } = useTeacherSalaryCalculations({ academicYearId });
-
-  // Salary preview (lazy loaded when expanded)
-  const {
-    preview,
-    loading: previewLoading,
-    error: previewError,
-    selectedYear,
-    selectedMonth,
-    onYearChange,
-    onMonthChange,
-    refetch: refetchPreview,
-  } = useTeacherSalaryPreview({ isExpanded: isPreviewExpanded });
 
   const handleViewDetails = (calculation: SalaryCalculation) => {
     navigate(`/teachers/${teacherId}/salary-calculations/${calculation.id}`);
@@ -79,7 +61,6 @@ const SalaryCalculationsTab: React.FC<SalaryCalculationsTabProps> = ({ academicY
 
   const handleDialogSuccess = () => {
     refetch();
-    refetchPreview();
   };
 
   if (loading && calculations.length === 0) {
@@ -133,20 +114,6 @@ const SalaryCalculationsTab: React.FC<SalaryCalculationsTabProps> = ({ academicY
           />
         </GlassCard>
       )}
-
-      {/* Collapsible Salary Preview Section */}
-      <SalaryPreviewCollapsible
-        isExpanded={isPreviewExpanded}
-        onExpandedChange={setIsPreviewExpanded}
-        preview={preview}
-        loading={previewLoading}
-        error={previewError}
-        selectedYear={selectedYear}
-        selectedMonth={selectedMonth}
-        onYearChange={onYearChange}
-        onMonthChange={onMonthChange}
-        onRetry={refetchPreview}
-      />
 
       {/* Dialogs */}
       <GenerateSalaryDialog

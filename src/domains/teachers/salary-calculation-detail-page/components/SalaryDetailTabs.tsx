@@ -183,9 +183,10 @@ const AdjustmentsContent: React.FC<{
   adjustmentsTotal: number;
   status: SalaryCalculationStatus;
   calculationId: string;
+  addDialogOpen: boolean;
+  setAddDialogOpen: (open: boolean) => void;
   onSuccess: () => void;
-}> = ({ adjustments, adjustmentsTotal, status, calculationId, onSuccess }) => {
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
+}> = ({ adjustments, adjustmentsTotal, status, calculationId, addDialogOpen, setAddDialogOpen, onSuccess }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [adjustmentToDelete, setAdjustmentToDelete] = useState<SalaryAdjustment | null>(null);
 
@@ -201,16 +202,9 @@ const AdjustmentsContent: React.FC<{
       <>
         <div className="text-center py-8">
           <p className="text-white/50 text-sm mb-3">No adjustments added</p>
-          <Button
-            onClick={() => setAddDialogOpen(true)}
-            disabled={isApproved}
-            variant="outline"
-            size="sm"
-            className="gap-2 border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium"
-          >
-            <Plus className="w-4 h-4" />
-            Add Adjustment
-          </Button>
+          <p className="text-white/40 text-xs">
+            {isApproved ? 'Reopen to add adjustments' : 'Click "+ Add" above to add an adjustment'}
+          </p>
         </div>
         <AddAdjustmentDialog
           open={addDialogOpen}
@@ -224,19 +218,6 @@ const AdjustmentsContent: React.FC<{
 
   return (
     <>
-      <div className="flex justify-end mb-2">
-        <Button
-          onClick={() => setAddDialogOpen(true)}
-          disabled={isApproved}
-          variant="ghost"
-          size="sm"
-          className="text-white/60 hover:text-white gap-1.5 h-7 text-xs"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Add
-        </Button>
-      </div>
-
       <Table>
         <TableHeader>
           <TableRow className="border-white/10 hover:bg-transparent">
@@ -404,30 +385,46 @@ export const SalaryDetailTabs: React.FC<SalaryDetailTabsProps> = ({
   calculationId,
   onSuccess,
 }) => {
+  const [activeTab, setActiveTab] = useState('breakdown');
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const isApproved = status === 'approved';
+
   return (
     <Card className="bg-white/[0.02] border-white/10">
-      <Tabs defaultValue="breakdown" className="w-full">
-        <div className="border-b border-white/10 px-4">
-          <TabsList className="h-10 bg-transparent p-0 gap-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex items-center justify-between border-b border-white/[0.08] mx-4">
+          <TabsList className="bg-transparent rounded-none p-0 h-auto gap-1">
             <TabsTrigger
               value="breakdown"
-              className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white rounded-none px-0 pb-3 text-white/50 hover:text-white/70 text-sm font-medium"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
               Classes ({items.length})
             </TabsTrigger>
             <TabsTrigger
               value="adjustments"
-              className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white rounded-none px-0 pb-3 text-white/50 hover:text-white/70 text-sm font-medium"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
               Adjustments ({adjustments.length})
             </TabsTrigger>
             <TabsTrigger
               value="history"
-              className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white rounded-none px-0 pb-3 text-white/50 hover:text-white/70 text-sm font-medium"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
               History
             </TabsTrigger>
           </TabsList>
+          {activeTab === 'adjustments' && (
+            <Button
+              onClick={() => setAddDialogOpen(true)}
+              disabled={isApproved}
+              variant="ghost"
+              size="sm"
+              className="text-white/60 hover:text-white gap-1.5 h-7 text-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add
+            </Button>
+          )}
         </div>
 
         <CardContent className="p-4">
@@ -441,6 +438,8 @@ export const SalaryDetailTabs: React.FC<SalaryDetailTabsProps> = ({
               adjustmentsTotal={adjustmentsTotal}
               status={status}
               calculationId={calculationId}
+              addDialogOpen={addDialogOpen}
+              setAddDialogOpen={setAddDialogOpen}
               onSuccess={onSuccess}
             />
           </TabsContent>
