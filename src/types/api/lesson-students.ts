@@ -18,6 +18,9 @@ export interface LessonStudentResponse {
   homeworkStatus: HomeworkStatus | null;      // null if not checked yet
   comments: string | null;        // Teacher comments for this student in this lesson
   updatedAt: string;              // ISO 8601 timestamp of last update
+  last5LateCount: number;         // Count of 'late' in last 5 conducted lessons
+  last5MissingHwCount: number;    // Count of 'missing' homework in last 5 conducted lessons
+  last5AbsentCount: number;       // Count of 'absent' in last 5 conducted lessons
 }
 
 // Request models for updates

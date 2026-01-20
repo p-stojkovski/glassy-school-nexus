@@ -9,3 +9,8 @@ export { useStudents, type StudentFormData } from './useStudents';
 export { useStudentFilters } from './useStudentFilters';
 export { useUnsavedChangesWarning } from './useUnsavedChangesWarning';
 export { useInitializeStudents } from './useInitializeStudents';
+export {
+  useEmailAvailability,
+  type UseEmailAvailabilityOptions,
+  type UseEmailAvailabilityResult,
+} from './useEmailAvailability';

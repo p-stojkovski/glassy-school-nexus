@@ -38,7 +38,7 @@ export const HomeworkCell: React.FC<HomeworkCellProps> = ({
   };
 
   const getStatusBadgeClass = (status: HomeworkStatus) => {
-    const baseClass = 'cursor-pointer transition-all border text-xs px-2 py-1';
+    const baseClass = 'cursor-pointer transition-all border text-xs px-2 py-1 rounded-md';
     const colorClass = HomeworkStatusColors[status];
     const isSelected = currentStatus === status;
     
@@ -55,6 +55,7 @@ export const HomeworkCell: React.FC<HomeworkCellProps> = ({
       {HOMEWORK_OPTIONS.map((status) => (
         <Badge
           key={status}
+          variant="outline"
           onClick={() => handleStatusClick(status)}
           className={getStatusBadgeClass(status)}
           style={{ cursor: disabled || saveStatus === 'saving' ? 'not-allowed' : 'pointer' }}

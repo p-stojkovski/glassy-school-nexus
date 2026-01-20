@@ -33,7 +33,7 @@ interface EditClassDetailsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   classId: string;
-  initialData: ClassAdditionalDetailsResponse | null;
+  initialData?: ClassAdditionalDetailsResponse | null;
   onSuccess: () => void;
 }
 
@@ -45,14 +45,48 @@ export function EditClassDetailsSheet({
   onSuccess,
 }: EditClassDetailsSheetProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [fetchedData, setFetchedData] = useState<ClassAdditionalDetailsResponse | null>(null);
+
+  // Use provided initialData or fetched data
+  const effectiveData = initialData ?? fetchedData;
+
+  // Fetch data when sheet opens and no initialData is provided
+  useEffect(() => {
+    if (open && !initialData && classId) {
+      const fetchDetails = async () => {
+        setIsLoading(true);
+        setLoadError(null);
+        try {
+          const response = await classApiService.getAdditionalDetails(classId);
+          setFetchedData(response);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to load class details';
+          setLoadError(message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchDetails();
+    }
+  }, [open, initialData, classId]);
+
+  // Clear fetched data when sheet closes
+  useEffect(() => {
+    if (!open) {
+      setFetchedData(null);
+      setLoadError(null);
+    }
+  }, [open]);
 
   const form = useForm<ClassDetailsFormData>({
     resolver: zodResolver(classDetailsSchema),
     defaultValues: {
-      description: initialData?.description || '',
-      objectives: initialData?.objectives?.map(obj => ({ value: obj })) || [],
-      requirements: initialData?.requirements || '',
-      materials: initialData?.materials?.map(mat => ({ value: mat })) || [],
+      description: effectiveData?.description || '',
+      objectives: effectiveData?.objectives?.map(obj => ({ value: obj })) || [],
+      requirements: effectiveData?.requirements || '',
+      materials: effectiveData?.materials?.map(mat => ({ value: mat })) || [],
     },
   });
 
@@ -68,15 +102,15 @@ export function EditClassDetailsSheet({
 
   // Reset form when sheet opens with new data
   useEffect(() => {
-    if (open && initialData) {
+    if (open && effectiveData) {
       form.reset({
-        description: initialData.description || '',
-        objectives: initialData.objectives?.map(obj => ({ value: obj })) || [],
-        requirements: initialData.requirements || '',
-        materials: initialData.materials?.map(mat => ({ value: mat })) || [],
+        description: effectiveData.description || '',
+        objectives: effectiveData.objectives?.map(obj => ({ value: obj })) || [],
+        requirements: effectiveData.requirements || '',
+        materials: effectiveData.materials?.map(mat => ({ value: mat })) || [],
       });
     }
-  }, [open, initialData, form]);
+  }, [open, effectiveData, form]);
 
   const handleSubmit = async (data: ClassDetailsFormData) => {
     setIsSubmitting(true);
@@ -110,6 +144,62 @@ export function EditClassDetailsSheet({
       setIsSubmitting(false);
     }
   };
+
+  // Show loading state while fetching data
+  if (isLoading) {
+    return (
+      <FormSheet
+        open={open}
+        onOpenChange={onOpenChange}
+        intent="primary"
+        size="2xl"
+        icon={FileText}
+        title="Edit Class Details"
+        description="Loading class details..."
+        confirmText="Save Changes"
+        cancelText="Cancel"
+        onConfirm={() => {}}
+        isLoading={true}
+      >
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="text-white/60">Loading...</div>
+        </div>
+      </FormSheet>
+    );
+  }
+
+  // Show error state if fetch failed
+  if (loadError) {
+    return (
+      <FormSheet
+        open={open}
+        onOpenChange={onOpenChange}
+        intent="primary"
+        size="2xl"
+        icon={FileText}
+        title="Edit Class Details"
+        description="Failed to load class details"
+        confirmText="Save Changes"
+        cancelText="Close"
+        onConfirm={() => {}}
+        isLoading={false}
+      >
+        <div className="flex flex-col items-center justify-center min-h-[200px] gap-4">
+          <div className="text-red-400">{loadError}</div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setLoadError(null);
+              setFetchedData(null);
+            }}
+            className="border-white/30 text-white"
+          >
+            Retry
+          </Button>
+        </div>
+      </FormSheet>
+    );
+  }
 
   return (
     <FormSheet

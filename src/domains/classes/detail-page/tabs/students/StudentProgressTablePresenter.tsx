@@ -395,7 +395,6 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
                     <StudentLessonDetailsRow
                       lessons={details}
                       loading={isLoadingDetails}
-                      paymentObligation={summary.paymentObligation}
                     />
                   </TableCell>
                 </TableRow>

@@ -19,6 +19,8 @@ interface SheetShellProps {
   children: React.ReactNode;
   /** Called before close to check for unsaved changes. Return true to allow close, false to block. */
   onInterceptClose?: () => boolean;
+  /** Allow click outside to close (default: false) */
+  allowClickOutside?: boolean;
 }
 
 const sizeClasses: Record<SheetSize, string> = {
@@ -35,6 +37,7 @@ export function SheetShell({
   size,
   children,
   onInterceptClose,
+  allowClickOutside = false,
 }: SheetShellProps) {
   const handleOpenChange = React.useCallback((newOpen: boolean) => {
     // If closing and we have an intercept handler, check if we should block
@@ -48,9 +51,12 @@ export function SheetShell({
   }, [onOpenChange, onInterceptClose]);
 
   const handleInteractOutside = React.useCallback((e: Event) => {
-    // Always prevent click outside from closing the sheet
-    e.preventDefault();
-  }, []);
+    if (!allowClickOutside) {
+      // Prevent click outside from closing the sheet
+      e.preventDefault();
+    }
+    // If allowClickOutside is true, do nothing (allow default behavior)
+  }, [allowClickOutside]);
 
   const handleEscapeKeyDown = React.useCallback((e: KeyboardEvent) => {
     // If we have an intercept handler, check before allowing escape close

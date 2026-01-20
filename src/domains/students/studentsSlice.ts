@@ -151,8 +151,8 @@ const studentsSlice = createSlice({
     },
     
     setAllLoading: (state, action: PayloadAction<boolean>) => {
-      Object.keys(state.loading).forEach(key => {
-        (state.loading as any)[key] = action.payload;
+      (Object.keys(state.loading) as Array<keyof LoadingStates>).forEach(key => {
+        state.loading[key] = action.payload;
       });
     },
 
@@ -167,8 +167,8 @@ const studentsSlice = createSlice({
     },
     
     clearAllErrors: (state) => {
-      Object.keys(state.errors).forEach(key => {
-        (state.errors as any)[key] = null;
+      (Object.keys(state.errors) as Array<keyof ErrorStates>).forEach(key => {
+        state.errors[key] = null;
       });
     },
 

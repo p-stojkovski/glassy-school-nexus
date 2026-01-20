@@ -2,25 +2,28 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-const Table = React.forwardRef<
-  HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => {
-  // Extract children to remove any potential whitespace text nodes
-  const { children, ...restProps } = props;
+interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
+  wrapperClassName?: string;
+}
 
-  return (
-    <div className="relative w-full overflow-auto">
-      <table
-        ref={ref}
-        className={cn('w-full caption-bottom text-sm', className)}
-        {...restProps}
-      >
-        {children}
-      </table>
-    </div>
-  );
-});
+const Table = React.forwardRef<HTMLTableElement, TableProps>(
+  ({ className, wrapperClassName, ...props }, ref) => {
+    // Extract children to remove any potential whitespace text nodes
+    const { children, ...restProps } = props;
+
+    return (
+      <div className={cn('relative w-full overflow-auto', wrapperClassName)}>
+        <table
+          ref={ref}
+          className={cn('w-full caption-bottom text-sm', className)}
+          {...restProps}
+        >
+          {children}
+        </table>
+      </div>
+    );
+  }
+);
 Table.displayName = 'Table';
 
 const TableHeader = React.forwardRef<

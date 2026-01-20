@@ -7,6 +7,7 @@ export { default as LessonsSummaryStrip } from './LessonsSummaryStrip';
 export { default as LessonsEnhancedFilters } from './LessonsEnhancedFilters';
 export { default as LessonStatusChips } from './LessonStatusChips';
 export { default as LessonRowActionsMenu } from './LessonRowActionsMenu';
+export { default as LessonEditHistorySidebar } from './LessonEditHistorySidebar';
 
 // Modal components
 export { default as CreateLessonSidebar } from './modals/CreateLessonSidebar';

@@ -67,6 +67,12 @@ export function getLessonModeConfig(
       badgeClassName: 'bg-blue-500 hover:bg-blue-500',
       statusIndicatorText: 'Lesson management active - all changes auto-save',
       statusDotClassName: 'bg-blue-500',
+      statusIndicator: {
+        icon: 'CircleDot',
+        label: 'Live',
+        iconClassName: 'text-blue-400',
+      },
+      modeAccentClassName: 'border-l-2 border-l-blue-500/50',
     };
   }
 
@@ -80,6 +86,12 @@ export function getLessonModeConfig(
     badgeClassName: 'bg-amber-500 hover:bg-amber-500',
     statusIndicatorText: 'Editing past lesson - all changes auto-save',
     statusDotClassName: 'bg-amber-500',
+    statusIndicator: {
+      icon: 'CheckCircle2',
+      label: `Completed${formattedDate ? ` - ${formattedDate}` : ''}`,
+      iconClassName: 'text-green-400',
+    },
+    modeAccentClassName: 'border-l-2 border-l-amber-500/50',
   };
 }
 

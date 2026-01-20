@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Edit } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import { ClassBasicInfoResponse, ClassAdditionalDetailsResponse } from '@/types/api/class';
@@ -9,15 +7,12 @@ import ReadOnlyClassOverview from './ReadOnlyClassOverview';
 import ReadOnlyLearningObjectives from './ReadOnlyLearningObjectives';
 import ReadOnlyRequirements from './ReadOnlyRequirements';
 import ReadOnlyMaterials from './ReadOnlyMaterials';
-import { EditClassDetailsSheet } from '../../dialogs/EditClassDetailsSheet';
 
 interface InfoTabProps {
   classData: ClassBasicInfoResponse;
   onUpdate: () => void;
   isActive: boolean;
   onUnsavedChangesChange?: (hasChanges: boolean) => void;
-  isEditSheetOpen?: boolean;
-  onEditSheetOpenChange?: (open: boolean) => void;
 }
 
 const InfoTab: React.FC<InfoTabProps> = ({
@@ -25,8 +20,6 @@ const InfoTab: React.FC<InfoTabProps> = ({
   onUpdate,
   isActive,
   onUnsavedChangesChange,
-  isEditSheetOpen: externalIsEditSheetOpen,
-  onEditSheetOpenChange: externalOnEditSheetOpenChange,
 }) => {
   // Lazy loading state
   const [additionalDetails, setAdditionalDetails] = useState<ClassAdditionalDetailsResponse | null>(null);
@@ -47,11 +40,6 @@ const InfoTab: React.FC<InfoTabProps> = ({
     setLoading(true);
     setFetchedForClassId(null);
   }, [classData?.id, fetchedForClassId]);
-
-  // Sheet state - use external control if provided, otherwise use internal state
-  const [internalIsEditSheetOpen, setInternalIsEditSheetOpen] = useState(false);
-  const isEditSheetOpen = externalIsEditSheetOpen ?? internalIsEditSheetOpen;
-  const setIsEditSheetOpen = externalOnEditSheetOpenChange ?? setInternalIsEditSheetOpen;
 
   // Section expanded state (optional - can remove if you want sections always expanded)
   const [overviewExpanded, setOverviewExpanded] = useState(true);
@@ -81,19 +69,6 @@ const InfoTab: React.FC<InfoTabProps> = ({
       fetchDetails();
     }
   }, [classData?.id, hasFetched, isActive]);
-
-  // Handle successful save from Sheet
-  const handleSaveSuccess = async () => {
-    try {
-      // Refetch additional details to get latest data
-      const response = await classApiService.getAdditionalDetails(classData.id);
-      setAdditionalDetails(response);
-      await onUpdate();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to refresh data';
-      setError(message);
-    }
-  };
 
   // Loading state
   if (loading && !hasFetched) {
@@ -152,15 +127,6 @@ const InfoTab: React.FC<InfoTabProps> = ({
           className="h-full"
         />
       </div>
-
-      {/* Edit Sheet */}
-      <EditClassDetailsSheet
-        open={isEditSheetOpen}
-        onOpenChange={setIsEditSheetOpen}
-        classId={classData.id}
-        initialData={additionalDetails}
-        onSuccess={handleSaveSuccess}
-      />
     </div>
   );
 };

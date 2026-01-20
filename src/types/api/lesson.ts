@@ -166,6 +166,11 @@ export interface LessonResponse {
   subjectNameSnapshot: string;
   classroomNameSnapshot: string;
 
+  // Locking status for edit protection
+  isLocked: boolean;            // True if lesson is locked (Conducted + past day)
+  isGracePeriod: boolean;       // True if in grace period (Conducted + same day, edits audited)
+  hasAuditHistory: boolean;     // True if any audit entries exist
+
   createdAt: string;            // ISO 8601
   updatedAt: string;            // ISO 8601
 }
@@ -176,6 +181,26 @@ export interface LessonCreatedResponse {
 
 export interface LessonNotesResponse {
   notes?: string | null;        // Teacher notes for the lesson
+}
+
+// Audit history types for lesson locking feature
+export interface LessonAuditEntry {
+  id: string;                   // GUID
+  fieldChanged: string;         // 'attendance', 'homework_status', 'comments', 'lesson_notes', 'homework_assignment'
+  studentId: string | null;     // GUID, null for lesson-level fields
+  studentName: string | null;
+  oldValue: string | null;
+  newValue: string | null;
+  changedByTeacherId: string | null;
+  changedByTeacherName: string | null;
+  isGracePeriodEdit: boolean;
+  createdAt: string;            // ISO 8601
+}
+
+export interface LessonAuditHistoryResponse {
+  lessonId: string;             // GUID
+  totalEntries: number;
+  entries: LessonAuditEntry[];
 }
 
 export interface PastUnstartedCountResponse {
@@ -277,6 +302,7 @@ export const LessonApiPaths = {
   RESCHEDULE: (id: string) => `/api/lessons/${id}/reschedule`,
   MAKEUP: (id: string) => `/api/lessons/${id}/makeup`,
   NOTES: (id: string) => `/api/lessons/${id}/notes`,
+  AUDIT_HISTORY: (id: string) => `/api/lessons/${id}/audit-history`,
   GENERATE: '/api/lessons/generate',
   GENERATE_ACADEMIC: (id: string) => `/api/lessons/generate-academic/${id}`,
   SEARCH: '/api/lessons/search',

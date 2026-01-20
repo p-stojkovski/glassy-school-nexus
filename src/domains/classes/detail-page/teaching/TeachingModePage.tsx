@@ -13,7 +13,6 @@ import { LessonResponse } from '@/types/api/lesson';
 import { ClassBasicInfoResponse } from '@/types/api/class';
 import { getLessonModeConfig, canAccessLessonInterface } from '@/domains/lessons/utils/lessonModeUtils';
 import { toast } from 'sonner';
-import { getCurrentTime } from '@/components/teacher-dashboard/utils/timeUtils';
 
 /**
  * Teaching Mode Page - Shared lesson execution and editing view
@@ -27,7 +26,6 @@ const TeachingModePage: React.FC = () => {
 
   const [lesson, setLesson] = useState<LessonResponse | null>(null);
   const [classData, setClassData] = useState<ClassBasicInfoResponse | null>(null);
-  const [currentTime, setCurrentTime] = useState(getCurrentTime());
   const [isLoading, setIsLoading] = useState(true);
   const [isEnding, setIsEnding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,14 +76,6 @@ const TeachingModePage: React.FC = () => {
     fetchData();
   }, [fetchData]);
 
-  // Update time every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(getCurrentTime());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
   // Handle ending the lesson
   // Note: We no longer send a generic system note when conducting a lesson.
   // Only meaningful teacher-provided notes should be persisted.
@@ -132,7 +122,7 @@ const TeachingModePage: React.FC = () => {
   // Error state
   if (error || !lesson || !classData || !modeConfig) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Breadcrumbs - show even in error state for context */}
         <AppBreadcrumb
           items={buildClassBreadcrumbs({
@@ -159,7 +149,7 @@ const TeachingModePage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Breadcrumb Navigation */}
       <AppBreadcrumb
         items={buildClassBreadcrumbs({
@@ -172,7 +162,6 @@ const TeachingModePage: React.FC = () => {
       {/* Main Lesson Management Panel */}
       <LessonStudentPanel
         lesson={lesson}
-        currentTime={currentTime}
         onEndLesson={handleEndLesson}
         isLoading={isEnding}
         modeConfig={modeConfig}

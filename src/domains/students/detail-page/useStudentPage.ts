@@ -13,8 +13,8 @@ import {
   updateStudent as updateStudentInStore,
   deleteStudent as deleteStudentFromStore,
   addStudent as addStudentToStore,
-  selectStudentById
 } from '@/domains/students/studentsSlice';
+import { useStudentData } from './hooks/useStudentData';
 import {
   makeSelectObligationsByStudentId,
   makeSelectPaymentsByStudentId,
@@ -121,25 +121,27 @@ export const useStudentPage = (): UseStudentPageResult => {
   // Detect if this is the legacy edit route (/students/edit/:studentId)
   const isLegacyEditRoute = location.pathname.includes('/students/edit/');
 
+  // Use extracted hook for student data loading
+  const {
+    student,
+    loading,
+    error: fetchError,
+    refreshStudent,
+  } = useStudentData({ studentId, isCreateMode });
+
   // State
   const [activeTab, setActiveTab] = useState('overview');
   const [isPaymentSidebarOpen, setIsPaymentSidebarOpen] = useState(false);
   const [selectedObligation, setSelectedObligation] = useState<PaymentObligation | null>(null);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(isLegacyEditRoute);
-  const [loading, setLoading] = useState(!isCreateMode);
-  const [error, setError] = useState<string | null>(null);
+  const [crudError, setCrudError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [studentData, setStudentData] = useState<Student | null>(null);
   const [hasOpenedEditSheet, setHasOpenedEditSheet] = useState(false);
   const [overviewData, setOverviewData] = useState<StudentOverviewResponse | null>(null);
   const [overviewLoading, setOverviewLoading] = useState(false);
 
-  // Get student from store first, then fall back to fetched data
-  const storeStudent = useAppSelector((state: RootState) =>
-    studentId && studentId !== 'new' ? selectStudentById(state, studentId) : undefined
-  );
-
-  const student = storeStudent || studentData;
+  // Combined error state for return interface compatibility
+  const error = fetchError || crudError;
 
   // Get student's current class ID (API returns currentClassId)
   const currentClassId = (student as StudentResponse)?.currentClassId;
@@ -182,37 +184,6 @@ export const useStudentPage = (): UseStudentPageResult => {
           : undefined,
       }
     : undefined;
-
-  // Fetch student data from API if not in store
-  const fetchStudent = useCallback(async () => {
-    if (isCreateMode || !studentId) return;
-
-    // If already in store, don't fetch
-    if (storeStudent) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const data = await studentApiService.getStudentById(studentId);
-      setStudentData(data);
-      // Also update store for consistency
-      dispatch(addStudentToStore(data));
-    } catch (err) {
-      const msg = StudentErrorHandlers.fetchById(err);
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, [studentId, isCreateMode, storeStudent, dispatch]);
-
-  // Load student on mount
-  useEffect(() => {
-    fetchStudent();
-  }, [fetchStudent]);
 
   // Fetch overview data when on overview tab
   const fetchOverviewData = useCallback(async () => {
@@ -375,8 +346,8 @@ export const useStudentPage = (): UseStudentPageResult => {
     const request = validation.data as UpdateStudentRequest;
     const updatedStudent = await studentApiService.updateStudent(student.id, request);
 
+    // Update store - the hook will pick up the change via storeStudent selector
     dispatch(updateStudentInStore(updatedStudent));
-    setStudentData(updatedStudent);
 
     showSuccessMessage('Student Updated', `${data.firstName} ${data.lastName} has been successfully updated.`);
 
@@ -441,18 +412,12 @@ export const useStudentPage = (): UseStudentPageResult => {
       navigate('/students');
     } catch (err) {
       const msg = StudentErrorHandlers.delete(err);
-      setError(msg);
+      setCrudError(msg);
       throw err;
     } finally {
       setIsDeleting(false);
     }
   }, [student, dispatch, navigate]);
-
-  const refreshStudent = useCallback(async () => {
-    if (!studentId || isCreateMode) return;
-    setStudentData(null);
-    await fetchStudent();
-  }, [studentId, isCreateMode, fetchStudent]);
 
   const canMakePayment = useCallback((status: string) => {
     return [

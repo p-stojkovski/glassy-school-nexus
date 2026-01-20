@@ -4,15 +4,18 @@
  */
 
 import apiService from './api';
-import { 
+import { classApiService } from './classApiService';
+import {
   LessonStudentResponse,
   AttendanceUpdateRequest,
   HomeworkUpdateRequest,
   CommentsUpdateRequest,
   LessonNotesUpdateRequest,
   LessonStudentApiPaths,
-  LessonStudentError 
+  LessonStudentError
 } from '@/types/api/lesson-students';
+import { StudentLessonDetail } from '@/types/api/class';
+import { StudentHistorySummary } from '@/types/api/lesson-history';
 
 // Preserve status/details when rethrowing with a custom message
 function makeApiError(original: any, message: string): Error & { status?: number; details?: any } {
@@ -185,8 +188,77 @@ export class LessonStudentApiService {
       throw makeApiError(error, `Failed to fetch lesson notes: ${error.message || 'Unknown error'}`);
     }
   }
+
+  /**
+   * Get a student's recent lesson history for context while marking attendance.
+   * Reuses the existing class student lessons endpoint and filters on frontend.
+   *
+   * @param classId - The class ID
+   * @param studentId - The student ID
+   * @param excludeLessonId - Current lesson ID to exclude from results
+   * @param limit - Maximum lessons to return (default: 5)
+   * @returns Last N conducted lessons, excluding the current lesson
+   */
+  async getStudentRecentHistory(
+    classId: string,
+    studentId: string,
+    excludeLessonId: string,
+    limit: number = 5
+  ): Promise<StudentLessonDetail[]> {
+    // Fetch all lessons for this student in the class
+    const allLessons = await classApiService.getClassStudentLessons(classId, studentId);
+
+    // Filter out the current lesson and take the first N
+    // Backend returns lessons in date descending order
+    return allLessons
+      .filter(lesson => lesson.lessonId !== excludeLessonId)
+      .slice(0, limit);
+  }
 }
 
 // Export singleton instance
 const lessonStudentApiService = new LessonStudentApiService();
 export default lessonStudentApiService;
+
+/**
+ * Calculate summary statistics from lesson history.
+ * Pure function - no side effects.
+ */
+export function calculateHistorySummary(history: StudentLessonDetail[]): StudentHistorySummary {
+  let absences = 0;
+  let lateCount = 0;
+  let missingHomework = 0;
+
+  for (const lesson of history) {
+    // Count absences (attendanceStatus === 'absent')
+    if (lesson.attendanceStatus === 'absent') {
+      absences++;
+    }
+
+    // Count late arrivals (attendanceStatus === 'late')
+    if (lesson.attendanceStatus === 'late') {
+      lateCount++;
+    }
+
+    // Count missing homework (homeworkStatus === 'missing')
+    if (lesson.homeworkStatus === 'missing') {
+      missingHomework++;
+    }
+  }
+
+  return {
+    totalLessons: history.length,
+    absences,
+    lateCount,
+    missingHomework,
+    hasRisk: absences >= 3 || missingHomework >= 3
+  };
+}
+
+// Convenience export for getStudentRecentHistory
+export const getStudentRecentHistory = (
+  classId: string,
+  studentId: string,
+  excludeLessonId: string,
+  limit?: number
+) => lessonStudentApiService.getStudentRecentHistory(classId, studentId, excludeLessonId, limit);

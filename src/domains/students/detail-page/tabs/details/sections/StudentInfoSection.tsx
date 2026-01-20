@@ -23,7 +23,7 @@ import {
 import { EditableSectionWrapper } from './EditableSectionWrapper';
 import { Student } from '@/domains/students/studentsSlice';
 import { personalInfoSchema, PersonalInfoFormData } from '@/utils/validation/studentValidators';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useEmailAvailability } from '@/domains/students/_shared/hooks';
 import { checkStudentEmailAvailable } from '@/services/studentApiService';
 
 /**
@@ -139,37 +139,19 @@ export const StudentInfoSection = React.forwardRef<StudentInfoSectionHandle, Stu
     return () => subscription.unsubscribe();
   }, [form, onFormChange]);
 
-  // Email availability checking
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+  // Email availability checking via shared hook
   const emailValue = form.watch('email');
-  const debouncedEmail = useDebounce(emailValue, 300);
 
-  useEffect(() => {
-    const trimmed = (debouncedEmail || '').trim().toLowerCase();
-    if (!trimmed || trimmed === (student.email || '').toLowerCase()) {
-      setEmailAvailable(null);
-      setIsCheckingEmail(false);
-      return;
-    }
-
-    let cancelled = false;
-    (async () => {
-      setIsCheckingEmail(true);
-      try {
-        const available = await checkStudentEmailAvailable(trimmed, student.id);
-        if (!cancelled) {
-          setEmailAvailable(available);
-        }
-      } catch {
-        if (!cancelled) setEmailAvailable(null);
-      } finally {
-        if (!cancelled) setIsCheckingEmail(false);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [debouncedEmail, student.id, student.email]);
+  const {
+    isChecking: isCheckingEmail,
+    isAvailable: emailAvailable,
+    shouldShowAvailability,
+  } = useEmailAvailability({
+    emailValue,
+    originalEmail: student.email,
+    excludeId: student.id,
+    checkEmailFn: checkStudentEmailAvailable,
+  });
 
   // Handle save
   const handleSave = useCallback(async (): Promise<boolean> => {
@@ -278,7 +260,7 @@ export const StudentInfoSection = React.forwardRef<StudentInfoSectionHandle, Stu
                         placeholder="Enter email address"
                         className="bg-white/5 border-white/20 text-white placeholder:text-white/50 focus:border-white/30 pr-10"
                       />
-                      {debouncedEmail && debouncedEmail.trim() && debouncedEmail !== (student.email || '') && (
+                      {shouldShowAvailability && (
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                           {isCheckingEmail ? (
                             <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />

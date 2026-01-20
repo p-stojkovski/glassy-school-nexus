@@ -39,15 +39,17 @@ export function SheetFooter({
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {confirmText}
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={onCancel}
-          disabled={isLoading}
-          className="flex-1 text-white hover:bg-white/10"
-        >
-          {cancelText}
-        </Button>
+{cancelText && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            disabled={isLoading}
+            className="flex-1 text-white hover:bg-white/10"
+          >
+            {cancelText}
+          </Button>
+        )}
       </div>
     </ShadcnSheetFooter>
   );

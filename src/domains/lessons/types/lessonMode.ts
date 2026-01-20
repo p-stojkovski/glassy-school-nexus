@@ -11,6 +11,18 @@
 export type LessonMode = 'teaching' | 'editing';
 
 /**
+ * Status indicator using icon-based visual design
+ */
+export interface LessonStatusIndicator {
+  /** Lucide icon name */
+  icon: 'CircleDot' | 'CheckCircle2' | 'Pencil';
+  /** Status label text */
+  label: string;
+  /** Icon color classes */
+  iconClassName: string;
+}
+
+/**
  * Configuration for lesson mode UI elements
  */
 export interface LessonModeConfig {
@@ -30,6 +42,10 @@ export interface LessonModeConfig {
   statusIndicatorText: string;
   /** CSS classes for the status indicator dot */
   statusDotClassName: string;
+  /** NEW: Icon-based status indicator */
+  statusIndicator: LessonStatusIndicator;
+  /** NEW: Subtle mode accent for borders */
+  modeAccentClassName: string;
 }
 
 /**

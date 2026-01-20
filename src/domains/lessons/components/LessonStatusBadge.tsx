@@ -75,10 +75,10 @@ const LessonStatusBadge: React.FC<LessonStatusBadgeProps> = ({
   if (!config) {
     // Fallback for unknown status
     return (
-      <Badge 
-        variant="outline" 
+      <Badge
+        variant="outline"
         className={cn(
-          'bg-gray-500/20 text-gray-300 border-gray-500/30',
+          'bg-gray-500/20 text-gray-300 border-gray-500/30 rounded-md',
           sizeClasses[size],
           className
         )}
@@ -90,12 +90,12 @@ const LessonStatusBadge: React.FC<LessonStatusBadgeProps> = ({
   }
 
   return (
-    <Badge 
-      variant="outline" 
+    <Badge
+      variant="outline"
       className={cn(
         config.colorClasses,
         sizeClasses[size],
-        'font-medium transition-colors',
+        'font-medium transition-colors rounded-md',
         className
       )}
     >

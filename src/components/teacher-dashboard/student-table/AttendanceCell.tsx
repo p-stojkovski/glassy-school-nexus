@@ -39,7 +39,7 @@ export const AttendanceCell: React.FC<AttendanceCellProps> = ({
   };
 
   const getStatusBadgeClass = (status: AttendanceStatus) => {
-    const baseClass = 'cursor-pointer transition-all border text-xs px-2 py-1';
+    const baseClass = 'cursor-pointer transition-all border text-xs px-2 py-1 rounded-md';
     const colorClass = AttendanceStatusColors[status];
     const isSelected = currentStatus === status;
     
@@ -56,6 +56,7 @@ export const AttendanceCell: React.FC<AttendanceCellProps> = ({
       {ATTENDANCE_OPTIONS.map((status) => (
         <Badge
           key={status}
+          variant="outline"
           onClick={() => handleStatusClick(status)}
           className={getStatusBadgeClass(status)}
           style={{ cursor: disabled || saveStatus === 'saving' ? 'not-allowed' : 'pointer' }}

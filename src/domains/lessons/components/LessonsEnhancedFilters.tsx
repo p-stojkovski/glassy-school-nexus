@@ -60,10 +60,10 @@ const LessonsEnhancedFilters: React.FC<LessonsEnhancedFiltersProps> = ({
 }) => {
   const dateRangeOptions = useMemo(() => ([
     { value: 'upcoming_week', label: 'Next 7 days' },
-    { value: 'upcoming_month', label: 'Next 30 days' },
-    { value: 'upcoming_all', label: 'All upcoming' },
     { value: 'past_week', label: 'Last 7 days' },
+    { value: 'upcoming_month', label: 'Next 30 days' },
     { value: 'past_month', label: 'Last 30 days' },
+    { value: 'upcoming_all', label: 'All upcoming' },
     { value: 'past_all', label: 'All past' },
     { value: 'all_all', label: 'All dates' },
   ] satisfies { value: DateRangePreset; label: string }[]), []);

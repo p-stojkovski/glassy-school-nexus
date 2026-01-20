@@ -69,11 +69,11 @@ export const CommentsCell: React.FC<CommentsCellProps> = ({
       }}
       placeholder={placeholder}
       disabled={disabled}
-      rows={2}
+      rows={1}
       autoFocus
       className={`
-        bg-white/10 border-white/20 text-white placeholder:text-white/60 
-        resize-none min-h-[60px] text-sm
+        bg-white/10 border-white/20 text-white placeholder:text-white/60
+        resize-none min-h-[36px] text-sm
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         ${saveStatus === 'saving' ? 'border-blue-500/50' : ''}
         ${saveStatus === 'error' ? 'border-red-500/50' : ''}

@@ -53,6 +53,7 @@ export function ViewSheet({
       open={open}
       onOpenChange={onOpenChange}
       size={size}
+      allowClickOutside={true}
     >
       <div className="flex flex-col h-full">
         {/* Header with close button */}

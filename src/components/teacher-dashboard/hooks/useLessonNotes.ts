@@ -9,6 +9,7 @@ interface UseLessonNotesReturn {
   updateNotes: (notes: string) => void;
   loading: boolean;
   error: string | null;
+  refetch: () => Promise<void>;
 }
 
 export const useLessonNotes = (lessonId: string): UseLessonNotesReturn => {
@@ -130,5 +131,6 @@ export const useLessonNotes = (lessonId: string): UseLessonNotesReturn => {
     updateNotes,
     loading,
     error,
+    refetch: fetchNotes,
   };
 };

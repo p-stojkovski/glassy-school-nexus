@@ -8,6 +8,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import ClassPageHeader from '@/domains/classes/detail-page/layout/ClassPageHeader';
 import { CreateClassHeader } from '@/domains/classes/form-page';
 import { CreateClassSheet } from '@/domains/classes/list-page/dialogs/CreateClassSheet';
+import { EditClassDetailsSheet } from '@/domains/classes/detail-page/dialogs/EditClassDetailsSheet';
 import ClassLessonsTab from '@/domains/classes/detail-page/tabs/lessons/LessonsTab';
 import ClassInfoTab from '@/domains/classes/detail-page/tabs/info/InfoTab';
 import { LessonResponse } from '@/types/api/lesson';
@@ -17,7 +18,6 @@ import ClassSalaryRulesTab from '@/domains/classes/detail-page/tabs/salary-rules
 import QuickConductLessonModal from '@/domains/lessons/components/modals/QuickConductLessonModal';
 import QuickCancelLessonModal from '@/domains/lessons/components/modals/QuickCancelLessonModal';
 import RescheduleLessonModal from '@/domains/lessons/components/modals/RescheduleLessonModal';
-import LessonDetailsSheet from '@/domains/lessons/components/sheets/LessonDetailsSheet';
 import { useClassPage } from '@/domains/classes/detail-page/useClassPage';
 import { useClassLessonContext } from '@/domains/classes/detail-page/useClassLessonContext';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
@@ -36,8 +36,6 @@ const ClassPage: React.FC = () => {
   const [pendingTab, setPendingTab] = useState<TabId | null>(null);
   const [showBackConfirmDialog, setShowBackConfirmDialog] = useState(false);
   const [showCreateSheet, setShowCreateSheet] = useState(false); // Start closed, open via effect
-  const [isLessonDetailsOpen, setIsLessonDetailsOpen] = useState(false);
-  const [selectedLessonForDetails, setSelectedLessonForDetails] = useState<LessonResponse | null>(null);
   const [isEditClassDetailsSheetOpen, setIsEditClassDetailsSheetOpen] = useState(false);
 
   // Open create sheet after mount in create mode
@@ -161,23 +159,8 @@ const ClassPage: React.FC = () => {
     setPendingTab(null);
   };
 
-  // Handle closing lesson details sheet from hero section
-  const handleHeroLessonDetailsClose = useCallback((open: boolean) => {
-    if (!open) {
-      setIsLessonDetailsOpen(false);
-      setSelectedLessonForDetails(null);
-    }
-  }, []);
-
   // Handle navigating to teaching mode from hero section
   const handleHeroStartTeaching = useCallback((lesson: LessonResponse) => {
-    navigate(`/classes/${id}/teach/${lesson.id}`);
-  }, [navigate, id]);
-
-  // Handle navigating to teaching mode from hero lesson details
-  const handleHeroEditLessonDetails = useCallback((lesson: LessonResponse) => {
-    setIsLessonDetailsOpen(false);
-    setSelectedLessonForDetails(null);
     navigate(`/classes/${id}/teach/${lesson.id}`);
   }, [navigate, id]);
 
@@ -349,14 +332,10 @@ const ClassPage: React.FC = () => {
 
         {/* Lessons Tab */}
         <TabsContent value="lessons" className="mt-6" forceMount>
-          <ClassLessonsTab 
+          <ClassLessonsTab
             classData={classData}
             onScheduleTabClick={() => handleTabChange('schedule')}
             onLessonsUpdated={lessonContext.refreshLessons}
-            externalLessonDetailsOpen={isLessonDetailsOpen}
-            externalSelectedLesson={selectedLessonForDetails}
-            onExternalLessonDetailsChange={setIsLessonDetailsOpen}
-            onExternalSelectedLessonChange={setSelectedLessonForDetails}
           />
         </TabsContent>
 
@@ -391,8 +370,6 @@ const ClassPage: React.FC = () => {
             onUpdate={refetchClassData}
             isActive={activeTab === 'info'}
             onUnsavedChangesChange={handleInfoUnsavedChanges}
-            isEditSheetOpen={isEditClassDetailsSheetOpen}
-            onEditSheetOpenChange={setIsEditClassDetailsSheetOpen}
           />
         </TabsContent>
 
@@ -442,17 +419,6 @@ const ClassPage: React.FC = () => {
         loading={conductingLesson}
       />
 
-      {/* Lesson Details Sheet - rendered at page level for hero section "View Next Lesson" */}
-      <LessonDetailsSheet
-        lesson={selectedLessonForDetails}
-        open={isLessonDetailsOpen}
-        onOpenChange={handleHeroLessonDetailsClose}
-        onConduct={openConductModal}
-        onCancel={openCancelModal}
-        onReschedule={handleHeroRescheduleLesson}
-        onEditLessonDetails={handleHeroEditLessonDetails}
-      />
-
       {/* Quick Cancel Lesson Modal */}
       <QuickCancelLessonModal
         lesson={quickActionModals.cancel.lesson}
@@ -469,6 +435,14 @@ const ClassPage: React.FC = () => {
         onOpenChange={(open) => !open && closeRescheduleModal()}
         onConfirm={handleRescheduleWithRefresh}
         loading={reschedulingLesson}
+      />
+
+      {/* Edit Class Details Sheet - Always rendered so it works from any tab */}
+      <EditClassDetailsSheet
+        open={isEditClassDetailsSheetOpen}
+        onOpenChange={setIsEditClassDetailsSheetOpen}
+        classId={id!}
+        onSuccess={refetchClassData}
       />
     </div>
   );

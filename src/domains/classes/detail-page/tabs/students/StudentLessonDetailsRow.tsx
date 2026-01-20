@@ -1,13 +1,11 @@
 import React from 'react';
-import { StudentLessonDetail, StudentPaymentObligationInfo } from '@/types/api/class';
-import { Clock, CheckCircle2, XCircle, AlertTriangle, FileText, DollarSign } from 'lucide-react';
+import { StudentLessonDetail } from '@/types/api/class';
+import { Clock, CheckCircle2, XCircle, AlertTriangle, FileText } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import { Amount } from '@/components/ui/amount';
 
 interface StudentLessonDetailsRowProps {
   lessons: StudentLessonDetail[];
   loading: boolean;
-  paymentObligation?: StudentPaymentObligationInfo | null;
 }
 
 interface StatusBadgeConfig {
@@ -38,7 +36,7 @@ const StatusBadge: React.FC<{ config: StatusBadgeConfig; minWidth: string }> = (
   );
 };
 
-const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lessons, loading, paymentObligation }) => {
+const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lessons, loading }) => {
   const getAttendanceBadge = (status?: string | null) => {
     if (!status) {
       return <span className="text-white/60 text-xs">—</span>;
@@ -116,27 +114,6 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
   if (lessons.length === 0) {
     return (
       <div className="p-6">
-        {/* Payment Obligations Section (shown even if no lessons) */}
-        {paymentObligation?.hasPendingObligations && (
-          <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-400/30">
-            <div className="flex items-start gap-2">
-              <DollarSign className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-              <div>
-                <div className="text-sm font-medium text-amber-200 mb-1">Payment Due</div>
-                <div className="text-xs text-amber-300/80">
-                  {paymentObligation.pendingCount === 1 ? (
-                    <><Amount value={paymentObligation.totalPendingAmount} size="sm" className="text-amber-300/80" /> outstanding</>
-                  ) : (
-                    <>{paymentObligation.pendingCount} pending obligations (<Amount value={paymentObligation.totalPendingAmount} size="sm" className="text-amber-300/80" /> total)</>
-                  )}
-                </div>
-                <div className="text-xs text-amber-300/60 mt-1">
-                  Note: Month-by-month payment details coming soon
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
         <div className="text-center text-white/70 text-sm">
           No conducted lessons yet for this student.
         </div>
@@ -146,28 +123,6 @@ const StudentLessonDetailsRow: React.FC<StudentLessonDetailsRowProps> = ({ lesso
 
   return (
     <div className="px-6 py-4 transition-all duration-200">
-      {/* Payment Obligations Section - shown above lessons */}
-      {paymentObligation?.hasPendingObligations && (
-        <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-400/30">
-          <div className="flex items-start gap-2">
-            <DollarSign className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-            <div>
-              <div className="text-sm font-medium text-amber-200 mb-1">Payment Due</div>
-              <div className="text-xs text-amber-300/80">
-                {paymentObligation.pendingCount === 1 ? (
-                  <><Amount value={paymentObligation.totalPendingAmount} size="sm" className="text-amber-300/80" /> outstanding</>
-                ) : (
-                  <>{paymentObligation.pendingCount} pending obligations (<Amount value={paymentObligation.totalPendingAmount} size="sm" className="text-amber-300/80" /> total)</>
-                )}
-              </div>
-              <div className="text-xs text-amber-300/60 mt-1">
-                Note: Month-by-month payment details coming soon
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Lesson Details Section */}
       <div className="text-xs font-medium text-white/50 mb-3">Lesson History</div>
 

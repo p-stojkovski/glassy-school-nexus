@@ -11,7 +11,7 @@ import { createStudentSchema } from '@/utils/validation/studentValidators';
 import StudentInformationTab from './tabs/StudentInformationTab';
 import ParentGuardianTab from './tabs/ParentGuardianTab';
 import FinancialInformationTab from './tabs/FinancialInformationTab';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useEmailAvailability } from '@/domains/students/_shared/hooks';
 import { checkStudentEmailAvailable } from '@/services/studentApiService';
 import { useDiscountTypes } from '@/hooks/useDiscountTypes';
 
@@ -69,89 +69,31 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
     formState: { errors },
   } = form;
 
-  // Email availability checking state (mirrors Teachers form UX)
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
-  const [emailCheckError, setEmailCheckError] = useState<string | null>(null);
-  const [shouldCheckAvailability, setShouldCheckAvailability] = useState(false);
-
+  // Email availability checking via shared hook
   const emailValue = form.watch('email');
-  const debouncedEmail = useDebounce(emailValue, 300);
 
+  const {
+    isChecking: isCheckingEmail,
+    isAvailable: emailAvailable,
+    error: emailCheckError,
+    debouncedEmail,
+    shouldShowAvailability,
+  } = useEmailAvailability({
+    emailValue,
+    originalEmail: student?.email,
+    excludeId: student?.id,
+    checkEmailFn: checkStudentEmailAvailable,
+  });
+
+  // Clear form email error when availability confirmed
   useEffect(() => {
-    if (emailValue && emailValue !== (student?.email || '')) {
-      setShouldCheckAvailability(true);
-    } else {
-      setShouldCheckAvailability(false);
-    }
-  }, [emailValue, student?.email]);
-
-  const lastCheckedKeyRef = React.useRef<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    setEmailAvailable(null);
-    setEmailCheckError(null);
-
-    const trimmed = (debouncedEmail || '').trim().toLowerCase();
-
-    if (!trimmed) {
-      setIsCheckingEmail(false);
-      return;
-    }
-
-    if (student && trimmed === (student.email || '').trim().toLowerCase()) {
-      setIsCheckingEmail(false);
-      setEmailAvailable(true);
+    if (emailAvailable === true) {
       const currentErr = form.getFieldState('email').error;
       if (currentErr && /already exists|already in use/i.test(currentErr.message || '')) {
         form.clearErrors('email');
       }
-      return;
     }
-
-    if (!shouldCheckAvailability) {
-      return;
-    }
-
-    const hasLocalError = !!form.getFieldState('email').error;
-    if (hasLocalError) {
-      setIsCheckingEmail(false);
-      return;
-    }
-
-    const checkKey = `${trimmed}-${student?.id || 'new'}`;
-    if (lastCheckedKeyRef.current === checkKey) {
-      return;
-    }
-
-    (async () => {
-      try {
-        setIsCheckingEmail(true);
-        const available = await checkStudentEmailAvailable(trimmed, student?.id);
-        if (!isMounted) return;
-        setEmailAvailable(available);
-        setIsCheckingEmail(false);
-        if (available) {
-          const currentErr = form.getFieldState('email').error;
-          if (currentErr && /already exists|already in use/i.test(currentErr.message || '')) {
-            form.clearErrors('email');
-          }
-        }
-        lastCheckedKeyRef.current = checkKey;
-      } catch (err: unknown) {
-        if (!isMounted) return;
-        setIsCheckingEmail(false);
-        const message = err instanceof Error ? err.message : 'Failed to check availability';
-        setEmailCheckError(message);
-      }
-    })();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [debouncedEmail, student?.id, student?.email, shouldCheckAvailability, form, form.formState.errors.email]);
+  }, [emailAvailable, form]);
 
   // Watch form values for data indicators
   const watchedValues = form.watch();
@@ -414,7 +356,7 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
               <StudentInformationTab
                 form={form}
                 emailAvailability={{
-                  shouldCheckAvailability,
+                  shouldCheckAvailability: shouldShowAvailability,
                   debouncedEmail,
                   isCheckingEmail,
                   emailAvailable,
@@ -440,9 +382,7 @@ const TabbedStudentFormContent = React.forwardRef<StudentFormRef, TabbedStudentF
                 onCancel={onCancel}
                 disabled={
                   !form.formState.isValid ||
-                  (shouldCheckAvailability && debouncedEmail && debouncedEmail.trim() && debouncedEmail !== (student?.email || '') && (
-                    isCheckingEmail || emailAvailable === false
-                  )) ||
+                  (shouldShowAvailability && (isCheckingEmail || emailAvailable === false)) ||
                   (isAmountRequired && (!discountAmount || discountAmount <= 0))
                 }
               />
