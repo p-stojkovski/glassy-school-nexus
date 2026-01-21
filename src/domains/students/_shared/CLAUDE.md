@@ -20,6 +20,7 @@ _shared/
 │   ├── useStudentFilters.ts            # Client-side filtering logic
 │   ├── useStudentFilterState.ts        # Filter state management
 │   ├── useInitializeStudents.ts        # Lazy loading initialization
+│   ├── useEmailAvailability.ts         # Email uniqueness validation
 │   └── useUnsavedChangesWarning.ts     # Navigation protection
 └── utils/
     └── (Student utilities)
@@ -115,6 +116,26 @@ const {
 } = useInitializeStudents();
 ```
 
+### useEmailAvailability
+
+Checks email uniqueness via API (debounced).
+
+```typescript
+const {
+  isAvailable,         // boolean | null (null = not checked yet)
+  isChecking,          // Loading state
+  error,               // Error message if check failed
+  checkAvailability,   // (email: string, excludeStudentId?: string) => Promise<boolean>
+} = useEmailAvailability();
+
+// Usage in form
+useEffect(() => {
+  if (email && email !== initialEmail) {
+    checkAvailability(email, studentId);
+  }
+}, [email]);
+```
+
 ### useUnsavedChangesWarning
 
 Prevents navigation when there are unsaved changes.
@@ -124,8 +145,10 @@ const {
   hasUnsavedChanges,
   setHasUnsavedChanges,
   confirmNavigation,
+  cancelNavigation,
+  showDialog,
   // Used with UnsavedChangesDialog
-} = useUnsavedChangesWarning();
+} = useUnsavedChangesWarning(isDirty, currentPath);
 ```
 
 ## Components

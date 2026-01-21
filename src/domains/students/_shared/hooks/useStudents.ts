@@ -53,6 +53,7 @@ export const useStudents = () => {
   // === API Operations ===
 
   const loadStudents = useCallback(async () => {
+    dispatch(setLoadingState({ operation: 'fetching', loading: true }));
     dispatch(clearError('fetch'));
     try {
       const data = await getAllStudents();
@@ -62,10 +63,13 @@ export const useStudents = () => {
       const msg = StudentErrorHandlers.fetchAll(error);
       dispatch(setError({ operation: 'fetch', error: msg }));
       throw error;
+    } finally {
+      dispatch(setLoadingState({ operation: 'fetching', loading: false }));
     }
   }, [dispatch]);
 
   const loadDiscountTypes = useCallback(async () => {
+    dispatch(setLoadingState({ operation: 'fetchingDiscountTypes', loading: true }));
     dispatch(clearError('fetchDiscountTypes'));
     try {
       const data = await getAllDiscountTypes();
@@ -75,6 +79,8 @@ export const useStudents = () => {
       const msg = StudentErrorHandlers.fetchDiscountTypes(error);
       dispatch(setError({ operation: 'fetchDiscountTypes', error: msg }));
       throw error;
+    } finally {
+      dispatch(setLoadingState({ operation: 'fetchingDiscountTypes', loading: false }));
     }
   }, [dispatch]);
 

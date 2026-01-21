@@ -268,203 +268,6 @@ export const financialInfoSchema = z.object({
 export type FinancialInfoFormData = z.infer<typeof financialInfoSchema>;
 
 /**
- * Validation helper function
- * Validates student form data and returns structured errors
- * @param data - The form data to validate
- * @returns Object containing validation errors (empty if valid)
- */
-export const validateStudentForm = (
-  data: CreateStudentRequest | UpdateStudentRequest | StudentFormData
-): StudentFormErrors => {
-  const errors: StudentFormErrors = {};
-
-  // First name validation
-  if (!data.firstName || data.firstName.trim().length === 0) {
-    errors.firstName = 'First name is required.';
-  } else if (data.firstName.trim().length > StudentValidationRules.FIRST_NAME.MAX_LENGTH) {
-    errors.firstName = `First name must not exceed ${StudentValidationRules.FIRST_NAME.MAX_LENGTH} characters.`;
-  } else if (!StudentValidationRules.FIRST_NAME.PATTERN.test(data.firstName)) {
-    errors.firstName = StudentValidationRules.FIRST_NAME.ERROR_MESSAGE;
-  }
-
-  // Last name validation
-  if (!data.lastName || data.lastName.trim().length === 0) {
-    errors.lastName = 'Last name is required.';
-  } else if (data.lastName.trim().length > StudentValidationRules.LAST_NAME.MAX_LENGTH) {
-    errors.lastName = `Last name must not exceed ${StudentValidationRules.LAST_NAME.MAX_LENGTH} characters.`;
-  } else if (!StudentValidationRules.LAST_NAME.PATTERN.test(data.lastName)) {
-    errors.lastName = StudentValidationRules.LAST_NAME.ERROR_MESSAGE;
-  }
-
-  // Email validation
-  if (!data.email || data.email.trim().length === 0) {
-    errors.email = 'Email address is required.';
-  } else if (data.email.trim().length > StudentValidationRules.EMAIL.MAX_LENGTH) {
-    errors.email = `Email must not exceed ${StudentValidationRules.EMAIL.MAX_LENGTH} characters.`;
-  } else if (!StudentValidationRules.EMAIL.PATTERN.test(data.email)) {
-    errors.email = StudentValidationRules.EMAIL.ERROR_MESSAGE;
-  }
-
-  // Phone validation (optional)
-  if (data.phone && data.phone.trim().length > 0) {
-    if (data.phone.trim().length > StudentValidationRules.PHONE.MAX_LENGTH) {
-      errors.phone = `Phone must not exceed ${StudentValidationRules.PHONE.MAX_LENGTH} characters.`;
-    } else if (!StudentValidationRules.PHONE.PATTERN.test(data.phone)) {
-      errors.phone = StudentValidationRules.PHONE.ERROR_MESSAGE;
-    }
-  }
-
-  // Date of birth validation (optional)
-  if (data.dateOfBirth && data.dateOfBirth.trim().length > 0) {
-    const birthDate = new Date(data.dateOfBirth);
-    const today = new Date();
-    if (birthDate > today) {
-      errors.dateOfBirth = 'Date of birth cannot be in the future.';
-    }
-  }
-
-  // Enrollment date validation
-  if (!data.enrollmentDate || data.enrollmentDate.trim().length === 0) {
-    errors.enrollmentDate = 'Enrollment date is required.';
-  } else {
-    const enrollDate = new Date(data.enrollmentDate);
-    const today = new Date();
-    if (enrollDate > today) {
-      errors.enrollmentDate = 'Enrollment date cannot be in the future.';
-    }
-  }
-
-  // Parent/guardian contact validation (required)
-  if (!data.parentContact || data.parentContact.trim().length === 0) {
-    errors.parentContact = 'Parent/guardian contact is required.';
-  }
-
-  // Parent email validation (required)
-  if (!data.parentEmail || data.parentEmail.trim().length === 0) {
-    errors.parentEmail = 'Parent email is required.';
-  } else if (!StudentValidationRules.EMAIL.PATTERN.test(data.parentEmail)) {
-    errors.parentEmail = 'Parent email must be a valid email address.';
-  }
-
-  // Discount validation
-  if (data.hasDiscount) {
-    if (!data.discountTypeId || data.discountTypeId.trim().length === 0) {
-      errors.discountTypeId = 'Discount type selection is required when discount is enabled.';
-    } else if (!StudentValidationRules.DISCOUNT_TYPE_ID.PATTERN.test(data.discountTypeId)) {
-      errors.discountTypeId = StudentValidationRules.DISCOUNT_TYPE_ID.ERROR_MESSAGE;
-    }
-  }
-
-  // Notes validation (optional)
-  if (data.notes && data.notes.trim().length > StudentValidationRules.NOTES.MAX_LENGTH) {
-    errors.notes = `Notes must not exceed ${StudentValidationRules.NOTES.MAX_LENGTH} characters.`;
-  }
-
-  return errors;
-};
-
-/**
- * Quick validation check for student first name
- */
-export const validateStudentFirstName = (firstName: string): string | null => {
-  if (!firstName || firstName.trim().length === 0) {
-    return 'First name is required.';
-  }
-  
-  if (firstName.trim().length > StudentValidationRules.FIRST_NAME.MAX_LENGTH) {
-    return `First name must not exceed ${StudentValidationRules.FIRST_NAME.MAX_LENGTH} characters.`;
-  }
-  
-  if (!StudentValidationRules.FIRST_NAME.PATTERN.test(firstName)) {
-    return StudentValidationRules.FIRST_NAME.ERROR_MESSAGE;
-  }
-  
-  return null;
-};
-
-/**
- * Quick validation check for student last name
- */
-export const validateStudentLastName = (lastName: string): string | null => {
-  if (!lastName || lastName.trim().length === 0) {
-    return 'Last name is required.';
-  }
-  
-  if (lastName.trim().length > StudentValidationRules.LAST_NAME.MAX_LENGTH) {
-    return `Last name must not exceed ${StudentValidationRules.LAST_NAME.MAX_LENGTH} characters.`;
-  }
-  
-  if (!StudentValidationRules.LAST_NAME.PATTERN.test(lastName)) {
-    return StudentValidationRules.LAST_NAME.ERROR_MESSAGE;
-  }
-  
-  return null;
-};
-
-/**
- * Quick validation check for student email
- */
-export const validateStudentEmail = (email: string): string | null => {
-  if (!email || email.trim().length === 0) {
-    return 'Email address is required.';
-  }
-  
-  if (email.trim().length > StudentValidationRules.EMAIL.MAX_LENGTH) {
-    return `Email must not exceed ${StudentValidationRules.EMAIL.MAX_LENGTH} characters.`;
-  }
-  
-  if (!StudentValidationRules.EMAIL.PATTERN.test(email)) {
-    return StudentValidationRules.EMAIL.ERROR_MESSAGE;
-  }
-  
-  return null;
-};
-
-/**
- * Quick validation check for student phone
- */
-export const validateStudentPhone = (phone?: string): string | null => {
-  if (!phone || phone.trim().length === 0) return null; // Phone is optional
-  
-  if (phone.trim().length > StudentValidationRules.PHONE.MAX_LENGTH) {
-    return `Phone must not exceed ${StudentValidationRules.PHONE.MAX_LENGTH} characters.`;
-  }
-  
-  if (!StudentValidationRules.PHONE.PATTERN.test(phone)) {
-    return StudentValidationRules.PHONE.ERROR_MESSAGE;
-  }
-  
-  return null;
-};
-
-/**
- * Quick validation check for discount type ID
- */
-export const validateDiscountTypeId = (discountTypeId?: string, hasDiscount?: boolean): string | null => {
-  if (!hasDiscount) return null; // Not required if discount is disabled
-  
-  if (!discountTypeId || discountTypeId.trim().length === 0) {
-    return 'Discount type selection is required when discount is enabled.';
-  }
-  
-  if (!StudentValidationRules.DISCOUNT_TYPE_ID.PATTERN.test(discountTypeId)) {
-    return StudentValidationRules.DISCOUNT_TYPE_ID.ERROR_MESSAGE;
-  }
-  
-  return null;
-};
-
-/**
- * Check if form data is valid
- */
-export const isStudentFormValid = (
-  data: CreateStudentRequest | UpdateStudentRequest | StudentFormData
-): boolean => {
-  const errors = validateStudentForm(data);
-  return Object.keys(errors).length === 0;
-};
-
-/**
  * Sanitize student form data
  */
 export const sanitizeStudentData = <T extends Partial<StudentFormData>>(data: T): T => {
@@ -542,29 +345,34 @@ export interface ValidationResult {
 }
 
 /**
- * Comprehensive validation with sanitization and request object creation
+ * Comprehensive validation with sanitization and request object creation.
+ * Uses Zod schema.safeParse for validation.
  */
 export const validateAndPrepareStudentData = (
   data: Partial<StudentFormData>,
   isUpdate: boolean = false
 ): ValidationResult => {
   const sanitized = sanitizeStudentData(data);
-  const errors = validateStudentForm(sanitized);
-  const isValid = Object.keys(errors).length === 0;
-  
-  if (!isValid) {
+  const schema = isUpdate ? updateStudentSchema : createStudentSchema;
+  const result = schema.safeParse(sanitized);
+
+  if (!result.success) {
+    const errors: StudentFormErrors = {};
+    result.error.errors.forEach((err) => {
+      const path = err.path.join('.');
+      if (path && !errors[path as keyof StudentFormErrors]) {
+        errors[path as keyof StudentFormErrors] = err.message;
+      }
+    });
     return { isValid: false, errors };
   }
-  
-  const requestData = isUpdate 
-    ? createUpdateStudentRequest(sanitized as StudentFormData)
-    : createStudentRequest(sanitized);
-  
-  return {
-    isValid: true,
-    errors: {},
-    data: requestData,
-  };
+
+  // Type assertion is safe: Zod schema output aligns with StudentFormData
+  const requestData = isUpdate
+    ? createUpdateStudentRequest(result.data as StudentFormData)
+    : createStudentRequest(result.data);
+
+  return { isValid: true, errors: {}, data: requestData };
 };
 
 const getUnknownErrorMessage = (error: unknown): string => {
@@ -589,19 +397,11 @@ export const StudentErrorHandlers = {
 };
 
 export default {
-  validateStudentForm,
-  validateStudentFirstName,
-  validateStudentLastName,
-  validateStudentEmail,
-  validateStudentPhone,
-  validateDiscountTypeId,
-  isStudentFormValid,
   sanitizeStudentData,
   createStudentRequest,
   createUpdateStudentRequest,
   validateAndPrepareStudentData,
   StudentErrorHandlers,
-  // Zod schemas
   createStudentSchema,
   updateStudentSchema,
 };

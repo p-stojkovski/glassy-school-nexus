@@ -161,9 +161,9 @@ const {
 
 | Section | Component | Fields |
 |---------|-----------|--------|
-| Personal Info | `StudentInfoSection` | Name, DOB, email, phone, school info |
-| Guardian Info | `GuardianInfoSection` | Guardian name, relationship, contact |
-| Financial Info | `FinancialInfoSection` | Discounts, payment preferences |
+| Personal Info | `StudentInfoSection` | firstName, lastName, email, phone, dateOfBirth, placeOfBirth |
+| Guardian Info | `GuardianInfoSection` | parentContact, parentEmail |
+| Financial Info | `FinancialInfoSection` | hasDiscount, discountTypeId, discountAmount, notes |
 
 ## Tab: Classes (`tabs/classes/`)
 

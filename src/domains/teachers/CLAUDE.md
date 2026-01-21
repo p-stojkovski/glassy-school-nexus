@@ -8,7 +8,7 @@
 |----------|---------|
 | **Agent:** `teachers-domain-specialist` | Full-stack investigation, troubleshooting, implementation |
 | **Skill:** `teachers-domain-reference` | Auto-injected quick reference during active work |
-| **Backend:** `think-english-api/src/Api/Features/Teachers/` | 11+ endpoints + shared contract files |
+| **Backend:** `think-english-api/src/Api/Features/Teachers/` | 21+ endpoints + shared contract files |
 
 ## Domain Purpose
 
@@ -108,13 +108,19 @@ Each detail page tab loads its own data independently to optimize performance.
 
 ## API Endpoints Summary
 
-**CRUD (6):** Create, GetAll, GetById, Update, Delete, Search
+**CRUD (6):** Create, GetAll, GetById, Update, Delete, CheckEmailAvailable
 
-**Profile Tabs (4):** Overview, Classes, Schedule, Students
+**Profile Tabs (5):** Overview, Classes, ClassesPaymentSummary, Schedule, Students
 
-**Salary (5+):** GetCalculations, GenerateCalculation, GetCalculationDetail, ApproveCalculation, ReopenCalculation, GetSalaryPreview, GetAuditLog
+**Employment & Base Salary (4):** GetEmploymentSettings, GetBaseSalary, GetBaseSalaryHistory, SetBaseSalary
 
-**Utilities (1):** CheckEmailAvailable
+**Salary Config (3):** GetSalaryConfig, SetSalaryConfig, UpdateSalaryConfig
+
+**Salary Preview (2):** GetTeacherSalary, GetTeacherSalaryPreview
+
+**Teacher Lessons (1):** GetTeacherLessons
+
+**Salary Calculations (5, in TeacherSalaries feature):** GetCalculations, GenerateCalculation, GetCalculationDetail, ApproveCalculation, ReopenCalculation
 
 ## Anti-Patterns (NEVER DO)
 
@@ -149,4 +155,4 @@ grep -r ": any" --include="*.ts" src/domains/teachers
 
 ---
 
-*Last updated: 2026-01-12*
+*Last updated: 2026-01-21*

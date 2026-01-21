@@ -10,60 +10,67 @@
 schemas/
 ├── CLAUDE.md                           # This file
 ├── index.ts                            # Barrel exports
-└── studentValidators.ts                # All validation schemas
+└── studentValidators.ts                # Re-exports from centralized location
 ```
 
-## Main File: studentValidators.ts
+## Important: Centralized Validation
 
-Contains all Zod schemas for student validation, organized by purpose.
+**Primary Location:** `think-english-ui/src/utils/validation/studentValidators.ts`
+
+The `schemas/studentValidators.ts` file re-exports from the centralized location. This ensures:
+- Single source of truth for validation rules
+- Easy sync with backend FluentValidation
+- Consistent validation across all forms
+
+## Main Schemas
+
+Exported from `utils/validation/studentValidators.ts`:
 
 ### Form Schema
 
 The primary schema used for create/edit forms:
 
 ```typescript
-export const studentFormSchema = z.object({
+export const createStudentSchema = z.object({
   // Personal Information
   firstName: z.string()
     .min(2, 'First name must be at least 2 characters')
-    .max(50, 'First name cannot exceed 50 characters'),
+    .max(50, 'First name cannot exceed 50 characters')
+    .regex(namePattern, 'Invalid characters in name'),
   lastName: z.string()
     .min(2, 'Last name must be at least 2 characters')
-    .max(50, 'Last name cannot exceed 50 characters'),
+    .max(50, 'Last name cannot exceed 50 characters')
+    .regex(namePattern, 'Invalid characters in name'),
   email: z.string()
     .email('Invalid email format')
+    .max(320)
     .optional()
     .or(z.literal('')),
-  phoneNumber: z.string()
-    .regex(/^[\d\s\-+()]*$/, 'Invalid phone format')
+  phone: z.string()
+    .regex(phonePattern, 'Invalid phone format')
+    .max(20)
     .optional(),
   dateOfBirth: z.string()
-    .refine(val => !val || new Date(val) <= new Date(), 'Date cannot be in future')
+    .refine(isPast, 'Date cannot be in future')
     .optional(),
-  schoolName: z.string().max(100).optional(),
-  gradeLevel: z.string().max(50).optional(),
+  placeOfBirth: z.string().max(100).optional(),
+  enrollmentDate: z.string()
+    .refine(notFuture, 'Date cannot be in future'),
+  isActive: z.boolean(),
 
   // Guardian Information
-  guardianName: z.string()
-    .min(2, 'Guardian name must be at least 2 characters')
-    .max(100, 'Guardian name cannot exceed 100 characters'),
-  guardianRelationship: z.string().max(50).optional(),
-  guardianPhone: z.string()
-    .regex(/^[\d\s\-+()]*$/, 'Invalid phone format')
-    .optional(),
-  guardianEmail: z.string()
+  parentContact: z.string().max(100).optional(),
+  parentEmail: z.string()
     .email('Invalid email format')
+    .max(320)
     .optional()
     .or(z.literal('')),
-  emergencyContact: z.string().max(200).optional(),
 
   // Financial Information
+  hasDiscount: z.boolean(),
   discountTypeId: z.string().uuid().optional().nullable(),
-  discountPercentage: z.number()
-    .min(0, 'Discount cannot be negative')
-    .max(100, 'Discount cannot exceed 100%')
-    .optional(),
-  paymentNotes: z.string().max(500).optional(),
+  discountAmount: z.number().min(0).optional(),
+  notes: z.string().max(500).optional(),
 });
 ```
 
@@ -71,31 +78,29 @@ export const studentFormSchema = z.object({
 
 ```typescript
 // Infer TypeScript type from schema
-export type StudentFormData = z.infer<typeof studentFormSchema>;
+export type CreateStudentFormData = z.infer<typeof createStudentSchema>;
+export type UpdateStudentFormData = z.infer<typeof updateStudentSchema>;
 
-// Partial schema for section editing
-export const studentInfoSectionSchema = studentFormSchema.pick({
+// Partial schemas for section editing
+export const personalInfoSchema = createStudentSchema.pick({
   firstName: true,
   lastName: true,
   email: true,
-  phoneNumber: true,
+  phone: true,
   dateOfBirth: true,
-  schoolName: true,
-  gradeLevel: true,
+  placeOfBirth: true,
 });
 
-export const guardianSectionSchema = studentFormSchema.pick({
-  guardianName: true,
-  guardianRelationship: true,
-  guardianPhone: true,
-  guardianEmail: true,
-  emergencyContact: true,
+export const guardianInfoSchema = createStudentSchema.pick({
+  parentContact: true,
+  parentEmail: true,
 });
 
-export const financialSectionSchema = studentFormSchema.pick({
+export const financialInfoSchema = createStudentSchema.pick({
+  hasDiscount: true,
   discountTypeId: true,
-  discountPercentage: true,
-  paymentNotes: true,
+  discountAmount: true,
+  notes: true,
 });
 ```
 
@@ -134,15 +139,27 @@ export function validateAndPrepareStudentData(
 
 **Critical:** Zod schemas must match FluentValidation rules in backend.
 
-| Field | Zod Rule | FluentValidation Rule |
-|-------|----------|----------------------|
-| `firstName` | `.min(2).max(50)` | `MinLength(2).MaxLength(50)` |
-| `lastName` | `.min(2).max(50)` | `MinLength(2).MaxLength(50)` |
-| `email` | `.email().optional()` | `EmailAddress().When(x => !string.IsNullOrEmpty(x.Email))` |
-| `guardianName` | `.min(2).max(100)` | `MinLength(2).MaxLength(100)` |
-| `discountPercentage` | `.min(0).max(100)` | `InclusiveBetween(0, 100)` |
+| Field | Zod Rule | FluentValidation Rule | Match |
+|-------|----------|----------------------|-------|
+| `firstName` | `.min(2).max(50).regex(namePattern)` | `NotEmpty().MaxLength(50).Must(IsValidName)` | ✅ |
+| `lastName` | `.min(2).max(50).regex(namePattern)` | `NotEmpty().MaxLength(50).Must(IsValidName)` | ✅ |
+| `email` | `.email().max(320).optional()` | `EmailAddress().MaxLength(320).When(...)` | ✅ |
+| `phone` | `.regex(phonePattern).max(20).optional()` | `MaxLength(20).Must(IsValidPhoneNumber).When(...)` | ✅ |
+| `dateOfBirth` | `.refine(isPast).optional()` | `Must(IsValidDateOfBirth).When(...)` | ✅ |
+| `enrollmentDate` | `.refine(notFuture)` | `Must(IsValidEnrollmentDate)` | ✅ |
+| `notes` | `.max(500).optional()` | `MaxLength(500).When(...)` | ✅ |
+| `discountTypeId` | `.uuid().optional()` | `Must(IsValidGuid).When(hasDiscount)` | ✅ |
+| `parentContact` | `.max(100).optional()` | `MaxLength(100).When(...)` | ✅ |
+| `parentEmail` | `.email().max(320).optional()` | `EmailAddress().MaxLength(320).When(...)` | ✅ |
 
-Backend validation file: `think-english-api/src/Api/Features/Students/Shared/StudentValidationRules.cs`
+**Validation Constants (from `StudentValidationRules.cs`):**
+- `MaxFirstNameLength = 50`, `MaxLastNameLength = 50`
+- `MaxEmailLength = 320`, `MaxPhoneLength = 20`
+- `MaxNotesLength = 500`, `MaxParentContactLength = 100`
+- `MaxPlaceOfBirthLength = 100`
+- `MinPhoneDigits = 7`, `MaxPhoneDigits = 15`
+
+Backend validation file: `think-english-api/src/Api/Features/Students/Shared/ValidationRules/StudentValidationRules.cs`
 
 ## Usage in Components
 

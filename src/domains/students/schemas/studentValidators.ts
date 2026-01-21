@@ -20,14 +20,7 @@ export {
   type FinancialInfoFormData,
   type StudentFormErrors,
   type ValidationResult,
-  // Validation functions
-  validateStudentForm,
-  validateStudentFirstName,
-  validateStudentLastName,
-  validateStudentEmail,
-  validateStudentPhone,
-  validateDiscountTypeId,
-  isStudentFormValid,
+  // Validation utilities
   sanitizeStudentData,
   createStudentRequest,
   createUpdateStudentRequest,
