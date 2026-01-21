@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import ClassScheduleSection from './ClassScheduleSection';
 import ArchivedSchedulesSection from './ArchivedSchedulesSection';
 import { AddScheduleSlotSidebar } from './dialogs';
@@ -18,8 +18,8 @@ import {
 import { ClassBasicInfoResponse, ScheduleSlotDto } from '@/types/api/class';
 import { classApiService } from '@/services/classApiService';
 import { academicCalendarApiService } from '@/services/academicCalendarApiService';
-import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
 import { toast } from 'sonner';
+import { useScheduleTabState } from './hooks';
 
 interface ScheduleTabProps {
   classData: ClassBasicInfoResponse;
@@ -46,53 +46,44 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
   onToggleArchivedSchedules,
   onRefreshArchivedSchedules,
 }) => {
-  // Lazy loading state for schedule data
-  const [schedule, setSchedule] = useState<ScheduleSlotDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [fetchedForClassId, setFetchedForClassId] = useState<string | null>(null);
+  const {
+    state,
+    actions,
+    hasFetchedSchedule,
+    hasFetchedSemesters,
+    isAddDialogOpen,
+    isEditDialogOpen,
+    isDeleteDialogOpen,
+    selectedSlot,
+    isDeleting,
+  } = useScheduleTabState();
 
-  const hasFetched = Boolean(classData?.id && fetchedForClassId === classData.id);
+  const hasFetched = hasFetchedSchedule(classData?.id);
+  const hasFetchedSems = hasFetchedSemesters(classData?.academicYearId);
 
   // Reset when switching to a different class
   useEffect(() => {
     if (!classData?.id) return;
-    if (fetchedForClassId === null) return;
-    if (fetchedForClassId === classData.id) return;
+    if (state.fetch.fetchedClassId === null) return;
+    if (state.fetch.fetchedClassId === classData.id) return;
 
-    setSchedule([]);
-    setError(null);
-    setLoading(true);
-    setFetchedForClassId(null);
-  }, [classData?.id, fetchedForClassId]);
-
-  // Semester filtering state
-  const [semesters, setSemesters] = useState<AcademicSemesterResponse[]>([]);
-  const [selectedSemesterId, setSelectedSemesterId] = useState<string>('all');
-  const [loadingSemesters, setLoadingSemesters] = useState(false);
-  const [fetchedSemestersForYearId, setFetchedSemestersForYearId] = useState<string | null>(null);
-
-  // Dialog state
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<ScheduleSlotDto | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+    actions.resetForClassChange();
+  }, [classData?.id, state.fetch.fetchedClassId, actions]);
 
   // Filter schedules by selected semester
   const filteredSchedule = useMemo(() => {
-    if (selectedSemesterId === 'all') {
-      return schedule;
+    if (state.filter.selectedSemesterId === 'all') {
+      return state.data.schedule;
     }
-    return schedule.filter((slot) => {
+    return state.data.schedule.filter((slot) => {
       // Show global schedules (no semester assigned) in all views
       if (slot.isGlobal || !slot.semesterId) {
         return true;
       }
       // Show semester-specific schedules only when that semester is selected
-      return slot.semesterId === selectedSemesterId;
+      return slot.semesterId === state.filter.selectedSemesterId;
     });
-  }, [schedule, selectedSemesterId]);
+  }, [state.data.schedule, state.filter.selectedSemesterId]);
 
   // Fetch semesters for the class's academic year
   useEffect(() => {
@@ -100,27 +91,24 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
 
     const fetchSemesters = async () => {
       if (!classData?.academicYearId) return;
-      if (fetchedSemestersForYearId === classData.academicYearId) return;
+      if (hasFetchedSems) return;
 
-      setLoadingSemesters(true);
+      actions.fetchSemestersStart();
       try {
         const semestersList = await academicCalendarApiService.getSemestersForYear(
           classData.academicYearId
         );
         // Filter out deleted semesters
         const activeSemesters = semestersList.filter((s) => !s.isDeleted);
-        setSemesters(activeSemesters);
-        setFetchedSemestersForYearId(classData.academicYearId);
+        actions.fetchSemestersSuccess(activeSemesters, classData.academicYearId);
       } catch (err) {
         console.error('Failed to load semesters:', err);
         // Don't show error toast - semesters are optional
-      } finally {
-        setLoadingSemesters(false);
       }
     };
 
     fetchSemesters();
-  }, [classData?.academicYearId, fetchedSemestersForYearId, isActive]);
+  }, [classData?.academicYearId, hasFetchedSems, isActive, actions]);
 
   // Fetch schedule data on mount (lazy loading)
   useEffect(() => {
@@ -128,55 +116,47 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
 
     if (!hasFetched && classData?.id) {
       const fetchSchedule = async () => {
-        setLoading(true);
-        setError(null);
+        actions.fetchScheduleStart();
         try {
           const response = await classApiService.getClassSchedule(classData.id);
-          setSchedule(response.schedule);
-          setFetchedForClassId(classData.id);
+          actions.fetchScheduleSuccess(response.schedule, classData.id);
           // Notify parent of schedule count
           onScheduleCountChange?.(response.schedule.filter(s => !s.isObsolete).length);
         } catch (err: unknown) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to load schedule';
-          setError(errorMessage);
-        } finally {
-          setLoading(false);
+          actions.fetchScheduleError(errorMessage);
         }
       };
       fetchSchedule();
     }
-  }, [classData?.id, hasFetched, isActive, onScheduleCountChange]);
+  }, [classData?.id, hasFetched, isActive, onScheduleCountChange, actions]);
 
   // Refetch schedule when onUpdate is called (after add/edit/delete)
   const handleUpdate = async () => {
-    setLoading(true);
+    actions.fetchScheduleStart();
     try {
       const response = await classApiService.getClassSchedule(classData.id);
-      setSchedule(response.schedule);
+      actions.fetchScheduleSuccess(response.schedule, classData.id);
       // Notify parent of updated schedule count
       onScheduleCountChange?.(response.schedule.filter(s => !s.isObsolete).length);
       await onUpdate(); // Also refresh parent data (for enrolled count, etc.)
     } catch (err: unknown) {
       toast.error('Failed to refresh schedule');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleEdit = (slot: ScheduleSlotDto) => {
-    setSelectedSlot(slot);
-    setShowEditDialog(true);
+    actions.openEditDialog(slot);
   };
 
   const handleDelete = (slot: ScheduleSlotDto) => {
-    setSelectedSlot(slot);
-    setShowDeleteDialog(true);
+    actions.openDeleteDialog(slot);
   };
 
   const handleConfirmDelete = async () => {
     if (!selectedSlot?.id) return;
 
-    setIsDeleting(true);
+    actions.deleteStart();
     try {
       const response = await classApiService.deleteScheduleSlot(classData.id, selectedSlot.id);
 
@@ -191,18 +171,20 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
         toast.success('Schedule deleted successfully');
       }
 
-      setShowDeleteDialog(false);
-      setSelectedSlot(null);
+      actions.deleteComplete();
       await handleUpdate();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to delete schedule slot';
       toast.error(message);
-    } finally {
-      setIsDeleting(false);
+      actions.closeDialog();
     }
   };
 
-  if (loading && !hasFetched) {
+  const handleRetry = () => {
+    actions.resetForClassChange();
+  };
+
+  if (state.data.loading && !hasFetched) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <LoadingSpinner size="lg" />
@@ -210,15 +192,12 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
     );
   }
 
-  if (error) {
+  if (state.data.error) {
     return (
       <ErrorMessage
         title="Error Loading Schedule"
-        message={error}
-        onRetry={() => {
-          setFetchedForClassId(null);
-          setError(null);
-        }}
+        message={state.data.error}
+        onRetry={handleRetry}
         showRetry
       />
     );
@@ -237,11 +216,11 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
           classData={classDataWithSchedule}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onAddSchedule={() => setShowAddDialog(true)}
-          semesters={semesters}
-          selectedSemesterId={selectedSemesterId}
-          onSemesterChange={setSelectedSemesterId}
-          loadingSemesters={loadingSemesters}
+          onAddSchedule={actions.openAddDialog}
+          semesters={state.data.semesters}
+          selectedSemesterId={state.filter.selectedSemesterId}
+          onSemesterChange={actions.setSemesterFilter}
+          loadingSemesters={state.data.loadingSemesters}
         />
 
         {/* Archived schedules section */}
@@ -257,17 +236,17 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
 
       {/* Sidebars */}
       <AddScheduleSlotSidebar
-        isOpen={showAddDialog}
-        onOpenChange={setShowAddDialog}
+        isOpen={isAddDialogOpen}
+        onOpenChange={(open) => !open && actions.closeDialog()}
         classId={classData.id}
         classData={classData}
-        initialSemesterId={selectedSemesterId === 'all' ? null : selectedSemesterId}
+        initialSemesterId={state.filter.selectedSemesterId === 'all' ? null : state.filter.selectedSemesterId}
         onSuccess={handleUpdate}
       />
 
       <EditScheduleSlotDialog
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
+        open={isEditDialogOpen}
+        onOpenChange={(open) => !open && actions.closeDialog()}
         classId={classData.id}
         classData={classData}
         slot={selectedSlot}
@@ -275,7 +254,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({
         onDelete={handleDelete}
       />
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={(open) => !open && actions.closeDialog()}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Schedule Slot</AlertDialogTitle>

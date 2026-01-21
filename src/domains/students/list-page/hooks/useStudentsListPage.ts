@@ -5,6 +5,7 @@ import { useStudentFilterState } from '@/domains/students/_shared/hooks/useStude
 import { Student } from '@/domains/students/studentsSlice';
 import { StudentSearchParams } from '@/types/api/student';
 import { getAllTeachers } from '@/services/teacherApiService';
+import { shallowEqual } from '@/utils/objectUtils';
 
 /**
  * List page orchestration hook for the Students domain.
@@ -159,7 +160,7 @@ export const useStudentsListPage = () => {
     if (!isInitialized) return;
 
     const currentFilters = { searchTerm, statusFilter, teacherFilter, discountFilter, paymentFilter };
-    const filtersChanged = JSON.stringify(currentFilters) !== JSON.stringify(previousFiltersRef.current);
+    const filtersChanged = !shallowEqual(currentFilters, previousFiltersRef.current);
 
     if (!filtersChanged) return;
 

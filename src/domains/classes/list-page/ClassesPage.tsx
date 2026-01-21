@@ -9,6 +9,7 @@ import ClassFilters, { ClassViewMode } from './components/ClassFilters';
 import ClassLoading from '@/domains/classes/_shared/components/ClassLoading';
 import { useClasses } from '@/domains/classes/_shared/hooks/useClasses';
 import { AcademicYear } from '@/domains/settings/types/academicCalendarTypes';
+import { shallowEqual } from '@/utils/objectUtils';
 
 const ClassesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -110,7 +111,7 @@ const ClassesPage: React.FC = () => {
   useEffect(() => {
     // Check if filters actually changed
     const currentFilters = { searchTerm, academicYearFilter, subjectFilter, teacherFilter, availabilityFilter, statusFilter };
-    const filtersChanged = JSON.stringify(currentFilters) !== JSON.stringify(previousFiltersRef.current);
+    const filtersChanged = !shallowEqual(currentFilters, previousFiltersRef.current);
 
     if (!filtersChanged) return;
 
