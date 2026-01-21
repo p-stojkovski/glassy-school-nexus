@@ -30,88 +30,10 @@ export const TeacherSalaryErrorCodes = {
 } as const;
 
 // ============================================================================
-// SALARY CALCULATION ERRORS (SalaryCalculationErrors.cs)
-// ============================================================================
-
-export const SalaryCalculationErrorCodes = {
-  /** Teacher not found */
-  TEACHER_NOT_FOUND: 'teacher_not_found',
-
-  /** No active academic year configured */
-  NO_ACTIVE_ACADEMIC_YEAR: 'no_active_academic_year',
-
-  /** Period is outside the active academic year */
-  PERIOD_OUTSIDE_ACADEMIC_YEAR: 'period_outside_academic_year',
-
-  /** A salary calculation already exists for this overlapping period */
-  OVERLAPPING_SALARY_PERIOD: 'overlapping_salary_period',
-
-  /** A salary calculation already exists for this month/year */
-  DUPLICATE_SALARY_MONTH_YEAR: 'duplicate_salary_month_year',
-
-  /** Cannot generate salary for future months */
-  FUTURE_MONTH_NOT_ALLOWED: 'future_month_not_allowed',
-
-  /** No conducted lessons found for the period */
-  NO_CONDUCTED_LESSONS: 'no_conducted_lessons',
-
-  /** Teacher has no active classes assigned */
-  TEACHER_NO_CLASSES: 'teacher_no_classes',
-
-  /** Class has no salary rules configured */
-  NO_SALARY_RULES_CONFIGURED: 'no_salary_rules_configured',
-
-  /** Failed to create salary calculation */
-  CREATION_FAILED: 'salary_calculation_creation_failed',
-
-  /** Failed to retrieve salary calculation */
-  RETRIEVAL_FAILED: 'salary_calculation_retrieval_failed',
-
-  /** Salary calculation not found */
-  CALCULATION_NOT_FOUND: 'salary_calculation_not_found',
-
-  /** Calculation does not belong to the specified teacher */
-  CALCULATION_NOT_BELONG_TO_TEACHER: 'salary_calculation_not_belong_to_teacher',
-
-  /** Cannot approve a calculation that is not pending or reopened */
-  CANNOT_APPROVE_NON_PENDING: 'cannot_approve_non_pending',
-
-  /** Adjustment reason is required when changing the calculated amount */
-  ADJUSTMENT_REASON_REQUIRED: 'adjustment_reason_required',
-
-  /** Cannot reopen a calculation that is not approved */
-  CANNOT_REOPEN_NON_APPROVED: 'cannot_reopen_non_approved',
-
-  /** Failed to trigger salary recalculation */
-  RECALCULATION_FAILED: 'salary_recalculation_failed',
-
-  // Adjustment errors
-
-  /** Cannot add/remove adjustments from an approved calculation */
-  CANNOT_MODIFY_APPROVED_CALCULATION: 'cannot_modify_approved_calculation',
-
-  /** Adjustment not found */
-  ADJUSTMENT_NOT_FOUND: 'adjustment_not_found',
-
-  /** Duplicate adjustment already exists */
-  DUPLICATE_ADJUSTMENT: 'duplicate_adjustment',
-
-  /** Failed to create adjustment */
-  ADJUSTMENT_CREATION_FAILED: 'adjustment_creation_failed',
-
-  /** Failed to delete adjustment */
-  ADJUSTMENT_DELETION_FAILED: 'adjustment_deletion_failed',
-
-  /** Invalid rule snapshot in database */
-  INVALID_RULE_SNAPSHOT: 'invalid_rule_snapshot',
-} as const;
-
-// ============================================================================
 // TYPE EXPORTS
 // ============================================================================
 
 export type TeacherSalaryErrorCode = typeof TeacherSalaryErrorCodes[keyof typeof TeacherSalaryErrorCodes];
-export type SalaryCalculationErrorCode = typeof SalaryCalculationErrorCodes[keyof typeof SalaryCalculationErrorCodes];
 
 /**
  * Helper to extract error code from API error

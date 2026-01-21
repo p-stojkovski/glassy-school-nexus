@@ -128,9 +128,34 @@ export function useTeacherClassesWithPayments({
     [studentsByClass]
   );
 
-  // Fetch on mount
+  // Fetch on mount with cleanup to prevent memory leaks
   useEffect(() => {
-    loadPaymentSummary();
+    let mounted = true;
+
+    const load = async () => {
+      if (!teacherId) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await teacherApiService.getTeacherClassesPaymentSummary(teacherId);
+        if (mounted) {
+          setPaymentData(data);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Failed to load payment summary');
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
   }, [teacherId]); // Only refetch when teacherId changes
 
   // Derived data

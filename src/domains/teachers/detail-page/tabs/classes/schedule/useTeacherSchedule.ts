@@ -63,9 +63,38 @@ export function useTeacherSchedule({ teacherId }: UseTeacherScheduleOptions): Us
     }
   }, [teacherId]);
 
-  // Fetch on mount
+  // Fetch on mount with cleanup to prevent memory leaks
   useEffect(() => {
-    loadSchedule();
+    let mounted = true;
+
+    const load = async () => {
+      if (!teacherId) return;
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch all schedule slots (including inactive classes for toggle functionality)
+        const response = await teacherApiService.getTeacherSchedule(teacherId, {
+          activeClassesOnly: false,
+        });
+        if (mounted) {
+          setSlots(response.slots);
+          setStats(response.stats);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Failed to load schedule');
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
   }, [teacherId]); // Only refetch when teacherId changes
 
   // Derive unique classes from loaded slots

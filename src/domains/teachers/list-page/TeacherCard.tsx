@@ -13,7 +13,7 @@ interface TeacherCardProps {
   isDeleting?: boolean;
 }
 
-const TeacherCard: React.FC<TeacherCardProps> = ({ teacher, onEdit, onDelete, isDeleting = false }) => {
+const TeacherCard: React.FC<TeacherCardProps> = React.memo(({ teacher, onEdit, onDelete, isDeleting = false }) => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -96,6 +96,8 @@ const TeacherCard: React.FC<TeacherCardProps> = ({ teacher, onEdit, onDelete, is
       </GlassCard>
     </motion.div>
   );
-};
+});
+
+TeacherCard.displayName = 'TeacherCard';
 
 export default TeacherCard;

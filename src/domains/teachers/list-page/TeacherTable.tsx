@@ -31,7 +31,7 @@ interface TeacherTableProps {
   onPageChange: (page: number) => void;
 }
 
-const TeacherTable: React.FC<TeacherTableProps> = ({
+const TeacherTable: React.FC<TeacherTableProps> = React.memo(({
   teachers,
   totalCount,
   currentPage,
@@ -275,6 +275,8 @@ const TeacherTable: React.FC<TeacherTableProps> = ({
       </div>
     </motion.div>
   );
-};
+});
+
+TeacherTable.displayName = 'TeacherTable';
 
 export default TeacherTable;

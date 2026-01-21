@@ -3,7 +3,6 @@ import { useTeachers } from './useTeachers';
 import { Teacher } from '../../teachersSlice';
 import {
   getAllTeachers,
-  searchTeachers,
   getAllSubjects,
 } from '@/services/teacherApiService';
 import { TeacherErrorHandlers } from '@/utils/apiErrorHandler';
@@ -108,10 +107,7 @@ export const useTeacherList = (options?: UseTeacherListOptions): UseTeacherListR
     setSearchParams(params);
 
     try {
-      const results = await searchTeachers(
-        params.searchTerm,
-        params.subjectId
-      );
+      const results = await getAllTeachers(params);
       setSearchResults(results);
       setSearchMode(true);
     } catch (error) {

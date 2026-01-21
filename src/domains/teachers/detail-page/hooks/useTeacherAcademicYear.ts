@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAcademicYears } from '@/hooks/useAcademicYears';
 import { AcademicYear } from '@/domains/settings/types/academicCalendarTypes';
@@ -85,10 +85,12 @@ export const useTeacherAcademicYear = (): UseTeacherAcademicYearReturn => {
   // Selected year ID
   const selectedYearId = selectedYear?.id || null;
 
-  // Setter for year selection
-  const setSelectedYearId = (id: string) => {
-    setSearchParams({ year: id });
-  };
+  // Setter for year selection - preserves existing URL params (like 'tab')
+  const setSelectedYearId = useCallback((id: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('year', id);
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   // Between years message
   const betweenYearsMessage = useMemo(() => {

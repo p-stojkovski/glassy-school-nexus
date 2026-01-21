@@ -19,10 +19,6 @@ import { validateAndPrepareTeacherData } from '@/utils/validation/teacherValidat
 import { clearCache } from '@/utils/cacheManager';
 import { TeacherFormData } from './useTeacherManagement';
 
-export interface UseTeacherCRUDOptions {
-  onSuccess?: () => void;
-}
-
 export interface UseTeacherCRUDReturn {
   // Actions
   createTeacherApi: (data: TeacherFormData) => Promise<Teacher>;
@@ -52,7 +48,7 @@ export interface UseTeacherCRUDReturn {
   clearError: (operation: string) => void;
 }
 
-export const useTeacherCRUD = (options?: UseTeacherCRUDOptions): UseTeacherCRUDReturn => {
+export const useTeacherCRUD = (): UseTeacherCRUDReturn => {
   const {
     loading,
     errors,

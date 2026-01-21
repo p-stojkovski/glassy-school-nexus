@@ -70,10 +70,49 @@ export function useTeacherSalaryCalculations({ academicYearId }: UseTeacherSalar
     }
   };
 
-  // Fetch on mount and when filters change
+  // Fetch on mount and when filters change with cleanup to prevent memory leaks
   useEffect(() => {
-    fetchCalculations();
-  }, [teacherId, filters.status, filters.academicYearId]);
+    let mounted = true;
+
+    const load = async () => {
+      if (!teacherId) return;
+
+      try {
+        if (mounted) {
+          dispatch(setLoadingState({ operation: 'fetchingSalaryCalculations', loading: true }));
+          dispatch(setError({ operation: 'fetchSalaryCalculations', error: null }));
+        }
+
+        // Build API filters
+        const apiFilters: SalaryCalculationFilters = {};
+        if (filters.status !== 'all') {
+          apiFilters.status = filters.status;
+        }
+        if (filters.academicYearId) {
+          apiFilters.academicYearId = filters.academicYearId;
+        }
+
+        const data = await getSalaryCalculations(teacherId, apiFilters);
+        if (mounted) {
+          dispatch(setSalaryCalculations(data));
+        }
+      } catch (err: unknown) {
+        if (mounted) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to load salary calculations';
+          dispatch(setError({ operation: 'fetchSalaryCalculations', error: errorMessage }));
+        }
+      } finally {
+        if (mounted) {
+          dispatch(setLoadingState({ operation: 'fetchingSalaryCalculations', loading: false }));
+        }
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [teacherId, filters.status, filters.academicYearId, dispatch]);
 
   // Update academic year filter when prop changes
   useEffect(() => {

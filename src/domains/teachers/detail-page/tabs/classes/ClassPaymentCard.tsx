@@ -16,10 +16,11 @@ import {
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import GlassCard from '@/components/common/GlassCard';
-import { TeacherClassWithPayments, PaymentScheduleSlot, StudentPaymentStatus } from '@/types/api/teacher';
+import { TeacherClassWithPayments, StudentPaymentStatus } from '@/types/api/teacher';
 import StudentPaymentRow from './StudentPaymentRow';
 import ClassMetricsRow from './ClassMetrics';
 import { cn } from '@/lib/utils';
+import { formatSchedule } from '../../_shared/utils';
 
 /**
  * Wrapper component to manage expanded state for student rows
@@ -76,31 +77,6 @@ const ClassPaymentCard = memo<ClassPaymentCardProps>(({
 }) => {
   const navigate = useNavigate();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  const formatSchedule = (slots: PaymentScheduleSlot[]): string => {
-    if (!slots || slots.length === 0) return 'No schedule';
-
-    // Group slots by time pattern
-    const timeGroups = new Map<string, string[]>();
-
-    slots.forEach((slot) => {
-      const timeKey = `${slot.startTime}-${slot.endTime}`;
-      const dayShort = slot.dayName.substring(0, 3);
-
-      if (!timeGroups.has(timeKey)) {
-        timeGroups.set(timeKey, []);
-      }
-      timeGroups.get(timeKey)!.push(dayShort);
-    });
-
-    // Build formatted strings
-    const parts: string[] = [];
-    timeGroups.forEach((days, time) => {
-      parts.push(`${days.join(', ')} ${time}`);
-    });
-
-    return parts.join(' | ');
-  };
 
   const handleOpenSheet = (e: React.MouseEvent) => {
     e.stopPropagation();

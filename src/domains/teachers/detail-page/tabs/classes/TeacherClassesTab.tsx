@@ -7,45 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTeacherClasses } from './useTeacherClasses';
 import { useTeacherClassesWithPayments } from './useTeacherClassesWithPayments';
-import { TeacherClassDto, TeacherClassScheduleSlot } from '@/types/api/teacher';
+import { TeacherClassDto } from '@/types/api/teacher';
 import ClassPaymentCard from './ClassPaymentCard';
+import { formatSchedule } from '../../_shared/utils';
 
 interface TeacherClassesTabProps {
   teacherId: string;
   academicYearId?: string | null;
   yearName?: string;
-}
-
-/**
- * Format schedule slots into a readable string.
- * Groups consecutive slots on the same day with different times.
- * Example: "Mon, Wed 9:00-10:30" or "Mon 9:00-10:30, Wed 14:00-15:30"
- */
-function formatSchedule(slots: TeacherClassScheduleSlot[]): string {
-  if (!slots || slots.length === 0) {
-    return 'No schedule';
-  }
-
-  // Group slots by time pattern
-  const timeGroups = new Map<string, string[]>();
-
-  slots.forEach(slot => {
-    const timeKey = `${slot.startTime}-${slot.endTime}`;
-    const dayShort = slot.dayName.substring(0, 3);
-
-    if (!timeGroups.has(timeKey)) {
-      timeGroups.set(timeKey, []);
-    }
-    timeGroups.get(timeKey)!.push(dayShort);
-  });
-
-  // Build formatted strings
-  const parts: string[] = [];
-  timeGroups.forEach((days, time) => {
-    parts.push(`${days.join(', ')} ${time}`);
-  });
-
-  return parts.join(' | ');
 }
 
 /**

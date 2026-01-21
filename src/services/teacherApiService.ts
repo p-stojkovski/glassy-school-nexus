@@ -54,12 +54,6 @@ import {
   SalaryCalculationFilters,
   SalaryCalculationApiPaths,
 } from '@/domains/teachers/_shared/types/salaryCalculation.types';
-import {
-  TeacherBaseSalaryResponse,
-  TeacherBaseSalaryHistoryResponse,
-  SetTeacherBaseSalaryRequest,
-  TeacherBaseSalaryApiPaths,
-} from '@/types/api/teacherBaseSalary';
 
 // Preserve status/details/code when rethrowing with a custom message
 function makeApiError(original: any, message: string): Error & { status?: number; details?: any; code?: string } {
@@ -294,17 +288,6 @@ const teacher = await apiService.get<TeacherResponse>(TeacherApiPaths.BY_ID(id))
       }
       throw makeApiError(error, `Failed to fetch teacher class payment summary: ${error.message || 'Unknown error'}`);
     }
-  }
-
-  /**
-   * Search for teachers by name, email, or subject
-   * @param searchParams - Search parameters
-   * @returns Promise<TeacherResponse[]>
-   * @deprecated Use getAllTeachers(searchParams) instead - endpoints have been consolidated
-   */
-  async searchTeachers(searchParams: TeacherSearchParams = {}): Promise<TeacherResponse[]> {
-    // Consolidated: search now uses the same endpoint as getAllTeachers
-    return this.getAllTeachers(searchParams);
   }
 
   /**
@@ -929,98 +912,6 @@ const raw = await apiService.get<any>(endpoint);
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEACHER BASE SALARY (Employment Type Feature - Full Time Teachers)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /**
-   * Get current base salary for a full-time teacher
-   * @param teacherId - Teacher ID (UUID format)
-   * @param academicYearId - Academic Year ID (UUID format)
-   * @returns Promise<TeacherBaseSalaryResponse>
-   */
-  async getTeacherBaseSalary(
-    teacherId: string,
-    academicYearId: string
-  ): Promise<TeacherBaseSalaryResponse> {
-    try {
-      const endpoint = `${TeacherBaseSalaryApiPaths.BASE_SALARY(teacherId)}?academicYearId=${academicYearId}`;
-      const response = await apiService.get<TeacherBaseSalaryResponse>(endpoint);
-      return response;
-    } catch (error: any) {
-      if (error.status === TeacherHttpStatus.NOT_FOUND) {
-        throw makeApiError(error, 'Base salary configuration not found');
-      }
-      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
-        const errorType = (error.details?.type || error.details?.Type || '') as string;
-        if (errorType.includes('not_full_time_teacher')) {
-          throw makeApiError(error, 'Base salary can only be retrieved for full-time teachers');
-        }
-        throw makeApiError(error, 'Invalid request');
-      }
-      throw makeApiError(error, `Failed to fetch base salary: ${error.message || 'Unknown error'}`);
-    }
-  }
-
-  /**
-   * Get base salary history for a teacher (all changes within an academic year)
-   * @param teacherId - Teacher ID (UUID format)
-   * @param academicYearId - Academic Year ID (UUID format)
-   * @returns Promise<TeacherBaseSalaryHistoryResponse>
-   */
-  async getTeacherBaseSalaryHistory(
-    teacherId: string,
-    academicYearId: string
-  ): Promise<TeacherBaseSalaryHistoryResponse> {
-    try {
-      const endpoint = `${TeacherBaseSalaryApiPaths.BASE_SALARY_HISTORY(teacherId)}?academicYearId=${academicYearId}`;
-      const response = await apiService.get<TeacherBaseSalaryHistoryResponse>(endpoint);
-      return response;
-    } catch (error: any) {
-      if (error.status === TeacherHttpStatus.NOT_FOUND) {
-        throw makeApiError(error, 'Teacher not found');
-      }
-      throw makeApiError(error, `Failed to fetch base salary history: ${error.message || 'Unknown error'}`);
-    }
-  }
-
-  /**
-   * Set base salary for a full-time teacher (creates new or updates existing)
-   * @param teacherId - Teacher ID (UUID format)
-   * @param request - Base salary details (amount, academicYearId, effectiveFrom, changeReason)
-   * @returns Promise<TeacherBaseSalaryResponse>
-   */
-  async setTeacherBaseSalary(
-    teacherId: string,
-    request: SetTeacherBaseSalaryRequest
-  ): Promise<TeacherBaseSalaryResponse> {
-    try {
-      const endpoint = TeacherBaseSalaryApiPaths.BASE_SALARY(teacherId);
-      const response = await apiService.post<TeacherBaseSalaryResponse>(endpoint, request);
-      return response;
-    } catch (error: any) {
-      if (error.status === TeacherHttpStatus.NOT_FOUND) {
-        const errorType = (error.details?.type || error.details?.Type || '') as string;
-        if (errorType.includes('academic_year_not_found')) {
-          throw makeApiError(error, 'Academic year not found');
-        }
-        throw makeApiError(error, 'Teacher not found');
-      }
-      if (error.status === TeacherHttpStatus.BAD_REQUEST) {
-        const errorType = (error.details?.type || error.details?.Type || '') as string;
-        if (errorType.includes('not_full_time_teacher')) {
-          throw makeApiError(error, 'Base salary can only be set for full-time teachers');
-        }
-        if (errorType.includes('effective_date_in_past')) {
-          throw makeApiError(error, 'Effective date cannot be before current active salary\'s effective date');
-        }
-        const validationError = error.details?.detail || 'Invalid base salary data';
-        throw makeApiError(error, `Validation error: ${validationError}`);
-      }
-      throw makeApiError(error, `Failed to set base salary: ${error.message || 'Unknown error'}`);
-    }
-  }
-
 }
 
 // Export a singleton instance
@@ -1038,11 +929,6 @@ export const getTeacherClasses = (id: string, params?: TeacherClassesParams) =>
 
 export const getTeacherClassesPaymentSummary = (id: string) =>
   teacherApiService.getTeacherClassesPaymentSummary(id);
-
-export const searchTeachers = (
-  searchTerm?: string,
-  subjectId?: string
-) => teacherApiService.searchTeachers({ searchTerm, subjectId });
 
 export const createTeacher = (request: CreateTeacherRequest) =>
   teacherApiService.createTeacher(request);
@@ -1104,16 +990,6 @@ export const deleteSalaryAdjustment = (teacherId: string, calcId: string, adjust
 // Employment Settings Operations
 export const getEmploymentSettings = (teacherId: string, academicYearId: string) =>
   teacherApiService.getEmploymentSettings(teacherId, academicYearId);
-
-// Base Salary Operations (Employment Type Feature)
-export const getTeacherBaseSalary = (teacherId: string, academicYearId: string) =>
-  teacherApiService.getTeacherBaseSalary(teacherId, academicYearId);
-
-export const getTeacherBaseSalaryHistory = (teacherId: string, academicYearId: string) =>
-  teacherApiService.getTeacherBaseSalaryHistory(teacherId, academicYearId);
-
-export const setTeacherBaseSalary = (teacherId: string, request: SetTeacherBaseSalaryRequest) =>
-  teacherApiService.setTeacherBaseSalary(teacherId, request);
 
 // Export the service instance as default
 export default teacherApiService;

@@ -23,7 +23,6 @@ import {
 interface SalaryCalculationsTabProps {
   academicYearId: string | null;
   yearName: string;
-  isActive: boolean;
 }
 
 const SalaryCalculationsTab: React.FC<SalaryCalculationsTabProps> = ({ academicYearId, yearName }) => {

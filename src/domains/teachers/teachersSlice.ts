@@ -153,8 +153,18 @@ const initialState: TeachersState = {
  */
 export const fetchBaseSalary = createAsyncThunk(
   'teachers/fetchBaseSalary',
-  async ({ teacherId, academicYearId }: { teacherId: string; academicYearId: string }) => {
-    return await teacherBaseSalaryService.getBaseSalary(teacherId, academicYearId);
+  async (
+    { teacherId, academicYearId }: { teacherId: string; academicYearId: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      return await teacherBaseSalaryService.getBaseSalary(teacherId, academicYearId);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'message' in error) {
+        return rejectWithValue((error as { message: string }).message);
+      }
+      return rejectWithValue('Failed to fetch base salary');
+    }
   }
 );
 
@@ -164,22 +174,32 @@ export const fetchBaseSalary = createAsyncThunk(
  */
 export const setBaseSalary = createAsyncThunk(
   'teachers/setBaseSalary',
-  async ({
-    teacherId,
-    request,
-  }: {
-    teacherId: string;
-    request: {
-      baseNetSalary: number;
-      academicYearId: string;
-      effectiveFrom?: string;
-      changeReason?: string;
-    };
-  }) => {
-    return await teacherBaseSalaryService.setBaseSalary(teacherId, {
-      ...request,
-      teacherId, // Include teacherId in request body
-    });
+  async (
+    {
+      teacherId,
+      request,
+    }: {
+      teacherId: string;
+      request: {
+        baseNetSalary: number;
+        academicYearId: string;
+        effectiveFrom?: string;
+        changeReason?: string;
+      };
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      return await teacherBaseSalaryService.setBaseSalary(teacherId, {
+        ...request,
+        teacherId, // Include teacherId in request body
+      });
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'message' in error) {
+        return rejectWithValue((error as { message: string }).message);
+      }
+      return rejectWithValue('Failed to set base salary');
+    }
   }
 );
 
@@ -435,7 +455,8 @@ const teachersSlice = createSlice({
     });
     builder.addCase(fetchBaseSalary.rejected, (state, action) => {
       state.loading.fetchingBaseSalary = false;
-      state.errors.baseSalary = action.error.message ?? 'Failed to fetch base salary';
+      // action.payload contains user-friendly message from rejectWithValue
+      state.errors.baseSalary = (action.payload as string) ?? action.error.message ?? 'Failed to fetch base salary';
     });
 
     // ════════════════════════════════════════════════════════════════════════
@@ -454,7 +475,8 @@ const teachersSlice = createSlice({
     });
     builder.addCase(setBaseSalary.rejected, (state, action) => {
       state.loading.settingBaseSalary = false;
-      state.errors.baseSalary = action.error.message ?? 'Failed to set base salary';
+      // action.payload contains user-friendly message from rejectWithValue
+      state.errors.baseSalary = (action.payload as string) ?? action.error.message ?? 'Failed to set base salary';
     });
   },
 });
@@ -491,6 +513,7 @@ export const {
   setSalaryCalculations,
   addSalaryCalculation,
   updateSalaryCalculation,
+  // Utility actions - kept for state management/cleanup needs
   updateSalaryCalculationInState,
   clearSalaryCalculations,
   setSalaryCalculationDetail,
@@ -505,6 +528,7 @@ export const {
   removeSalaryAdjustment,
 
   // Base salary (Employment Type Feature)
+  // Utility actions - kept for manual state updates and cleanup
   setBaseSalaryData,
   setBaseSalaryHistory,
   clearBaseSalary,
@@ -528,7 +552,7 @@ export const selectLoading = (state: { teachers: TeachersState }) => state.teach
 // Error selectors
 export const selectErrors = (state: { teachers: TeachersState }) => state.teachers.errors;
 
-// Search selectors
+// Search selectors - kept for potential direct state access
 export const selectSearchQuery = (state: { teachers: TeachersState }) => state.teachers.searchQuery;
 export const selectSearchParams = (state: { teachers: TeachersState }) => state.teachers.searchParams;
 export const selectIsSearchMode = (state: { teachers: TeachersState }) => state.teachers.isSearchMode;

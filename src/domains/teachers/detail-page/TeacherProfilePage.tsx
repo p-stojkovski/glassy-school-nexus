@@ -151,7 +151,6 @@ const TeacherProfilePage: React.FC = () => {
           <SalaryCalculationsTab
             academicYearId={selectedYearId}
             yearName={selectedYear?.name}
-            isActive={activeTab === 'salary'}
           />
         </TabsContent>
       </Tabs>
