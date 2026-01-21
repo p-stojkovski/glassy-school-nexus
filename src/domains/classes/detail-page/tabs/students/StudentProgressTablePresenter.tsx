@@ -1,9 +1,9 @@
 import React, { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 import { StudentLessonSummary, StudentLessonDetail } from '@/types/api/class';
-import { ChevronDown, ChevronRight, User, AlertCircle, Search, MessageSquare, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, User, AlertCircle, Search, MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import StudentLessonDetailsRow from './StudentLessonDetailsRow';
 import StudentProgressChips from './StudentProgressChips';
 import StudentRowActionsMenu from './StudentRowActionsMenu';
@@ -154,7 +154,7 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
 
   // Calculate column count for expanded row colspan
   const getColSpan = useCallback(() => {
-    let cols = 4; // Expand, Student, Enrolled, Progress (always shown)
+    let cols = 2; // Student (with progress), Enrolled (always shown)
     if (hasAnyDiscountData) cols++; // Discount column
     if (showDueColumn) cols++; // Due column
     if (hasAnyComments) cols++;
@@ -245,10 +245,8 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
     <Table>
       <TableHeader>
         <TableRow className="border-white/20 hover:bg-transparent">
-          <TableHead className="text-white/90 font-semibold w-8"></TableHead>
-          <TableHead className="text-white/90 font-semibold min-w-[180px]">Student</TableHead>
+          <TableHead className="text-white/90 font-semibold w-1/3">Student</TableHead>
           <TableHead className="text-white/90 font-semibold w-28">Enrolled</TableHead>
-          <TableHead className="text-white/90 font-semibold min-w-[220px]">Progress</TableHead>
           {hasAnyDiscountData && (
             <TableHead className="hidden md:table-cell text-white/90 font-semibold text-center w-32">
               Discount
@@ -279,66 +277,66 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
 
           return (
             <React.Fragment key={summary.studentId}>
-              {/* Main row */}
-              <TableRow className="border-white/10 group hover:bg-white/5 focus-within:bg-white/6 hover:shadow-sm transition-all duration-150 bg-white/[0.02]">
-                {/* Expand button */}
-                <TableCell className="py-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onToggleRow(summary.studentId)}
-                    className="h-8 w-8 p-0 hover:bg-white/10 transition-colors"
-                    aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
-                    aria-expanded={isExpanded}
-                  >
-                    {isExpanded ? (
-                      <ChevronDown className="h-5 w-5 text-white/70" />
-                    ) : (
-                      <ChevronRight className="h-5 w-5 text-white/70" />
-                    )}
-                  </Button>
-                </TableCell>
-
-                {/* Student name with risk indicator */}
-                <TableCell className="font-medium py-3">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      asChild
-                      variant="link"
-                      className="p-0 text-base font-bold text-blue-300 hover:text-blue-200 hover:underline"
+              {/* Main row - compact layout like Teaching page */}
+              <TableRow className="border-white/10 hover:bg-white/5 [&>td]:py-3">
+                {/* Student: expand button + name + progress (compact layout) */}
+                <TableCell className="font-medium">
+                  <div className="flex items-start gap-2">
+                    {/* Expand/Collapse Button */}
+                    <button
+                      type="button"
+                      onClick={() => onToggleRow(summary.studentId)}
+                      className="mt-0.5 p-0.5 rounded hover:bg-white/10 transition-colors"
+                      aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+                      aria-expanded={isExpanded}
                     >
-                      <button onClick={() => navigate(`/students/${summary.studentId}`)}>
-                        {summary.studentName}
-                      </button>
-                    </Button>
-                    {riskIndicator.show && (
-                      <div
-                        className={`w-2 h-2 rounded-full ${riskIndicator.color} transition-transform hover:scale-125`}
-                        title={riskIndicator.title}
+                      {isExpanded ? (
+                        <ChevronDown className="h-4 w-4 text-white/60" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-white/60" />
+                      )}
+                    </button>
+
+                    {/* Student Info */}
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        {/* Risk Indicator */}
+                        {riskIndicator.show && (
+                          <span
+                            className={`w-2 h-2 rounded-full ${riskIndicator.color} flex-shrink-0`}
+                            title={riskIndicator.title}
+                          />
+                        )}
+
+                        {/* Student Name (clickable link to profile) */}
+                        <button
+                          onClick={() => navigate(`/students/${summary.studentId}`)}
+                          className="text-blue-300 hover:text-blue-200 hover:underline cursor-pointer transition-colors truncate font-bold"
+                        >
+                          {summary.studentName}
+                        </button>
+                      </div>
+
+                      {/* Progress Summary - below name */}
+                      <StudentProgressChips
+                        totalLessons={summary.totalLessons}
+                        attendance={summary.attendance}
+                        homework={summary.homework}
                       />
-                    )}
+                    </div>
                   </div>
                 </TableCell>
 
                 {/* Enrolled date */}
-                <TableCell className="py-3">
+                <TableCell>
                   <span className="text-white/60 text-sm">
                     {formatEnrolledDate(summary.enrolledAt)}
                   </span>
                 </TableCell>
 
-                {/* Progress: Combined Lessons + Attendance + Homework */}
-                <TableCell className="py-3">
-                  <StudentProgressChips
-                    totalLessons={summary.totalLessons}
-                    attendance={summary.attendance}
-                    homework={summary.homework}
-                  />
-                </TableCell>
-
                 {/* Discount column */}
                 {hasAnyDiscountData && (
-                  <TableCell className="hidden md:table-cell text-center py-3">
+                  <TableCell className="hidden md:table-cell text-center">
                     {summary.discount?.hasDiscount ? (
                       <DiscountIndicator discount={summary.discount} />
                     ) : (
@@ -349,7 +347,7 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
 
                 {/* Due column */}
                 {showDueColumn && (
-                  <TableCell className="hidden md:table-cell text-center py-3">
+                  <TableCell className="hidden md:table-cell text-center">
                     {summary.paymentObligation?.hasPendingObligations ? (
                       <PaymentObligationIndicator paymentObligation={summary.paymentObligation} />
                     ) : (
@@ -360,7 +358,7 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
 
                 {/* Notes column */}
                 {hasAnyComments && (
-                  <TableCell className="hidden lg:table-cell text-center py-3">
+                  <TableCell className="hidden lg:table-cell text-center">
                     {summary.commentsCount > 0 ? (
                       <div className="flex items-center justify-center gap-1 text-white/70 text-xs">
                         <MessageSquare className="w-3 h-3" />
@@ -374,7 +372,7 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
 
                 {/* Actions column */}
                 {mode === 'view' && (onRemoveStudent || onTransferStudent) && (
-                  <TableCell className="text-center py-3">
+                  <TableCell className="text-center">
                     <div className="flex items-center justify-center">
                       <StudentRowActionsMenu
                         studentId={summary.studentId}

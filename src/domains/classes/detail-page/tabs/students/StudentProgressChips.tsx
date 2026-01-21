@@ -23,49 +23,63 @@ const StudentProgressChips: React.FC<StudentProgressChipsProps> = ({
   attendance,
   homework,
 }) => {
-  if (totalLessons === 0) {
-    return <span className="text-white/50 text-sm">—</span>;
+  // No issues to display
+  const hasIssues =
+    attendance.absent > 0 ||
+    attendance.late > 0 ||
+    homework.missing > 0 ||
+    homework.partial > 0;
+
+  if (totalLessons === 0 || !hasIssues) {
+    return null;
   }
 
-  const lessonWord = totalLessons === 1 ? 'lesson' : 'lessons';
+  const issues: React.ReactNode[] = [];
+
+  // Absences
+  if (attendance.absent > 0) {
+    issues.push(
+      <span key="absent" className="text-red-400/60">
+        {attendance.absent} absent
+      </span>
+    );
+  }
+
+  // Late arrivals
+  if (attendance.late > 0) {
+    issues.push(
+      <span key="late" className="text-amber-400/60">
+        {attendance.late} late
+      </span>
+    );
+  }
+
+  // Missing homework
+  if (homework.missing > 0) {
+    issues.push(
+      <span key="missing" className="text-red-400/60">
+        {homework.missing} missing hw
+      </span>
+    );
+  }
+
+  // Partial homework
+  if (homework.partial > 0) {
+    issues.push(
+      <span key="partial" className="text-amber-400/60">
+        {homework.partial} partial hw
+      </span>
+    );
+  }
 
   return (
-    <div className="flex items-center flex-wrap text-sm">
-      {/* Primary: Present count of total lessons */}
-      <span className="text-white/80">{attendance.present}</span>
-      <span className="text-white/50">&nbsp;of {totalLessons} {lessonWord}</span>
-
-      {/* Issue: Absences */}
-      {attendance.absent > 0 && (
-        <>
-          <span className="text-white/30 mx-1.5">•</span>
-          <span className="text-red-400">{attendance.absent} absent</span>
-        </>
-      )}
-
-      {/* Issue: Late arrivals */}
-      {attendance.late > 0 && (
-        <>
-          <span className="text-white/30 mx-1.5">•</span>
-          <span className="text-amber-400">{attendance.late} late</span>
-        </>
-      )}
-
-      {/* Issue: Missing homework */}
-      {homework.missing > 0 && (
-        <>
-          <span className="text-white/30 mx-1.5">•</span>
-          <span className="text-red-400">{homework.missing} missing hw</span>
-        </>
-      )}
-
-      {/* Issue: Partial homework */}
-      {homework.partial > 0 && (
-        <>
-          <span className="text-white/30 mx-1.5">•</span>
-          <span className="text-amber-400">{homework.partial} partial hw</span>
-        </>
-      )}
+    <div className="flex items-center flex-wrap text-xs">
+      {issues.map((issue, index) => (
+        <React.Fragment key={index}>
+          {index > 0 && <span className="text-white/30 mx-1.5">•</span>}
+          {issue}
+        </React.Fragment>
+      ))}
     </div>
   );
 };
