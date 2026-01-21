@@ -13,25 +13,25 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import GlassCard from '@/components/common/GlassCard';
-import { ClassResponse } from '@/types/api/class';
+import { ClassListItemResponse } from '@/types/api/class';
 import { formatSchedule } from '@/utils/scheduleFormatter';
 
 interface Props {
-  classes: ClassResponse[];
-  onView: (c: ClassResponse) => void;
+  classes: ClassListItemResponse[];
+  onView: (c: ClassListItemResponse) => void;
 }
 
-// Component to display lesson summary for a single class
-const ClassLessonSummary: React.FC<{ lessonSummary: ClassResponse['lessonSummary'] }> = ({ lessonSummary }) => {
-  if (!lessonSummary || lessonSummary.totalLessons === 0) {
+// Component to display lesson summary for a single class (list item version)
+const ClassLessonSummary: React.FC<{ totalLessons: number; scheduledLessons: number }> = ({ totalLessons, scheduledLessons }) => {
+  if (totalLessons === 0) {
     return <span className="text-sm text-white/40">No lessons</span>;
   }
 
   return (
     <div className="text-sm">
-      <span className="font-medium text-white">{lessonSummary.totalLessons}</span>
+      <span className="font-medium text-white">{totalLessons}</span>
       <span className="text-white/50 text-xs ml-1">
-        ({lessonSummary.scheduledLessons} scheduled)
+        ({scheduledLessons} scheduled)
       </span>
     </div>
   );
@@ -135,7 +135,7 @@ const ClassTable: React.FC<Props> = React.memo(({ classes, onView }) => {
 
                 {/* Column 5: Lessons (Simplified) */}
                 <TableCell>
-                  <ClassLessonSummary lessonSummary={classItem.lessonSummary} />
+                  <ClassLessonSummary totalLessons={classItem.totalLessons} scheduledLessons={classItem.scheduledLessons} />
                 </TableCell>
 
                 {/* Column 6: Navigation */}

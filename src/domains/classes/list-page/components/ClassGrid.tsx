@@ -9,11 +9,11 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import GlassCard from '@/components/common/GlassCard';
-import { ClassResponse } from '@/types/api/class';
+import { ClassListItemResponse } from '@/types/api/class';
 
 interface Props {
-  classes: ClassResponse[];
-  onView: (c: ClassResponse) => void;
+  classes: ClassListItemResponse[];
+  onView: (c: ClassListItemResponse) => void;
 }
 
 const ClassGrid: React.FC<Props> = React.memo(({ classes, onView }) => {
@@ -93,8 +93,9 @@ const ClassGrid: React.FC<Props> = React.memo(({ classes, onView }) => {
               </div>
             </div>
 
-            <div className="text-xs text-white/50 border-t border-white/10 pt-3 mt-4">
-              Created: {new Date(classItem.createdAt).toLocaleDateString()}
+            <div className="flex items-center justify-between text-xs text-white/50 border-t border-white/10 pt-3 mt-4">
+              <span>{classItem.totalLessons} lessons</span>
+              <span>{classItem.scheduledLessons} scheduled</span>
             </div>
           </GlassCard>
         </motion.div>

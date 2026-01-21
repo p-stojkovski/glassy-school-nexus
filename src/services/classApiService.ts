@@ -31,6 +31,7 @@ import {
   RemoveStudentResponse,
   DisableClassResponse,
   EnableClassResponse,
+  ClassListItemResponse,
 } from '@/types/api/class';
 import {
   ScheduleValidationRequest,
@@ -108,8 +109,8 @@ return await apiService.get<ClassBasicInfoResponse>(ClassApiPaths.BY_ID(id));
     }
   }
 
-  /** Search classes (no pagination) */
-  async searchClasses(params: ClassSearchParams = {}): Promise<ClassResponse[]> {
+  /** Search classes (no pagination) - returns lightweight list items */
+  async searchClasses(params: ClassSearchParams = {}): Promise<ClassListItemResponse[]> {
     try {
       const qs = new URLSearchParams();
       if (params.searchTerm) qs.append('searchTerm', params.searchTerm);
@@ -120,8 +121,8 @@ return await apiService.get<ClassBasicInfoResponse>(ClassApiPaths.BY_ID(id));
       if (params.includeDisabled !== undefined) qs.append('includeDisabled', String(params.includeDisabled));
       if (params.includeAllYears !== undefined) qs.append('includeAllYears', String(params.includeAllYears));
       const endpoint = qs.toString() ? `${ClassApiPaths.SEARCH}?${qs.toString()}` : ClassApiPaths.SEARCH;
-      
-return await apiService.get<ClassResponse[]>(endpoint);
+
+return await apiService.get<ClassListItemResponse[]>(endpoint);
     } catch (error: any) {
       if (error.status === ClassHttpStatus.BAD_REQUEST) {
         if (error.details?.detail?.toLowerCase()?.includes('subject id')) {

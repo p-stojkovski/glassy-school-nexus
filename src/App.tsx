@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { Provider } from 'react-redux';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { Toaster } from '@/components/ui/sonner';
@@ -11,27 +12,33 @@ import { RootState } from './store';
 import { DataProvider } from '@/app/providers/DataProvider';
 import { getCurrentUserAsync, logout } from '@/domains/auth/authSlice';
 import apiService from '@/services/api';
+import RouteLoadingFallback from './components/common/RouteLoadingFallback';
+import RouteErrorBoundary from './components/common/RouteErrorBoundary';
+import { appHistory } from '@/router/history';
+
+// Keep static - small/critical components
 import LoginForm from '@/domains/auth/components/LoginForm';
 import AppLayout from './components/layout/AppLayout';
-import Dashboard from './pages/Dashboard';
-import StudentManagement from './pages/StudentManagement';
-import { ClassesPage } from '@/domains/classes/list-page';
-import { ClassFormPage } from '@/domains/classes/form-page';
-import ClassPage from './pages/ClassPage';
-import { TeachingModePage } from '@/domains/classes/detail-page/teaching';
-import Teachers from './pages/Teachers';
-import TeacherDashboard from './pages/TeacherDashboard';
-import TeacherPage from './pages/TeacherPage';
-import { SalaryCalculationDetailPage } from '@/domains/teachers/salary-calculation-detail-page';
-import AttendanceManagement from './pages/AttendanceManagement';
-import GradesManagement from './pages/GradesManagement';
-import FinancialManagement from './pages/FinancialManagement';
-import PrivateLessons from './pages/PrivateLessons';
-import PrivateLessonDetailPage from './domains/privateLessons/components/PrivateLessonDetailPage';
-import StudentPage from './pages/StudentPage';
-import SettingsPage from './pages/SettingsPage';
 import NotFound from './pages/NotFound';
-import { appHistory } from '@/router/history';
+
+// Lazy-loaded page components
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
+const StudentManagement = lazyWithRetry(() => import('./pages/StudentManagement'));
+const StudentPage = lazyWithRetry(() => import('./pages/StudentPage'));
+const ClassesPage = lazyWithRetry(() => import('@/domains/classes/list-page').then(m => ({ default: m.ClassesPage })));
+const ClassPage = lazyWithRetry(() => import('./pages/ClassPage'));
+const ClassFormPage = lazyWithRetry(() => import('@/domains/classes/form-page').then(m => ({ default: m.ClassFormPage })));
+const TeachingModePage = lazyWithRetry(() => import('@/domains/classes/detail-page/teaching').then(m => ({ default: m.TeachingModePage })));
+const Teachers = lazyWithRetry(() => import('./pages/Teachers'));
+const TeacherPage = lazyWithRetry(() => import('./pages/TeacherPage'));
+const TeacherDashboard = lazyWithRetry(() => import('./pages/TeacherDashboard'));
+const SalaryCalculationDetailPage = lazyWithRetry(() => import('@/domains/teachers/salary-calculation-detail-page').then(m => ({ default: m.SalaryCalculationDetailPage })));
+const AttendanceManagement = lazyWithRetry(() => import('./pages/AttendanceManagement'));
+const GradesManagement = lazyWithRetry(() => import('./pages/GradesManagement'));
+const FinancialManagement = lazyWithRetry(() => import('./pages/FinancialManagement'));
+const PrivateLessons = lazyWithRetry(() => import('./pages/PrivateLessons'));
+const PrivateLessonDetailPage = lazyWithRetry(() => import('./domains/privateLessons/components/PrivateLessonDetailPage'));
+const SettingsPage = lazyWithRetry(() => import('./pages/SettingsPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -83,37 +90,41 @@ const AppContent: React.FC = () => {
 
   return (
     <AppLayout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />{' '}
-        <Route path="/classrooms" element={<Navigate to="/settings" replace />} />
-        <Route path="/students" element={<StudentManagement />} />
-        {/* New unified student page handles both create and view/edit */}
-        <Route path="/students/new" element={<StudentPage />} />
-        {/* Legacy edit route - redirects to unified page with edit sheet */}
-        <Route path="/students/edit/:studentId" element={<StudentPage />} />
-        <Route path="/students/:studentId" element={<StudentPage />} />
-        <Route path="/classes" element={<ClassesPage />} />
-        {/* New unified class page handles both create and view/edit */}
-        <Route path="/classes/new" element={<ClassPage />} />
-        {/* Legacy edit route - keep ClassFormPage for now for backward compatibility */}
-        <Route path="/classes/edit/:classId" element={<ClassFormPage />} />
-        <Route path="/classes/:id" element={<ClassPage />} />
-        <Route path="/classes/:classId/teach/:lessonId" element={<TeachingModePage />} />
-        <Route path="/teachers" element={<Teachers />} />
-        <Route path="/teachers/:teacherId/salary-calculations/:calculationId" element={<SalaryCalculationDetailPage />} />
-        <Route path="/teachers/:teacherId" element={<TeacherPage />} />
-        <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
-        <Route path="/attendance" element={<AttendanceManagement />} />
-        <Route path="/grades" element={<GradesManagement />} />
-        <Route path="/finance" element={<FinancialManagement />} />
-        <Route path="/private-lessons" element={<PrivateLessons />} />
-        <Route
-          path="/private-lessons/:lessonId"
-          element={<PrivateLessonDetailPage />}
-        />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <RouteErrorBoundary>
+        <Suspense fallback={<RouteLoadingFallback />}>
+          <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/classrooms" element={<Navigate to="/settings" replace />} />
+          <Route path="/students" element={<StudentManagement />} />
+          {/* New unified student page handles both create and view/edit */}
+          <Route path="/students/new" element={<StudentPage />} />
+          {/* Legacy edit route - redirects to unified page with edit sheet */}
+          <Route path="/students/edit/:studentId" element={<StudentPage />} />
+          <Route path="/students/:studentId" element={<StudentPage />} />
+          <Route path="/classes" element={<ClassesPage />} />
+          {/* New unified class page handles both create and view/edit */}
+          <Route path="/classes/new" element={<ClassPage />} />
+          {/* Legacy edit route - keep ClassFormPage for now for backward compatibility */}
+          <Route path="/classes/edit/:classId" element={<ClassFormPage />} />
+          <Route path="/classes/:id" element={<ClassPage />} />
+          <Route path="/classes/:classId/teach/:lessonId" element={<TeachingModePage />} />
+          <Route path="/teachers" element={<Teachers />} />
+          <Route path="/teachers/:teacherId/salary-calculations/:calculationId" element={<SalaryCalculationDetailPage />} />
+          <Route path="/teachers/:teacherId" element={<TeacherPage />} />
+          <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+          <Route path="/attendance" element={<AttendanceManagement />} />
+          <Route path="/grades" element={<GradesManagement />} />
+          <Route path="/finance" element={<FinancialManagement />} />
+          <Route path="/private-lessons" element={<PrivateLessons />} />
+          <Route
+            path="/private-lessons/:lessonId"
+            element={<PrivateLessonDetailPage />}
+          />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </RouteErrorBoundary>
     </AppLayout>
   );
 };

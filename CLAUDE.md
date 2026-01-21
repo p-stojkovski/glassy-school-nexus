@@ -945,7 +945,94 @@ export interface Student {
 | `useMemo()` | Expensive computations in render |
 | `useCallback()` | Callbacks passed to memoized children |
 | Virtualization | Large lists (100+ items) - use `react-virtual` |
-| Code Splitting | Route-based with `React.lazy()` |
+| Code Splitting | Route-based with `lazyWithRetry()` |
+
+## Route-Based Code Splitting
+
+All page components are lazy-loaded using the `lazyWithRetry` utility for automatic retry on chunk load failures.
+
+### Architecture
+
+```
+App.tsx
+├── Static imports (always loaded)
+│   ├── LoginForm (auth gate)
+│   ├── AppLayout (shell)
+│   └── NotFound (small)
+└── Lazy imports (loaded on demand)
+    ├── Dashboard, StudentManagement, StudentPage
+    ├── ClassesPage, ClassPage, ClassFormPage, TeachingModePage
+    ├── Teachers, TeacherPage, TeacherDashboard, SalaryCalculationDetailPage
+    ├── AttendanceManagement, GradesManagement, FinancialManagement
+    └── PrivateLessons, PrivateLessonDetailPage, SettingsPage
+```
+
+### Key Components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `lazyWithRetry` | `utils/lazyWithRetry.ts` | Wraps `React.lazy()` with 3 retries + exponential backoff |
+| `RouteLoadingFallback` | `components/common/RouteLoadingFallback.tsx` | Suspense fallback with centered spinner |
+| `RouteErrorBoundary` | `components/common/RouteErrorBoundary.tsx` | Catches chunk load failures with retry button |
+
+### Usage Pattern
+
+```typescript
+// In App.tsx - lazy load with retry
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
+
+// For named exports from index files
+const ClassesPage = lazyWithRetry(() =>
+  import('@/domains/classes/list-page').then(m => ({ default: m.ClassesPage }))
+);
+
+// Wrap routes in Suspense + ErrorBoundary
+<AppLayout>
+  <RouteErrorBoundary>
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        {/* ... */}
+      </Routes>
+    </Suspense>
+  </RouteErrorBoundary>
+</AppLayout>
+```
+
+### Bundle Optimization (vite.config.ts)
+
+Heavy libraries are split into separate chunks via `manualChunks`:
+
+| Chunk | Libraries | Size |
+|-------|-----------|------|
+| `vendor` | react, react-dom | ~141KB |
+| `charts` | recharts | ~399KB |
+| `animation` | framer-motion | ~116KB |
+| `ui-radix` | @radix-ui/* components | ~112KB |
+| `forms` | react-hook-form, zod | ~85KB |
+| `dates` | date-fns, react-day-picker | ~77KB |
+
+### Adding New Pages
+
+When adding a new page component:
+
+```typescript
+// 1. Add lazy import in App.tsx
+const NewPage = lazyWithRetry(() => import('./pages/NewPage'));
+
+// 2. Add route (inside Suspense boundary)
+<Route path="/new-page" element={<NewPage />} />
+
+// 3. Ensure default export in page component
+export default function NewPage() { ... }
+```
+
+For named exports:
+```typescript
+const NewPage = lazyWithRetry(() =>
+  import('@/domains/newdomain/page').then(m => ({ default: m.NewPage }))
+);
+```
 
 ## Key Files Reference
 

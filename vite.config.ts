@@ -22,8 +22,29 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
+          // Core vendor chunks
           vendor: ['react', 'react-dom'],
           redux: ['@reduxjs/toolkit', 'react-redux'],
+          router: ['react-router-dom', 'history'],
+
+          // Heavy library chunks
+          charts: ['recharts'],
+          animation: ['framer-motion'],
+
+          // Forms ecosystem
+          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+
+          // Date handling
+          dates: ['date-fns', 'react-day-picker'],
+
+          // UI primitives (Radix)
+          'ui-radix': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-select',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-dropdown-menu',
+          ],
         },
       },
     },

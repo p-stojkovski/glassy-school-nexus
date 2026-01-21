@@ -3,7 +3,8 @@ import { RootState } from '@/store';
 import {
   setClasses,
   addClass,
-  updateClass as updateInStore,
+  updateClassInList,
+  updateSelectedClass,
   disableClass as disableInStore,
   enableClass as enableInStore,
   deleteClass as deleteFromStore,
@@ -16,12 +17,53 @@ import {
   setSearchQuery,
   setSearchParams,
   setSearchMode,
+  ClassListItem,
 } from '@/domains/classes/classesSlice';
 import { classApiService, getAllClasses, searchClasses, createClass, updateClass, disableClass, enableClass, deleteClass } from '@/services/classApiService';
-import { ClassResponse, ClassSearchParams, CreateClassRequest, UpdateClassRequest } from '@/types/api/class';
+import { ClassResponse, ClassSearchParams, CreateClassRequest, UpdateClassRequest, ClassBasicInfoResponse, ClassListItemResponse } from '@/types/api/class';
 import { showSuccessMessage, ClassErrorHandlers } from '@/utils/apiErrorHandler';
 import { validateAndPrepareClassData, ClassFormData } from '@/domains/classes/schemas/classValidators';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
+
+/** Convert ClassResponse (full) to ClassListItem (lightweight) for list updates */
+function toListItem(response: ClassResponse): ClassListItem {
+  return {
+    id: response.id,
+    name: response.name,
+    subjectName: response.subjectName,
+    teacherName: response.teacherName,
+    classroomName: response.classroomName,
+    enrolledCount: response.enrolledCount,
+    isActive: response.isActive,
+    totalLessons: response.lessonSummary?.totalLessons ?? 0,
+    scheduledLessons: response.lessonSummary?.scheduledLessons ?? 0,
+    schedule: (response.schedule ?? []).map(s => ({
+      dayOfWeek: s.dayOfWeek,
+      startTime: s.startTime,
+      endTime: s.endTime,
+    })),
+  };
+}
+
+/** Convert ClassBasicInfoResponse to ClassListItem for newly created classes */
+function basicInfoToListItem(response: ClassBasicInfoResponse, scheduleFromRequest?: ClassFormData['schedule']): ClassListItem {
+  return {
+    id: response.id,
+    name: response.name,
+    subjectName: response.subjectName,
+    teacherName: response.teacherName,
+    classroomName: response.classroomName,
+    enrolledCount: response.enrolledCount,
+    isActive: response.isActive,
+    totalLessons: response.lessonSummary?.totalLessons ?? 0,
+    scheduledLessons: response.lessonSummary?.scheduledLessons ?? 0,
+    schedule: (scheduleFromRequest ?? []).map(s => ({
+      dayOfWeek: s.dayOfWeek,
+      startTime: s.startTime,
+      endTime: s.endTime,
+    })),
+  };
+}
 
 export const useClasses = () => {
   const dispatch = useAppDispatch();
@@ -59,10 +101,12 @@ export const useClasses = () => {
       if (!validation.isValid) throw new Error(Object.values(validation.errors)[0] || 'Validation failed');
       const req = validation.data as CreateClassRequest;
       const created = await createClass(req);
-      const full = await classApiService.getClassById(created.id);
-      dispatch(addClass(full));
-      showSuccessMessage('Class Created', `${full.name} has been added.`);
-      return full;
+      const basicInfo = await classApiService.getClassById(created.id);
+      // Convert to list item using schedule from request (since basicInfo doesn't include schedule)
+      const listItem = basicInfoToListItem(basicInfo, data.schedule);
+      dispatch(addClass(listItem));
+      showSuccessMessage('Class Created', `${basicInfo.name} has been added.`);
+      return basicInfo;
     } catch (error) {
       const msg = ClassErrorHandlers.create(error);
       dispatch(setError({ operation: 'create', error: msg }));
@@ -80,7 +124,10 @@ export const useClasses = () => {
       if (!validation.isValid) throw new Error(Object.values(validation.errors)[0] || 'Validation failed');
       const req = validation.data as UpdateClassRequest;
       const updated = await updateClass(id, req);
-      dispatch(updateInStore(updated));
+      // Update list view with lightweight item
+      dispatch(updateClassInList(toListItem(updated)));
+      // Update selected class detail if viewing this class
+      dispatch(updateSelectedClass(updated));
       showSuccessMessage('Class Updated', `${updated.name} has been updated.`);
       return updated;
     } catch (error) {

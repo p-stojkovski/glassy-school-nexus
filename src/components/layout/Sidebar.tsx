@@ -23,6 +23,7 @@ import LogoutMenu from '@/domains/auth/components/LogoutMenu';
 import GlassCard from '../common/GlassCard';
 import { cn } from '../../lib/utils';
 import styles from './Sidebar.module.scss';
+import { prefetchRoute } from '@/hooks/usePrefetchRoute';
 
 // Types for navigation structure
 interface NavItem {
@@ -138,6 +139,7 @@ const Sidebar: React.FC = () => {
       <motion.button
         key={item.path}
         onClick={() => navigate(item.path)}
+        onMouseEnter={() => prefetchRoute(item.path)}
         className={cn(
           styles.menuItem,
           isNested && styles.menuItemNested,

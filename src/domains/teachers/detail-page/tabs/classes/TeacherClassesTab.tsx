@@ -9,7 +9,7 @@ import { useTeacherClasses } from './useTeacherClasses';
 import { useTeacherClassesWithPayments } from './useTeacherClassesWithPayments';
 import { TeacherClassDto } from '@/types/api/teacher';
 import ClassPaymentCard from './ClassPaymentCard';
-import { formatSchedule } from '../../_shared/utils';
+import { formatSchedule } from '../../../_shared/utils';
 
 interface TeacherClassesTabProps {
   teacherId: string;

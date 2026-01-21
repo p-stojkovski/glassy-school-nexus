@@ -20,8 +20,12 @@ interface StudentProgressChipProps {
 /**
  * StudentProgressChip - Shows a compact summary below the student name.
  *
- * This component displays a muted text summary of issues from the student's recent history.
+ * This component displays color-coded issues from the student's recent history.
  * It shows pre-loaded stats immediately (with "Last 5:" prefix) or expanded summary.
+ *
+ * Colors:
+ * - Red (text-red-400/60): absent, missing hw
+ * - Amber (text-amber-400/60): late
  *
  * Priority:
  * 1. If preloadedStats provided with non-zero values → show with "Last 5:" prefix
@@ -57,31 +61,45 @@ const StudentProgressChip: React.FC<StudentProgressChipProps> = ({
     );
   }
 
-  // Build summary text from non-zero values
-  const parts: string[] = [];
+  // Build colored parts from non-zero values
+  const issues: React.ReactNode[] = [];
 
   if (absences > 0) {
-    parts.push(`${absences} absent`);
+    issues.push(
+      <span key="absent" className="text-red-400/60">
+        {absences} absent
+      </span>
+    );
   }
   if (lateCount > 0) {
-    parts.push(`${lateCount} late`);
+    issues.push(
+      <span key="late" className="text-amber-400/60">
+        {lateCount} late
+      </span>
+    );
   }
   if (missingHomework > 0) {
-    parts.push(`${missingHomework} missing hw`);
+    issues.push(
+      <span key="missing" className="text-red-400/60">
+        {missingHomework} missing hw
+      </span>
+    );
   }
 
   // No issues - don't render anything
-  if (parts.length === 0) {
+  if (issues.length === 0) {
     return null;
   }
 
-  // Add "Last 5:" prefix for pre-loaded data
-  const prefix = hasPreloadedData ? 'Last 5: ' : '';
-  const text = prefix + parts.join(' · ');
-
   return (
-    <div className="flex items-center gap-1.5 mt-0.5">
-      <span className="text-xs text-white/50">{text}</span>
+    <div className="flex items-center flex-wrap text-xs mt-0.5">
+      {hasPreloadedData && <span className="text-white/50 mr-1">Last 5:</span>}
+      {issues.map((issue, index) => (
+        <React.Fragment key={index}>
+          {index > 0 && <span className="text-white/30 mx-1">·</span>}
+          {issue}
+        </React.Fragment>
+      ))}
     </div>
   );
 };

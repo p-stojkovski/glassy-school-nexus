@@ -86,6 +86,31 @@ export interface ClassResponse {
 }
 
 // ============================================================================
+// List View Types
+// ============================================================================
+
+/** Minimal schedule slot information for list views */
+export interface ScheduleSlotSummary {
+  dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+}
+
+/** Lightweight response for class list/search views - optimized to reduce data transfer */
+export interface ClassListItemResponse {
+  id: string;
+  name: string;
+  subjectName: string;
+  teacherName: string;
+  classroomName: string;
+  enrolledCount: number;
+  isActive: boolean;
+  totalLessons: number;
+  scheduledLessons: number;
+  schedule: ScheduleSlotSummary[];
+}
+
+// ============================================================================
 // Lazy Loading Response Types
 // ============================================================================
 
@@ -381,6 +406,10 @@ export const ClassValidationRules = {
 // Type guards (basic)
 export function isClassResponse(obj: any): obj is ClassResponse {
   return obj && typeof obj === 'object' && typeof obj.id === 'string' && typeof obj.name === 'string';
+}
+
+export function isClassListItemResponse(obj: any): obj is ClassListItemResponse {
+  return obj && typeof obj === 'object' && typeof obj.id === 'string' && typeof obj.name === 'string' && typeof obj.totalLessons === 'number';
 }
 
 export function isClassCreatedResponse(obj: any): obj is ClassCreatedResponse {

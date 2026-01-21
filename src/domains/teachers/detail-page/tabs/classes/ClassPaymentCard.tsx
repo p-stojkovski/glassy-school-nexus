@@ -20,7 +20,7 @@ import { TeacherClassWithPayments, StudentPaymentStatus } from '@/types/api/teac
 import StudentPaymentRow from './StudentPaymentRow';
 import ClassMetricsRow from './ClassMetrics';
 import { cn } from '@/lib/utils';
-import { formatSchedule } from '../../_shared/utils';
+import { formatSchedule } from '../../../_shared/utils';
 
 /**
  * Wrapper component to manage expanded state for student rows

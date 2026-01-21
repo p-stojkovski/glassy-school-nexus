@@ -1,8 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ClassResponse } from '@/types/api/class';
+import { ClassResponse, ClassListItemResponse } from '@/types/api/class';
 import { ClassSearchParams } from '@/types/api/class';
 import { ClassSalaryRule, ClassSalaryPreview } from './_shared/types/salaryRule.types';
 
+/** Lightweight class item for list/search views */
+export type ClassListItem = ClassListItemResponse;
+
+/** Full class details for detail views (kept for backward compatibility) */
 export type ClassItem = ClassResponse;
 
 export interface LoadingStates {
@@ -32,8 +36,11 @@ export interface ErrorStates {
 }
 
 interface ClassesState {
-  classes: ClassItem[];
-  searchResults: ClassItem[];
+  /** Lightweight class items for list view */
+  classes: ClassListItem[];
+  /** Lightweight class items for search results */
+  searchResults: ClassListItem[];
+  /** Full class details for detail view */
   selectedClass: ClassItem | null;
   loading: LoadingStates;
   errors: ErrorStates;
@@ -96,21 +103,24 @@ const classesSlice = createSlice({
   initialState,
   reducers: {
     // data
-    setClasses(state, action: PayloadAction<ClassItem[]>) {
+    setClasses(state, action: PayloadAction<ClassListItem[]>) {
       state.classes = action.payload;
       state.errors.fetch = null;
     },
-    addClass(state, action: PayloadAction<ClassItem>) {
+    addClass(state, action: PayloadAction<ClassListItem>) {
       state.classes.unshift(action.payload);
       if (state.isSearchMode) {
         state.searchResults.unshift(action.payload);
       }
     },
-    updateClass(state, action: PayloadAction<ClassItem>) {
+    updateClassInList(state, action: PayloadAction<ClassListItem>) {
       const idx = state.classes.findIndex(c => c.id === action.payload.id);
       if (idx !== -1) state.classes[idx] = action.payload;
       const sidx = state.searchResults.findIndex(c => c.id === action.payload.id);
       if (sidx !== -1) state.searchResults[sidx] = action.payload;
+    },
+    /** Update the selected class detail */
+    updateSelectedClass(state, action: PayloadAction<ClassItem>) {
       if (state.selectedClass?.id === action.payload.id) {
         state.selectedClass = action.payload;
       }
@@ -173,7 +183,7 @@ const classesSlice = createSlice({
     },
 
     // search
-    setSearchResults(state, action: PayloadAction<ClassItem[]>) {
+    setSearchResults(state, action: PayloadAction<ClassListItem[]>) {
       state.searchResults = action.payload;
       state.errors.search = null;
     },
@@ -230,7 +240,8 @@ const classesSlice = createSlice({
 export const {
   setClasses,
   addClass,
-  updateClass,
+  updateClassInList,
+  updateSelectedClass,
   disableClass,
   enableClass,
   deleteClass,
@@ -254,9 +265,12 @@ export const {
 } = classesSlice.actions;
 
 // Selectors
-export const selectClasses = (state: { classes: ClassesState }) => state.classes.classes;
-export const selectSearchResults = (state: { classes: ClassesState }) => state.classes.searchResults;
-export const selectSelectedClass = (state: { classes: ClassesState }) => state.classes.selectedClass;
+/** Returns lightweight class items for list view */
+export const selectClasses = (state: { classes: ClassesState }): ClassListItem[] => state.classes.classes;
+/** Returns lightweight class items from search */
+export const selectSearchResults = (state: { classes: ClassesState }): ClassListItem[] => state.classes.searchResults;
+/** Returns full class details for the selected class */
+export const selectSelectedClass = (state: { classes: ClassesState }): ClassItem | null => state.classes.selectedClass;
 export const selectLoading = (state: { classes: ClassesState }) => state.classes.loading;
 export const selectErrors = (state: { classes: ClassesState }) => state.classes.errors;
 export const selectSearchQuery = (state: { classes: ClassesState }) => state.classes.searchQuery;
@@ -265,8 +279,8 @@ export const selectIsSearchMode = (state: { classes: ClassesState }) => state.cl
 export const selectSalaryRules = (state: { classes: ClassesState }) => state.classes.salaryRules.items;
 export const selectSalaryPreview = (state: { classes: ClassesState }) => state.classes.salaryPreview.data;
 
-// Display data selector (search results if in search mode, otherwise all classes)
-export const selectDisplayClasses = (state: { classes: ClassesState }) =>
+/** Display data selector (search results if in search mode, otherwise all classes) - returns lightweight items */
+export const selectDisplayClasses = (state: { classes: ClassesState }): ClassListItem[] =>
   state.classes.isSearchMode ? state.classes.searchResults : state.classes.classes;
 
 export default classesSlice.reducer;
