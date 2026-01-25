@@ -1,24 +1,8 @@
 import apiService from './api';
+import type { Subject, CreateSubjectRequest, UpdateSubjectRequest } from '@/domains/settings/types/subjectTypes';
 
-export interface Subject {
-  id: number;
-  key: string;
-  name: string;
-  sortOrder: number;
-  isActive: boolean;
-}
-
-export interface CreateSubjectRequest {
-  key: string;
-  name: string;
-  sortOrder: number;
-}
-
-export interface UpdateSubjectRequest {
-  key: string;
-  name: string;
-  sortOrder: number;
-}
+// Re-export types for backward compatibility
+export type { Subject, CreateSubjectRequest, UpdateSubjectRequest } from '@/domains/settings/types/subjectTypes';
 
 export class SubjectApiService {
   private readonly baseEndpoint = '/api/subjects';

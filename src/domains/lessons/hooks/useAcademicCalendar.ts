@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import academicCalendarApiService from '@/domains/settings/services/academicCalendarApi';
-import { AcademicYear, TeachingBreak } from '@/domains/settings/types/academicCalendarTypes';
+import { academicCalendarApiService } from '@/services/academicCalendarApiService';
+import { AcademicYearResponse, TeachingBreakResponse } from '@/types/api/academic-calendar';
+
+// Type aliases for backwards compatibility
+type AcademicYear = AcademicYearResponse;
+type TeachingBreak = TeachingBreakResponse;
 
 interface NonTeachingDayData {
   date: string; // yyyy-mm-dd format
@@ -53,7 +57,7 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
         if (academicYearsCache.data && isCacheValid(academicYearsCache.timestamp)) {
           academicYears = academicYearsCache.data;
         } else {
-          academicYears = await academicCalendarApiService.getAllAcademicYears();
+          academicYears = await academicCalendarApiService.getAcademicYears();
           academicYearsCache.data = academicYears;
           academicYearsCache.timestamp = Date.now();
         }
@@ -79,7 +83,7 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
           teachingBreaks = cachedBreaks.data;
         } else {
           try {
-            teachingBreaks = await academicCalendarApiService.getTeachingBreaksByYear(relevantYear.id);
+            teachingBreaks = await academicCalendarApiService.getTeachingBreaksForYear(relevantYear.id);
             teachingBreaksCache.set(relevantYear.id, { data: teachingBreaks, timestamp: Date.now() });
           } catch (err: any) {
             // If 404, the year might not have breaks defined yet - treat as empty array
@@ -117,7 +121,7 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
                 type: 'teaching_break',
                 name: breakItem.name,
                 isMultiDay,
-                breakType: (breakItem as any).breakType,
+                breakType: breakItem.breakType,
               });
               currentDate.setDate(currentDate.getDate() + 1);
             }
@@ -126,7 +130,7 @@ export const useAcademicCalendar = (startDate: Date, endDate: Date): UseAcademic
 
         // Derive single-day holiday markers from teaching breaks with breakType = 'holiday'
         teachingBreaks.forEach(breakItem => {
-          if ((breakItem as any).breakType === 'holiday') {
+          if (breakItem.breakType === 'holiday') {
             const holidayStart = new Date(breakItem.startDate);
             const holidayEnd = new Date(breakItem.endDate);
 

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, Building, BookOpen, Tag, Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Breadcrumb,
@@ -11,10 +10,10 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Link } from 'react-router-dom';
 import ClassroomSettingsTab from '@/domains/settings/components/tabs/ClassroomSettingsTab';
-import SubjectSettingsTab from '@/domains/settings/components/tabs/SubjectSettingsTab';
-import DiscountTypeSettingsTab from '@/domains/settings/components/tabs/DiscountTypeSettingsTab';
-import LessonStatusSettingsTab from '@/domains/settings/components/tabs/LessonStatusSettingsTab';
-import AcademicCalendarSettingsTab from '@/domains/settings/components/tabs/AcademicCalendarSettingsTab';
+import { SubjectSettingsTab } from '@/domains/settings/subjects';
+import { DiscountTypeSettingsTab } from '@/domains/settings/discount-types';
+import { LessonStatusSettingsTab } from '@/domains/settings/lesson-statuses';
+import { AcademicCalendarSettingsTab } from '@/domains/settings/academic-calendar';
 
 type SettingsTabType = 'classrooms' | 'subjects' | 'academic-calendar' | 'discount-types' | 'lesson-statuses';
 
@@ -57,35 +56,30 @@ const SettingsPage: React.FC = () => {
               value="classrooms"
               className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
-              <Building className="w-4 h-4 mr-2" />
               Classrooms
             </TabsTrigger>
             <TabsTrigger
               value="subjects"
               className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
-              <BookOpen className="w-4 h-4 mr-2" />
               Subjects
             </TabsTrigger>
             <TabsTrigger
               value="academic-calendar"
               className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
-              <Calendar className="w-4 h-4 mr-2" />
               Academic Calendar
             </TabsTrigger>
             <TabsTrigger
               value="discount-types"
               className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
-              <Tag className="w-4 h-4 mr-2" />
               Discount Types
             </TabsTrigger>
             <TabsTrigger
               value="lesson-statuses"
               className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
             >
-              <Calendar className="w-4 h-4 mr-2" />
               Lesson Statuses
             </TabsTrigger>
           </TabsList>

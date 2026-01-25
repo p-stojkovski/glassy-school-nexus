@@ -1,18 +1,9 @@
 import apiService from './api';
-import { 
-  LessonStatusResponse, 
-  UpdateLessonStatusRequest,
-  LessonStatusApiPaths,
-  LessonStatusName
-} from '@/types/api/lesson';
+import { LessonStatusApiPaths } from '@/types/api/lesson';
+import type { LessonStatus, UpdateLessonStatusRequest } from '@/domains/settings/types/lessonStatusTypes';
 
-export interface LessonStatus {
-  id: string;
-  name: LessonStatusName;
-  description: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+// Re-export types for backward compatibility
+export type { LessonStatus, UpdateLessonStatusRequest } from '@/domains/settings/types/lessonStatusTypes';
 
 export class LessonStatusApiService {
   private readonly baseEndpoint = LessonStatusApiPaths.BASE;

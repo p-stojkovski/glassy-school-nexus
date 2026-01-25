@@ -39,6 +39,11 @@ const FinancialManagement = lazyWithRetry(() => import('./pages/FinancialManagem
 const PrivateLessons = lazyWithRetry(() => import('./pages/PrivateLessons'));
 const PrivateLessonDetailPage = lazyWithRetry(() => import('./domains/privateLessons/components/PrivateLessonDetailPage'));
 const SettingsPage = lazyWithRetry(() => import('./pages/SettingsPage'));
+const AcademicYearDetailPage = lazyWithRetry(() =>
+  import('@/domains/settings/academic-calendar/year-detail-page').then(m => ({
+    default: m.AcademicYearDetailPage
+  }))
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -119,6 +124,10 @@ const AppContent: React.FC = () => {
           <Route
             path="/private-lessons/:lessonId"
             element={<PrivateLessonDetailPage />}
+          />
+          <Route
+            path="/settings/academic-calendar/years/:yearId"
+            element={<AcademicYearDetailPage />}
           />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />

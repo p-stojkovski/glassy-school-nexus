@@ -11,6 +11,7 @@ import gradesReducer from '@/domains/grades/gradesSlice';
 import privateLessonsReducer from '@/domains/privateLessons/privateLessonsSlice';
 import lessonsReducer from '@/domains/lessons/lessonsSlice';
 import homeworkReducer from './slices/homeworkSlice';
+import { settingsReducer } from '@/domains/settings';
 
 export const store = configureStore({
   reducer: {
@@ -26,6 +27,7 @@ export const store = configureStore({
     privateLessons: privateLessonsReducer,
     lessons: lessonsReducer,
     homework: homeworkReducer,
+    settings: settingsReducer,
   },
 });
 

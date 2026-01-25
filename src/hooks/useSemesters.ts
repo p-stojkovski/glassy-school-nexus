@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import academicCalendarApiService from '@/domains/settings/services/academicCalendarApi';
-import { Semester } from '@/domains/settings/types/academicCalendarTypes';
+import { academicCalendarApiService } from '@/services/academicCalendarApiService';
+import { AcademicSemesterResponse } from '@/types/api/academic-calendar';
+
+// Re-export type alias for backwards compatibility
+export type Semester = AcademicSemesterResponse;
 
 interface UseSemestersReturn {
   semesters: Semester[];
@@ -82,7 +85,7 @@ export const useSemesters = (
       setIsLoading(true);
       setError(null);
       try {
-        const data = await academicCalendarApiService.getSemestersByYear(academicYearId);
+        const data = await academicCalendarApiService.getSemestersForYear(academicYearId);
         setSemesters(data);
         setSemestersToCache(academicYearId, data);
       } catch (err: any) {

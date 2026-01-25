@@ -1,30 +1,8 @@
 import apiService from './api';
+import type { DiscountType, CreateDiscountTypeRequest, UpdateDiscountTypeRequest } from '@/domains/settings/types/discountTypeTypes';
 
-export interface DiscountType {
-  id: number;
-  key: string;
-  name: string;
-  description?: string;
-  requiresAmount: boolean;
-  sortOrder: number;
-  isActive: boolean;
-}
-
-export interface CreateDiscountTypeRequest {
-  key: string;
-  name: string;
-  description?: string;
-  requiresAmount: boolean;
-  sortOrder: number;
-}
-
-export interface UpdateDiscountTypeRequest {
-  key: string;
-  name: string;
-  description?: string;
-  requiresAmount: boolean;
-  sortOrder: number;
-}
+// Re-export types for backward compatibility
+export type { DiscountType, CreateDiscountTypeRequest, UpdateDiscountTypeRequest } from '@/domains/settings/types/discountTypeTypes';
 
 export class DiscountTypeApiService {
   private readonly baseEndpoint = '/api/discount-types';

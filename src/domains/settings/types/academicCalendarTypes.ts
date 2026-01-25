@@ -52,17 +52,6 @@ export interface UpdateSemesterRequest {
   endDate: string;
 }
 
-export interface SuggestSemestersRequest {
-  count?: number; // optional; default 2
-}
-
-export interface SuggestedSemester {
-  name: string;
-  semesterNumber: number;
-  startDate: string;
-  endDate: string;
-}
-
 // Teaching Break interfaces
 export interface TeachingBreak {
   id: string;
