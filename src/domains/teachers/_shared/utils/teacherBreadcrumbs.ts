@@ -11,7 +11,7 @@ import {
 export interface TeacherBreadcrumbContext {
   /** Teacher data (optional - may be loading) */
   teacherData?: {
-    id: number;
+    id: string;
     name: string;
   } | null;
   /** Salary calculation data for salary-detail page */
@@ -30,7 +30,7 @@ export interface TeacherBreadcrumbContext {
  *
  * @example
  * // Teacher details page
- * buildTeacherBreadcrumbs({ teacherData: { id: 1, name: 'John Smith' }, pageType: 'details' })
+ * buildTeacherBreadcrumbs({ teacherData: { id: 'abc-123', name: 'John Smith' }, pageType: 'details' })
  * // Returns: [Dashboard, Teachers, "John Smith"]
  */
 export function buildTeacherBreadcrumbs(

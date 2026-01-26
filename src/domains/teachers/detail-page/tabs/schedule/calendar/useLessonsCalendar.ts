@@ -20,7 +20,7 @@ import {
   groupLessonsByDate,
   navigatePrevious,
   navigateNext,
-} from './calendarUtils';
+} from './utils';
 
 export function useLessonsCalendar({
   teacherId,

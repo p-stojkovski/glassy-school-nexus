@@ -2,9 +2,9 @@ import React, { memo } from 'react';
 import { User, CheckCircle2, AlertCircle, MinusCircle, BarChart3, BookOpen, ChevronRight, ChevronDown, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Amount } from '@/components/ui/amount';
-import { formatCurrency } from '@/utils/formatters';
 import { StudentPaymentStatus } from '@/types/api/teacher';
 import { cn } from '@/lib/utils';
+import { PaymentStatusBadge } from './payment';
 
 interface StudentPaymentRowProps {
   student: StudentPaymentStatus;
@@ -24,29 +24,6 @@ const StudentPaymentRow = memo<StudentPaymentRowProps>(({ student, isExpanded = 
   const handleRowClick = () => {
     if (onToggle) {
       onToggle();
-    }
-  };
-
-  const getPaymentStatusConfig = (status: StudentPaymentStatus['paymentStatus']) => {
-    switch (status) {
-      case 'paid':
-        return {
-          icon: CheckCircle2,
-          label: 'Paid',
-          className: 'text-green-400 bg-green-500/10',
-        };
-      case 'partial':
-        return {
-          icon: MinusCircle,
-          label: 'Partial',
-          className: 'text-amber-400 bg-amber-500/10',
-        };
-      case 'due':
-        return {
-          icon: AlertCircle,
-          label: 'Due',
-          className: 'text-red-400 bg-red-500/10',
-        };
     }
   };
 
@@ -74,9 +51,6 @@ const StudentPaymentRow = memo<StudentPaymentRowProps>(({ student, isExpanded = 
     }
     return null;
   };
-
-  const paymentConfig = getPaymentStatusConfig(student.paymentStatus);
-  const PaymentIcon = paymentConfig.icon;
 
   const ChevronIcon = isExpanded ? ChevronDown : ChevronRight;
 
@@ -111,16 +85,9 @@ const StudentPaymentRow = memo<StudentPaymentRowProps>(({ student, isExpanded = 
         {/* Metrics Row */}
         <div className="flex items-center gap-3">
           {/* Payment Status */}
-          <div
-            className={cn(
-              'flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium',
-              paymentConfig.className
-            )}
-            title={`Payment: ${paymentConfig.label}${student.dueAmount ? ` (${formatCurrency(student.dueAmount)})` : ''}`}
-          >
-            <PaymentIcon className="w-3 h-3" />
-            <span>{student.dueAmount ? <Amount value={student.dueAmount} size="sm" /> : paymentConfig.label}</span>
-          </div>
+          <PaymentStatusBadge status={student.paymentStatus}>
+            {student.dueAmount ? <Amount value={student.dueAmount} size="sm" /> : undefined}
+          </PaymentStatusBadge>
 
           {/* Attendance */}
           <div

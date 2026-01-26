@@ -13,4 +13,4 @@ export { default as LessonDayCell } from './LessonDayCell';
 export { useLessonsCalendar } from './useLessonsCalendar';
 
 export * from './calendarTypes';
-export * from './calendarUtils';
+export * from './utils';

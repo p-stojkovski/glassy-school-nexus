@@ -7,7 +7,7 @@ import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { DAY_ABBREVIATIONS, DAYS_OF_WEEK, DayOfWeek } from '@/constants/schedule';
 import type { CalendarDateRange, CalendarLesson, LessonsByDate } from './calendarTypes';
-import { generateMonthGridData } from './calendarUtils';
+import { generateMonthGridData } from './utils';
 import LessonDayCell from './LessonDayCell';
 
 interface LessonsCalendarMonthlyProps {

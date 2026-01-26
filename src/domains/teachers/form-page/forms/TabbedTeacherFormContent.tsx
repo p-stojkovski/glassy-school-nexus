@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Form } from '@/components/ui/form';
 import FormButtons from '@/components/common/FormButtons';
 import { Teacher } from '@/domains/teachers/teachersSlice';
-import { TeacherFormData, SubjectDto, TeacherHttpStatus, ProblemDetails } from '@/types/api/teacher';
+import { TeacherFormData, SubjectDto } from '@/types/api/teacher';
+import { mapServerErrorsToForm } from './utils';
 import { createTeacherSchema } from '@/utils/validation/teacherValidators';
 import { PersonalInformationTab, ProfessionalInformationTab } from './tabs';
 import { useEmailAvailability } from '@/domains/students/_shared/hooks';
@@ -145,75 +146,15 @@ const TabbedTeacherFormContent = React.forwardRef<TeacherFormRef, TabbedTeacherF
     try {
       await onSubmit(data);
     } catch (error: unknown) {
-      const apiError = error as { status?: number; message?: string; details?: ProblemDetails };
-      const status: number | undefined = apiError?.status;
-      const message: string = apiError?.message || '';
+      const mappingResult = mapServerErrorsToForm(error, form);
 
-      // Duplicate email -> mark the email field
-      if (status === TeacherHttpStatus.CONFLICT && /email/i.test(message)) {
-        form.setError('email', {
-          type: 'server',
-          message: 'A teacher with this email address already exists. Please use a different email.',
-        });
-        setActiveTab('personal-info');
-        form.setFocus('email');
-        return;
-      }
-
-      // Map server-side validation errors to fields if available (ASP.NET Core ProblemDetails)
-      const details = apiError?.details;
-      if (status === TeacherHttpStatus.BAD_REQUEST && details && typeof details.errors === 'object') {
-        const fieldMap: Record<string, keyof TeacherFormData> = {
-          Name: 'name',
-          Email: 'email',
-          Phone: 'phone',
-          SubjectId: 'subjectId',
-          Notes: 'notes',
-          name: 'name',
-          email: 'email',
-          phone: 'phone',
-          subjectId: 'subjectId',
-          notes: 'notes',
-        };
-
-        let firstField: keyof TeacherFormData | null = null;
-        for (const [key, msgs] of Object.entries(details.errors)) {
-          const direct = fieldMap[key as keyof typeof fieldMap];
-          const byCase = fieldMap[(key.charAt(0).toUpperCase() + key.slice(1)) as keyof typeof fieldMap];
-          let field: keyof TeacherFormData | undefined = direct || byCase;
-
-          if (!field) {
-            const kl = key.toLowerCase();
-            if (kl.includes('email')) field = 'email';
-            else if (kl.includes('name')) field = 'name';
-            else if (kl.includes('phone')) field = 'phone';
-            else if (kl.includes('subject')) field = 'subjectId';
-            else if (kl.includes('note')) field = 'notes';
-          }
-
-          if (field) {
-            const msgText = Array.isArray(msgs) ? msgs.join(' ') : String(msgs);
-            form.setError(field, { type: 'server', message: msgText });
-            if (!firstField) firstField = field;
-          }
+      if (mappingResult.handled) {
+        if (mappingResult.firstErrorTab) {
+          setActiveTab(mappingResult.firstErrorTab);
         }
-
-        if (firstField) {
-          const firstIsProfessional = firstField === 'notes';
-          setActiveTab(firstIsProfessional ? 'professional-info' : 'personal-info');
-          form.setFocus(firstField as 'name' | 'email' | 'phone' | 'subjectId' | 'notes');
+        if (mappingResult.firstErrorField) {
+          form.setFocus(mappingResult.firstErrorField);
         }
-        return;
-      }
-
-      // Generic validation or bad request containing email
-      if (status === TeacherHttpStatus.BAD_REQUEST && /email/i.test(message)) {
-        form.setError('email', {
-          type: 'server',
-          message,
-        });
-        setActiveTab('personal-info');
-        form.setFocus('email');
         return;
       }
 

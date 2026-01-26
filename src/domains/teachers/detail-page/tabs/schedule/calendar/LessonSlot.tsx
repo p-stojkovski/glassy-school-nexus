@@ -7,7 +7,7 @@ import React, { memo } from 'react';
 import { cn } from '@/lib/utils';
 import type { CalendarLesson, StatusColorConfig } from './calendarTypes';
 import { STATUS_COLORS } from './calendarTypes';
-import { formatTime } from './calendarUtils';
+import { formatTime } from './utils';
 
 interface LessonSlotProps {
   lesson: CalendarLesson;

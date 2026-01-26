@@ -41,7 +41,7 @@ export const SalaryCalculationDetailPage: React.FC = () => {
 
   // Build breadcrumbs using centralized utility
   const breadcrumbItems = buildTeacherBreadcrumbs({
-    teacherData: teacherId ? { id: Number(teacherId), name: teacherName } : null,
+    teacherData: teacherId ? { id: teacherId, name: teacherName } : null,
     salaryData: { periodDisplay },
     pageType: 'salary-detail',
   });

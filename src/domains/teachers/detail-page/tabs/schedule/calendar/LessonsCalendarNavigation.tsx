@@ -7,7 +7,7 @@ import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { CalendarDateRange, CalendarView } from './calendarTypes';
-import { formatDateRangeDisplay } from './calendarUtils';
+import { formatDateRangeDisplay } from './utils';
 
 interface LessonsCalendarNavigationProps {
   dateRange: CalendarDateRange;

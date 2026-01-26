@@ -13,7 +13,7 @@ import {
   parseTime,
   formatHour,
   formatDateKey,
-} from './calendarUtils';
+} from './utils';
 import LessonSlot from './LessonSlot';
 
 interface LessonsCalendarWeeklyProps {
