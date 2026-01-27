@@ -195,3 +195,46 @@ export const PaymentValidationRules = {
   },
   VALID_PAYMENT_METHODS: ['cash', 'bank_transfer', 'card'] as const,
 } as const;
+
+// ============================================================================
+// FINANCIAL STATUS TYPES (for class students obligations display)
+// ============================================================================
+
+/**
+ * Financial status for display in Students tab.
+ * Maps to backend StudentFinancialSummaryResponse.
+ */
+export type FinancialStatusType = 'paid' | 'pending' | 'partial' | 'overdue' | 'none';
+
+/**
+ * Financial summary for a single student in a class.
+ * Maps to backend StudentFinancialSummaryResponse.
+ */
+export interface StudentFinancialSummary {
+  studentId: string;
+  studentName: string;
+  status: FinancialStatusType;
+  totalAmount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  hasOverdue: boolean;
+  overdueAmount: number;
+}
+
+/**
+ * Response for class students financial status endpoint.
+ * Maps to backend ClassStudentsFinancialStatusResponse.
+ */
+export interface ClassStudentsFinancialStatusResponse {
+  studentSummaries: StudentFinancialSummary[];
+}
+
+// ============================================================================
+// FINANCIAL STATUS API PATHS
+// ============================================================================
+
+export const FinancialStatusApiPaths = {
+  /** GET /api/classes/:classId/students/financial-status */
+  GET_CLASS_STUDENTS_FINANCIAL_STATUS: (classId: string) =>
+    `/api/classes/${classId}/students/financial-status`,
+} as const;

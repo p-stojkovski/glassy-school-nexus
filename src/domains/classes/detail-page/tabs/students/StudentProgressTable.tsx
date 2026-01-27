@@ -71,6 +71,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
     error,
     lessonDetails,
     loadingDetails,
+    financialStatus,
     loadStudentDetails,
     retry,
   } = useStudentProgressData({
@@ -126,6 +127,7 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
       error={error}
       lessonDetails={lessonDetails}
       loadingDetails={loadingDetails}
+      financialStatus={financialStatus}
       expandedStudents={expandedStudents}
       mode={mode}
       isAddingStudents={isAddingStudents}

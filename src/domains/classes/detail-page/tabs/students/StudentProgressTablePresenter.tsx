@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button';
 import StudentLessonDetailsRow from './StudentLessonDetailsRow';
 import StudentProgressChips from './StudentProgressChips';
 import StudentRowActionsMenu from './StudentRowActionsMenu';
-import { DiscountIndicator, PaymentObligationIndicator } from './PrivacyIndicator';
+import { DiscountIndicator } from './PrivacyIndicator';
+import { ObligationStatusBadge } from './ObligationStatusBadge';
 import { StudentFilter, applyStudentFilter } from '@/domains/classes/_shared/utils/studentFilters';
 import { LoadingTableSkeleton } from '@/domains/classes/_shared/components';
 import { EmptyState } from '@/components/common';
+import type { StudentFinancialSummary } from '@/types/api/obligations';
 
 /**
  * Props for the StudentProgressTablePresenter component.
@@ -27,6 +29,8 @@ export interface StudentProgressTablePresenterProps {
   lessonDetails: Record<string, StudentLessonDetail[]>;
   /** Set of studentIds currently loading details */
   loadingDetails: Set<string>;
+  /** Map of studentId -> financial status summary */
+  financialStatus: Record<string, StudentFinancialSummary>;
   /** Set of currently expanded student rows */
   expandedStudents: Set<string>;
   /** Mode: view or edit */
@@ -113,6 +117,7 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
   error,
   lessonDetails,
   loadingDetails,
+  financialStatus,
   expandedStudents,
   mode = 'view',
   isAddingStudents = false,
@@ -144,8 +149,8 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
     return filteredSummaries.some((s) => s.discount?.hasDiscount);
   }, [filteredSummaries]);
 
-  // Always show Due column when there are students - so users can see "No dues" status
-  const showDueColumn = filteredSummaries.length > 0;
+  // Always show Obligations column when there are students - so users can see financial status
+  const showObligationsColumn = filteredSummaries.length > 0;
 
   // Check if any student has comments
   const hasAnyComments = useMemo(() => {
@@ -156,11 +161,11 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
   const getColSpan = useCallback(() => {
     let cols = 2; // Student (with progress), Enrolled (always shown)
     if (hasAnyDiscountData) cols++; // Discount column
-    if (showDueColumn) cols++; // Due column
+    if (showObligationsColumn) cols++; // Obligations column
     if (hasAnyComments) cols++;
     if (mode === 'view' && (onRemoveStudent || onTransferStudent)) cols++;
     return cols;
-  }, [hasAnyDiscountData, showDueColumn, hasAnyComments, mode, onRemoveStudent, onTransferStudent]);
+  }, [hasAnyDiscountData, showObligationsColumn, hasAnyComments, mode, onRemoveStudent, onTransferStudent]);
 
   // Format enrollment date for display
   const formatEnrolledDate = useCallback((isoDate: string) => {
@@ -252,9 +257,9 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
               Discount
             </TableHead>
           )}
-          {showDueColumn && (
-            <TableHead className="hidden md:table-cell text-white/90 font-semibold text-center w-28">
-              Due
+          {showObligationsColumn && (
+            <TableHead className="hidden md:table-cell text-white/90 font-semibold text-center w-32">
+              Obligations
             </TableHead>
           )}
           {hasAnyComments && (
@@ -345,14 +350,26 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
                   </TableCell>
                 )}
 
-                {/* Due column */}
-                {showDueColumn && (
+                {/* Obligations column */}
+                {showObligationsColumn && (
                   <TableCell className="hidden md:table-cell text-center">
-                    {summary.paymentObligation?.hasPendingObligations ? (
-                      <PaymentObligationIndicator paymentObligation={summary.paymentObligation} />
-                    ) : (
-                      <span className="text-white/50 text-sm">No dues</span>
-                    )}
+                    {(() => {
+                      const status = financialStatus[summary.studentId];
+                      if (status) {
+                        return (
+                          <ObligationStatusBadge
+                            status={status.status}
+                            totalAmount={status.totalAmount}
+                            paidAmount={status.paidAmount}
+                            remainingAmount={status.remainingAmount}
+                            hasOverdue={status.hasOverdue}
+                            overdueAmount={status.overdueAmount}
+                          />
+                        );
+                      }
+                      // Fallback to 'none' if financial status not loaded yet
+                      return <ObligationStatusBadge status="none" />;
+                    })()}
                   </TableCell>
                 )}
 

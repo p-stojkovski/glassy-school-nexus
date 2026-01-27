@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { classApiService } from '@/services/classApiService';
+import obligationsApiService from '@/services/obligationsApiService';
 import { StudentLessonSummary, StudentLessonDetail } from '@/types/api/class';
+import type { StudentFinancialSummary } from '@/types/api/obligations';
 
 /**
  * Cache entry for student summaries.
@@ -24,6 +26,10 @@ export interface StudentProgressDataState {
   lessonDetails: Record<string, StudentLessonDetail[]>;
   /** Set of studentIds currently loading details */
   loadingDetails: Set<string>;
+  /** Map of studentId -> financial status summary (from GetClassStudentsFinancialStatus endpoint) */
+  financialStatus: Record<string, StudentFinancialSummary>;
+  /** Loading state for financial status fetch */
+  financialStatusLoading: boolean;
 }
 
 /**
@@ -53,6 +59,8 @@ export interface UseStudentProgressDataOptions {
   dataVersion?: number;
   /** Custom API service (for testing) */
   apiService?: typeof classApiService;
+  /** Custom obligations API service (for testing) */
+  obligationsService?: typeof obligationsApiService;
 }
 
 // Module-level cache (preserved across re-renders but not hot reloads)
@@ -90,12 +98,15 @@ export const useStudentProgressData = ({
   classId,
   dataVersion = 0,
   apiService = classApiService,
+  obligationsService = obligationsApiService,
 }: UseStudentProgressDataOptions): UseStudentProgressDataReturn => {
   const [summaries, setSummaries] = useState<StudentLessonSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lessonDetails, setLessonDetails] = useState<Record<string, StudentLessonDetail[]>>({});
   const [loadingDetails, setLoadingDetails] = useState<Set<string>>(new Set());
+  const [financialStatus, setFinancialStatus] = useState<Record<string, StudentFinancialSummary>>({});
+  const [financialStatusLoading, setFinancialStatusLoading] = useState(false);
 
   // Track if component is mounted to prevent state updates after unmount
   const isMounted = useRef(true);
@@ -170,6 +181,40 @@ export const useStudentProgressData = ({
     fetchSummaries();
   }, [classId, dataVersion, apiService]);
 
+  // Fetch financial status data when summaries are loaded
+  useEffect(() => {
+    const fetchFinancialStatus = async () => {
+      // Only fetch if we have summaries and aren't loading
+      if (loading || summaries.length === 0) {
+        return;
+      }
+
+      setFinancialStatusLoading(true);
+
+      try {
+        const response = await obligationsService.getClassStudentsFinancialStatus(classId);
+
+        if (isMounted.current) {
+          // Convert array to Record<studentId, StudentFinancialSummary>
+          const statusMap: Record<string, StudentFinancialSummary> = {};
+          for (const summary of response.studentSummaries) {
+            statusMap[summary.studentId] = summary;
+          }
+          setFinancialStatus(statusMap);
+        }
+      } catch (err: unknown) {
+        // Financial status is supplementary data, log error but don't block UI
+        console.error('Error fetching financial status:', err);
+      } finally {
+        if (isMounted.current) {
+          setFinancialStatusLoading(false);
+        }
+      }
+    };
+
+    fetchFinancialStatus();
+  }, [classId, loading, summaries.length, obligationsService]);
+
   // Load lesson details for a student (lazy loading)
   const loadStudentDetails = useCallback(
     async (studentId: string) => {
@@ -237,6 +282,8 @@ export const useStudentProgressData = ({
     summariesCache.delete(classId);
     // Clear lesson details
     setLessonDetails({});
+    // Clear financial status
+    setFinancialStatus({});
     // Refetch
     await retry();
   }, [classId, retry]);
@@ -247,6 +294,8 @@ export const useStudentProgressData = ({
     error,
     lessonDetails,
     loadingDetails,
+    financialStatus,
+    financialStatusLoading,
     loadStudentDetails,
     retry,
     refresh,

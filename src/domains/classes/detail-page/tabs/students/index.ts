@@ -6,6 +6,7 @@ export { default as StudentLessonDetailsRow } from './StudentLessonDetailsRow';
 export { default as StudentRowActionsMenu } from './StudentRowActionsMenu';
 export { CapacityValidationPanel } from './CapacityValidationPanel';
 export { DiscountIndicator, PaymentObligationIndicator } from './PrivacyIndicator';
+export { ObligationStatusBadge } from './ObligationStatusBadge';
 
 // Dialogs
 export * from './dialogs';
