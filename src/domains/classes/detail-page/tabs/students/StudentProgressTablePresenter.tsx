@@ -55,6 +55,10 @@ export interface StudentProgressTablePresenterProps {
   onRetry: () => void;
   /** Clear search */
   onClearSearch?: () => void;
+  /** Callback when obligation badge is clicked to open sidebar */
+  onObligationBadgeClick?: (student: StudentLessonSummary) => void;
+  /** Callback when View Obligations action is clicked in row menu */
+  onViewObligations?: (student: StudentLessonSummary) => void;
 }
 
 /**
@@ -129,6 +133,8 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
   onTransferStudent,
   onRetry,
   onClearSearch,
+  onObligationBadgeClick,
+  onViewObligations,
 }) => {
   const navigate = useNavigate();
 
@@ -364,6 +370,7 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
                             remainingAmount={status.remainingAmount}
                             hasOverdue={status.hasOverdue}
                             overdueAmount={status.overdueAmount}
+                            onClick={onObligationBadgeClick ? () => onObligationBadgeClick(summary) : undefined}
                           />
                         );
                       }
@@ -397,6 +404,7 @@ const StudentProgressTablePresenter: React.FC<StudentProgressTablePresenterProps
                         hasAttendance={hasAttendance}
                         onTransfer={onTransferStudent}
                         onRemove={onRemoveStudent}
+                        onViewObligations={onViewObligations ? () => onViewObligations(summary) : undefined}
                       />
                     </div>
                   </TableCell>

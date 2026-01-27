@@ -238,3 +238,75 @@ export const FinancialStatusApiPaths = {
   GET_CLASS_STUDENTS_FINANCIAL_STATUS: (classId: string) =>
     `/api/classes/${classId}/students/financial-status`,
 } as const;
+
+// ============================================================================
+// STUDENT OBLIGATIONS LIST TYPES (for obligations sidebar)
+// ============================================================================
+
+/**
+ * Response for a single student obligation from the API.
+ * Maps to backend StudentObligationResponse.
+ * Note: Uses camelCase as .NET serializes PascalCase to camelCase.
+ */
+export interface StudentObligationResponse {
+  id: string;
+  studentId: string;
+  classId: string | null;
+  obligationType: string;
+  description: string;
+  originalAmount: number;
+  discountAmount: number;
+  finalAmount: number;
+  dueDate: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+  status: StudentObligationStatus;
+  paidAmount: number;
+  remainingAmount: number;
+  notes: string | null;
+  createdAt: string;
+  studentName: string | null;
+  className: string | null;
+}
+
+/**
+ * List response for student obligations.
+ * Maps to backend StudentObligationsListResponse.
+ */
+export interface StudentObligationsListResponse {
+  obligations: StudentObligationResponse[];
+}
+
+/**
+ * Converts API response to the existing StudentObligation interface
+ * used by RegisterPaymentDialog and other components.
+ */
+export function mapResponseToStudentObligation(
+  response: StudentObligationResponse
+): StudentObligation {
+  return {
+    id: response.id,
+    studentId: response.studentId,
+    studentName: response.studentName || '',
+    description: response.description,
+    baseAmount: response.originalAmount,
+    finalAmount: response.finalAmount,
+    paidAmount: response.paidAmount,
+    remainingAmount: response.remainingAmount,
+    status: response.status,
+    dueDate: response.dueDate,
+    periodStart: response.periodStart || '',
+    periodEnd: response.periodEnd || '',
+    createdAt: response.createdAt,
+  };
+}
+
+// ============================================================================
+// STUDENT OBLIGATIONS API PATHS
+// ============================================================================
+
+export const StudentObligationsApiPaths = {
+  /** GET /api/students/:studentId/obligations */
+  GET_STUDENT_OBLIGATIONS: (studentId: string) =>
+    `/api/students/${studentId}/obligations`,
+} as const;

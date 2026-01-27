@@ -8,11 +8,13 @@ import type {
   GenerateBulkObligationsRequest,
   GenerateBulkObligationsResponse,
   ClassStudentsFinancialStatusResponse,
+  StudentObligationsListResponse,
 } from '@/types/api/obligations';
 import {
   ObligationsApiPaths,
   ObligationsHttpStatus,
   FinancialStatusApiPaths,
+  StudentObligationsApiPaths,
 } from '@/types/api/obligations';
 
 interface ApiError {
@@ -94,6 +96,34 @@ export class ObligationsApiService {
       );
     }
   }
+
+  /**
+   * Get all obligations for a specific student.
+   * Returns list of obligations with amounts, status, and due dates.
+   */
+  async getStudentObligations(
+    studentId: string
+  ): Promise<StudentObligationsListResponse> {
+    try {
+      const response = await apiService.get<StudentObligationsListResponse>(
+        StudentObligationsApiPaths.GET_STUDENT_OBLIGATIONS(studentId)
+      );
+      return response;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      if (apiError.status === ObligationsHttpStatus.NOT_FOUND) {
+        throw makeApiError(apiError, 'Student not found');
+      }
+      if (apiError.status === ObligationsHttpStatus.UNAUTHORIZED) {
+        throw makeApiError(apiError, 'Authentication required');
+      }
+      const errorMsg = apiError.message || 'Unknown error';
+      throw makeApiError(
+        apiError,
+        'Failed to fetch student obligations: ' + errorMsg
+      );
+    }
+  }
 }
 
 // Export singleton instance
@@ -108,3 +138,6 @@ export const generateBulkObligations = (
 
 export const getClassStudentsFinancialStatus = (classId: string) =>
   obligationsApiService.getClassStudentsFinancialStatus(classId);
+
+export const getStudentObligations = (studentId: string) =>
+  obligationsApiService.getStudentObligations(studentId);

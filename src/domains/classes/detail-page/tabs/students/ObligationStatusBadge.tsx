@@ -16,6 +16,8 @@ interface ObligationStatusBadgeProps {
   remainingAmount?: number;
   hasOverdue?: boolean;
   overdueAmount?: number;
+  /** Click handler to open obligations sidebar */
+  onClick?: () => void;
 }
 
 /**
@@ -67,6 +69,7 @@ export const ObligationStatusBadge: React.FC<ObligationStatusBadgeProps> = ({
   remainingAmount = 0,
   hasOverdue = false,
   overdueAmount = 0,
+  onClick,
 }) => {
   const config = statusConfig[status];
 
@@ -131,7 +134,16 @@ export const ObligationStatusBadge: React.FC<ObligationStatusBadgeProps> = ({
         <TooltipTrigger asChild>
           <Badge
             variant="outline"
-            className={`cursor-default ${config.badgeClass}`}
+            className={`${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'cursor-default'} ${config.badgeClass}`}
+            onClick={onClick}
+            role={onClick ? 'button' : undefined}
+            tabIndex={onClick ? 0 : undefined}
+            onKeyDown={onClick ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick();
+              }
+            } : undefined}
           >
             {getBadgeContent()}
           </Badge>

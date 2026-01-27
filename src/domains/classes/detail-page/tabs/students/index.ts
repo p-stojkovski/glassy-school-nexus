@@ -8,5 +8,8 @@ export { CapacityValidationPanel } from './CapacityValidationPanel';
 export { DiscountIndicator, PaymentObligationIndicator } from './PrivacyIndicator';
 export { ObligationStatusBadge } from './ObligationStatusBadge';
 
+// Obligations sidebar
+export * from './obligations';
+
 // Dialogs
 export * from './dialogs';

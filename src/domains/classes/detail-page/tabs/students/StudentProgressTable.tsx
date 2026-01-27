@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useStudentProgressData } from '@/domains/classes/_shared/hooks';
 import { StudentFilter } from '@/domains/classes/_shared/utils/studentFilters';
+import { StudentLessonSummary } from '@/types/api/class';
 import StudentProgressTablePresenter from './StudentProgressTablePresenter';
 
 /**
@@ -30,6 +31,10 @@ export interface StudentProgressTableProps {
    * Bump this when enrollment changes to force a refetch and bypass cache.
    */
   dataVersion?: number;
+  /** Callback when obligation badge is clicked to open sidebar */
+  onObligationBadgeClick?: (student: StudentLessonSummary) => void;
+  /** Callback when View Obligations action is clicked in row menu */
+  onViewObligations?: (student: StudentLessonSummary) => void;
 }
 
 /**
@@ -63,6 +68,8 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
   onSearchQueryChange,
   studentFilter = 'all',
   dataVersion = 0,
+  onObligationBadgeClick,
+  onViewObligations,
 }) => {
   // Data fetching via extracted hook
   const {
@@ -139,6 +146,8 @@ const StudentProgressTable: React.FC<StudentProgressTableProps> = ({
       onTransferStudent={onTransferStudent}
       onRetry={retry}
       onClearSearch={handleClearSearch}
+      onObligationBadgeClick={onObligationBadgeClick}
+      onViewObligations={onViewObligations}
     />
   );
 };

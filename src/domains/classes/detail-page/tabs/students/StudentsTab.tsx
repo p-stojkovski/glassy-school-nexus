@@ -10,7 +10,8 @@ import StudentSelectionPanel from '@/components/common/StudentSelectionPanel';
 import StudentProgressTable from '@/domains/classes/detail-page/tabs/students/StudentProgressTable';
 import { TransferStudentDialog } from '@/domains/classes/detail-page/tabs/students/dialogs';
 import StudentFilters from '@/domains/classes/detail-page/tabs/students/StudentFilters';
-import { ClassBasicInfoResponse, ClassFormData, SameDayLessonInfo } from '@/types/api/class';
+import { ObligationsSidebar } from '@/domains/classes/detail-page/tabs/students/obligations';
+import { ClassBasicInfoResponse, ClassFormData, SameDayLessonInfo, StudentLessonSummary } from '@/types/api/class';
 import { addStudentsToClass, removeStudentFromClass } from '@/services/classApiService';
 import { StudentFilter } from '@/domains/classes/_shared/utils/studentFilters';
 
@@ -54,6 +55,8 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   const [dataVersion, setDataVersion] = useState(0);
   // Same-day lesson confirmation dialog state
   const [sameDayLessonPrompt, setSameDayLessonPrompt] = useState<SameDayLessonPrompt | null>(null);
+  // Obligations sidebar state - tracks which student's obligations to show
+  const [obligationsSidebarStudent, setObligationsSidebarStudent] = useState<StudentLessonSummary | null>(null);
 
   // Memoized callbacks for StudentProgressTable to prevent unnecessary re-renders
   const handleOpenAddPanel = useCallback(() => setIsAddPanelOpen(true), []);
@@ -68,6 +71,14 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   const handleTransferStudentRequest = useCallback(
     (studentId: string, studentName: string) => {
       setStudentToTransfer({ id: studentId, name: studentName });
+    },
+    []
+  );
+
+  // Handle obligation badge click - opens the obligations sidebar
+  const handleObligationBadgeClick = useCallback(
+    (student: StudentLessonSummary) => {
+      setObligationsSidebarStudent(student);
     },
     []
   );
@@ -271,6 +282,8 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
               onSearchQueryChange={setSearchQuery}
               studentFilter={studentFilter}
               dataVersion={dataVersion}
+              onObligationBadgeClick={handleObligationBadgeClick}
+              onViewObligations={handleObligationBadgeClick}
             />
           </div>
         )}
@@ -340,6 +353,18 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
               if (onRefetchClassData) {
                 await onRefetchClassData();
               }
+            }}
+          />
+        )}
+
+        {/* Obligations Sidebar */}
+        {obligationsSidebarStudent && (
+          <ObligationsSidebar
+            student={obligationsSidebarStudent}
+            classId={classData.id}
+            open={obligationsSidebarStudent !== null}
+            onOpenChange={(open) => {
+              if (!open) setObligationsSidebarStudent(null);
             }}
           />
         )}
