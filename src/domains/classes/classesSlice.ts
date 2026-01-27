@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ClassResponse, ClassListItemResponse } from '@/types/api/class';
 import { ClassSearchParams } from '@/types/api/class';
 import { ClassSalaryRule, ClassSalaryPreview } from './_shared/types/salaryRule.types';
+import { ClassFeeTemplate } from '@/types/api/classFees';
 
 /** Lightweight class item for list/search views */
 export type ClassListItem = ClassListItemResponse;
@@ -20,6 +21,10 @@ export interface LoadingStates {
   updatingSalaryRule: boolean;
   deletingSalaryRule: boolean;
   fetchingSalaryPreview: boolean;
+  fetchingFeeTemplates: boolean;
+  creatingFeeTemplate: boolean;
+  updatingFeeTemplate: boolean;
+  deletingFeeTemplate: boolean;
 }
 
 export interface ErrorStates {
@@ -33,6 +38,10 @@ export interface ErrorStates {
   updateSalaryRule: string | null;
   deleteSalaryRule: string | null;
   fetchSalaryPreview: string | null;
+  fetchFeeTemplates: string | null;
+  createFeeTemplate: string | null;
+  updateFeeTemplate: string | null;
+  deleteFeeTemplate: string | null;
 }
 
 interface ClassesState {
@@ -53,6 +62,9 @@ interface ClassesState {
   salaryPreview: {
     data: ClassSalaryPreview | null;
   };
+  feeTemplates: {
+    items: ClassFeeTemplate[];
+  };
 }
 
 const initialLoading: LoadingStates = {
@@ -66,6 +78,10 @@ const initialLoading: LoadingStates = {
   updatingSalaryRule: false,
   deletingSalaryRule: false,
   fetchingSalaryPreview: false,
+  fetchingFeeTemplates: false,
+  creatingFeeTemplate: false,
+  updatingFeeTemplate: false,
+  deletingFeeTemplate: false,
 };
 
 const initialErrors: ErrorStates = {
@@ -79,6 +95,10 @@ const initialErrors: ErrorStates = {
   updateSalaryRule: null,
   deleteSalaryRule: null,
   fetchSalaryPreview: null,
+  fetchFeeTemplates: null,
+  createFeeTemplate: null,
+  updateFeeTemplate: null,
+  deleteFeeTemplate: null,
 };
 
 const initialState: ClassesState = {
@@ -95,6 +115,9 @@ const initialState: ClassesState = {
   },
   salaryPreview: {
     data: null,
+  },
+  feeTemplates: {
+    items: [],
   },
 };
 
@@ -233,6 +256,30 @@ const classesSlice = createSlice({
       state.salaryPreview.data = null;
     },
 
+    // fee templates
+    setFeeTemplates(state, action: PayloadAction<ClassFeeTemplate[]>) {
+      state.feeTemplates.items = action.payload;
+      state.errors.fetchFeeTemplates = null;
+    },
+    addFeeTemplate(state, action: PayloadAction<ClassFeeTemplate>) {
+      state.feeTemplates.items.push(action.payload);
+      state.errors.createFeeTemplate = null;
+    },
+    updateFeeTemplate(state, action: PayloadAction<ClassFeeTemplate>) {
+      const idx = state.feeTemplates.items.findIndex(t => t.id === action.payload.id);
+      if (idx !== -1) {
+        state.feeTemplates.items[idx] = action.payload;
+      }
+      state.errors.updateFeeTemplate = null;
+    },
+    removeFeeTemplate(state, action: PayloadAction<string>) {
+      state.feeTemplates.items = state.feeTemplates.items.filter(t => t.id !== action.payload);
+      state.errors.deleteFeeTemplate = null;
+    },
+    clearFeeTemplates(state) {
+      state.feeTemplates.items = [];
+    },
+
     resetClassesState: () => initialState,
   },
 });
@@ -261,6 +308,11 @@ export const {
   setSalaryPreview,
   clearSalaryRules,
   clearSalaryPreview,
+  setFeeTemplates,
+  addFeeTemplate,
+  updateFeeTemplate,
+  removeFeeTemplate,
+  clearFeeTemplates,
   resetClassesState,
 } = classesSlice.actions;
 
@@ -278,6 +330,7 @@ export const selectSearchParams = (state: { classes: ClassesState }) => state.cl
 export const selectIsSearchMode = (state: { classes: ClassesState }) => state.classes.isSearchMode;
 export const selectSalaryRules = (state: { classes: ClassesState }) => state.classes.salaryRules.items;
 export const selectSalaryPreview = (state: { classes: ClassesState }) => state.classes.salaryPreview.data;
+export const selectFeeTemplates = (state: { classes: ClassesState }) => state.classes.feeTemplates.items;
 
 /** Display data selector (search results if in search mode, otherwise all classes) - returns lightweight items */
 export const selectDisplayClasses = (state: { classes: ClassesState }): ClassListItem[] =>

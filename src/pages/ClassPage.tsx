@@ -15,6 +15,7 @@ import { LessonResponse } from '@/types/api/lesson';
 import ClassScheduleTab from '@/domains/classes/detail-page/tabs/schedule/ScheduleTab';
 import ClassStudentsTab from '@/domains/classes/detail-page/tabs/students/StudentsTab';
 import ClassSalaryRulesTab from '@/domains/classes/detail-page/tabs/salary-rules/SalaryRulesTab';
+import ClassFeesTab from '@/domains/classes/detail-page/tabs/fees/FeesTab';
 import QuickConductLessonModal from '@/domains/lessons/components/modals/QuickConductLessonModal';
 import QuickCancelLessonModal from '@/domains/lessons/components/modals/QuickCancelLessonModal';
 import RescheduleLessonModal from '@/domains/lessons/components/modals/RescheduleLessonModal';
@@ -22,7 +23,7 @@ import { useClassPage } from '@/domains/classes/detail-page/useClassPage';
 import { useClassLessonContext } from '@/domains/classes/detail-page/useClassLessonContext';
 import { useQuickLessonActions } from '@/domains/lessons/hooks/useQuickLessonActions';
 
-type TabId = 'lessons' | 'students' | 'schedule' | 'info' | 'salary-rules';
+type TabId = 'lessons' | 'students' | 'schedule' | 'info' | 'fees' | 'salary-rules';
 
 const ClassPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -133,7 +134,7 @@ const ClassPage: React.FC = () => {
   };
 
   const handleTabChange = (newTab: string) => {
-    const tabs = ['lessons', 'students', 'schedule', 'info', 'salary-rules'] as const;
+    const tabs = ['lessons', 'students', 'schedule', 'info', 'fees', 'salary-rules'] as const;
     if ((tabs as readonly string[]).includes(newTab)) {
       // Check if we can switch tabs
       if (canSwitchTab(newTab as typeof tabs[number])) {
@@ -320,6 +321,12 @@ const ClassPage: React.FC = () => {
               <span className="ml-1.5 inline-block w-1.5 h-1.5 bg-amber-400 rounded-full align-middle" />
             )}
           </TabsTrigger>
+          <TabsTrigger
+            value="fees"
+            className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white/80 data-[state=active]:shadow-none text-white/50 data-[state=active]:text-white/90 rounded-none px-4 py-2 font-medium transition-colors"
+          >
+            Fees
+          </TabsTrigger>
           {classData?.teacherId && (
             <TabsTrigger
               value="salary-rules"
@@ -370,6 +377,14 @@ const ClassPage: React.FC = () => {
             onUpdate={refetchClassData}
             isActive={activeTab === 'info'}
             onUnsavedChangesChange={handleInfoUnsavedChanges}
+          />
+        </TabsContent>
+
+        {/* Fees Tab */}
+        <TabsContent value="fees" className="mt-6">
+          <ClassFeesTab
+            classData={classData}
+            isActive={activeTab === 'fees'}
           />
         </TabsContent>
 
