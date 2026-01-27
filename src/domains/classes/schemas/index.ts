@@ -15,3 +15,14 @@ export type {
   UpdateClassFormData,
   ValidationResult,
 } from './classValidators';
+
+// Payment schema exports
+export {
+  paymentSchema,
+  createPaymentSchemaWithMax,
+  getPaymentDefaults,
+  getTodayDate,
+  PAYMENT_METHOD_OPTIONS,
+} from './paymentSchema';
+
+export type { PaymentFormData } from './paymentSchema';

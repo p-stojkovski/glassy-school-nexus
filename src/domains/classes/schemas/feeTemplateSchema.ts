@@ -113,3 +113,6 @@ export const getCreateFeeTemplateDefaults = (): Partial<CreateFeeTemplateFormDat
   effectiveFrom: getTodayISODate(),
   sortOrder: 0,
 });
+
+// Re-export getTodayISODate for use by paymentSchema
+export { getTodayISODate as getTodayDate };
