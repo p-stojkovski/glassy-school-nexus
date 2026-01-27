@@ -1,5 +1,5 @@
-import React from 'react';
-import { Plus, CircleX, Receipt } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, CircleX, Receipt, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
@@ -9,6 +9,7 @@ import { FeeTemplatesTable } from './components/FeeTemplatesTable';
 import { CreateFeeTemplateSheet } from './dialogs/CreateFeeTemplateSheet';
 import { EditFeeTemplateDialog } from './dialogs/EditFeeTemplateDialog';
 import { DeleteFeeTemplateDialog } from './dialogs/DeleteFeeTemplateDialog';
+import { GenerateObligationsDialog } from './dialogs/GenerateObligationsDialog';
 
 interface FeesTabProps {
   classData: ClassBasicInfoResponse;
@@ -16,6 +17,8 @@ interface FeesTabProps {
 }
 
 const FeesTab: React.FC<FeesTabProps> = ({ classData, isActive }) => {
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+
   const {
     feeTemplates,
     loading,
@@ -42,6 +45,11 @@ const FeesTab: React.FC<FeesTabProps> = ({ classData, isActive }) => {
     classId: classData.id,
     isActive,
   });
+
+  const handleGenerateSuccess = () => {
+    // Optionally refresh data or show success state
+    // For now, just close the dialog (dialog handles success toast)
+  };
 
   if (loading && !hasFetched) {
     return (
@@ -72,15 +80,27 @@ const FeesTab: React.FC<FeesTabProps> = ({ classData, isActive }) => {
             <Receipt className="w-5 h-5 text-white/70" />
             <h3 className="text-lg font-semibold text-white">Fee Templates</h3>
           </div>
-          <Button
-            onClick={openCreateSheet}
-            size="default"
-            variant="outline"
-            className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Template
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setShowGenerateDialog(true)}
+              size="default"
+              variant="outline"
+              className="border-yellow-500/30 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 font-medium gap-2"
+              disabled={feeTemplates.length === 0}
+            >
+              <FileText className="w-4 h-4" />
+              Generate Obligations
+            </Button>
+            <Button
+              onClick={openCreateSheet}
+              size="default"
+              variant="outline"
+              className="border-white/30 bg-white/10 hover:bg-white/20 text-white font-medium gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Template
+            </Button>
+          </div>
         </div>
 
         {/* Content */}
@@ -114,7 +134,7 @@ const FeesTab: React.FC<FeesTabProps> = ({ classData, isActive }) => {
       </div>
 
       {/* Future sections placeholder */}
-      {/* Obligations section will be added in Story 02 */}
+      {/* Obligations list section will be added in a later story */}
       {/* Summary card will be added in Story 04 */}
 
       {/* Dialogs */}
@@ -139,6 +159,16 @@ const FeesTab: React.FC<FeesTabProps> = ({ classData, isActive }) => {
         template={selectedTemplate}
         onConfirm={handleDeleteTemplate}
         isDeleting={deleteLoading}
+      />
+
+      <GenerateObligationsDialog
+        classId={classData.id}
+        className={classData.name}
+        enrolledCount={classData.enrolledCount}
+        open={showGenerateDialog}
+        onOpenChange={setShowGenerateDialog}
+        feeTemplates={feeTemplates}
+        onSuccess={handleGenerateSuccess}
       />
     </div>
   );
